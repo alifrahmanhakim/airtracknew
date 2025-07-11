@@ -154,74 +154,77 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
           <CardHeader>
             <CardTitle>Total Evaluation Status</CardTitle>
             <CardDescription>{totalEvaluationPercentage.toFixed(1)}% Evaluated</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="min-h-64 w-full">
-              <BarChart data={totalEvaluationData} layout="vertical" margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="sl" type="category" hide />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                <Legend />
-                <Bar dataKey="evaluated" stackId="a" fill="hsl(var(--chart-1))" name="Evaluated" radius={[4, 4, 4, 4]} />
-                <Bar dataKey="notEvaluated" stackId="a" fill="hsl(var(--chart-2))" name="Not Evaluated" radius={[4, 4, 4, 4]} />
-                <Bar dataKey="notFinishYet" stackId="a" fill="hsl(var(--chart-3))" name="Not Finish Yet" radius={[4, 4, 4, 4]} />
-              </BarChart>
-            </ChartContainer>
+          <CardContent className='h-[250px]'>
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={totalEvaluationData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                    <XAxis dataKey="sl" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }}/>
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                    <Legend wrapperStyle={{fontSize: "12px", paddingTop: '10px'}}/>
+                    <Bar dataKey="evaluated" stackId="a" fill="hsl(var(--chart-1))" name="Evaluated" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="notEvaluated" stackId="a" fill="hsl(var(--chart-2))" name="Not Evaluated" />
+                    <Bar dataKey="notFinishYet" stackId="a" fill="hsl(var(--chart-3))" name="Not Finish Yet" radius={[4, 4, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
         
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Percentage Evaluation</CardTitle>
-             <CardDescription>Overall Progress</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center">
-            <ChartContainer config={{}} className="h-48 w-48">
-              <PieChart>
-                <Tooltip content={<CustomTooltip />} />
-                <Pie
-                  data={percentageEvaluationData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  innerRadius={60}
-                  dataKey="value"
-                  strokeWidth={2}
-                >
-                  {percentageEvaluationData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                 <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold fill-foreground">
-                    {`${Math.round(totalEvaluationPercentage)}%`}
-                </text>
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
+        <Card>
+            <CardHeader>
+                <CardTitle>Percentage Evaluation</CardTitle>
+                <CardDescription>Overall Progress</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center h-[250px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Pie
+                        data={percentageEvaluationData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        innerRadius={60}
+                        dataKey="value"
+                        strokeWidth={2}
+                        >
+                        {percentageEvaluationData.map((entry) => (
+                            <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                        ))}
+                        </Pie>
+                    </PieChart>
+                </ResponsiveContainer>
+                <div className="text-center -mt-4">
+                    <p className="text-2xl font-bold">{totalEvaluationPercentage.toFixed(1)}%</p>
+                    <p className="text-sm text-muted-foreground">Finished</p>
+                </div>
+            </CardContent>
         </Card>
 
-        <Card className="lg:col-span-1">
+        <Card>
           <CardHeader>
             <CardTitle>Total Subject & Status</CardTitle>
             <CardDescription>{totalSubjectPercentage.toFixed(1)}% Standard</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="min-h-64 w-full">
-              <BarChart data={totalSubjectData} layout="vertical" margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="sl" type="category" hide />
+          <CardContent className='h-[250px]'>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={totalSubjectData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                <XAxis dataKey="sl" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }}/>
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                <Legend />
-                <Bar dataKey="standard" stackId="a" fill="hsl(var(--chart-2))" name="Standard" radius={[4, 4, 4, 4]} />
-                <Bar dataKey="recommendation" stackId="a" fill="hsl(var(--chart-3))" name="Recommendation" radius={[4, 4, 4, 4]} />
+                <Legend wrapperStyle={{fontSize: "12px", paddingTop: '10px'}}/>
+                <Bar dataKey="standard" stackId="a" fill="hsl(var(--chart-2))" name="Standard" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="recommendation" stackId="a" fill="hsl(var(--chart-3))" name="Recommendation" radius={[4, 4, 0, 0]} />
               </BarChart>
-            </ChartContainer>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -231,8 +234,8 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
           <CardTitle>Gap Status</CardTitle>
           <CardDescription>{gapStatusPercentage.toFixed(1)}% Existing in CASR</CardDescription>
         </CardHeader>
-        <CardContent className="pl-2">
-            <ChartContainer config={chartConfig} className="w-full h-[400px]">
+        <CardContent className="pl-2 h-[400px]">
+            <ChartContainer config={chartConfig} className="w-full h-full">
                  <BarChart data={gapStatusData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="sl" angle={-45} textAnchor="end" height={50} tick={{ fontSize: 10 }} interval={0} />
@@ -254,8 +257,8 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
           <CardTitle>Level of Implementation</CardTitle>
           <CardDescription>{levelImplementationPercentage.toFixed(1)}% No Difference</CardDescription>
         </CardHeader>
-        <CardContent className="pl-2">
-           <ChartContainer config={chartConfig} className="w-full h-[400px]">
+        <CardContent className="pl-2 h-[400px]">
+           <ChartContainer config={chartConfig} className="w-full h-full">
                 <BarChart data={levelImplementationData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="sl" angle={-45} textAnchor="end" height={50} tick={{ fontSize: 10 }} interval={0}/>
@@ -275,5 +278,3 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
     </div>
   );
 }
-
-    

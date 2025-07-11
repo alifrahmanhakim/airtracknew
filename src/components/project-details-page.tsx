@@ -2,8 +2,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { Project, Task, User, SubProject, Document as ProjectDocument } from '@/lib/types';
-import { findUserById } from '@/lib/data';
+import type { Project, Task, User, SubProject, Document as ProjectDocument, ComplianceDataRow } from '@/lib/types';
+import { findUserById, aggregateComplianceData } from '@/lib/data';
 import {
   Card,
   CardContent,
@@ -65,7 +65,7 @@ import { deleteDocument, deleteTask } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 import { AdoptionLevelDashboard } from './adoption-level-dashboard';
-import { AdoptionDataEditor } from './adoption-data-editor';
+import { ComplianceDataEditor } from './compliance-data-editor';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -196,6 +196,9 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
+  const complianceData = project.complianceData || [];
+  const aggregatedData = aggregateComplianceData(complianceData);
+
   if (!project) {
     return <div>Loading project details...</div>;
   }
@@ -211,7 +214,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <p className="text-muted-foreground">{project.description}</p>
         </div>
         <div className="flex gap-2">
-            {project.projectType === 'Rulemaking' && <AdoptionDataEditor project={project} />}
+            {project.projectType === 'Rulemaking' && <ComplianceDataEditor project={project} />}
             <EditProjectDialog project={project} allUsers={users} />
         </div>
       </div>
@@ -231,13 +234,13 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 </CardDescription>
             </CardHeader>
             <CardContent>
-              {project.adoptionData && project.adoptionData.length > 0 ? (
-                  <AdoptionLevelDashboard data={project.adoptionData} />
+              {complianceData && complianceData.length > 0 ? (
+                  <AdoptionLevelDashboard data={aggregatedData} />
               ) : (
                 <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
                   <Info className="mx-auto h-8 w-8 mb-2" />
                   <p className="font-semibold">No Compliance Data Available</p>
-                  <p className="text-sm">Click 'Edit Compliance Data' to add the first State Letter record.</p>
+                  <p className="text-sm">Click 'Edit Compliance Data' to add the first record.</p>
                 </div>
               )}
             </CardContent>

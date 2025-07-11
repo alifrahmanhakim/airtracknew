@@ -1,5 +1,5 @@
 
-import type { User, Project } from './types';
+import type { User, Project, ComplianceDataRow, AdoptionDataPoint } from './types';
 
 export const users: User[] = [
   { id: 'user-1', name: 'Alex Johnson', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
@@ -58,14 +58,12 @@ export const projects: Project[] = [
     notes: 'Engine compatibility tests are showing unexpected wear, causing delays. Regulatory submission is blocked pending results from these tests. This puts the project timeline at risk.',
     team: [users[1], users[0], users[4], users[2]],
     subProjects: [],
-    adoptionData: [
-      { sl: 'SL 172', evaluated: 5, notEvaluated: 0, notFinishYet: 0, totalSubject: 5, standard: 4, recommendation: 1, existingInCasr: 0, draftInCasr: 3, belumDiAdop: 2, tidakDiAdop: 0, managementDecision: 0, noDifference: 3, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
-      { sl: 'SL 174', evaluated: 2, notEvaluated: 0, notFinishYet: 0, totalSubject: 3, standard: 3, recommendation: 0, existingInCasr: 0, draftInCasr: 0, belumDiAdop: 0, tidakDiAdop: 0, managementDecision: 0, noDifference: 0, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
-      { sl: 'SL 175', evaluated: 85, notEvaluated: 7, notFinishYet: 0, totalSubject: 85, standard: 82, recommendation: 3, existingInCasr: 77, draftInCasr: 0, belumDiAdop: 0, tidakDiAdop: 0, managementDecision: 0, noDifference: 75, moreExactingOrExceeds: 1, differentInCharacter: 1, lessProtective: 2, significantDifference: 0, notApplicable: 0 },
-      { sl: 'SL 176', evaluated: 29, notEvaluated: 0, notFinishYet: 0, totalSubject: 29, standard: 28, recommendation: 1, existingInCasr: 0, draftInCasr: 15, belumDiAdop: 0, tidakDiAdop: 14, managementDecision: 0, noDifference: 15, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 1, significantDifference: 0, notApplicable: 0 },
-      { sl: 'SL 177', evaluated: 17, notEvaluated: 3, notFinishYet: 0, totalSubject: 17, standard: 17, recommendation: 0, existingInCasr: 0, draftInCasr: 0, belumDiAdop: 3, tidakDiAdop: 0, managementDecision: 0, noDifference: 2, moreExactingOrExceeds: 0, differentInCharacter: 1, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
-      { sl: 'SL 178', evaluated: 7, notEvaluated: 2, notFinishYet: 1, totalSubject: 3, standard: 3, recommendation: 0, existingInCasr: 0, draftInCasr: 6, belumDiAdop: 0, tidakDiAdop: 12, managementDecision: 0, noDifference: 5, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
-      { sl: 'SL 179', evaluated: 2, notEvaluated: 2, notFinishYet: 0, totalSubject: 2, standard: 2, recommendation: 0, existingInCasr: 0, draftInCasr: 0, belumDiAdop: 1, tidakDiAdop: 0, managementDecision: 0, noDifference: 1, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
+    complianceData: [
+        { id: 'row-1', sl: 'SL 172', subject: 'Subject A', evaluationStatus: 'Evaluated', subjectStatus: 'Standard', gapStatus: 'Existing in CASR', implementationLevel: 'No Difference' },
+        { id: 'row-2', sl: 'SL 172', subject: 'Subject B', evaluationStatus: 'Evaluated', subjectStatus: 'Standard', gapStatus: 'Existing in CASR', implementationLevel: 'No Difference' },
+        { id: 'row-3', sl: 'SL 172', subject: 'Subject C', evaluationStatus: 'Not Evaluated', subjectStatus: 'Not Applicable', gapStatus: 'Belum Diadop', implementationLevel: 'Not Applicable' },
+        { id: 'row-4', sl: 'SL 174', subject: 'Subject D', evaluationStatus: 'Evaluated', subjectStatus: 'Recommendation', gapStatus: 'Draft in CASR', implementationLevel: 'Different in Character' },
+        { id: 'row-5', sl: 'SL 174', subject: 'Subject E', evaluationStatus: 'Not Finish Yet', subjectStatus: 'Standard', gapStatus: 'Tidak Diadop', implementationLevel: 'Less Protective' },
     ]
   },
   {
@@ -113,6 +111,43 @@ export const projects: Project[] = [
     subProjects: [],
   },
 ];
+
+export function aggregateComplianceData(rawData: ComplianceDataRow[]): AdoptionDataPoint[] {
+  if (!rawData || rawData.length === 0) return [];
+
+  const groupedBySL = rawData.reduce((acc, row) => {
+    if (!acc[row.sl]) {
+      acc[row.sl] = [];
+    }
+    acc[row.sl].push(row);
+    return acc;
+  }, {} as Record<string, ComplianceDataRow[]>);
+
+  return Object.entries(groupedBySL).map(([sl, rows]) => {
+    const point: AdoptionDataPoint = {
+      sl: sl,
+      evaluated: rows.filter(r => r.evaluationStatus === 'Evaluated').length,
+      notEvaluated: rows.filter(r => r.evaluationStatus === 'Not Evaluated').length,
+      notFinishYet: rows.filter(r => r.evaluationStatus === 'Not Finish Yet').length,
+      totalSubject: rows.filter(r => r.subjectStatus !== 'Not Applicable').length,
+      standard: rows.filter(r => r.subjectStatus === 'Standard').length,
+      recommendation: rows.filter(r => r.subjectStatus === 'Recommendation').length,
+      existingInCasr: rows.filter(r => r.gapStatus === 'Existing in CASR').length,
+      draftInCasr: rows.filter(r => r.gapStatus === 'Draft in CASR').length,
+      belumDiAdop: rows.filter(r => r.gapStatus === 'Belum Diadop').length,
+      tidakDiAdop: rows.filter(r => r.gapStatus === 'Tidak Diadop').length,
+      managementDecision: rows.filter(r => r.gapStatus === 'Management Decision').length,
+      noDifference: rows.filter(r => r.implementationLevel === 'No Difference').length,
+      moreExactingOrExceeds: rows.filter(r => r.implementationLevel === 'More Exacting or Exceeds').length,
+      differentInCharacter: rows.filter(r => r.implementationLevel === 'Different in Character').length,
+      lessProtective: rows.filter(r => r.implementationLevel === 'Less Protective').length,
+      significantDifference: rows.filter(r => r.implementationLevel === 'Significant Difference').length,
+      notApplicable: rows.filter(r => r.implementationLevel === 'Not Applicable').length,
+    };
+    return point;
+  });
+}
+
 
 export const getProjectsForUser = (userId: string, allProjects: Project[]) => {
     const user = findUserById(userId);

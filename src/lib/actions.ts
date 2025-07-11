@@ -6,7 +6,7 @@ import {
   type SummarizeProjectStatusInput,
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
-import type { Document, Project, SubProject, Task, User } from './types';
+import type { Document, Project, SubProject, Task, User, ComplianceDataRow } from './types';
 import { db } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
@@ -109,7 +109,8 @@ export async function addProject(
         tasks: [],
         subProjects: [],
         documents: [],
-        adoptionData: projectData.adoptionData || [],
+        complianceData: projectData.complianceData || [],
+        adoptionData: [], // This will be computed or deprecated
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
@@ -145,10 +146,9 @@ export async function updateProject(
             }));
         }
         
-        // Ensure adoptionData is handled correctly
-        if (projectData.adoptionData) {
-            // Firestore handles arrays of objects directly
-            updateData.adoptionData = projectData.adoptionData;
+        // Handle compliance data updates
+        if (projectData.complianceData) {
+            updateData.complianceData = projectData.complianceData;
         }
 
         // Remove id from the update payload as we don't want to update the document id

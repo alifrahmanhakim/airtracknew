@@ -30,6 +30,17 @@ export type SubProject = {
   status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
 }
 
+export type ComplianceDataRow = {
+  id: string;
+  sl: string;
+  subject: string;
+  evaluationStatus: 'Evaluated' | 'Not Evaluated' | 'Not Finish Yet';
+  subjectStatus: 'Standard' | 'Recommendation' | 'Not Applicable';
+  gapStatus: 'Existing in CASR' | 'Draft in CASR' | 'Belum Diadop' | 'Tidak Diadop' | 'Management Decision' | 'Not Applicable';
+  implementationLevel: 'No Difference' | 'More Exacting or Exceeds' | 'Different in Character' | 'Less Protective' | 'Significant Difference' | 'Not Applicable';
+};
+
+// This is the aggregated data structure, which will be computed from ComplianceDataRow[]
 export type AdoptionDataPoint = {
   sl: string;
   // Total Evaluation Status
@@ -73,7 +84,6 @@ export type Project = {
   annex?: string;
   casr?: string;
   tags?: string[];
-  adoptionData?: AdoptionDataPoint[];
+  complianceData?: ComplianceDataRow[]; // Raw data
+  adoptionData?: AdoptionDataPoint[]; // Aggregated data (can be deprecated or computed)
 };
-
-    
