@@ -63,7 +63,7 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
 
   const userOptions: MultiSelectOption[] = allUsers.map(user => ({
     value: user.id,
-    label: user.name,
+    label: user.email || user.name || user.id, // Use email, fallback to name, then ID
   }));
 
   const form = useForm<ProjectFormValues>({
