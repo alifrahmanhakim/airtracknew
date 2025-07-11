@@ -31,10 +31,11 @@ import {
   Users,
   Calendar,
   ClipboardList,
-  Upload,
+  UploadCloud,
   Paperclip,
   Folder,
   Pencil,
+  FileUp,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -44,6 +45,13 @@ import { AddTaskDialog } from './add-task-dialog';
 import { AddSubProjectDialog } from './add-subproject-dialog';
 import { EditTaskDialog } from './edit-task-dialog';
 import { EditSubProjectDialog } from './edit-subproject-dialog';
+import { useToast } from '@/hooks/use-toast';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu"
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -54,6 +62,8 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const [project, setProject] = useState<Project>(initialProject);
   const [tasks, setTasks] = useState<Task[]>(initialProject.tasks);
   const [subProjects, setSubProjects] = useState<SubProject[]>(initialProject.subProjects || []);
+  const [documents, setDocuments] = useState<Project['documents']>(initialProject.documents);
+  const { toast } = useToast();
 
   const handleProjectUpdate = (updatedProject: Project) => {
     setProject(updatedProject);
@@ -73,6 +83,21 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
   const handleSubProjectUpdate = (updatedSubProject: SubProject) => {
     setSubProjects(subProjects.map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub));
+  }
+
+  const handleFileUpload = (source: 'Computer' | 'Google Drive' | 'OneDrive') => {
+    const newDocument = {
+        id: `doc-${Date.now()}`,
+        name: `Dokumen dari ${source}.pdf`,
+        type: 'PDF' as const,
+        uploadDate: new Date().toISOString(),
+        url: '#',
+    };
+    setDocuments([...documents, newDocument]);
+    toast({
+        title: "Unggah Berhasil",
+        description: `Dokumen dari ${source} berhasil ditambahkan (simulasi).`,
+    });
   }
 
   const getDocumentIcon = (type: Project['documents'][0]['type']) => {
@@ -181,15 +206,36 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           </Card>
 
           <Card>
-             <CardHeader>
+             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                     <Paperclip /> Dokumen Kegiatan
                 </CardTitle>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button>
+                            <FileUp className="mr-2 h-4 w-4" /> Unggah Dokumen
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleFileUpload('Computer')}>
+                            <UploadCloud className="mr-2 h-4 w-4" />
+                            <span>Dari Komputer</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleFileUpload('Google Drive')}>
+                            <svg className="mr-2 h-4 w-4" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Google Drive</title><path d="M19.14 7.5L12 18.27l-7.14-10.77h14.28zM6.18 6l5.82-3.87L17.82 6H6.18zM3.86 8.53L1.53 12.4l5.82 3.87.79-1.2-4.28-2.54zM20.14 8.53l-2.62 3.96-4.28 2.54.79 1.2 5.82-3.87z"/></svg>
+                            <span>Dari Google Drive</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleFileUpload('OneDrive')}>
+                             <svg className="mr-2 h-4 w-4" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Microsoft OneDrive</title><path d="M4.464 14.802c-2.005-.73-3.06-2.204-3.06-3.805 0-2.35 2.05-3.957 4.573-3.957 1.18 0 2.12.33 2.872.937l-1.89 1.803c-.34-.311-.699-.48-1.077-.48-.96 0-1.638.646-1.638 1.62 0 .937.525 1.48 1.481 1.83l2.844 1.02c2.478.885 3.515 2.08 3.515 3.929 0 2.512-1.92 4.29-4.803 4.29-1.574 0-2.91-.553-3.77-1.39l1.83-1.86c.466.45 1.08.72 1.77.72 1.11 0 1.83-.67 1.83-1.742.001-.937-.53-1.54-1.638-1.944zM23.616 9.155c-.24-.22-2.13-1.98-2.13-1.98s-3.4-.3-3.64-.33c-.238-.03-2.122-1.98-2.122-1.98s-.24.21-.3.3l-1.95 2.1c-.06.09.21.36.21.36s2.06 1.9 2.12 1.98c.06.08 3.63.3 3.63.3s2.13 1.98 2.13 1.98.3-.21.36-.3l1.95-2.1c.06-.09-.21-.36-.21-.36zm-6.21 4.23s-2.06-1.9-2.12-1.98c-.06-.08-3.63-.3-3.63-.3s-2.13-1.98-2.13-1.98-.3.21-.36.3l-1.95 2.1s.21.27.21.36 2.06 1.9 2.12 1.98c.06.08 3.63.3 3.63.3s2.13 1.98 2.13 1.98.3-.21.36-.3l1.95-2.1s-.21-.27-.21-.36z"/></svg>
+                            <span>Dari OneDrive</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
              </CardHeader>
              <CardContent>
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {project.documents.map((doc) => (
+                        {documents.map((doc) => (
                           <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1">
@@ -198,16 +244,6 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             </div>
                           </div>
                         ))}
-                    </div>
-                    <div className="mt-4 flex items-center justify-center w-full">
-                        <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <Upload className="w-8 h-8 mb-3 text-muted-foreground" />
-                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Klik untuk unggah</span> atau seret dan lepas</p>
-                                <p className="text-xs text-muted-foreground">PDF, DOCX, XLSX, PNG, JPG</p>
-                            </div>
-                            <input id="file-upload" type="file" className="hidden" />
-                        </label>
                     </div>
                 </div>
              </CardContent>
@@ -309,4 +345,5 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
       </div>
     </main>
   );
-}
+
+    
