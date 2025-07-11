@@ -12,6 +12,7 @@ import {
   LineChart,
   Plane,
   LogOut,
+  Landmark,
 } from 'lucide-react';
 
 import {
@@ -31,8 +32,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { users, findUserById } from '@/lib/data';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
+  { href: '/dashboard', label: 'Tim Kerja', icon: Home },
+  { href: '/rulemaking', label: 'Rulemaking', icon: Landmark },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/team', label: 'Team', icon: Users },
   { href: '/reports', label: 'Reports', icon: LineChart },

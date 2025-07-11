@@ -2,15 +2,15 @@
 'use client'
 
 import { getProjectsForUser, users } from '@/lib/data';
-import { DashboardPage } from '@/components/dashboard-page';
 import { useEffect, useState } from 'react';
 import type { Project } from '@/lib/types';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RulemakingDashboardPage } from '@/components/rulemaking-dashboard-page';
 
-export default function Dashboard() {
-  const [userProjects, setUserProjects] = useState<Project[]>([]);
+export default function RulemakingDashboard() {
+  const [rulemakingProjects, setRulemakingProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -34,9 +34,8 @@ export default function Dashboard() {
           }));
 
           const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults);
-          // Filter for "Tim Kerja" projects for this dashboard
-          const timKerjaProjects = userVisibleProjects.filter(p => p.projectType === 'Tim Kerja');
-          setUserProjects(timKerjaProjects);
+          const filteredProjects = userVisibleProjects.filter(p => p.projectType === 'Rulemaking');
+          setRulemakingProjects(filteredProjects);
         } catch (error) {
           console.error("Error fetching projects from Firestore:", error);
         }
@@ -54,29 +53,33 @@ export default function Dashboard() {
   if (isLoading) {
     return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <div className="flex items-center justify-between mb-4">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-10 w-32" />
+            <div className='mb-4'>
+                <Skeleton className="h-8 w-96 mb-2" />
+                <Skeleton className="h-5 w-1/2" />
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
+            <div className='flex justify-between items-center mb-6'>
+                <Skeleton className="h-10 w-1/3" />
+                <div className='flex gap-2'>
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-24" />
+                </div>
             </div>
-            <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-                <Skeleton className="h-80 lg:col-span-2" />
-            </div>
-             <div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Skeleton className="h-48" />
-                    <Skeleton className="h-48" />
-                    <Skeleton className="h-48" />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="md:col-span-1 space-y-6">
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
+                <div className="md:col-span-3 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <Skeleton key={i} className="h-60 w-full" />
+                    ))}
                 </div>
             </div>
         </main>
     );
   }
 
-  return <DashboardPage projects={userProjects} users={users} />;
+  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={users} />;
 }

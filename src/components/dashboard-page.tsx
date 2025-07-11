@@ -66,6 +66,13 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+       <div className="flex items-center justify-between mb-4">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
+                <p className="text-muted-foreground">An overview of all team-based projects.</p>
+            </div>
+            <AddProjectDialog allUsers={users} />
+        </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -136,10 +143,7 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold tracking-tight">Active Projects</h2>
-            <AddProjectDialog allUsers={users} />
-        </div>
+        <h2 className="text-2xl font-bold tracking-tight mb-4">Active Projects</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.filter(p => p.status !== 'Completed').map((project) => (
             <ProjectCard key={project.id} project={project} />
@@ -148,9 +152,7 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
       </div>
       
        <div>
-        <div className="flex items-center justify-between mt-8 mb-4">
-            <h2 className="text-2xl font-bold tracking-tight">Completed Projects</h2>
-        </div>
+        <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">Completed Projects</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.filter(p => p.status === 'Completed').map((project) => (
             <ProjectCard key={project.id} project={project} />

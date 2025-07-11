@@ -1,7 +1,8 @@
+
 import { redirect } from 'next/navigation';
 
-// The dashboard already serves as the main project list.
-// This page just redirects there to make the sidebar link work.
+// This page just redirects to the main dashboard.
+// We keep it in case of old bookmarks, but the primary link is now 'Tim Kerja'.
 export default function ProjectsPage() {
   redirect('/dashboard');
 }
