@@ -143,7 +143,7 @@ export default function TeamPage() {
                                 <div className="flex items-center gap-4">
                                     <Avatar className="hidden h-9 w-9 sm:flex">
                                         <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback>{user.name ? user.name.charAt(0) : '?'}</AvatarFallback>
                                     </Avatar>
                                     <div className="grid gap-1">
                                         <p className="text-sm font-medium leading-none">{user.name}</p>
