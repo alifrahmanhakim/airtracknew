@@ -81,6 +81,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const router = useRouter();
   const { toast } = useToast();
 
+  if (!project) {
+    return <div>Loading project details...</div>;
+  }
+
   const handleTaskAdd = (newTask: Task) => {
     setProject(prev => ({...prev, tasks: [...(prev.tasks || []), newTask]}));
   };
@@ -198,10 +202,6 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   
   const complianceData = project.complianceData || [];
   const aggregatedData = aggregateComplianceData(complianceData);
-
-  if (!project) {
-    return <div>Loading project details...</div>;
-  }
   
   const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
 
