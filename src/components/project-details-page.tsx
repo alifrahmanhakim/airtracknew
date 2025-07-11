@@ -39,6 +39,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Progress } from './ui/progress';
+import { EditProjectDialog } from './edit-project-dialog';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -57,6 +58,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           : task
       )
     );
+  };
+  
+  const handleProjectUpdate = (updatedProject: Project) => {
+    setProject(updatedProject);
   };
 
   const getDocumentIcon = (type: Project['documents'][0]['type']) => {
@@ -93,7 +98,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
-        <Button>Edit Project</Button>
+        <EditProjectDialog project={project} onProjectUpdate={handleProjectUpdate} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -269,4 +274,3 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     </main>
   );
 }
-
