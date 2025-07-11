@@ -71,6 +71,29 @@ export async function addDocument(
   }
 }
 
+export async function deleteDocument(
+    projectId: string,
+    documentId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists()) {
+            const project = projectSnap.data() as Project;
+            const documents = project.documents.filter(d => d.id !== documentId);
+            await updateDoc(projectRef, { documents });
+            revalidatePath(`/projects/${projectId}`);
+            return { success: true };
+        } else {
+            throw new Error("Project not found");
+        }
+    } catch (error) {
+        console.error('Delete Document Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to delete document: ${message}` };
+    }
+}
+
 export async function addProject(
     projectData: Omit<Project, 'id'>
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
@@ -104,23 +127,23 @@ export async function addProject(
 
 export async function updateProject(
     projectId: string,
-    projectData: Omit<Project, 'id' | 'tasks' | 'subProjects' | 'documents'>
+    projectData: Partial<Omit<Project, 'id' | 'tasks' | 'subProjects' | 'documents'>>
 ): Promise<{ success: boolean; error?: string }> {
     try {
         const projectRef = doc(db, 'projects', projectId);
         
-        // Ensure team data is in the correct format for Firestore
-        const preparedData = {
-            ...projectData,
-            team: projectData.team.map(member => ({
+        const updateData: { [key: string]: any } = { ...projectData };
+
+        if (projectData.team) {
+            updateData.team = projectData.team.map(member => ({
                 id: member.id,
                 name: member.name,
                 role: member.role,
                 avatarUrl: member.avatarUrl,
-            })),
-        };
+            }));
+        }
         
-        await updateDoc(projectRef, preparedData);
+        await updateDoc(projectRef, updateData);
         revalidatePath(`/projects/${projectId}`);
         revalidatePath('/dashboard');
         return { success: true };

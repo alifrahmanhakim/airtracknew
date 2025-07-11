@@ -19,6 +19,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -34,7 +44,8 @@ import {
   Paperclip,
   Folder,
   Link as LinkIcon,
-  Plus,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -47,6 +58,8 @@ import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
+import { deleteDocument } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -55,7 +68,10 @@ type ProjectDetailsPageProps = {
 
 export function ProjectDetailsPage({ project: initialProject, users }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
+  const [isDeletingDoc, setIsDeletingDoc] = useState<string | null>(null);
+  const [docToDelete, setDocToDelete] = useState<ProjectDocument | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleTaskAdd = (newTask: Task) => {
     setProject(prev => ({...prev, tasks: [...(prev.tasks || []), newTask]}));
@@ -82,6 +98,32 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const handleDocumentAdd = (newDocument: ProjectDocument) => {
     setProject(prev => ({ ...prev, documents: [...(prev.documents || []), newDocument] }));
   }
+
+  const handleDeleteDocument = async () => {
+    if (!docToDelete) return;
+
+    setIsDeletingDoc(docToDelete.id);
+    const result = await deleteDocument(project.id, docToDelete.id);
+    setIsDeletingDoc(null);
+
+    if (result.success) {
+      setProject(prev => ({
+        ...prev,
+        documents: (prev.documents || []).filter(doc => doc.id !== docToDelete.id)
+      }));
+      toast({
+        title: "Document Deleted",
+        description: `"${docToDelete.name}" has been removed.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: result.error || "Failed to delete document.",
+      });
+    }
+    setDocToDelete(null);
+  };
 
   const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
@@ -134,7 +176,6 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         <EditProjectDialog 
           project={project} 
           allUsers={users} 
-          onProjectUpdate={() => router.refresh()} 
         />
       </div>
 
@@ -209,18 +250,21 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
              <CardContent>
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {(documents || []).map((doc, index) => (
-                          <div key={doc.id || index} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                        {(documents || []).map((doc) => (
+                          <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1 overflow-hidden">
                                 <p className="font-medium truncate">{doc.name}</p>
                                 {doc.uploadDate && <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
                             </div>
-                            <Button asChild variant="ghost" size="icon">
-                                <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                            <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                                <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
                                     <LinkIcon className="h-4 w-4" />
                                 </a>
                             </Button>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDocToDelete(doc)} disabled={isDeletingDoc === doc.id} aria-label={`Delete document ${doc.name}`}>
+                                {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                             </Button>
                           </div>
                         ))}
                     </div>
@@ -325,6 +369,25 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           </Card>
         </div>
       </div>
+
+       <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the document link
+              for <span className="font-semibold">{docToDelete?.name}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteDocument} className={buttonVariants({ variant: 'destructive' })}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </main>
   );
 }
