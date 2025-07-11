@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import type { AdoptionDataPoint } from '@/lib/types';
 import { ChartContainer, ChartTooltipContent } from './ui/chart';
@@ -47,6 +47,19 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
     levelImplementationData,
     levelImplementationPercentage
   } = useMemo(() => {
+    if (!data || data.length === 0) {
+      return {
+        totalEvaluationData: [],
+        percentageEvaluationData: [],
+        totalEvaluationPercentage: 0,
+        totalSubjectData: [],
+        totalSubjectPercentage: 0,
+        gapStatusData: [],
+        gapStatusPercentage: 0,
+        levelImplementationData: [],
+        levelImplementationPercentage: 0,
+      };
+    }
     // Total Evaluation Status
     const totalEvalData = data.map(item => ({
       sl: item.sl,
@@ -167,7 +180,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
             <CardTitle>Percentage Evaluation</CardTitle>
              <CardDescription>Overall Progress</CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center justify-center">
+          <CardContent className="flex flex-col items-center justify-center">
             <ChartContainer config={{}} className="h-48 w-48">
               <PieChart>
                 <Tooltip content={<CustomTooltip />} />
@@ -185,7 +198,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                     <Cell key={`cell-${entry.name}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold fill-foreground">
+                 <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold fill-foreground">
                     {`${Math.round(totalEvaluationPercentage)}%`}
                 </text>
               </PieChart>
@@ -225,7 +238,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                     <XAxis dataKey="sl" angle={-45} textAnchor="end" height={50} tick={{ fontSize: 10 }} interval={0} />
                     <YAxis />
                     <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                    <Legend verticalAlign="top" wrapperStyle={{paddingBottom: '20px'}}/>
+                    <Legend verticalAlign="bottom" wrapperStyle={{paddingTop: '20px'}}/>
                     <Bar dataKey="existingInCasr" stackId="a" fill="hsl(var(--chart-1))" name={chartConfig.existingInCasr.label} radius={[4, 4, 0, 0]} />
                     <Bar dataKey="draftInCasr" stackId="a" fill="hsl(var(--chart-2))" name={chartConfig.draftInCasr.label} />
                     <Bar dataKey="belumDiAdop" stackId="a" fill="hsl(var(--chart-3))" name={chartConfig.belumDiAdop.label} />
@@ -248,7 +261,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                     <XAxis dataKey="sl" angle={-45} textAnchor="end" height={50} tick={{ fontSize: 10 }} interval={0}/>
                     <YAxis />
                     <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                    <Legend verticalAlign="top" wrapperStyle={{paddingBottom: '20px'}}/>
+                    <Legend verticalAlign="bottom" wrapperStyle={{paddingTop: '20px'}}/>
                     <Bar dataKey="noDifference" stackId="a" fill="hsl(var(--chart-1))" name={chartConfig.noDifference.label} radius={[4, 4, 0, 0]} />
                     <Bar dataKey="moreExactingOrExceeds" stackId="a" fill="hsl(var(--chart-2))" name={chartConfig.moreExactingOrExceeds.label} />
                     <Bar dataKey="differentInCharacter" stackId="a" fill="hsl(var(--chart-3))" name={chartConfig.differentInCharacter.label} />
@@ -262,3 +275,5 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
     </div>
   );
 }
+
+    
