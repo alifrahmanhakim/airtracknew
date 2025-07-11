@@ -26,61 +26,62 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import type { SubProject } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const subProjectSchema = z.object({
   name: z.string().min(1, 'Nama sub-proyek harus diisi.'),
   description: z.string().min(1, 'Deskripsi harus diisi.'),
+  status: z.enum(['Sesuai Jalur', 'Beresiko', 'Keluar Jalur', 'Selesai']),
 });
 
 type SubProjectFormValues = z.infer<typeof subProjectSchema>;
 
-type AddSubProjectDialogProps = {
-  onSubProjectAdd: (newSubProject: SubProject) => void;
+type EditSubProjectDialogProps = {
+  subProject: SubProject;
+  onSubProjectUpdate: (newSubProject: SubProject) => void;
 };
 
-export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProps) {
+export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSubProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<SubProjectFormValues>({
     resolver: zodResolver(subProjectSchema),
     defaultValues: {
-      name: '',
-      description: '',
+      name: subProject.name,
+      description: subProject.description,
+      status: subProject.status,
     },
   });
 
   const onSubmit = (data: SubProjectFormValues) => {
-    const newSubProject: SubProject = {
-      id: `subproj-${Date.now()}`,
-      name: data.name,
-      description: data.description,
-      status: 'Sesuai Jalur', 
+    const updatedSubProject: SubProject = {
+      ...subProject,
+      ...data,
     };
-    onSubProjectAdd(newSubProject);
+    onSubProjectUpdate(updatedSubProject);
     toast({
-      title: 'Sub-Proyek Ditambahkan',
-      description: `"${data.name}" berhasil ditambahkan.`,
+      title: 'Sub-Proyek Diperbarui',
+      description: `"${data.name}" berhasil diperbarui.`,
     });
     setOpen(false);
-    form.reset();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Tambah Sub-Proyek
+        <Button variant="ghost" size="icon" className="h-7 w-7">
+            <Pencil className="h-4 w-4" />
+            <span className="sr-only">Edit Sub-Proyek</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Tambah Sub-Proyek Baru</DialogTitle>
+          <DialogTitle>Edit Sub-Proyek</DialogTitle>
           <DialogDescription>
-            Isi detail untuk sub-proyek baru Anda.
+            Lakukan perubahan pada sub-proyek. Klik simpan setelah selesai.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -111,8 +112,31 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
                 </FormItem>
               )}
             />
+             <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Sesuai Jalur">Sesuai Jalur</SelectItem>
+                      <SelectItem value="Beresiko">Beresiko</SelectItem>
+                      <SelectItem value="Keluar Jalur">Keluar Jalur</SelectItem>
+                      <SelectItem value="Selesai">Selesai</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
-              <Button type="submit">Tambah Sub-Proyek</Button>
+              <Button type="submit">Simpan Perubahan</Button>
             </DialogFooter>
           </form>
         </Form>

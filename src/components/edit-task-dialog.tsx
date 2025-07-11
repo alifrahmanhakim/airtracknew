@@ -33,9 +33,9 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Task, User } from '@/lib/types';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon, Pencil } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 
@@ -43,57 +43,58 @@ const taskSchema = z.object({
   title: z.string().min(1, 'Nama tugas harus diisi.'),
   assigneeId: z.string().min(1, 'Penanggung jawab harus dipilih.'),
   dueDate: z.date({ required_error: "Batas waktu harus diisi." }),
+  status: z.enum(['Selesai', 'Sedang Berjalan', 'Akan Dikerjakan', 'Terhambat']),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
 
-type AddTaskDialogProps = {
-  onTaskAdd: (newTask: Task) => void;
+type EditTaskDialogProps = {
+  task: Task;
+  onTaskUpdate: (updatedTask: Task) => void;
   teamMembers: User[];
 };
 
-export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
+export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      title: '',
-      assigneeId: '',
+      title: task.title,
+      assigneeId: task.assigneeId,
+      dueDate: parseISO(task.dueDate),
+      status: task.status,
     },
   });
 
   const onSubmit = (data: TaskFormValues) => {
-    const newTask: Task = {
-      id: `task-${Date.now()}`,
-      title: data.title,
-      assigneeId: data.assigneeId,
+    const updatedTask: Task = {
+      ...task,
+      ...data,
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
-      status: 'Akan Dikerjakan',
     };
-    onTaskAdd(newTask);
+    onTaskUpdate(updatedTask);
     toast({
-      title: 'Tugas Ditambahkan',
-      description: `"${data.title}" berhasil ditambahkan.`,
+      title: 'Tugas Diperbarui',
+      description: `"${data.title}" berhasil diperbarui.`,
     });
     setOpen(false);
-    form.reset();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Tambah Tugas
+        <Button variant="ghost" size="icon" className="h-7 w-7">
+            <Pencil className="h-4 w-4" />
+            <span className="sr-only">Edit Tugas</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Tambah Tugas Baru</DialogTitle>
+          <DialogTitle>Edit Tugas</DialogTitle>
           <DialogDescription>
-            Isi detail untuk tugas baru. Tugas akan ditambahkan ke proyek saat ini.
+            Lakukan perubahan pada tugas. Klik simpan setelah selesai.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -173,8 +174,31 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Akan Dikerjakan">Akan Dikerjakan</SelectItem>
+                      <SelectItem value="Sedang Berjalan">Sedang Berjalan</SelectItem>
+                      <SelectItem value="Terhambat">Terhambat</SelectItem>
+                      <SelectItem value="Selesai">Selesai</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
-              <Button type="submit">Tambah Tugas</Button>
+              <Button type="submit">Simpan Perubahan</Button>
             </DialogFooter>
           </form>
         </Form>

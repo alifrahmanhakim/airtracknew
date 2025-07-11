@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -40,16 +41,15 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
-import { users } from '@/lib/data';
 
 const projectSchema = z.object({
-  name: z.string().min(1, 'Project name is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  status: z.enum(['On Track', 'At Risk', 'Off Track', 'Completed']),
+  name: z.string().min(1, 'Nama proyek harus diisi.'),
+  description: z.string().min(1, 'Deskripsi harus diisi.'),
+  status: z.enum(['Sesuai Jalur', 'Beresiko', 'Keluar Jalur', 'Selesai']),
   startDate: z.date(),
   endDate: z.date(),
   notes: z.string().optional(),
-  team: z.array(z.string()).min(1, 'At least one team member is required.'),
+  team: z.array(z.string()).min(1, 'Minimal satu anggota tim harus dipilih.'),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -94,8 +94,8 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
     };
     onProjectUpdate(updatedProject);
     toast({
-        title: 'Project Updated',
-        description: `"${project.name}" has been successfully updated.`,
+        title: 'Proyek Diperbarui',
+        description: `"${project.name}" berhasil diperbarui.`,
     });
     setOpen(false);
   };
@@ -105,14 +105,14 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
       <DialogTrigger asChild>
         <Button>
           <Pencil className="mr-2 h-4 w-4" />
-          Edit Project
+          Edit Proyek
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
+          <DialogTitle>Edit Proyek</DialogTitle>
           <DialogDescription>
-            Make changes to your project here. Click save when you're done.
+            Lakukan perubahan pada proyek Anda di sini. Klik simpan setelah selesai.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -122,7 +122,7 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Name</FormLabel>
+                  <FormLabel>Nama Proyek</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -135,7 +135,7 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Deskripsi</FormLabel>
                   <FormControl>
                     <Textarea {...field} rows={3} />
                   </FormControl>
@@ -150,7 +150,7 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
                 name="startDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Start Date</FormLabel>
+                    <FormLabel>Tanggal Mulai</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -164,7 +164,7 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>Pilih tanggal</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -188,7 +188,7 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
                 name="endDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>End Date</FormLabel>
+                    <FormLabel>Tanggal Selesai</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -202,7 +202,7 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>Pilih tanggal</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -232,14 +232,14 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
+                        <SelectValue placeholder="Pilih status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="On Track">On Track</SelectItem>
-                      <SelectItem value="At Risk">At Risk</SelectItem>
-                      <SelectItem value="Off Track">Off Track</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Sesuai Jalur">Sesuai Jalur</SelectItem>
+                      <SelectItem value="Beresiko">Beresiko</SelectItem>
+                      <SelectItem value="Keluar Jalur">Keluar Jalur</SelectItem>
+                      <SelectItem value="Selesai">Selesai</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -252,13 +252,13 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
               name="team"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Team Members</FormLabel>
+                  <FormLabel>Anggota Tim</FormLabel>
                   <FormControl>
                     <MultiSelect
                       options={userOptions}
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      placeholder="Select team members..."
+                      placeholder="Pilih anggota tim..."
                     />
                   </FormControl>
                   <FormMessage />
@@ -271,16 +271,16 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>Catatan</FormLabel>
                   <FormControl>
-                    <Textarea {...field} rows={4} placeholder="Add any relevant project notes here..."/>
+                    <Textarea {...field} rows={4} placeholder="Tambahkan catatan proyek yang relevan di sini..."/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit">Simpan perubahan</Button>
             </DialogFooter>
           </form>
         </Form>

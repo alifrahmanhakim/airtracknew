@@ -3,13 +3,13 @@ export type User = {
   id: string;
   name: string;
   avatarUrl: string;
-  role: 'Head of Sub-Directorate' | 'Team Lead' | 'PIC' | 'Assistant PIC' | 'Functional';
+  role: 'Kepala Sub-Direktorat' | 'Ketua Tim' | 'PIC' | 'Asisten PIC' | 'Fungsional';
 };
 
 export type Document = {
   id: string;
   name: string;
-  type: 'PDF' | 'Word' | 'Excel' | 'Image' | 'Other';
+  type: 'PDF' | 'Word' | 'Excel' | 'Image' | 'Lainnya';
   uploadDate: string;
   url: string;
 };
@@ -19,14 +19,14 @@ export type Task = {
   title: string;
   assigneeId: string;
   dueDate: string;
-  status: 'Done' | 'In Progress' | 'To Do' | 'Blocked';
+  status: 'Selesai' | 'Sedang Berjalan' | 'Akan Dikerjakan' | 'Terhambat';
 };
 
 export type SubProject = {
   id: string;
   name: string;
   description: string;
-  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
+  status: 'Sesuai Jalur' | 'Beresiko' | 'Keluar Jalur' | 'Selesai';
 }
 
 export type Project = {
@@ -35,7 +35,7 @@ export type Project = {
   description: string;
   startDate: string;
   endDate: string;
-  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
+  status: 'Sesuai Jalur' | 'Beresiko' | 'Keluar Jalur' | 'Selesai';
   tasks: Task[];
   documents: Document[];
   notes: string;

@@ -20,7 +20,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +34,7 @@ import {
   Upload,
   Paperclip,
   Folder,
+  Pencil,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -42,6 +42,8 @@ import { Progress } from './ui/progress';
 import { EditProjectDialog } from './edit-project-dialog';
 import { AddTaskDialog } from './add-task-dialog';
 import { AddSubProjectDialog } from './add-subproject-dialog';
+import { EditTaskDialog } from './edit-task-dialog';
+import { EditSubProjectDialog } from './edit-subproject-dialog';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -53,27 +55,24 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const [tasks, setTasks] = useState<Task[]>(initialProject.tasks);
   const [subProjects, setSubProjects] = useState<SubProject[]>(initialProject.subProjects || []);
 
-  const handleTaskCompletionChange = (taskId: string, completed: boolean) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === taskId
-          ? { ...task, status: completed ? 'Done' : 'In Progress' }
-          : task
-      )
-    );
-  };
-  
   const handleProjectUpdate = (updatedProject: Project) => {
     setProject(updatedProject);
-    // If team members were updated, we might need to reflect that
   };
 
   const handleTaskAdd = (newTask: Task) => {
     setTasks([...tasks, newTask]);
   };
 
+  const handleTaskUpdate = (updatedTask: Task) => {
+    setTasks(tasks.map(task => task.id === updatedTask.id ? updatedTask : task));
+  }
+
   const handleSubProjectAdd = (newSubProject: SubProject) => {
     setSubProjects([...subProjects, newSubProject]);
+  }
+
+  const handleSubProjectUpdate = (updatedSubProject: SubProject) => {
+    setSubProjects(subProjects.map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub));
   }
 
   const getDocumentIcon = (type: Project['documents'][0]['type']) => {
@@ -92,22 +91,22 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   };
 
   const statusStyles: { [key in Task['status']]: string } = {
-    'Done': 'border-transparent bg-green-500 text-white',
-    'In Progress': 'border-transparent bg-blue-500 text-white',
-    'To Do': 'border-transparent bg-gray-400 text-white',
-    'Blocked': 'border-transparent bg-red-500 text-white',
+    'Selesai': 'border-transparent bg-green-500 text-white',
+    'Sedang Berjalan': 'border-transparent bg-blue-500 text-white',
+    'Akan Dikerjakan': 'border-transparent bg-gray-400 text-white',
+    'Terhambat': 'border-transparent bg-red-500 text-white',
   };
   
   const subProjectStatusStyles: { [key in SubProject['status']]: string } = {
-    'On Track': 'bg-blue-500 text-blue-500',
-    'At Risk': 'bg-yellow-500 text-yellow-500',
-    'Off Track': 'bg-red-500 text-red-500',
-    'Completed': 'bg-green-500 text-green-500',
+    'Sesuai Jalur': 'border-transparent bg-blue-500 text-white',
+    'Beresiko': 'border-transparent bg-yellow-500 text-white',
+    'Keluar Jalur': 'border-transparent bg-red-500 text-white',
+    'Selesai': 'border-transparent bg-green-500 text-white',
   }
 
   const projectManager = findUserById(project.tasks[0]?.assigneeId || users[0].id);
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((task) => task.status === 'Done').length;
+  const completedTasks = tasks.filter((task) => task.status === 'Selesai').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
@@ -134,28 +133,19 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]"></TableHead>
                     <TableHead>Tugas</TableHead>
                     <TableHead>Penanggung Jawab</TableHead>
                     <TableHead>Batas Waktu</TableHead>
-                    <TableHead className="text-right">Status</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {tasks.length > 0 ? tasks.map((task) => {
                     const assignee = findUserById(task.assigneeId);
-                    const isCompleted = task.status === 'Done';
                     return (
-                      <TableRow key={task.id} className={cn(isCompleted && 'bg-gray-50/50 dark:bg-gray-900/50')}>
-                        <TableCell>
-                          <Checkbox
-                            checked={isCompleted}
-                            onCheckedChange={(checked) =>
-                              handleTaskCompletionChange(task.id, !!checked)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell className={cn("font-medium", isCompleted && 'line-through text-muted-foreground')}>
+                      <TableRow key={task.id}>
+                        <TableCell className="font-medium">
                           {task.title}
                         </TableCell>
                         <TableCell>
@@ -170,10 +160,13 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                           </div>
                         </TableCell>
                         <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
                           <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                             {task.status}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            <EditTaskDialog task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
                         </TableCell>
                       </TableRow>
                     );
@@ -201,7 +194,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1">
                                 <p className="font-medium truncate">{doc.name}</p>
-                                <p className="text-xs text-muted-foreground">Uploaded: {format(parseISO(doc.uploadDate), 'PPP')}</p>
+                                <p className="text-xs text-muted-foreground">Diunggah: {format(parseISO(doc.uploadDate), 'PPP')}</p>
                             </div>
                           </div>
                         ))}
@@ -236,14 +229,12 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                         <p className="font-semibold">{sub.name}</p>
                         <p className="text-sm text-muted-foreground">{sub.description}</p>
                       </div>
-                      <Badge variant="outline" className={cn("text-xs font-semibold", {
-                          'border-transparent bg-blue-500 text-white': sub.status === 'On Track',
-                          'border-transparent bg-yellow-500 text-white': sub.status === 'At Risk',
-                          'border-transparent bg-red-500 text-white': sub.status === 'Off Track',
-                          'border-transparent bg-green-500 text-white': sub.status === 'Completed',
-                      })}>
-                        {sub.status}
-                      </Badge>
+                      <div className="flex items-center gap-4">
+                        <Badge variant="outline" className={cn("text-xs font-semibold", subProjectStatusStyles[sub.status])}>
+                            {sub.status}
+                        </Badge>
+                        <EditSubProjectDialog subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -272,10 +263,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Status</span>
                 <Badge variant="outline" className={cn("text-xs font-semibold", {
-                    'border-transparent bg-blue-500 text-white': project.status === 'On Track',
-                    'border-transparent bg-yellow-500 text-white': project.status === 'At Risk',
-                    'border-transparent bg-red-500 text-white': project.status === 'Off Track',
-                    'border-transparent bg-green-500 text-white': project.status === 'Completed',
+                    'border-transparent bg-blue-500 text-white': project.status === 'Sesuai Jalur',
+                    'border-transparent bg-yellow-500 text-white': project.status === 'Beresiko',
+                    'border-transparent bg-red-500 text-white': project.status === 'Keluar Jalur',
+                    'border-transparent bg-green-500 text-white': project.status === 'Selesai',
                 })}>{project.status}</Badge>
               </div>
               <div className="flex justify-between text-sm">
