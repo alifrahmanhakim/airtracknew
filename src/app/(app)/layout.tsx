@@ -29,8 +29,11 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { users, findUserById } from '@/lib/data';
+import { users as staticUsers } from '@/lib/data';
 import { ThemeToggle } from '@/components/theme-toggle';
+import type { User } from '@/lib/types';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const navItems = [
   { href: '/dashboard', label: 'Tim Kerja', icon: Home },
@@ -43,13 +46,32 @@ const navItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = React.useState<typeof users[0] | undefined>(undefined);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
+    const fetchUser = async (userId: string) => {
+        try {
+            const userRef = doc(db, 'users', userId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+            } else {
+                // Fallback or error handling
+                console.log("User not found in Firestore, redirecting to login");
+                router.push('/login');
+            }
+        } catch (error) {
+            console.error("Error fetching user from Firestore:", error);
+            router.push('/login');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const userId = localStorage.getItem('loggedInUserId');
     if (userId) {
-      const user = findUserById(userId);
-      setCurrentUser(user);
+        fetchUser(userId);
     } else {
       router.push('/login');
     }
@@ -60,7 +82,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
   
-  if (!currentUser) {
+  if (loading || !currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen">
           <p>Loading user profile...</p>
@@ -101,7 +123,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex items-center gap-2">
                     <Avatar className="h-9 w-9">
                         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                        <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{currentUser.name?.charAt(0) || '?'}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
                         <span className='text-sm font-semibold'>{currentUser.name}</span>

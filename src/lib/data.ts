@@ -2,11 +2,11 @@
 import type { User, Project, ComplianceDataRow, AdoptionDataPoint } from './types';
 
 export const users: User[] = [
-  { id: 'user-1', name: 'Alex Johnson', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
-  { id: 'user-2', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC' },
-  { id: 'user-3', name: 'James Smith', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC Assistant' },
-  { id: 'user-4', name: 'Patricia Williams', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
-  { id: 'user-5', name: 'Robert Brown', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
+  { id: 'user-1', name: 'Alex Johnson', email: 'alex.johnson@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
+  { id: 'user-2', name: 'Maria Garcia', email: 'maria.garcia@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC' },
+  { id: 'user-3', name: 'James Smith', email: 'james.smith@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC Assistant' },
+  { id: 'user-4', name: 'Patricia Williams', email: 'patricia.williams@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
+  { id: 'user-5', name: 'Robert Brown', email: 'robert.brown@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
 ];
 
 // This data can be used to seed your Firestore database.
@@ -149,8 +149,8 @@ export function aggregateComplianceData(rawData: ComplianceDataRow[]): AdoptionD
 }
 
 
-export const getProjectsForUser = (userId: string, allProjects: Project[]) => {
-    const user = findUserById(userId);
+export const getProjectsForUser = (userId: string, allProjects: Project[], allUsers: User[]) => {
+    const user = allUsers.find(u => u.id === userId);
     if (user?.role === 'Sub-Directorate Head') {
         return allProjects; // Admins see all projects
     }
@@ -158,5 +158,5 @@ export const getProjectsForUser = (userId: string, allProjects: Project[]) => {
     return allProjects.filter(p => p.ownerId === userId || (p.team && p.team.some(member => member.id === userId)));
 }
 
-export const findProjectById = (id: string) => projects.find(p => p.id === id);
-export const findUserById = (id: string) => users.find(u => u.id === id);
+export const findProjectById = (id: string, allProjects: Project[]) => allProjects.find(p => p.id === id);
+export const findUserById = (id: string, allUsers: User[]) => allUsers.find(u => u.id === id);

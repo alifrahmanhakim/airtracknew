@@ -11,11 +11,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { User } from "@/lib/types";
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trash2 } from 'lucide-react';
-import { findUserById } from '@/lib/data';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,8 +42,10 @@ export default function TeamPage() {
       try {
         const loggedInUserId = localStorage.getItem('loggedInUserId');
         if (loggedInUserId) {
-          const user = findUserById(loggedInUserId); // Still using static for current user check
-          setCurrentUser(user || null);
+          const userDoc = await getDoc(doc(db, "users", loggedInUserId));
+          if (userDoc.exists()) {
+              setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
+          }
         }
 
         const querySnapshot = await getDocs(collection(db, "users"));

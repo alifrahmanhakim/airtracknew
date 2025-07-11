@@ -35,7 +35,6 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { addProject } from '@/lib/actions';
-import { findUserById } from '@/lib/data';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 const projectSchema = z.object({
@@ -97,7 +96,7 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
     }
 
     const teamMembers = data.team
-      .map(userId => findUserById(userId))
+      .map(userId => allUsers.find(u => u.id === userId))
       .filter((user): user is User => user !== undefined);
 
     const newProjectData: Omit<Project, 'id'> = {

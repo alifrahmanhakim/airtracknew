@@ -1,9 +1,9 @@
 
 'use client'
 
-import { getProjectsForUser, users } from '@/lib/data';
+import { getProjectsForUser } from '@/lib/data';
 import { useEffect, useState } from 'react';
-import type { Project } from '@/lib/types';
+import type { Project, User } from '@/lib/types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,7 @@ import { RulemakingDashboardPage } from '@/components/rulemaking-dashboard-page'
 
 export default function RulemakingDashboard() {
   const [rulemakingProjects, setRulemakingProjects] = useState<Project[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -20,12 +21,18 @@ export default function RulemakingDashboard() {
   }, []);
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       if (userId) {
         try {
-          const querySnapshot = await getDocs(collection(db, "projects"));
-          const projectsFromDb: Project[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+          // Fetch users
+          const usersQuerySnapshot = await getDocs(collection(db, "users"));
+          const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+          setAllUsers(usersFromDb);
+
+          // Fetch projects
+          const projectsQuerySnapshot = await getDocs(collection(db, "projects"));
+          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
           
           const projectsWithDefaults = projectsFromDb.map(p => ({
             ...p,
@@ -33,7 +40,7 @@ export default function RulemakingDashboard() {
             documents: p.documents || [],
           }));
 
-          const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults);
+          const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
           const filteredProjects = userVisibleProjects.filter(p => p.projectType === 'Rulemaking');
           setRulemakingProjects(filteredProjects);
         } catch (error) {
@@ -44,7 +51,7 @@ export default function RulemakingDashboard() {
     };
 
     if (userId) {
-        fetchProjects();
+        fetchData();
     } else {
         setIsLoading(false);
     }
@@ -81,5 +88,5 @@ export default function RulemakingDashboard() {
     );
   }
 
-  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={users} />;
+  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={allUsers} />;
 }
