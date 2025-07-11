@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Project, Task, User, SubProject } from '@/lib/types';
 import { findUserById } from '@/lib/data';
 import {
@@ -31,10 +31,8 @@ import {
   Users,
   Calendar,
   ClipboardList,
-  UploadCloud,
   Paperclip,
   Folder,
-  Pencil,
   FileUp,
   Loader2,
 } from 'lucide-react';
@@ -47,12 +45,6 @@ import { AddSubProjectDialog } from './add-subproject-dialog';
 import { EditTaskDialog } from './edit-task-dialog';
 import { EditSubProjectDialog } from './edit-subproject-dialog';
 import { useToast } from '@/hooks/use-toast';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-  } from "@/components/ui/dropdown-menu"
 import { addDocument } from '@/lib/actions';
 
 type ProjectDetailsPageProps = {
@@ -67,6 +59,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const [documents, setDocuments] = useState<Project['documents']>(initialProject.documents);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleProjectUpdate = (updatedProject: Project) => {
     setProject(updatedProject);
@@ -88,12 +81,30 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     setSubProjects(subProjects.map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub));
   }
 
-  const handleFileUpload = async (source: 'Computer' | 'Google Drive' | 'OneDrive') => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+        handleFileUpload(file);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
     setIsUploading(true);
+    
+    // Simple logic to determine file type from extension
+    const getFileType = (fileName: string): Project['documents'][0]['type'] => {
+        const extension = fileName.split('.').pop()?.toLowerCase();
+        if (extension === 'pdf') return 'PDF';
+        if (extension === 'doc' || extension === 'docx') return 'Word';
+        if (extension === 'xls' || extension === 'xlsx') return 'Excel';
+        if (['png', 'jpg', 'jpeg', 'gif'].includes(extension || '')) return 'Image';
+        return 'Other';
+    }
+
     const newDocumentData = {
-        name: `Document from ${source}.pdf`,
-        type: 'PDF' as const,
-        url: '#',
+        name: file.name,
+        type: getFileType(file.name),
+        url: '#', // In a real app, this would be the URL from cloud storage
     };
 
     const result = await addDocument(project.id, newDocumentData);
@@ -103,7 +114,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         setDocuments([...documents, result.data]);
         toast({
             title: "Upload Successful",
-            description: `Document from ${source} has been added.`,
+            description: `${file.name} has been added to the project.`,
         });
     } else {
         toast({
@@ -111,6 +122,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
             title: "Upload Failed",
             description: result.error,
         });
+    }
+     // Reset file input
+     if(fileInputRef.current) {
+        fileInputRef.current.value = "";
     }
   }
 
@@ -224,28 +239,16 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 <CardTitle className="flex items-center gap-2">
                     <Paperclip /> Project Documents
                 </CardTitle>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button disabled={isUploading}>
-                            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
-                             Upload Document
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleFileUpload('Computer')} disabled={isUploading}>
-                            <UploadCloud className="mr-2 h-4 w-4" />
-                            <span>From Computer</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleFileUpload('Google Drive')} disabled={isUploading}>
-                            <svg className="mr-2 h-4 w-4" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Google Drive</title><path d="M19.14 7.5L12 18.27l-7.14-10.77h14.28zM6.18 6l5.82-3.87L17.82 6H6.18zM3.86 8.53L1.53 12.4l5.82 3.87.79-1.2-4.28-2.54zM20.14 8.53l-2.62 3.96-4.28 2.54.79 1.2 5.82-3.87z"/></svg>
-                            <span>From Google Drive</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleFileUpload('OneDrive')} disabled={isUploading}>
-                             <svg className="mr-2 h-4 w-4" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Microsoft OneDrive</title><path d="M4.464 14.802c-2.005-.73-3.06-2.204-3.06-3.805 0-2.35 2.05-3.957 4.573-3.957 1.18 0 2.12.33 2.872.937l-1.89 1.803c-.34-.311-.699-.48-1.077-.48-.96 0-1.638.646-1.638 1.62 0 .937.525 1.48 1.481 1.83l2.844 1.02c2.478.885 3.515 2.08 3.515 3.929 0 2.512-1.92 4.29-4.803 4.29-1.574 0-2.91-.553-3.77-1.39l1.83-1.86c.466.45 1.08.72 1.77.72 1.11 0 1.83-.67 1.83-1.742.001-.937-.53-1.54-1.638-1.944zM23.616 9.155c-.24-.22-2.13-1.98-2.13-1.98s-3.4-.3-3.64-.33c-.238-.03-2.122-1.98-2.122-1.98s-.24.21-.3.3l-1.95 2.1c-.06.09.21.36.21.36s2.06 1.9 2.12 1.98c.06.08 3.63.3 3.63.3s2.13 1.98 2.13 1.98.3-.21.36-.3l1.95-2.1c.06-.09-.21-.36-.21-.36zm-6.21 4.23s-2.06-1.9-2.12-1.98c-.06-.08-3.63-.3-3.63-.3s-2.13-1.98-2.13-1.98-.3.21-.36.3l-1.95 2.1s.21.27.21.36 2.06 1.9 2.12 1.98c.06.08 3.63.3 3.63.3s2.13 1.98 2.13 1.98.3-.21.36-.3l1.95-2.1s-.21-.27-.21-.36z"/></svg>
-                            <span>From OneDrive</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    className="hidden"
+                />
+                <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
+                     Upload Document
+                </Button>
              </CardHeader>
              <CardContent>
                 <div className="space-y-4">
@@ -363,3 +366,5 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
       </div>
     </main>
   );
+
+    
