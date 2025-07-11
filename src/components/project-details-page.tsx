@@ -64,6 +64,7 @@ import { deleteDocument, deleteTask } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 import { AdoptionLevelDashboard } from './adoption-level-dashboard';
+import { AdoptionDataEditor } from './adoption-data-editor';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -208,17 +209,17 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
-        <EditProjectDialog 
-          project={project} 
-          allUsers={users}
-        />
+        <div className="flex gap-2">
+            {project.projectType === 'Rulemaking' && <AdoptionDataEditor project={project} />}
+            <EditProjectDialog project={project} allUsers={users} />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
 
-        {project.projectType === 'Rulemaking' && project.adoptionData && (
+        {project.projectType === 'Rulemaking' && project.adoptionData && project.adoptionData.length > 0 && (
           <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -480,6 +481,3 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
     </main>
   );
-
-    
-

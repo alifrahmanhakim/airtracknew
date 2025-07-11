@@ -145,6 +145,12 @@ export async function updateProject(
             }));
         }
         
+        // Ensure adoptionData is handled correctly
+        if (projectData.adoptionData) {
+            // Firestore handles arrays of objects directly
+            updateData.adoptionData = projectData.adoptionData;
+        }
+
         // Remove id from the update payload as we don't want to update the document id
         delete updateData.id;
         
