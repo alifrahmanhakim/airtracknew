@@ -104,7 +104,9 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         });
         return;
     }
+    
     setIsUploading(true);
+
     try {
       const storageRef = ref(storage, `projects/${project.id}/${file.name}`);
       const uploadResult = await uploadBytes(storageRef, file);
@@ -137,11 +139,12 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         throw new Error(result.error || "Failed to save document metadata.");
       }
     } catch (error) {
-      console.error("Upload failed", error);
+      console.error("Upload failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({
         variant: 'destructive',
         title: "Upload Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred during file upload. Check storage rules.",
+        description: `Could not upload ${file.name}. Reason: ${errorMessage}. Check console for details.`,
       });
     } finally {
       setIsUploading(false);
@@ -150,6 +153,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
       }
     }
   };
+
 
   const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
