@@ -109,11 +109,13 @@ export async function addProject(
         tasks: [],
         subProjects: [],
         documents: [],
+        adoptionData: projectData.adoptionData || [],
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
       revalidatePath('/dashboard');
       revalidatePath('/projects');
+      revalidatePath('/rulemaking');
       return { success: true, data: { id: docRef.id } };
     } catch (error) {
       console.error('Add Project Error:', error);
@@ -149,6 +151,7 @@ export async function updateProject(
         await updateDoc(projectRef, updateData);
         revalidatePath(`/projects/${projectId}`);
         revalidatePath('/dashboard');
+        revalidatePath('/rulemaking');
         return { success: true };
     } catch (error) {
         console.error('Update Project Error:', error);

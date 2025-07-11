@@ -222,7 +222,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <BarChart2 /> Adoption Level Dashboard
+                    <BarChart2 /> Compliance Resume: State Letter to Annex
                 </CardTitle>
                 <CardDescription>
                   Resume of State Letter Annex {project.annex} to CASR {project.casr}
@@ -482,3 +482,4 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   );
 
     
+
