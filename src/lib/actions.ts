@@ -8,7 +8,7 @@ import {
 } from '@/ai/flows/summarize-project-status';
 import type { Document, Project, SubProject, Task, User, ComplianceDataRow } from './types';
 import { db } from './firebase';
-import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
 
@@ -269,5 +269,39 @@ export async function updateSubProject(
         console.error('Update Sub-Project Error:', error);
         const message = error instanceof Error ? error.message : 'An unknown error occurred';
         return { success: false, error: `Failed to update sub-project: ${message}` };
+    }
+}
+
+export async function updateUserRole(
+    userId: string,
+    newRole: User['role']
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, { role: newRole });
+      revalidatePath('/team');
+      return { success: true };
+    } catch (error) {
+      console.error('Update User Role Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: `Failed to update user role: ${message}` };
+    }
+}
+  
+export async function deleteUser(
+    userId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        // In a real app, you would also need to delete the user from Firebase Auth
+        // and handle removing them from all projects they are a part of.
+        // This is a simplified version.
+        const userRef = doc(db, 'users', userId);
+        await deleteDoc(userRef);
+        revalidatePath('/team');
+        return { success: true };
+    } catch (error) {
+        console.error('Delete User Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to delete user: ${message}` };
     }
 }
