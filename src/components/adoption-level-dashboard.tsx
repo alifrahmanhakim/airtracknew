@@ -65,7 +65,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
           <CardContent className="flex-grow">
             <ChartContainer config={chartConfig} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis fontSize={10} tickLine={false} axisLine={false} />
@@ -117,7 +117,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
           <CardContent className="flex-grow">
             <ChartContainer config={{}} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis fontSize={10} tickLine={false} axisLine={false} />
@@ -140,7 +140,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
         <CardContent>
             <ChartContainer config={{}} className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                     <YAxis fontSize={10} tickLine={false} axisLine={false} />
@@ -164,7 +164,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
         <CardContent>
             <ChartContainer config={{}} className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                     <YAxis fontSize={10} tickLine={false} axisLine={false} />
