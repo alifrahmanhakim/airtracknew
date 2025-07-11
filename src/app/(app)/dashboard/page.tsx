@@ -5,7 +5,7 @@ import { getProjectsForUser } from '@/lib/data';
 import { DashboardPage } from '@/components/dashboard-page';
 import { useEffect, useState } from 'react';
 import type { Project, User } from '@/lib/types';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -54,6 +54,8 @@ export default function Dashboard() {
     if (userId) {
         fetchData();
     } else {
+        // If no userId, we are likely redirecting, so no need to fetch data.
+        // We can stop loading to prevent showing a perpetual skeleton screen.
         setIsLoading(false);
     }
   }, [userId]);
