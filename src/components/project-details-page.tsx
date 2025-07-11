@@ -219,6 +219,23 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         </div>
       </div>
 
+      <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <ListTree /> Project Timeline
+            </CardTitle>
+            <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
+        </CardHeader>
+        <CardContent className="pl-0 pr-0 pb-0">
+            <ProjectTimeline 
+              projectId={project.id}
+              tasks={tasks}
+              teamMembers={project.team}
+              onTaskUpdate={handleTaskUpdate}
+            />
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
@@ -246,23 +263,6 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
             </CardContent>
           </Card>
         )}
-
-          <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <ListTree /> Project Timeline
-                </CardTitle>
-                <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-0 pr-0 pb-0">
-                <ProjectTimeline 
-                  projectId={project.id}
-                  tasks={tasks}
-                  teamMembers={project.team}
-                  onTaskUpdate={handleTaskUpdate}
-                />
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
