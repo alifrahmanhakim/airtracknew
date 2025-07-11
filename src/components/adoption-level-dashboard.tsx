@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import type { AdoptionDataPoint } from '@/lib/types';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
+import { ChartContainer } from './ui/chart';
 
 type AdoptionLevelDashboardProps = {
   data: AdoptionDataPoint[];
