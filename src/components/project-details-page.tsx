@@ -189,7 +189,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   if (!project) {
-    return <div>Loading project details...</div>
+    return <div>Loading project details...</div>;
   }
 
   return (
@@ -316,7 +316,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                     <Folder /> Sub-Projects
                 </CardTitle>
                 <AddSubProjectDialog projectId={project.id} onSubProjectAdd={handleSubProjectAdd} />
-            </Header>
+            </CardHeader>
             <CardContent>
               {subProjects.length > 0 ? (
                 <div className="space-y-4">
