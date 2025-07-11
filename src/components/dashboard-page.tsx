@@ -4,6 +4,7 @@
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -12,6 +13,9 @@ import {
   CheckCircle,
   FolderKanban,
   Users,
+  ListTodo,
+  Frown,
+  AlarmClockOff,
 } from 'lucide-react';
 import type { Project, User } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -35,6 +39,8 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
   const totalProjects = projects.length;
   const completedTasks = projects.flatMap(p => p.tasks).filter(t => t.status === 'Done').length;
   const totalTasks = projects.flatMap(p => p.tasks).length;
+  const atRiskProjects = projects.filter(p => p.status === 'At Risk').length;
+  const offTrackProjects = projects.filter(p => p.status === 'Off Track').length;
 
   const projectStatusData = useMemo(() => {
     const statusCounts = projects.reduce((acc, project) => {
@@ -53,9 +59,9 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
   const chartConfig = {
     count: { label: 'Projects' },
     'On Track': { label: 'On Track', color: 'hsl(var(--chart-1))' },
-    'At Risk': { label: 'At Risk', color: 'hsl(var(--chart-4))' },
-    'Off Track': { label: 'Off Track', color: 'hsl(var(--chart-5))' },
-    Completed: { label: 'Completed', color: 'hsl(var(--chart-2))' },
+    'At Risk': { label: 'At Risk', color: 'hsl(var(--chart-3))' },
+    'Off Track': { label: 'Off Track', color: 'hsl(var(--chart-2))' },
+    Completed: { label: 'Completed', color: 'hsl(var(--chart-4))' },
   };
 
   return (
@@ -68,33 +74,37 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProjects}</div>
+            <p className="text-xs text-muted-foreground">All active and completed projects</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Team Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+            <ListTodo className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+            <div className="text-2xl font-bold">{totalTasks}</div>
+            <p className="text-xs text-muted-foreground">{completedTasks} tasks completed</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasks Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">At Risk</CardTitle>
+            <AlarmClockOff className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedTasks} / {totalTasks}</div>
+            <div className="text-2xl font-bold text-yellow-600">{atRiskProjects}</div>
+            <p className="text-xs text-muted-foreground">Projects needing attention</p>
           </CardContent>
         </Card>
-        <Card>
+         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overall Progress</CardTitle>
-            <BarChartIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Off Track</CardTitle>
+            <Frown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalTasks > 0 ? `${Math.round((completedTasks/totalTasks)*100)}%` : 'N/A'}</div>
+            <div className="text-2xl font-bold text-red-600">{offTrackProjects}</div>
+            <p className="text-xs text-muted-foreground">Projects with critical issues</p>
           </CardContent>
         </Card>
       </div>
@@ -103,17 +113,21 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Project Status Overview</CardTitle>
+            <CardDescription>A look at the health of all projects in the portfolio.</CardDescription>
           </CardHeader>
-          <CardContent className="h-[350px] w-full">
+          <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig} className="h-full w-full">
               <ResponsiveContainer>
-                <BarChart data={projectStatusData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <BarChart data={projectStatusData} margin={{ top: 20, right: 20, bottom: 20, left: -10 }}>
                   <CartesianGrid vertical={false} />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                  <YAxis tickLine={false} axisLine={false} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                  <ChartTooltip 
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="dot" />} 
+                  />
                   <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="count" radius={4} />
+                  <Bar dataKey="count" radius={8} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -123,11 +137,22 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
 
       <div>
         <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold tracking-tight">All Projects</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Active Projects</h2>
             <AddProjectDialog allUsers={users} />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.filter(p => p.status !== 'Completed').map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      </div>
+      
+       <div>
+        <div className="flex items-center justify-between mt-8 mb-4">
+            <h2 className="text-2xl font-bold tracking-tight">Completed Projects</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.filter(p => p.status === 'Completed').map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
         </div>
