@@ -56,11 +56,12 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
   const [viewMode, setViewMode] = React.useState<ViewMode>('month');
 
   const { sortedTasks, months, days, timelineStart, timelineEnd, totalDays } = React.useMemo(() => {
-    if (!tasks || tasks.length === 0) {
+    const validTasks = tasks?.filter(t => t.startDate && t.dueDate) || [];
+    if (validTasks.length === 0) {
       return { sortedTasks: [], months: [], days: [], timelineStart: new Date(), timelineEnd: new Date(), totalDays: 0 };
     }
 
-    const sorted = [...tasks].sort((a, b) => {
+    const sorted = [...validTasks].sort((a, b) => {
         const dateA = parseISO(a.startDate).getTime();
         const dateB = parseISO(b.startDate).getTime();
         if (dateA === dateB) {
@@ -232,10 +233,6 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                       <div key={`v-line-${index}`} className="absolute top-0 h-full border-r border-border/50" style={{ left: `${(index + 1) * DAY_WIDTH}px` }} />
                   )) :
                   months.map((month, index) => {
-                       const monthWidth = getDaysInMonth(month) * (MONTH_WIDTH / 30.44);
-                       const prevMonthWidth = index > 0 ? getDaysInMonth(months[index-1]) * (MONTH_WIDTH / 30.44) : 0;
-                       const left = index > 0 ? (taskLayouts.layouts[index -1]?.left ?? 0) + prevMonthWidth : monthWidth;
-                       
                        let totalWidth = 0;
                        for(let i=0; i<=index; i++) {
                            totalWidth += getDaysInMonth(months[i]) * (MONTH_WIDTH / 30.44);
