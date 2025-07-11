@@ -30,6 +30,32 @@ export type SubProject = {
   status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
 }
 
+export type AdoptionDataPoint = {
+  sl: string;
+  // Total Evaluation Status
+  evaluated: number;
+  notEvaluated: number;
+  notFinishYet: number;
+  // Total Subject & Status
+  totalSubject: number;
+  standard: number;
+  recommendation: number;
+  // Gap Status
+  existingInCasr: number;
+  draftInCasr: number;
+  belumDiAdop: number;
+  tidakDiAdop: number;
+  managementDecision: number;
+  // Level of Implementation
+  noDifference: number;
+  moreExactingOrExceeds: number;
+  differentInCharacter: number;
+  lessProtective: number;
+  significantDifference: number;
+  notApplicable: number;
+};
+
+
 export type Project = {
   id: string;
   name: string;
@@ -47,6 +73,7 @@ export type Project = {
   annex?: string;
   casr?: string;
   tags?: string[];
+  adoptionData?: AdoptionDataPoint[];
 };
 
     

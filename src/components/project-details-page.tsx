@@ -47,6 +47,7 @@ import {
   Trash2,
   Loader2,
   ListTree,
+  BarChart2,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -62,6 +63,7 @@ import { AddDocumentLinkDialog } from './add-document-link-dialog';
 import { deleteDocument, deleteTask } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
+import { AdoptionLevelDashboard } from './adoption-level-dashboard';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -215,6 +217,23 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
+
+        {project.projectType === 'Rulemaking' && project.adoptionData && (
+          <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <BarChart2 /> Adoption Level Dashboard
+                </CardTitle>
+                <CardDescription>
+                  Resume of State Letter Annex {project.annex} to CASR {project.casr}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AdoptionLevelDashboard data={project.adoptionData} />
+            </CardContent>
+          </Card>
+        )}
+
           <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">

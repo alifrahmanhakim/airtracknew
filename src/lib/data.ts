@@ -58,6 +58,15 @@ export const projects: Project[] = [
     notes: 'Engine compatibility tests are showing unexpected wear, causing delays. Regulatory submission is blocked pending results from these tests. This puts the project timeline at risk.',
     team: [users[1], users[0], users[4], users[2]],
     subProjects: [],
+    adoptionData: [
+      { sl: 'SL 172', evaluated: 5, notEvaluated: 0, notFinishYet: 0, totalSubject: 5, standard: 4, recommendation: 1, existingInCasr: 0, draftInCasr: 3, belumDiAdop: 2, tidakDiAdop: 0, managementDecision: 0, noDifference: 3, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
+      { sl: 'SL 174', evaluated: 2, notEvaluated: 0, notFinishYet: 0, totalSubject: 3, standard: 3, recommendation: 0, existingInCasr: 0, draftInCasr: 0, belumDiAdop: 0, tidakDiAdop: 0, managementDecision: 0, noDifference: 0, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
+      { sl: 'SL 175', evaluated: 85, notEvaluated: 7, notFinishYet: 0, totalSubject: 85, standard: 82, recommendation: 3, existingInCasr: 77, draftInCasr: 0, belumDiAdop: 0, tidakDiAdop: 0, managementDecision: 0, noDifference: 75, moreExactingOrExceeds: 1, differentInCharacter: 1, lessProtective: 2, significantDifference: 0, notApplicable: 0 },
+      { sl: 'SL 176', evaluated: 29, notEvaluated: 0, notFinishYet: 0, totalSubject: 29, standard: 28, recommendation: 1, existingInCasr: 0, draftInCasr: 15, belumDiAdop: 0, tidakDiAdop: 14, managementDecision: 0, noDifference: 15, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 1, significantDifference: 0, notApplicable: 0 },
+      { sl: 'SL 177', evaluated: 17, notEvaluated: 3, notFinishYet: 0, totalSubject: 17, standard: 17, recommendation: 0, existingInCasr: 0, draftInCasr: 0, belumDiAdop: 3, tidakDiAdop: 0, managementDecision: 0, noDifference: 2, moreExactingOrExceeds: 0, differentInCharacter: 1, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
+      { sl: 'SL 178', evaluated: 7, notEvaluated: 2, notFinishYet: 1, totalSubject: 3, standard: 3, recommendation: 0, existingInCasr: 0, draftInCasr: 6, belumDiAdop: 0, tidakDiAdop: 12, managementDecision: 0, noDifference: 5, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
+      { sl: 'SL 179', evaluated: 2, notEvaluated: 2, notFinishYet: 0, totalSubject: 2, standard: 2, recommendation: 0, existingInCasr: 0, draftInCasr: 0, belumDiAdop: 1, tidakDiAdop: 0, managementDecision: 0, noDifference: 1, moreExactingOrExceeds: 0, differentInCharacter: 0, lessProtective: 0, significantDifference: 0, notApplicable: 0 },
+    ]
   },
   {
     id: 'proj-3',
