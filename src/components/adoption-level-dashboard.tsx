@@ -56,7 +56,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-center">Total Evaluation Status</CardTitle>
