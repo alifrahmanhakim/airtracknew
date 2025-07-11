@@ -227,7 +227,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                     return (
                         <div key={`v-line-${index}`} className={cn(
                             "absolute top-0 h-full border-r",
-                            isMonthStart ? "border-solid border-border" : "border-dotted border-border/75"
+                            isMonthStart ? "border-solid border-border" : "border-dashed border-border/75"
                         )} style={{ left: `${(index + 1) * dayWidth}px` }} />
                     );
                 })}
