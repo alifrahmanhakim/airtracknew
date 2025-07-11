@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -10,6 +11,7 @@ import {
   FileText,
   LineChart,
   Plane,
+  LogOut,
 } from 'lucide-react';
 
 import {
@@ -25,6 +27,8 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { users } from '@/lib/data';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -36,6 +40,7 @@ const navItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const currentUser = users[0];
 
   return (
     <SidebarProvider>
@@ -65,7 +70,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             ))}
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter className="hidden md:flex">
+        <SidebarFooter className="flex flex-col gap-3">
+            <div className='flex items-center gap-2'>
+                <Avatar className="h-9 w-9">
+                    <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                    <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                    <span className='text-sm font-semibold'>{currentUser.name}</span>
+                    <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
+                </div>
+            </div>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <Link href="/login">
+                            <LogOut />
+                            <span>Logout</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
             <SidebarTrigger />
         </SidebarFooter>
       </Sidebar>
