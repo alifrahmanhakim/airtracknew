@@ -59,11 +59,10 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 
 type EditProjectDialogProps = {
   project: Project;
-  onProjectUpdate: (updatedProject: Project) => void;
   allUsers: User[];
 };
 
-export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditProjectDialogProps) {
+export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -114,7 +113,7 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
             description: `"${project.name}" has been successfully updated.`,
         });
         setOpen(false);
-        // The revalidatePath in the server action will handle refreshing the data.
+        router.refresh(); // Force a data refresh on the page
     } else {
         toast({
             variant: 'destructive',

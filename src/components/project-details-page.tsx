@@ -62,10 +62,6 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleProjectUpdate = (updatedProjectData: Partial<Project>) => {
-    setProject(prev => ({ ...prev, ...updatedProjectData }));
-  };
-
   const handleTaskAdd = (newTask: Task) => {
     setProject(prev => ({...prev, tasks: [...(prev.tasks || []), newTask]}));
   };
@@ -203,7 +199,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
-        <EditProjectDialog project={project} onProjectUpdate={() => {}} allUsers={users} />
+        <EditProjectDialog project={project} allUsers={users} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -411,5 +407,3 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     </main>
   );
 }
-
-    
