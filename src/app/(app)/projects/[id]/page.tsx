@@ -23,12 +23,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!params.id) return;
+    const projectId = params.id;
+    if (!projectId) return;
 
     const fetchProject = async () => {
       setIsLoading(true);
       try {
-        const projectRef = doc(db, 'projects', params.id);
+        const projectRef = doc(db, 'projects', projectId);
         const projectSnap = await getDoc(projectRef);
 
         if (projectSnap.exists()) {
@@ -45,7 +46,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
     };
 
     fetchProject();
-  }, [params.id]);
+  }, [params]);
 
   if (isLoading) {
     return (
@@ -77,7 +78,11 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   }
   
   if (!project) {
-    notFound();
+    // This can happen briefly before loading completes or if notFound() is triggered.
+    // Instead of calling notFound() here, we let the loading/error state handle it.
+    // If loading is done and there's no project and no error, notFound() should be called,
+    // which can be triggered inside the fetch logic.
+    return null;
   }
 
   return <ProjectDetailsPage project={project} users={users} />;
