@@ -121,7 +121,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : DAY_WIDTH_MONTH_VIEW;
   const totalGridWidth = totalDays * dayWidth;
 
-  const taskLayouts = React.useMemo(() => {
+  const {layouts, totalHeight} = React.useMemo(() => {
     const layouts: { task: Task; top: number}[] = [];
     
     sortedTasks.forEach((task, index) => {
@@ -131,8 +131,8 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
         });
     });
 
-    const totalHeight = HEADER_HEIGHT + sortedTasks.length * ROW_HEIGHT;
-    return { layouts, totalHeight };
+    const calculatedHeight = HEADER_HEIGHT + sortedTasks.length * ROW_HEIGHT;
+    return { layouts, totalHeight: calculatedHeight };
   }, [sortedTasks, viewMode]);
 
   return (
@@ -166,14 +166,14 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
         {/* Task List Pane (Fixed Left) */}
         <div 
           className="bg-card z-10 border-r shrink-0"
-          style={{ width: `${TASK_LIST_WIDTH}px`, height: `${taskLayouts.totalHeight}px` }}
+          style={{ width: `${TASK_LIST_WIDTH}px`, height: `${totalHeight}px` }}
         >
             <div className="flex items-center h-16 px-4 font-semibold border-b">
                 Tasks
             </div>
-            <div ref={taskListRef} className="overflow-hidden" style={{height: `${taskLayouts.totalHeight - HEADER_HEIGHT}px`}}>
-                <div className="relative" style={{height: `${taskLayouts.totalHeight - HEADER_HEIGHT}px`}}>
-                    {taskLayouts.layouts.map(({ task, top }) => (
+            <div ref={taskListRef} className="overflow-hidden" style={{height: `${totalHeight - HEADER_HEIGHT}px`}}>
+                <div className="relative" style={{height: `${totalHeight - HEADER_HEIGHT}px`}}>
+                    {layouts.map(({ task, top }) => (
                          <div
                             key={task.id}
                             className="absolute w-full flex items-center px-2 border-b"
@@ -190,7 +190,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
         <div ref={timelineRef} className="overflow-x-auto w-full" onScroll={handleScroll}>
           <div
             className="relative"
-            style={{ width: `${totalGridWidth}px`, height: `${taskLayouts.totalHeight}px` }}
+            style={{ width: `${totalGridWidth}px`, height: `${totalHeight}px` }}
           >
             {/* Headers */}
             <div className="sticky top-0 z-20 flex h-16 bg-card border-b">
@@ -221,25 +221,21 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
             </div>
             
             {/* Vertical Grid Lines */}
-            <div className="absolute top-0 left-0 w-full -z-10" style={{ height: `${taskLayouts.totalHeight}px` }}>
+            <div className="absolute top-0 left-0 w-full -z-10" style={{ height: `${totalHeight}px` }}>
                 {days.map((day, index) => {
                     const isMonthStart = day.getDate() === 1;
-                    const isWeekStart = isSameDay(day, startOfISOWeek(day));
-                    const isDayView = viewMode === 'day';
-
                     return (
-                        <div key={`v-line-${index}`} className={cn("absolute top-0 h-full border-r", {
-                            "border-border": isMonthStart, 
-                            "border-border/60": !isMonthStart && isWeekStart,
-                            "border-border/30": !isMonthStart && !isWeekStart && isDayView,
-                        })} style={{ left: `${(index + 1) * dayWidth}px` }} />
+                        <div key={`v-line-${index}`} className={cn(
+                            "absolute top-0 h-full border-r",
+                            isMonthStart ? "border-solid border-border" : "border-dotted border-border/75"
+                        )} style={{ left: `${(index + 1) * dayWidth}px` }} />
                     );
                 })}
             </div>
             
             {/* Horizontal Row Lines */}
             <div className="absolute top-0 left-0 w-full h-full -z-10">
-                {taskLayouts.layouts.map(({ task, top }) => (
+                {layouts.map(({ task, top }) => (
                      <div key={`h-line-${task.id}`} className="absolute w-full border-b border-border/50" style={{ top: `${HEADER_HEIGHT + top + ROW_HEIGHT -1}px`, height: '1px' }} />
                 ))}
             </div>
@@ -261,8 +257,8 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
             })()}
 
             {/* Task Bars */}
-            <div className="relative w-full" style={{ height: `${taskLayouts.totalHeight - HEADER_HEIGHT}px` }}>
-              {taskLayouts.layouts.map(({ task, top }) => {
+            <div className="relative w-full" style={{ height: `${totalHeight - HEADER_HEIGHT}px` }}>
+              {layouts.map(({ task, top }) => {
                   const assignee = findUserById(task.assigneeId);
                   const taskStart = parseISO(task.startDate);
                   const taskEnd = parseISO(task.dueDate);
