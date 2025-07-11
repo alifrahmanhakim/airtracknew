@@ -31,4 +31,5 @@ export type Project = {
   tasks: Task[];
   documents: Document[];
   notes: string;
+  team: User[];
 };

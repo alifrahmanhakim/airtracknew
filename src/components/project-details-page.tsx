@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -98,7 +97,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
-        <EditProjectDialog project={project} onProjectUpdate={handleProjectUpdate} />
+        <EditProjectDialog project={project} onProjectUpdate={handleProjectUpdate} allUsers={users} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -255,7 +254,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {users.slice(0, 5).map(user => (
+              {project.team.map(user => (
                   <div key={user.id} className="flex items-center gap-4">
                       <Avatar>
                           <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />

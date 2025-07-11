@@ -26,7 +26,8 @@ export const projects: Project[] = [
       { id: 'doc-1-1', name: 'Project Charter.pdf', type: 'PDF', uploadDate: '2023-01-20', url: '#' },
       { id: 'doc-1-2', name: 'System Requirements.docx', type: 'Word', uploadDate: '2023-02-10', url: '#' },
     ],
-    notes: 'Phase 1 of software development completed ahead of schedule. Hardware integration is the current focus and is proceeding as planned. Team morale is high.'
+    notes: 'Phase 1 of software development completed ahead of schedule. Hardware integration is the current focus and is proceeding as planned. Team morale is high.',
+    team: [users[0], users[1], users[2], users[3]],
   },
   {
     id: 'proj-2',
@@ -45,7 +46,8 @@ export const projects: Project[] = [
       { id: 'doc-2-1', name: 'SAF Research Paper.pdf', type: 'PDF', uploadDate: '2023-06-05', url: '#' },
       { id: 'doc-2-2', name: 'Supplier List.xlsx', type: 'Excel', uploadDate: '2023-09-15', url: '#' },
     ],
-    notes: 'Engine compatibility tests are showing unexpected wear, causing delays. The regulatory approval is blocked pending results from these tests. This puts the project timeline at risk.'
+    notes: 'Engine compatibility tests are showing unexpected wear, causing delays. The regulatory approval is blocked pending results from these tests. This puts the project timeline at risk.',
+    team: [users[1], users[0], users[4], users[2]],
   },
   {
     id: 'proj-3',
@@ -64,7 +66,8 @@ export const projects: Project[] = [
       { id: 'doc-3-1', name: 'Drone Spec Sheet.pdf', type: 'PDF', uploadDate: '2024-02-10', url: '#' },
       { id: 'doc-3-2', name: 'AI Model Proposal.docx', type: 'Word', uploadDate: '2024-03-20', url: '#' },
     ],
-    notes: 'The development of the flight control software is significantly behind schedule due to unforeseen complexity. This has a cascading effect on all subsequent tasks, putting the project completion date in jeopardy.'
+    notes: 'The development of the flight control software is significantly behind schedule due to unforeseen complexity. This has a cascading effect on all subsequent tasks, putting the project completion date in jeopardy.',
+    team: [users[2], users[0], users[3], users[1]],
   },
   {
     id: 'proj-4',
@@ -82,7 +85,8 @@ export const projects: Project[] = [
     documents: [
         { id: 'doc-4-1', name: 'Final Design.pdf', type: 'PDF', uploadDate: '2024-06-01', url: '#' },
     ],
-    notes: 'Project completed successfully on all fronts. Customer feedback on the new experience has been overwhelmingly positive. The marketing campaign generated significant buzz.'
+    notes: 'Project completed successfully on all fronts. Customer feedback on the new experience has been overwhelmingly positive. The marketing campaign generated significant buzz.',
+    team: [users[3], users[2], users[0], users[1]],
   },
 ];
 
