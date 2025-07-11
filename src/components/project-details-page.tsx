@@ -59,7 +59,7 @@ import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
-import { deleteDocument } from '@/lib/actions';
+import { deleteDocument, deleteTask } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 
@@ -71,7 +71,9 @@ type ProjectDetailsPageProps = {
 export function ProjectDetailsPage({ project: initialProject, users }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
   const [isDeletingDoc, setIsDeletingDoc] = useState<string | null>(null);
+  const [isDeletingTask, setIsDeletingTask] = useState<string | null>(null);
   const [docToDelete, setDocToDelete] = useState<ProjectDocument | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -126,6 +128,32 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     }
     setDocToDelete(null);
   };
+  
+  const handleDeleteTask = async () => {
+    if (!taskToDelete) return;
+
+    setIsDeletingTask(taskToDelete.id);
+    const result = await deleteTask(project.id, taskToDelete.id);
+    setIsDeletingTask(null);
+
+    if (result.success) {
+      setProject(prev => ({
+        ...prev,
+        tasks: (prev.tasks || []).filter(task => task.id !== taskToDelete.id)
+      }));
+      toast({
+        title: "Task Deleted",
+        description: `"${taskToDelete.title}" has been removed.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: result.error || "Failed to delete task.",
+      });
+    }
+    setTaskToDelete(null);
+  }
 
   const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
@@ -244,8 +272,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             {task.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right flex justify-end items-center gap-1">
                             <EditTaskDialog projectId={project.id} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isDeletingTask === task.id}>
+                                {isDeletingTask === task.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            </Button>
                         </TableCell>
                       </TableRow>
                     );
@@ -401,6 +432,24 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteDocument} className={buttonVariants({ variant: 'destructive' })}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the task
+              <span className="font-semibold"> "{taskToDelete?.title}"</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTask} className={buttonVariants({ variant: 'destructive' })}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

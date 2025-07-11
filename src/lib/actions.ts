@@ -196,6 +196,29 @@ export async function updateTask(
     }
 }
 
+export async function deleteTask(
+    projectId: string,
+    taskId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists()) {
+            const project = projectSnap.data() as Project;
+            const tasks = project.tasks.filter(t => t.id !== taskId);
+            await updateDoc(projectRef, { tasks });
+            revalidatePath(`/projects/${projectId}`);
+            return { success: true };
+        } else {
+            throw new Error("Project not found");
+        }
+    } catch (error) {
+        console.error('Delete Task Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to delete task: ${message}` };
+    }
+}
+
 export async function addSubProject(
     projectId: string,
     subProjectData: SubProject
