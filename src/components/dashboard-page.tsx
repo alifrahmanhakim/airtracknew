@@ -49,18 +49,18 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
     }, {} as Record<Project['status'], number>);
 
     return [
-      { name: 'On Track', count: statusCounts['On Track'] || 0, fill: 'var(--color-on-track)' },
-      { name: 'At Risk', count: statusCounts['At Risk'] || 0, fill: 'var(--color-at-risk)' },
-      { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--color-off-track)' },
-      { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-completed)' },
+      { name: 'On Track', count: statusCounts['On Track'] || 0, fill: 'var(--chart-1)' },
+      { name: 'At Risk', count: statusCounts['At Risk'] || 0, fill: 'var(--chart-2)' },
+      { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--chart-3)' },
+      { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--chart-4)' },
     ];
   }, [projects]);
 
   const chartConfig = {
     count: { label: 'Projects' },
     'On Track': { label: 'On Track', color: 'hsl(var(--chart-1))' },
-    'At Risk': { label: 'At Risk', color: 'hsl(var(--chart-3))' },
-    'Off Track': { label: 'Off Track', color: 'hsl(var(--chart-2))' },
+    'At Risk': { label: 'At Risk', color: 'hsl(var(--chart-2))' },
+    'Off Track': { label: 'Off Track', color: 'hsl(var(--chart-3))' },
     Completed: { label: 'Completed', color: 'hsl(var(--chart-4))' },
   };
 
