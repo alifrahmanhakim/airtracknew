@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  BarChart,
+  BarChart as BarChartIcon,
   CheckCircle,
   FolderKanban,
   Users,
@@ -21,7 +21,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
 
 type DashboardPageProps = {
@@ -89,7 +89,7 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Overall Progress</CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
+            <BarChartIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalTasks > 0 ? `${Math.round((completedTasks/totalTasks)*100)}%` : 'N/A'}</div>
