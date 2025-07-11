@@ -2,30 +2,64 @@
 'use client';
 
 import * as React from 'react';
-import { format, parseISO } from 'date-fns';
+import {
+  format,
+  parseISO,
+  eachMonthOfInterval,
+  differenceInCalendarMonths,
+  differenceInDays,
+  addDays,
+  startOfMonth,
+  endOfMonth,
+  isAfter,
+} from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Task } from '@/lib/types';
-import { CheckCircle, Clock, XCircle, CircleDotDashed, ListTodo } from 'lucide-react';
+import type { Task, User } from '@/lib/types';
+import { ListTodo, GanttChartSquare } from 'lucide-react';
 import { findUserById } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
+import { EditTaskDialog } from './edit-task-dialog';
 
 type ProjectTimelineProps = {
+  projectId: string;
   tasks: Task[];
+  teamMembers: User[];
+  onTaskUpdate: (updatedTask: Task) => void;
 };
 
-export function ProjectTimeline({ tasks }: ProjectTimelineProps) {
-  const sortedTasks = React.useMemo(() => {
-    if (!tasks) return [];
-    return [...tasks].sort((a, b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime());
-  }, [tasks]);
+export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }: ProjectTimelineProps) {
+  const { sortedTasks, months, timelineStart, timelineEnd } = React.useMemo(() => {
+    if (!tasks || tasks.length === 0) {
+      return { sortedTasks: [], months: [], timelineStart: new Date(), timelineEnd: new Date() };
+    }
 
-  const statusMap: { [key in Task['status']]: { icon: React.ElementType; color: string; } } = {
-    'Done': { icon: CheckCircle, color: 'text-green-500' },
-    'In Progress': { icon: Clock, color: 'text-blue-500' },
-    'To Do': { icon: CircleDotDashed, color: 'text-gray-500' },
-    'Blocked': { icon: XCircle, color: 'text-red-500' },
-  };
+    const sorted = [...tasks].sort((a, b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime());
+
+    const dueDates = sorted.map(t => parseISO(t.dueDate));
+    const startDate = dueDates[0];
+    let endDate = dueDates[dueDates.length - 1];
+    
+    // Ensure timeline shows at least 3 months for better visualization
+    if (differenceInCalendarMonths(endDate, startDate) < 2) {
+      endDate = addDays(startDate, 90);
+    }
+
+    const tStart = startOfMonth(startDate);
+    const tEnd = endOfMonth(endDate);
+    
+    const monthInterval = eachMonthOfInterval({
+      start: tStart,
+      end: tEnd,
+    });
+
+    return { sortedTasks: sorted, months: monthInterval, timelineStart: tStart, timelineEnd: tEnd };
+  }, [tasks]);
 
   if (sortedTasks.length === 0) {
     return (
@@ -36,44 +70,97 @@ export function ProjectTimeline({ tasks }: ProjectTimelineProps) {
       </div>
     );
   }
+  
+  const statusColor: { [key in Task['status']]: string } = {
+    'Done': 'bg-green-500 hover:bg-green-600',
+    'In Progress': 'bg-blue-500 hover:bg-blue-600',
+    'To Do': 'bg-gray-400 hover:bg-gray-500',
+    'Blocked': 'bg-red-500 hover:bg-red-600',
+  }
+
+  const totalTimelineDays = differenceInDays(timelineEnd, timelineStart) + 1;
 
   return (
     <TooltipProvider>
-        <div className="relative pl-4 py-4 before:absolute before:left-8 before:top-0 before:h-full before:w-0.5 before:bg-border">
-        {sortedTasks.map((task, index) => {
-            const StatusIcon = statusMap[task.status].icon;
-            const statusColor = statusMap[task.status].color;
-            const assignee = findUserById(task.assigneeId);
-            return (
-            <div key={task.id} className="relative mb-6 flex items-start gap-4">
-                <div className={cn("absolute left-8 top-1.5 h-5 w-5 rounded-full bg-background border-2 -translate-x-1/2", statusMap[task.status].color.replace('text-', 'border-'))}>
-                    <StatusIcon className={cn("h-full w-full p-0.5", statusColor)} />
-                </div>
-                <div className="pl-12 w-full">
-                <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">{task.title}</p>
-                    <div className="flex items-center gap-2">
-                        {assignee && (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Avatar className="h-6 w-6">
-                                        <AvatarImage src={assignee.avatarUrl} alt={assignee.name} data-ai-hint="person portrait" />
-                                        <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{assignee.name}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        )}
-                        <p className="text-xs text-muted-foreground">{format(parseISO(task.dueDate), 'dd MMM yyyy')}</p>
-                    </div>
-                </div>
-                </div>
+      <div className="overflow-x-auto">
+        <div className="relative grid grid-cols-1 gap-y-2 py-4" style={{ minWidth: `${months.length * 150}px` }}>
+          {/* Header */}
+          <div className="sticky top-0 z-10 grid bg-card" style={{ gridTemplateColumns: `200px repeat(${months.length}, 1fr)`}}>
+            <div className="flex items-center gap-2 p-2 border-b border-r font-semibold text-muted-foreground">
+                <GanttChartSquare className="w-5 h-5" />
+                <span>Task Name</span>
             </div>
-            );
-        })}
+            {months.map((month) => (
+              <div key={month.toString()} className="p-2 border-b text-center font-semibold text-muted-foreground">
+                {format(month, 'MMM yyyy')}
+              </div>
+            ))}
+          </div>
+
+          {/* Body */}
+          <div className="relative grid" style={{ gridTemplateColumns: `200px 1fr` }}>
+            {/* Grid Lines */}
+             <div className="absolute inset-0 grid h-full" style={{ gridTemplateColumns: `200px repeat(${months.length}, 1fr)` }}>
+                <div className="border-r"></div>
+                {months.map((_, index) => (
+                    <div key={index} className="border-r"></div>
+                ))}
+            </div>
+            
+            {/* Task Rows */}
+            {sortedTasks.map((task) => {
+              const taskStart = parseISO(task.dueDate);
+              
+              const startOffsetDays = differenceInDays(taskStart, timelineStart);
+              const startPercentage = (startOffsetDays / totalTimelineDays) * 100;
+
+              const assignee = findUserById(task.assigneeId);
+
+              return (
+                <div key={task.id} className="contents group">
+                  {/* Task Title */}
+                  <div className="flex items-center p-2 border-b border-r truncate">
+                     <p className="font-medium truncate text-sm">{task.title}</p>
+                  </div>
+
+                  {/* Task Bar */}
+                  <div className="relative flex items-center p-2 border-b">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div
+                                className={cn(
+                                    "absolute h-8 rounded-md text-white flex items-center justify-between px-2 cursor-pointer transition-all duration-200",
+                                    statusColor[task.status]
+                                )}
+                                style={{
+                                    left: `calc(${startPercentage}% + 8px)`,
+                                    width: `100px` // Fixed width for now for simplicity, represents due date marker
+                                }}
+                            >
+                                <span className="text-xs font-semibold truncate">{task.status}</span>
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <EditTaskDialog
+                                        projectId={projectId}
+                                        task={task}
+                                        teamMembers={teamMembers}
+                                        onTaskUpdate={onTaskUpdate}
+                                    />
+                                </div>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="font-semibold">{task.title}</p>
+                            <p>Due: {format(taskStart, 'PPP')}</p>
+                            {assignee && <p>Assignee: {assignee.name}</p>}
+                        </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
+      </div>
     </TooltipProvider>
   );
 }

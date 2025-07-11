@@ -191,8 +191,13 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 </CardTitle>
                 <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
             </CardHeader>
-            <CardContent>
-                <ProjectTimeline tasks={tasks} />
+            <CardContent className="pl-0 pr-0 pb-0">
+                <ProjectTimeline 
+                  projectId={project.id}
+                  tasks={tasks}
+                  teamMembers={project.team}
+                  onTaskUpdate={handleTaskUpdate}
+                />
             </CardContent>
           </Card>
 
