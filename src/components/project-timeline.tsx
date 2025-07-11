@@ -227,9 +227,9 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                         >
                             <div className="h-1/2 flex items-center justify-center">{format(month, 'MMMM yyyy')}</div>
                             <div className="h-1/2 flex border-t">
-                                {weeksInMonth.map(week => (
+                                {weeksInMonth.map((week, index) => (
                                     <div key={week.toString()} className="flex-1 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0">
-                                        W{getISOWeek(week)}
+                                        W{index + 1}
                                     </div>
                                 ))}
                             </div>
