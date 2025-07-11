@@ -96,54 +96,60 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   };
 
   const handleFileUpload = async (file: File) => {
-    setIsUploading(true);
-    
-    try {
-        const storageRef = ref(storage, `projects/${project.id}/${file.name}`);
-        const uploadResult = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(uploadResult.ref);
-
-        const getFileType = (fileName: string): ProjectDocument['type'] => {
-            const extension = fileName.split('.').pop()?.toLowerCase();
-            if (extension === 'pdf') return 'PDF';
-            if (extension === 'doc' || extension === 'docx') return 'Word';
-            if (extension === 'xls' || extension === 'xlsx') return 'Excel';
-            if (['png', 'jpg', 'jpeg', 'gif'].includes(extension || '')) return 'Image';
-            return 'Other';
-        }
-
-        const newDocumentData = {
-            name: file.name,
-            type: getFileType(file.name),
-            url: downloadURL, 
-        };
-
-        const result = await addDocument(project.id, newDocumentData);
-
-        if (result.success && result.data) {
-            setProject(prev => ({ ...prev, documents: [...(prev.documents || []), result.data as ProjectDocument] }));
-            toast({
-                title: "Upload Successful",
-                description: `${file.name} has been added to the project.`,
-            });
-        } else {
-            throw new Error(result.error || "Failed to save document metadata.");
-        }
-
-    } catch(error) {
-        console.error("Upload failed", error);
+    if (!project) {
         toast({
-            variant: 'destructive',
-            title: "Upload Failed",
-            description: error instanceof Error ? error.message : "An unknown error occurred during file upload.",
+            variant: "destructive",
+            title: "Error",
+            description: "Project context is not available.",
         });
-    } finally {
-        setIsUploading(false);
-        if(fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+        return;
     }
-  }
+    setIsUploading(true);
+    try {
+      const storageRef = ref(storage, `projects/${project.id}/${file.name}`);
+      const uploadResult = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(uploadResult.ref);
+
+      const getFileType = (fileName: string): ProjectDocument['type'] => {
+        const extension = fileName.split('.').pop()?.toLowerCase();
+        if (extension === 'pdf') return 'PDF';
+        if (extension === 'doc' || extension === 'docx') return 'Word';
+        if (extension === 'xls' || extension === 'xlsx') return 'Excel';
+        if (['png', 'jpg', 'jpeg', 'gif'].includes(extension || '')) return 'Image';
+        return 'Other';
+      };
+
+      const newDocumentData = {
+        name: file.name,
+        type: getFileType(file.name),
+        url: downloadURL,
+      };
+
+      const result = await addDocument(project.id, newDocumentData);
+
+      if (result.success && result.data) {
+        setProject(prev => ({ ...prev, documents: [...(prev.documents || []), result.data as ProjectDocument] }));
+        toast({
+          title: "Upload Successful",
+          description: `${file.name} has been added to the project.`,
+        });
+      } else {
+        throw new Error(result.error || "Failed to save document metadata.");
+      }
+    } catch (error) {
+      console.error("Upload failed", error);
+      toast({
+        variant: 'destructive',
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred during file upload. Check storage rules.",
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
@@ -181,6 +187,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  
+  if (!project) {
+    return <div>Loading project details...</div>
+  }
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -272,7 +282,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
              <CardContent>
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {documents.map((doc) => (
+                        {(documents || []).map((doc) => (
                           <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1 overflow-hidden">
@@ -306,7 +316,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                     <Folder /> Sub-Projects
                 </CardTitle>
                 <AddSubProjectDialog projectId={project.id} onSubProjectAdd={handleSubProjectAdd} />
-            </CardHeader>
+            </Header>
             <CardContent>
               {subProjects.length > 0 ? (
                 <div className="space-y-4">
