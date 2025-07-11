@@ -10,12 +10,14 @@ import {
   addDays,
   startOfMonth,
   endOfMonth,
-  isSameMonth,
-  isToday
+  isToday,
+  startOfYear,
+  endOfYear,
+  eachDayOfInterval,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
-import { GanttChartSquare, ListTodo } from 'lucide-react';
+import { ListTodo, GanttChartSquare } from 'lucide-react';
 import { findUserById } from '@/lib/data';
 import {
   Tooltip,
@@ -25,6 +27,9 @@ import {
 } from './ui/tooltip';
 import { EditTaskDialog } from './edit-task-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Button } from './ui/button';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Label } from './ui/label';
 
 type ProjectTimelineProps = {
   projectId: string;
@@ -33,13 +38,16 @@ type ProjectTimelineProps = {
   onTaskUpdate: (updatedTask: Task) => void;
 };
 
+type ViewMode = 'month' | 'day';
+
 export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }: ProjectTimelineProps) {
   const timelineRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
+  const [viewMode, setViewMode] = React.useState<ViewMode>('month');
 
-  const { sortedTasks, months, timelineStart, timelineEnd, days } = React.useMemo(() => {
+  const { sortedTasks, months, days, timelineStart, timelineEnd } = React.useMemo(() => {
     if (!tasks || tasks.length === 0) {
-      return { sortedTasks: [], months: [], timelineStart: new Date(), timelineEnd: new Date(), days: [] };
+      return { sortedTasks: [], months: [], days: [], timelineStart: new Date(), timelineEnd: new Date() };
     }
 
     const sorted = [...tasks].sort((a, b) => {
@@ -56,29 +64,20 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
     let startDate = dueDates.length > 0 ? dueDates[0] : new Date();
     let endDate = dueDates.length > 0 ? dueDates[dueDates.length - 1] : new Date();
     
-    // Add buffer to start and end
-    startDate = addDays(startDate, -14);
-    endDate = addDays(endDate, 14);
-
-    const tStart = startOfMonth(startDate);
-    const tEnd = endOfMonth(endDate);
+    const tStart = startOfYear(startDate);
+    const tEnd = endOfYear(endDate);
     
-    const monthInterval = eachMonthOfInterval({
-      start: tStart,
-      end: tEnd,
-    });
+    const monthInterval = eachMonthOfInterval({ start: tStart, end: tEnd });
+    const dayInterval = eachDayOfInterval({ start: tStart, end: tEnd });
 
-    const dayArray = Array.from({ length: differenceInDays(tEnd, tStart) + 1 }, (_, i) => addDays(tStart, i));
-
-    return { sortedTasks: sorted, months: monthInterval, timelineStart: tStart, timelineEnd: tEnd, days: dayArray };
+    return { sortedTasks: sorted, months: monthInterval, days: dayInterval, timelineStart: tStart, timelineEnd: tEnd };
   }, [tasks]);
 
    React.useEffect(() => {
     if (todayRef.current) {
-      // Scroll to today's marker
-      todayRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      todayRef.current.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
     }
-  }, [days]);
+   }, [viewMode, days]);
 
   if (sortedTasks.length === 0) {
     return (
@@ -97,25 +96,38 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
     'Blocked': { color: 'bg-red-500 hover:bg-red-600', label: 'Blocked' },
   };
 
-  const DAY_WIDTH = 40; // width of a single day column in pixels
-  const ROW_HEIGHT = 52; // height of a single task row in pixels
-  const HEADER_HEIGHT = 70; // height of the month and day headers
-  const totalWidth = days.length * DAY_WIDTH;
-
+  const DAY_WIDTH = 40;
+  const MONTH_WIDTH = 120;
+  const ROW_HEIGHT = 52;
+  const HEADER_HEIGHT = 70;
+  
   const getDaysInMonth = (date: Date) => differenceInDays(endOfMonth(date), startOfMonth(date)) + 1;
 
-  // Group tasks to avoid overlap
+  const totalWidth = viewMode === 'day' 
+    ? days.length * DAY_WIDTH 
+    : months.length * MONTH_WIDTH;
+
   const taskLayouts = React.useMemo(() => {
     const layouts: { task: Task; top: number; left: number; width: number }[] = [];
     const occupiedLanes: { end: number }[] = [];
 
     sortedTasks.forEach(task => {
-        const taskStartOffset = differenceInDays(parseISO(task.dueDate), timelineStart);
-        let laneIndex = 0;
+        let taskStartOffset: number;
 
+        if (viewMode === 'day') {
+            taskStartOffset = differenceInDays(parseISO(task.dueDate), timelineStart);
+        } else { // month view
+            const dayInYear = differenceInDays(parseISO(task.dueDate), startOfYear(parseISO(task.dueDate)));
+            const totalDaysInYear = differenceInDays(endOfYear(parseISO(task.dueDate)), startOfYear(parseISO(task.dueDate))) + 1;
+            const monthOffset = (parseISO(task.dueDate).getMonth() - timelineStart.getMonth() + 12 * (parseISO(task.dueDate).getFullYear() - timelineStart.getFullYear()));
+            taskStartOffset = monthOffset * MONTH_WIDTH + (dayInYear / totalDaysInYear) * MONTH_WIDTH * 0.8;
+        }
+
+        let laneIndex = 0;
+        
         while (true) {
-            if (!occupiedLanes[laneIndex] || occupiedLanes[laneIndex].end < taskStartOffset) {
-                occupiedLanes[laneIndex] = { end: taskStartOffset + 3 }; // +3 for task bar width in days
+            if (!occupiedLanes[laneIndex] || occupiedLanes[laneIndex].end < (viewMode === 'day' ? taskStartOffset : (taskStartOffset/MONTH_WIDTH))) {
+                 occupiedLanes[laneIndex] = { end: (viewMode === 'day' ? taskStartOffset : (taskStartOffset/MONTH_WIDTH)) + (viewMode === 'day' ? 3 : 0.5) };
                 break;
             }
             laneIndex++;
@@ -124,59 +136,98 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
         layouts.push({
             task: task,
             top: HEADER_HEIGHT + laneIndex * ROW_HEIGHT,
-            left: taskStartOffset * DAY_WIDTH,
-            width: 3 * DAY_WIDTH, // Make task bars span 3 days for visibility
+            left: viewMode === 'day' ? taskStartOffset * DAY_WIDTH : taskStartOffset,
+            width: viewMode === 'day' ? 3 * DAY_WIDTH : MONTH_WIDTH / 4,
         });
     });
 
     return { layouts, totalHeight: HEADER_HEIGHT + occupiedLanes.length * ROW_HEIGHT };
-  }, [sortedTasks, timelineStart, days]);
-
+  }, [sortedTasks, timelineStart, days, months, viewMode]);
 
   return (
     <TooltipProvider>
+      <div className="p-4 border-t flex justify-between items-center">
+        <RadioGroup defaultValue={viewMode} onValueChange={(value: ViewMode) => setViewMode(value)} className="flex items-center gap-4">
+           <div>
+            <RadioGroupItem value="month" id="r-month" className="peer sr-only" />
+            <Label htmlFor="r-month" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+              Month View
+            </Label>
+          </div>
+          <div>
+            <RadioGroupItem value="day" id="r-day" className="peer sr-only" />
+            <Label htmlFor="r-day" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+              Day View
+            </Label>
+          </div>
+        </RadioGroup>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 items-center text-xs">
+            <span className="text-sm font-semibold">Legend:</span>
+            {Object.entries(statusConfig).map(([status, { color, label }]) => (
+            <div key={status} className="flex items-center gap-2">
+                <div className={cn('h-3 w-3 rounded-full', color.split(' ')[0])}></div>
+                <span className="text-muted-foreground">{label}</span>
+            </div>
+            ))}
+        </div>
+      </div>
       <div ref={timelineRef} className="overflow-x-auto border-t w-full">
         <div
           className="relative bg-background"
           style={{ width: `${totalWidth}px`, height: `${taskLayouts.totalHeight}px` }}
         >
-          {/* Month Headers */}
-          <div className="sticky top-0 z-20 flex h-8 bg-card border-b">
-            {months.map((month) => (
-              <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex items-center justify-center border-r"
-                style={{ width: `${getDaysInMonth(month) * DAY_WIDTH}px` }}
-              >
-                {format(month, 'MMMM yyyy')}
-              </div>
-            ))}
-          </div>
-
-          {/* Day Headers and Grid Lines */}
-          <div className="sticky top-8 z-20 flex h-8 bg-card border-b">
-             {days.map((day, index) => (
-              <div key={index} className="flex-shrink-0 flex flex-col items-center justify-center border-r" style={{ width: `${DAY_WIDTH}px` }}>
-                <span className={cn("text-xs", {'font-bold text-primary': isToday(day)})}>{format(day, 'd')}</span>
-                <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
-              </div>
-            ))}
+          {/* Headers */}
+          <div className="sticky top-0 z-20 flex h-16 bg-card border-b">
+             {viewMode === 'day' ? (
+                // Day View Headers
+                 days.map((day, index) => (
+                  <div key={index} className="flex-shrink-0 flex flex-col items-center justify-center border-r" style={{ width: `${DAY_WIDTH}px` }}>
+                    <span className={cn("text-xs", {'font-bold text-primary': isToday(day)})}>{format(day, 'd')}</span>
+                    <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
+                     {isSameMonth(day, new Date()) && index === 0 && <span className="text-center font-semibold text-sm">{format(day, 'MMMM yyyy')}</span>}
+                  </div>
+                ))
+             ) : (
+                // Month View Headers
+                months.map((month) => (
+                    <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex items-center justify-center border-r"
+                        style={{ width: `${MONTH_WIDTH}px` }}
+                    >
+                        {format(month, 'MMM yyyy')}
+                    </div>
+                ))
+             )}
           </div>
           
-           {/* Vertical Grid Lines for days */}
+           {/* Vertical Grid Lines */}
           <div className="absolute top-0 left-0 h-full -z-10">
-             {days.map((day, index) => (
-              <div key={index} className="absolute top-0 h-full border-r" style={{ left: `${(index + 1) * DAY_WIDTH}px` }} />
-            ))}
+            {viewMode === 'day' ? 
+              days.map((day, index) => (
+                  <div key={index} className="absolute top-0 h-full border-r" style={{ left: `${(index + 1) * DAY_WIDTH}px` }} />
+              )) :
+              months.map((month, index) => (
+                  <div key={index} className="absolute top-0 h-full border-r" style={{ left: `${(index + 1) * MONTH_WIDTH}px` }} />
+              ))
+            }
           </div>
           
            {/* Today Marker */}
-          {days.findIndex(isToday) !== -1 && (
-             <div ref={todayRef} className="absolute top-0 bottom-0 w-1 bg-primary/50 z-0" style={{ left: `${days.findIndex(isToday) * DAY_WIDTH + (DAY_WIDTH / 2)}px` }} >
-                <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md z-30">
-                    Today
-                </div>
-            </div>
-          )}
+            {(() => {
+                const todayIndex = days.findIndex(isToday);
+                if (todayIndex === -1) return null;
 
+                const todayLeft = viewMode === 'day' 
+                    ? todayIndex * DAY_WIDTH + (DAY_WIDTH / 2)
+                    : months.findIndex(m => isSameMonth(m, new Date())) * MONTH_WIDTH + (new Date().getDate() / getDaysInMonth(new Date())) * MONTH_WIDTH;
+
+                return (
+                    <div ref={todayRef} className="absolute top-0 bottom-0 w-1 bg-primary/50 z-0" style={{ left: `${todayLeft}px` }} >
+                        <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md z-30">
+                            Today
+                        </div>
+                    </div>
+                );
+            })()}
 
           {/* Task Bars */}
           <div className="relative w-full" style={{ height: `${taskLayouts.totalHeight - HEADER_HEIGHT}px` }}>
@@ -225,15 +276,6 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
             })}
           </div>
         </div>
-      </div>
-       <div className="flex flex-wrap gap-x-4 gap-y-2 items-center mt-4 px-4 pb-2 text-xs border-t pt-2">
-        <span className="text-sm font-semibold">Legend:</span>
-        {Object.entries(statusConfig).map(([status, { color, label }]) => (
-          <div key={status} className="flex items-center gap-2">
-            <div className={cn('h-3 w-3 rounded-full', color.split(' ')[0])}></div>
-            <span className="text-muted-foreground">{label}</span>
-          </div>
-        ))}
       </div>
     </TooltipProvider>
   );
