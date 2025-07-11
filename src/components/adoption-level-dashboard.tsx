@@ -88,7 +88,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
             <CardHeader>
                 <CardTitle className="text-sm text-center">Percentage Evaluation</CardTitle>
             </CardHeader>
-            <CardContent className="flex items-center justify-center">
+            <CardContent className="flex flex-col items-center justify-center">
                  <ChartContainer config={{}} className="h-48 w-48">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -107,19 +107,14 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                                     <Cell key={`cell-${entry.name}`} fill={entry.color} />
                                 ))}
                             </Pie>
-                            <text
-                                x="50%"
-                                y="50%"
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                className="text-2xl font-bold fill-foreground"
-                            >
-                                {`${Math.round(totalPercentage)}%`}
-                            </text>
-                             <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                             <Legend iconSize={8} wrapperStyle={{ fontSize: '10px' }} verticalAlign="bottom" />
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartContainer>
+                <div className="text-center mt-2">
+                    <span className="text-2xl font-bold">{`${Math.round(totalPercentage)}%`}</span>
+                    <p className="text-xs text-muted-foreground">Finished</p>
+                </div>
             </CardContent>
         </Card>
 
