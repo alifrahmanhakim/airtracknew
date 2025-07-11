@@ -74,6 +74,9 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       description: '',
       team: [],
       projectType: 'Tim Kerja',
+      annex: '',
+      casr: '',
+      tags: '',
     },
   });
 
