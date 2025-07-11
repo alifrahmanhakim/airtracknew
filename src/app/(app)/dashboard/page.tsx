@@ -5,23 +5,27 @@ import { getProjectsForUser, users } from '@/lib/data';
 import { DashboardPage } from '@/components/dashboard-page';
 import { useEffect, useState } from 'react';
 import type { Project } from '@/lib/types';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
   const [userProjects, setUserProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    setUserId(loggedInUserId);
+  }, []);
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const userId = localStorage.getItem('loggedInUserId');
       if (userId) {
         try {
           const querySnapshot = await getDocs(collection(db, "projects"));
           const projectsFromDb: Project[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
           
-          // You can still use the local filter logic, but now with live data
           const filteredProjects = getProjectsForUser(userId, projectsFromDb);
           setUserProjects(filteredProjects);
         } catch (error) {
@@ -32,8 +36,10 @@ export default function Dashboard() {
       setIsLoading(false);
     };
 
-    fetchProjects();
-  }, []);
+    if (userId) {
+        fetchProjects();
+    }
+  }, [userId]);
 
   if (isLoading) {
     return (

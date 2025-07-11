@@ -7,9 +7,10 @@ import {
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
 import { projects } from './data';
-import type { Document } from './types';
+import type { Document, Project, User } from './types';
 import { db } from './firebase';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, collection, addDoc } from 'firebase/firestore';
+import { revalidatePath } from 'next/cache';
 
 
 export async function getAiSummary(
@@ -66,4 +67,21 @@ export async function addDocument(
       error: `Failed to add document: ${message}`,
     };
   }
+}
+
+export async function addProject(
+    projectData: Omit<Project, 'id'>
+  ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
+    try {
+      const docRef = await addDoc(collection(db, 'projects'), projectData);
+      revalidatePath('/dashboard'); // This tells Next.js to refresh the data on the dashboard page
+      return { success: true, data: { id: docRef.id } };
+    } catch (error) {
+      console.error('Add Project Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return {
+        success: false,
+        error: `Failed to add project: ${message}`,
+      };
+    }
 }

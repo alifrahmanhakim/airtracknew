@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
+import { AddProjectDialog } from './add-project-dialog';
 
 type DashboardPageProps = {
   projects: Project[];
@@ -120,7 +122,10 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-4">All Projects</h2>
+        <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold tracking-tight">All Projects</h2>
+            <AddProjectDialog allUsers={users} />
+        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <ProjectCard key={project.id} project={project} />
