@@ -26,10 +26,7 @@ export const projects: Project[] = [
       { id: 'task-1-3', title: 'Hardware Integration', assigneeId: 'user-3', dueDate: '2024-02-28', status: 'In Progress' },
       { id: 'task-1-4', title: 'User Interface Mockups', assigneeId: 'user-4', dueDate: '2024-05-15', status: 'To Do' },
     ],
-    documents: [
-      { id: 'doc-1-1', name: 'Project Charter.pdf', type: 'PDF', uploadDate: '2023-01-20', url: '#' },
-      { id: 'doc-1-2', name: 'System Requirements.docx', type: 'Word', uploadDate: '2023-02-10', url: '#' },
-    ],
+    documents: [],
     notes: 'Software development phase 1 was completed ahead of schedule. Hardware integration is the current focus and is proceeding as planned. Team morale is high.',
     team: [users[0], users[1], users[2], users[3]],
     subProjects: [
@@ -51,10 +48,7 @@ export const projects: Project[] = [
       { id: 'task-2-3', title: 'Regulatory Approval Submission', assigneeId: 'user-5', dueDate: '2024-08-15', status: 'Blocked' },
       { id: 'task-2-4', title: 'Logistics and Supply Chain Setup', assigneeId: 'user-3', dueDate: '2025-01-20', status: 'To Do' },
     ],
-    documents: [
-      { id: 'doc-2-1', name: 'SAF Research Paper.pdf', type: 'PDF', uploadDate: '2023-06-05', url: '#' },
-      { id: 'doc-2-2', name: 'Supplier Shortlist.xlsx', type: 'Excel', uploadDate: '2023-09-15', url: '#' },
-    ],
+    documents: [],
     notes: 'Engine compatibility tests are showing unexpected wear, causing delays. Regulatory submission is blocked pending results from these tests. This puts the project timeline at risk.',
     team: [users[1], users[0], users[4], users[2]],
     subProjects: [],
@@ -73,10 +67,7 @@ export const projects: Project[] = [
       { id: 'task-3-3', title: 'Image Recognition AI Training', assigneeId: 'user-4', dueDate: '2024-09-30', status: 'To Do' },
       { id: 'task-3-4', title: 'Field Trials', assigneeId: 'user-2', dueDate: '2024-11-15', status: 'To Do' },
     ],
-    documents: [
-      { id: 'doc-3-1', name: 'Drone Spec Sheet.pdf', type: 'PDF', uploadDate: '2024-02-10', url: '#' },
-      { id: 'doc-3-2', name: 'AI Model Proposal.docx', type: 'Word', uploadDate: '2024-03-20', url: '#' },
-    ],
+    documents: [],
     notes: 'Flight control software development is significantly behind schedule due to unforeseen complexities. This has a knock-on effect on all subsequent tasks, jeopardizing the project completion date.',
     team: [users[2], users[0], users[3], users[1]],
     subProjects: [],
@@ -95,9 +86,7 @@ export const projects: Project[] = [
       { id: 'task-4-3', title: 'In-Flight Entertainment System Upgrade', assigneeId: 'user-1', dueDate: '2024-08-15', status: 'Done' },
       { id: 'task-4-4', title: 'Launch Marketing Campaign', assigneeId: 'user-2', dueDate: '2024-09-15', status: 'Done' },
     ],
-    documents: [
-        { id: 'doc-4-1', name: 'Final Designs.pdf', type: 'PDF', uploadDate: '2024-06-01', url: '#' },
-    ],
+    documents: [],
     notes: 'Project completed successfully across all deliverables. Customer feedback on the new experience has been overwhelmingly positive. Marketing campaign generated significant buzz.',
     team: [users[3], users[2], users[0], users[1]],
     subProjects: [],
