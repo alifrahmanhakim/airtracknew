@@ -26,8 +26,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import type { SubProject } from '@/lib/types';
+import { addSubProject } from '@/lib/actions';
 
 const subProjectSchema = z.object({
   name: z.string().min(1, 'Sub-project name is required.'),
@@ -37,11 +38,13 @@ const subProjectSchema = z.object({
 type SubProjectFormValues = z.infer<typeof subProjectSchema>;
 
 type AddSubProjectDialogProps = {
+  projectId: string;
   onSubProjectAdd: (newSubProject: SubProject) => void;
 };
 
-export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProps) {
+export function AddSubProjectDialog({ projectId, onSubProjectAdd }: AddSubProjectDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<SubProjectFormValues>({
@@ -52,20 +55,33 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
     },
   });
 
-  const onSubmit = (data: SubProjectFormValues) => {
+  const onSubmit = async (data: SubProjectFormValues) => {
+    setIsSubmitting(true);
     const newSubProject: SubProject = {
       id: `subproj-${Date.now()}`,
       name: data.name,
       description: data.description,
       status: 'On Track', 
     };
-    onSubProjectAdd(newSubProject);
-    toast({
-      title: 'Sub-Project Added',
-      description: `"${data.name}" has been successfully added.`,
-    });
-    setOpen(false);
-    form.reset();
+    
+    const result = await addSubProject(projectId, newSubProject);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      onSubProjectAdd(newSubProject);
+      toast({
+        title: 'Sub-Project Added',
+        description: `"${data.name}" has been successfully added.`,
+      });
+      setOpen(false);
+      form.reset();
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || 'Failed to add sub-project.',
+        });
+    }
   };
 
   return (
@@ -112,7 +128,10 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
               )}
             />
             <DialogFooter>
-              <Button type="submit">Add Sub-Project</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Add Sub-Project
+              </Button>
             </DialogFooter>
           </form>
         </Form>

@@ -33,11 +33,12 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Task, User } from '@/lib/types';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon, Loader2, Plus } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
+import { addTask } from '@/lib/actions';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
@@ -48,12 +49,14 @@ const taskSchema = z.object({
 type TaskFormValues = z.infer<typeof taskSchema>;
 
 type AddTaskDialogProps = {
+  projectId: string;
   onTaskAdd: (newTask: Task) => void;
   teamMembers: User[];
 };
 
-export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
+export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<TaskFormValues>({
@@ -64,7 +67,8 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
     },
   });
 
-  const onSubmit = (data: TaskFormValues) => {
+  const onSubmit = async (data: TaskFormValues) => {
+    setIsSubmitting(true);
     const newTask: Task = {
       id: `task-${Date.now()}`,
       title: data.title,
@@ -72,13 +76,25 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
       status: 'To Do',
     };
-    onTaskAdd(newTask);
-    toast({
-      title: 'Task Added',
-      description: `"${data.title}" has been successfully added.`,
-    });
-    setOpen(false);
-    form.reset();
+    
+    const result = await addTask(projectId, newTask);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      onTaskAdd(newTask);
+      toast({
+        title: 'Task Added',
+        description: `"${data.title}" has been successfully added.`,
+      });
+      setOpen(false);
+      form.reset();
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || 'Failed to add task.',
+        });
+    }
   };
 
   return (
@@ -174,7 +190,10 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
               />
             </div>
             <DialogFooter>
-              <Button type="submit">Add Task</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Add Task
+              </Button>
             </DialogFooter>
           </form>
         </Form>

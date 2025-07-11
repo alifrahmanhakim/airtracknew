@@ -33,11 +33,12 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Task, User } from '@/lib/types';
-import { CalendarIcon, Pencil } from 'lucide-react';
+import { CalendarIcon, Loader2, Pencil } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
+import { updateTask } from '@/lib/actions';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
@@ -49,13 +50,15 @@ const taskSchema = z.object({
 type TaskFormValues = z.infer<typeof taskSchema>;
 
 type EditTaskDialogProps = {
+  projectId: string;
   task: Task;
   onTaskUpdate: (updatedTask: Task) => void;
   teamMembers: User[];
 };
 
-export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDialogProps) {
+export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<TaskFormValues>({
@@ -68,18 +71,31 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
     },
   });
 
-  const onSubmit = (data: TaskFormValues) => {
+  const onSubmit = async (data: TaskFormValues) => {
+    setIsSubmitting(true);
     const updatedTask: Task = {
       ...task,
       ...data,
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
     };
-    onTaskUpdate(updatedTask);
-    toast({
-      title: 'Task Updated',
-      description: `"${data.title}" has been successfully updated.`,
-    });
-    setOpen(false);
+    
+    const result = await updateTask(projectId, updatedTask);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      onTaskUpdate(updatedTask);
+      toast({
+        title: 'Task Updated',
+        description: `"${data.title}" has been successfully updated.`,
+      });
+      setOpen(false);
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || 'Failed to update task.',
+        });
+    }
   };
 
   return (
@@ -198,7 +214,10 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
             </DialogFooter>
           </form>
         </Form>

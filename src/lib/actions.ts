@@ -6,10 +6,9 @@ import {
   type SummarizeProjectStatusInput,
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
-import { projects } from './data';
-import type { Document, Project, User } from './types';
+import type { Document, Project, SubProject, Task, User } from './types';
 import { db } from './firebase';
-import { doc, updateDoc, arrayUnion, collection, addDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
 
@@ -43,7 +42,6 @@ export async function addDocument(
       uploadDate: new Date().toISOString(),
     };
 
-    // Update Firestore
     const projectRef = doc(db, 'projects', projectId);
     await updateDoc(projectRef, {
       documents: arrayUnion(newDocument)
@@ -66,7 +64,6 @@ export async function addProject(
     projectData: Omit<Project, 'id'>
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
     try {
-      // Firestore expects plain objects, so we need to convert User objects to simple IDs or maps
       const preparedProjectData = {
         ...projectData,
         team: projectData.team.map(member => ({
@@ -75,10 +72,14 @@ export async function addProject(
           role: member.role,
           avatarUrl: member.avatarUrl,
         })),
+        tasks: [],
+        subProjects: [],
+        documents: [],
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
-      revalidatePath('/dashboard'); // This tells Next.js to refresh the data on the dashboard page
+      revalidatePath('/dashboard');
+      revalidatePath('/projects');
       return { success: true, data: { id: docRef.id } };
     } catch (error) {
       console.error('Add Project Error:', error);
@@ -87,5 +88,117 @@ export async function addProject(
         success: false,
         error: `Failed to add project: ${message}`,
       };
+    }
+}
+
+export async function updateProject(
+    projectId: string,
+    projectData: Omit<Project, 'id' | 'tasks' | 'subProjects' | 'documents'>
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        
+        // Ensure team data is in the correct format for Firestore
+        const preparedData = {
+            ...projectData,
+            team: projectData.team.map(member => ({
+                id: member.id,
+                name: member.name,
+                role: member.role,
+                avatarUrl: member.avatarUrl,
+            })),
+        };
+        
+        await updateDoc(projectRef, preparedData);
+        revalidatePath(`/projects/${projectId}`);
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        console.error('Update Project Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to update project: ${message}` };
+    }
+}
+
+
+export async function addTask(
+    projectId: string,
+    taskData: Task
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        await updateDoc(projectRef, {
+            tasks: arrayUnion(taskData)
+        });
+        revalidatePath(`/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Add Task Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to add task: ${message}` };
+    }
+}
+
+export async function updateTask(
+    projectId: string,
+    updatedTask: Task
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists()) {
+            const project = projectSnap.data() as Project;
+            const tasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+            await updateDoc(projectRef, { tasks });
+            revalidatePath(`/projects/${projectId}`);
+            return { success: true };
+        } else {
+            throw new Error("Project not found");
+        }
+    } catch (error) {
+        console.error('Update Task Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to update task: ${message}` };
+    }
+}
+
+export async function addSubProject(
+    projectId: string,
+    subProjectData: SubProject
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        await updateDoc(projectRef, {
+            subProjects: arrayUnion(subProjectData)
+        });
+        revalidatePath(`/projects/${projectId}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Add Sub-Project Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to add sub-project: ${message}` };
+    }
+}
+
+export async function updateSubProject(
+    projectId: string,
+    updatedSubProject: SubProject
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists()) {
+            const project = projectSnap.data() as Project;
+            const subProjects = project.subProjects.map(sp => sp.id === updatedSubProject.id ? updatedSubProject : sp);
+            await updateDoc(projectRef, { subProjects });
+            revalidatePath(`/projects/${projectId}`);
+            return { success: true };
+        } else {
+            throw new Error("Project not found");
+        }
+    } catch (error) {
+        console.error('Update Sub-Project Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to update sub-project: ${message}` };
     }
 }

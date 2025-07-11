@@ -26,9 +26,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Pencil } from 'lucide-react';
+import { Loader2, Pencil } from 'lucide-react';
 import type { SubProject } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { updateSubProject } from '@/lib/actions';
 
 const subProjectSchema = z.object({
   name: z.string().min(1, 'Sub-project name is required.'),
@@ -39,12 +40,14 @@ const subProjectSchema = z.object({
 type SubProjectFormValues = z.infer<typeof subProjectSchema>;
 
 type EditSubProjectDialogProps = {
+  projectId: string;
   subProject: SubProject;
   onSubProjectUpdate: (newSubProject: SubProject) => void;
 };
 
-export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSubProjectDialogProps) {
+export function EditSubProjectDialog({ projectId, subProject, onSubProjectUpdate }: EditSubProjectDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<SubProjectFormValues>({
@@ -56,17 +59,30 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
     },
   });
 
-  const onSubmit = (data: SubProjectFormValues) => {
+  const onSubmit = async (data: SubProjectFormValues) => {
+    setIsSubmitting(true);
     const updatedSubProject: SubProject = {
       ...subProject,
       ...data,
     };
-    onSubProjectUpdate(updatedSubProject);
-    toast({
-      title: 'Sub-Project Updated',
-      description: `"${data.name}" has been successfully updated.`,
-    });
-    setOpen(false);
+    
+    const result = await updateSubProject(projectId, updatedSubProject);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      onSubProjectUpdate(updatedSubProject);
+      toast({
+        title: 'Sub-Project Updated',
+        description: `"${data.name}" has been successfully updated.`,
+      });
+      setOpen(false);
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || 'Failed to update sub-project.',
+        });
+    }
   };
 
   return (
@@ -136,7 +152,10 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
             </DialogFooter>
           </form>
         </Form>

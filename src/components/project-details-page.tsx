@@ -2,7 +2,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import type { Project, Task, User, SubProject } from '@/lib/types';
+import type { Project, Task, User, SubProject, Document as ProjectDocument } from '@/lib/types';
 import { findUserById } from '@/lib/data';
 import {
   Card,
@@ -54,41 +54,34 @@ type ProjectDetailsPageProps = {
 
 export function ProjectDetailsPage({ project: initialProject, users }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
-  const [documents, setDocuments] = useState<Project['documents']>(initialProject.documents || []);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // States for tasks and sub-projects are derived from the main project state
-  const tasks = project.tasks || [];
-  const subProjects = project.subProjects || [];
-  
-  const handleProjectUpdate = (updatedProject: Project) => {
-    setProject(updatedProject);
+  const handleProjectUpdate = (updatedProjectData: Partial<Project>) => {
+    setProject(prev => ({ ...prev, ...updatedProjectData }));
   };
 
   const handleTaskAdd = (newTask: Task) => {
-    const updatedProject = { ...project, tasks: [...tasks, newTask] };
-    setProject(updatedProject);
-    // Here you would also call a server action to update the project in the DB
+    setProject(prev => ({...prev, tasks: [...(prev.tasks || []), newTask]}));
   };
 
   const handleTaskUpdate = (updatedTask: Task) => {
-    const updatedProject = { ...project, tasks: tasks.map(task => task.id === updatedTask.id ? updatedTask : task) };
-    setProject(updatedProject);
-    // Here you would also call a server action to update the project in the DB
+    setProject(prev => ({
+        ...prev, 
+        tasks: (prev.tasks || []).map(task => task.id === updatedTask.id ? updatedTask : task)
+    }));
   }
 
   const handleSubProjectAdd = (newSubProject: SubProject) => {
-    const updatedProject = { ...project, subProjects: [...subProjects, newSubProject] };
-    setProject(updatedProject);
-    // Here you would also call a server action to update the project in the DB
+    setProject(prev => ({...prev, subProjects: [...(prev.subProjects || []), newSubProject]}));
   }
 
   const handleSubProjectUpdate = (updatedSubProject: SubProject) => {
-    const updatedProject = { ...project, subProjects: subProjects.map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub) };
-    setProject(updatedProject);
-     // Here you would also call a server action to update the project in the DB
+     setProject(prev => ({
+        ...prev,
+        subProjects: (prev.subProjects || []).map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub)
+     }));
   }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,8 +94,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     
-    // Simple logic to determine file type from extension
-    const getFileType = (fileName: string): Project['documents'][0]['type'] => {
+    const getFileType = (fileName: string): ProjectDocument['type'] => {
         const extension = fileName.split('.').pop()?.toLowerCase();
         if (extension === 'pdf') return 'PDF';
         if (extension === 'doc' || extension === 'docx') return 'Word';
@@ -114,14 +106,14 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     const newDocumentData = {
         name: file.name,
         type: getFileType(file.name),
-        url: '#', // In a real app, this would be the URL from cloud storage
+        url: '#', 
     };
 
     const result = await addDocument(project.id, newDocumentData);
     setIsUploading(false);
 
     if (result.success && result.data) {
-        setDocuments([...documents, result.data]);
+        setProject(prev => ({ ...prev, documents: [...(prev.documents || []), result.data as ProjectDocument] }));
         toast({
             title: "Upload Successful",
             description: `${file.name} has been added to the project.`,
@@ -133,13 +125,12 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
             description: result.error,
         });
     }
-     // Reset file input
      if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
   }
 
-  const getDocumentIcon = (type: Project['documents'][0]['type']) => {
+  const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
       case 'PDF':
         return <FileText className="h-6 w-6 text-red-600" />;
@@ -169,6 +160,9 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   }
 
   const projectManager = findUserById(project.ownerId || users[0].id);
+  const tasks = project.tasks || [];
+  const documents = project.documents || [];
+  const subProjects = project.subProjects || [];
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
@@ -180,7 +174,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
-        <EditProjectDialog project={project} onProjectUpdate={handleProjectUpdate} allUsers={users} />
+        <EditProjectDialog project={project} onProjectUpdate={() => {}} allUsers={users} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -191,7 +185,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList /> Tasks
               </CardTitle>
-              <AddTaskDialog onTaskAdd={handleTaskAdd} teamMembers={project.team} />
+              <AddTaskDialog projectId={project.id} onTaskAdd={handleTaskAdd} teamMembers={project.team} />
             </CardHeader>
             <CardContent>
               <Table>
@@ -230,7 +224,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                            <EditTaskDialog task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
+                            <EditTaskDialog projectId={project.id} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
                         </TableCell>
                       </TableRow>
                     );
@@ -268,7 +262,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1">
                                 <p className="font-medium truncate">{doc.name}</p>
-                                <p className="text-xs text-muted-foreground">Uploaded: {format(parseISO(doc.uploadDate), 'PPP')}</p>
+                                {doc.uploadDate && <p className="text-xs text-muted-foreground">Uploaded: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
                             </div>
                           </div>
                         ))}
@@ -285,7 +279,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 <CardTitle className="flex items-center gap-2">
                     <Folder /> Sub-Projects
                 </CardTitle>
-                <AddSubProjectDialog onSubProjectAdd={handleSubProjectAdd} />
+                <AddSubProjectDialog projectId={project.id} onSubProjectAdd={handleSubProjectAdd} />
             </CardHeader>
             <CardContent>
               {subProjects.length > 0 ? (
@@ -300,7 +294,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                         <Badge variant="outline" className={cn("text-xs font-semibold", subProjectStatusStyles[sub.status])}>
                             {sub.status}
                         </Badge>
-                        <EditSubProjectDialog subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
+                        <EditSubProjectDialog projectId={project.id} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
                       </div>
                     </div>
                   ))}

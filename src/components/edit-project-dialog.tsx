@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -35,12 +36,13 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Project, User } from '@/lib/types';
-import { CalendarIcon, Pencil } from 'lucide-react';
+import { CalendarIcon, Loader2, Pencil } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
+import { updateProject } from '@/lib/actions';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -50,6 +52,7 @@ const projectSchema = z.object({
   endDate: z.date(),
   notes: z.string().optional(),
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
+  ownerId: z.string(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -62,7 +65,9 @@ type EditProjectDialogProps = {
 
 export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditProjectDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const userOptions: MultiSelectOption[] = allUsers.map(user => ({
     value: user.id,
@@ -79,25 +84,44 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
       endDate: new Date(project.endDate),
       notes: project.notes,
       team: project.team.map(user => user.id),
+      ownerId: project.ownerId,
     },
   });
 
-  const onSubmit = (data: ProjectFormValues) => {
+  const onSubmit = async (data: ProjectFormValues) => {
+    setIsSubmitting(true);
+    
     const updatedTeam = data.team.map(userId => allUsers.find(u => u.id === userId)).filter(Boolean) as User[];
     
-    const updatedProject = { 
-        ...project, 
-        ...data,
+    const projectUpdateData = { 
+        name: data.name,
+        description: data.description,
+        status: data.status,
         startDate: format(data.startDate, 'yyyy-MM-dd'),
         endDate: format(data.endDate, 'yyyy-MM-dd'),
+        notes: data.notes ?? '',
         team: updatedTeam,
+        ownerId: data.ownerId,
     };
-    onProjectUpdate(updatedProject);
-    toast({
-        title: 'Project Updated',
-        description: `"${project.name}" has been successfully updated.`,
-    });
-    setOpen(false);
+    
+    const result = await updateProject(project.id, projectUpdateData);
+    
+    setIsSubmitting(false);
+
+    if (result.success) {
+        toast({
+            title: 'Project Updated',
+            description: `"${project.name}" has been successfully updated.`,
+        });
+        setOpen(false);
+        // The revalidatePath in the server action will handle refreshing the data.
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || 'Failed to update the project.',
+        });
+    }
   };
 
   return (
@@ -280,7 +304,10 @@ export function EditProjectDialog({ project, onProjectUpdate, allUsers }: EditPr
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save changes
+              </Button>
             </DialogFooter>
           </form>
         </Form>
