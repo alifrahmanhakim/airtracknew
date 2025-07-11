@@ -23,36 +23,25 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-
-  const statusVariant: { [key in Project['status']]: 'default' | 'destructive' | 'secondary' | 'outline' } = {
-    'On Track': 'default',
-    'At Risk': 'secondary',
-    'Off Track': 'destructive',
-    'Completed': 'outline',
-  };
   
-  const statusColor: { [key in Project['status']]: string } = {
-    'On Track': 'bg-blue-500',
-    'At Risk': 'bg-yellow-500',
-    'Off Track': 'bg-red-500',
-    'Completed': 'bg-green-500',
+  const statusStyles: { [key in Project['status']]: string } = {
+    'On Track': 'bg-blue-500 hover:bg-blue-600 text-white border-transparent',
+    'At Risk': 'bg-yellow-500 hover:bg-yellow-600 text-white border-transparent',
+    'Off Track': 'bg-red-500 hover:bg-red-600 text-white border-transparent',
+    'Completed': 'bg-green-500 hover:bg-green-600 text-white border-transparent',
   }
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg">
+          <CardTitle className="text-lg font-semibold">
              <Link href={`/projects/${project.id}`} className="hover:underline">
                 {name}
             </Link>
           </CardTitle>
           <Badge
-            variant={statusVariant[status]}
-            className={cn({
-              'bg-yellow-400 text-yellow-900': status === 'At Risk',
-              'bg-green-100 text-green-800 border-green-300': status === 'Completed',
-            })}
+            className={cn("text-xs font-bold", statusStyles[status])}
           >
             {status}
           </Badge>
@@ -63,7 +52,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+          <span className="text-sm font-semibold text-muted-foreground w-12 text-right">{Math.round(progress)}%</span>
           <Progress value={progress} className="flex-1" />
         </div>
       </CardContent>

@@ -27,7 +27,7 @@ export default function LoginPage() {
             </div>
           <CardTitle className="text-2xl">AirTrack Login</CardTitle>
           <CardDescription>
-            Selamat datang kembali! Silakan masuk ke akun Anda.
+            Selamat datang! Silakan masuk untuk melanjutkan.
           </CardDescription>
         </CardHeader>
         <CardContent>
