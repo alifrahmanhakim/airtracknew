@@ -48,25 +48,34 @@ export function AiSummaryDialog({ taskCompletion, notes: initialNotes }: AiSumma
     }
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setSummary(null);
+      setIsLoading(false);
+      setNotes(initialNotes);
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Sparkles className="mr-2 h-4 w-4" />
-          AI Summary
+          Ringkasan AI
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Generate AI Summary</DialogTitle>
+          <DialogTitle>Buat Ringkasan AI</DialogTitle>
           <DialogDescription>
-            Review the project notes and task completion, then generate a concise summary.
+            Tinjau catatan proyek dan penyelesaian tugas, lalu buat ringkasan singkat.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="task-completion" className="text-right">
-              Completion
+              Penyelesaian
             </Label>
             <div id="task-completion" className="col-span-3 font-medium">
               {taskCompletion}%
@@ -74,37 +83,37 @@ export function AiSummaryDialog({ taskCompletion, notes: initialNotes }: AiSumma
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="notes" className="text-right pt-2">
-              Notes
+              Catatan
             </Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="col-span-3"
-              rows={5}
+              rows={8}
             />
           </div>
         </div>
         {isLoading && (
           <div className="flex items-center justify-center p-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-2">Generating summary...</p>
+            <p className="ml-2">Membuat ringkasan...</p>
           </div>
         )}
         {summary && (
           <Alert>
             <Sparkles className="h-4 w-4" />
-            <AlertTitle>AI Generated Summary</AlertTitle>
+            <AlertTitle>Ringkasan yang Dihasilkan AI</AlertTitle>
             <AlertDescription>
                 <p className="mt-2">{summary.summary}</p>
-                <p className="text-xs text-muted-foreground mt-2">{summary.progress}</p>
+                <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">{summary.progress}</p>
             </AlertDescription>
           </Alert>
         )}
         <DialogFooter>
           <Button onClick={handleGenerateSummary} disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-            Generate
+            Buat
           </Button>
         </DialogFooter>
       </DialogContent>

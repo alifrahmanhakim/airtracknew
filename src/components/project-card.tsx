@@ -21,14 +21,14 @@ type ProjectCardProps = {
 export function ProjectCard({ project }: ProjectCardProps) {
   const { name, status, endDate, tasks, notes } = project;
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((task) => task.status === 'Done').length;
+  const completedTasks = tasks.filter((task) => task.status === 'Selesai').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const statusStyles: { [key in Project['status']]: string } = {
-    'On Track': 'bg-blue-500 hover:bg-blue-600 text-white border-transparent',
-    'At Risk': 'bg-yellow-500 hover:bg-yellow-600 text-white border-transparent',
-    'Off Track': 'bg-red-500 hover:bg-red-600 text-white border-transparent',
-    'Completed': 'bg-green-500 hover:bg-green-600 text-white border-transparent',
+    'Sesuai Jalur': 'border-transparent bg-blue-500 hover:bg-blue-600 text-white',
+    'Beresiko': 'border-transparent bg-yellow-500 hover:bg-yellow-600 text-white',
+    'Keluar Jalur': 'border-transparent bg-red-500 hover:bg-red-600 text-white',
+    'Selesai': 'border-transparent bg-green-500 hover:bg-green-600 text-white',
   }
 
   return (
@@ -47,7 +47,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </Badge>
         </div>
         <CardDescription>
-          Deadline: {format(parseISO(endDate), 'PPP')}
+          Batas Waktu: {format(parseISO(endDate), 'PPP')}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">

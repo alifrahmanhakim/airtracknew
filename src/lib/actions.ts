@@ -8,6 +8,6 @@ export async function getAiSummary(input: SummarizeProjectStatusInput): Promise<
         return { success: true, data: result };
     } catch (error) {
         console.error("AI Summary Error:", error);
-        return { success: false, error: 'Failed to generate AI summary. Please try again.' };
+        return { success: false, error: 'Gagal membuat ringkasan AI. Silakan coba lagi.' };
     }
 }
