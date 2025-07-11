@@ -48,6 +48,7 @@ import {
   Loader2,
   ListTree,
   BarChart2,
+  Info,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -219,7 +220,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
 
-        {project.projectType === 'Rulemaking' && project.adoptionData && project.adoptionData.length > 0 && (
+        {project.projectType === 'Rulemaking' && (
           <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -230,7 +231,15 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 </CardDescription>
             </CardHeader>
             <CardContent>
-              <AdoptionLevelDashboard data={project.adoptionData} />
+              {project.adoptionData && project.adoptionData.length > 0 ? (
+                  <AdoptionLevelDashboard data={project.adoptionData} />
+              ) : (
+                <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
+                  <Info className="mx-auto h-8 w-8 mb-2" />
+                  <p className="font-semibold">No Compliance Data Available</p>
+                  <p className="text-sm">Click 'Edit Compliance Data' to add the first State Letter record.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -481,3 +490,4 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
     </main>
   );
+}
