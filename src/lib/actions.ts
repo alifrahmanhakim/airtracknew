@@ -49,14 +49,7 @@ export async function addDocument(
       documents: arrayUnion(newDocument)
     });
 
-    // Also update the local data for immediate UI feedback until everything is on Firestore
-    const project = projects.find((p) => p.id === projectId);
-    if (project) {
-        project.documents.push(newDocument);
-    } else {
-        console.warn("Project not found in local data. UI might not update immediately.");
-    }
-
+    revalidatePath(`/projects/${projectId}`);
 
     return { success: true, data: newDocument };
   } catch (error) {
@@ -73,7 +66,18 @@ export async function addProject(
     projectData: Omit<Project, 'id'>
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
     try {
-      const docRef = await addDoc(collection(db, 'projects'), projectData);
+      // Firestore expects plain objects, so we need to convert User objects to simple IDs or maps
+      const preparedProjectData = {
+        ...projectData,
+        team: projectData.team.map(member => ({
+          id: member.id,
+          name: member.name,
+          role: member.role,
+          avatarUrl: member.avatarUrl,
+        })),
+      };
+
+      const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
       revalidatePath('/dashboard'); // This tells Next.js to refresh the data on the dashboard page
       return { success: true, data: { id: docRef.id } };
     } catch (error) {

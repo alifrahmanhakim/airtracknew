@@ -21,12 +21,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchProjects = async () => {
+      setIsLoading(true);
       if (userId) {
         try {
           const querySnapshot = await getDocs(collection(db, "projects"));
           const projectsFromDb: Project[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
           
-          const filteredProjects = getProjectsForUser(userId, projectsFromDb);
+          // Ensure subProjects and documents are arrays even if undefined in Firestore
+          const projectsWithDefaults = projectsFromDb.map(p => ({
+            ...p,
+            subProjects: p.subProjects || [],
+            documents: p.documents || [],
+          }));
+
+          const filteredProjects = getProjectsForUser(userId, projectsWithDefaults);
           setUserProjects(filteredProjects);
         } catch (error) {
           console.error("Error fetching projects from Firestore:", error);
@@ -38,12 +46,19 @@ export default function Dashboard() {
 
     if (userId) {
         fetchProjects();
+    } else {
+        // Handle case where user is not logged in yet
+        setIsLoading(false);
     }
   }, [userId]);
 
   if (isLoading) {
     return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <div className="flex items-center justify-between mb-4">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-10 w-32" />
+            </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Skeleton className="h-24" />
                 <Skeleton className="h-24" />
@@ -54,7 +69,6 @@ export default function Dashboard() {
                 <Skeleton className="h-80 lg:col-span-2" />
             </div>
              <div>
-                <Skeleton className="h-8 w-48 mb-4" />
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Skeleton className="h-48" />
                     <Skeleton className="h-48" />

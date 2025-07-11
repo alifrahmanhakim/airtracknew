@@ -114,7 +114,8 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       });
       setOpen(false);
       form.reset();
-      router.refresh(); // Refresh the page to show the new project
+      // The revalidatePath in the server action will handle refreshing the data.
+      // No need for router.refresh() here, which can sometimes be unreliable.
     } else {
       toast({
         variant: 'destructive',

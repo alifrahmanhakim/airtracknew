@@ -54,31 +54,41 @@ type ProjectDetailsPageProps = {
 
 export function ProjectDetailsPage({ project: initialProject, users }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
-  const [tasks, setTasks] = useState<Task[]>(initialProject.tasks);
-  const [subProjects, setSubProjects] = useState<SubProject[]>(initialProject.subProjects || []);
-  const [documents, setDocuments] = useState<Project['documents']>(initialProject.documents);
+  const [documents, setDocuments] = useState<Project['documents']>(initialProject.documents || []);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // States for tasks and sub-projects are derived from the main project state
+  const tasks = project.tasks || [];
+  const subProjects = project.subProjects || [];
+  
   const handleProjectUpdate = (updatedProject: Project) => {
     setProject(updatedProject);
   };
 
   const handleTaskAdd = (newTask: Task) => {
-    setTasks([...tasks, newTask]);
+    const updatedProject = { ...project, tasks: [...tasks, newTask] };
+    setProject(updatedProject);
+    // Here you would also call a server action to update the project in the DB
   };
 
   const handleTaskUpdate = (updatedTask: Task) => {
-    setTasks(tasks.map(task => task.id === updatedTask.id ? updatedTask : task));
+    const updatedProject = { ...project, tasks: tasks.map(task => task.id === updatedTask.id ? updatedTask : task) };
+    setProject(updatedProject);
+    // Here you would also call a server action to update the project in the DB
   }
 
   const handleSubProjectAdd = (newSubProject: SubProject) => {
-    setSubProjects([...subProjects, newSubProject]);
+    const updatedProject = { ...project, subProjects: [...subProjects, newSubProject] };
+    setProject(updatedProject);
+    // Here you would also call a server action to update the project in the DB
   }
 
   const handleSubProjectUpdate = (updatedSubProject: SubProject) => {
-    setSubProjects(subProjects.map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub));
+    const updatedProject = { ...project, subProjects: subProjects.map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub) };
+    setProject(updatedProject);
+     // Here you would also call a server action to update the project in the DB
   }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,7 +168,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     'Completed': 'border-transparent bg-green-500 text-white',
   }
 
-  const projectManager = findUserById(project.tasks[0]?.assigneeId || users[0].id);
+  const projectManager = findUserById(project.ownerId || users[0].id);
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
@@ -366,5 +376,4 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
       </div>
     </main>
   );
-
-    
+}
