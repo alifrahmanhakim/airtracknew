@@ -20,6 +20,8 @@ export const projects: Project[] = [
     startDate: '2023-01-15',
     endDate: '2024-12-31',
     status: 'On Track',
+    projectType: 'Tim Kerja',
+    tags: ['Core', 'Infrastructure'],
     tasks: [
       { id: 'task-1-1', title: 'System Architecture Design', assigneeId: 'user-1', startDate: '2023-02-01', dueDate: '2023-03-31', status: 'Done' },
       { id: 'task-1-2', title: 'Software Development - Phase 1', assigneeId: 'user-2', startDate: '2023-04-01', dueDate: '2023-08-31', status: 'Done' },
@@ -37,11 +39,15 @@ export const projects: Project[] = [
   {
     id: 'proj-2',
     ownerId: 'user-2',
-    name: 'Sustainable Aviation Fuel Initiative',
+    name: 'Certification Procedures for Products and Parts',
     description: 'Research and implementation of sustainable aviation fuels (SAFs) across the fleet to reduce carbon emissions.',
     startDate: '2023-06-01',
     endDate: '2025-05-30',
     status: 'At Risk',
+    projectType: 'Rulemaking',
+    annex: '8',
+    casr: '21',
+    tags: ['High Priority', 'Technical'],
     tasks: [
       { id: 'task-2-1', title: 'Supplier Identification & Vetting', assigneeId: 'user-2', startDate: '2023-07-01', dueDate: '2023-09-30', status: 'Done' },
       { id: 'task-2-2', title: 'Engine Compatibility Testing', assigneeId: 'user-1', startDate: '2023-10-01', dueDate: '2024-04-30', status: 'In Progress' },
@@ -61,6 +67,8 @@ export const projects: Project[] = [
     startDate: '2024-02-01',
     endDate: '2024-11-30',
     status: 'Off Track',
+    projectType: 'Tim Kerja',
+    tags: ['Innovation', 'Drones'],
     tasks: [
       { id: 'task-3-1', title: 'Drone Fleet Procurement', assigneeId: 'user-3', startDate: '2024-02-15', dueDate: '2024-03-15', status: 'Done' },
       { id: 'task-3-2', title: 'Flight Control Software Development', assigneeId: 'user-1', startDate: '2024-03-16', dueDate: '2024-07-31', status: 'In Progress' },
@@ -75,11 +83,15 @@ export const projects: Project[] = [
   {
     id: 'proj-4',
     ownerId: 'user-5',
-    name: 'Passenger Experience Overhaul',
+    name: 'General Operating and Flight Rules',
     description: 'A complete redesign of the in-flight passenger experience, from seating to entertainment.',
     startDate: '2024-01-10',
     endDate: '2024-09-20',
     status: 'Completed',
+    projectType: 'Rulemaking',
+    annex: '6',
+    casr: '91',
+    tags: ['Operations', 'Finalized'],
     tasks: [
       { id: 'task-4-1', title: 'Customer Feedback Surveys & Analysis', assigneeId: 'user-4', startDate: '2024-01-20', dueDate: '2024-02-28', status: 'Done' },
       { id: 'task-4-2', title: 'New Seat Design & Prototyping', assigneeId: 'user-3', startDate: '2024-03-01', dueDate: '2024-05-31', status: 'Done' },

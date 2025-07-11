@@ -19,7 +19,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -43,6 +42,7 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { updateProject } from '@/lib/actions';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -53,6 +53,10 @@ const projectSchema = z.object({
   notes: z.string().optional(),
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
   ownerId: z.string(),
+  projectType: z.enum(['Rulemaking', 'Tim Kerja'], { required_error: 'You must select a project type.' }),
+  annex: z.string().optional(),
+  casr: z.string().optional(),
+  tags: z.string().optional(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -84,15 +88,21 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
       notes: project.notes,
       team: project.team.map(user => user.id),
       ownerId: project.ownerId,
+      projectType: project.projectType,
+      annex: project.annex,
+      casr: project.casr,
+      tags: project.tags?.join(', '),
     },
   });
+
+  const projectType = form.watch('projectType');
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
     const updatedTeam = data.team.map(userId => allUsers.find(u => u.id === userId)).filter(Boolean) as User[];
     
-    const projectUpdateData = { 
+    const projectUpdateData: Partial<Project> = { 
         name: data.name,
         description: data.description,
         status: data.status,
@@ -101,6 +111,10 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
         notes: data.notes ?? '',
         team: updatedTeam,
         ownerId: data.ownerId,
+        projectType: data.projectType,
+        annex: data.annex,
+        casr: data.casr,
+        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
     };
     
     const result = await updateProject(project.id, projectUpdateData);
@@ -113,7 +127,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
             description: `"${project.name}" has been successfully updated.`,
         });
         setOpen(false);
-        router.refresh(); // Force a data refresh on the page
+        router.refresh();
     } else {
         toast({
             variant: 'destructive',
@@ -141,6 +155,37 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 pr-2">
             <FormField
+                control={form.control}
+                name="projectType"
+                render={({ field }) => (
+                    <FormItem className="space-y-3">
+                    <FormLabel>Project Type</FormLabel>
+                    <FormControl>
+                        <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex space-x-4"
+                        >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                            <RadioGroupItem value="Tim Kerja" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Tim Kerja</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                            <RadioGroupItem value="Rulemaking" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Rulemaking</FormLabel>
+                        </FormItem>
+                        </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+
+            <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
@@ -153,6 +198,38 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
                 </FormItem>
               )}
             />
+
+            {projectType === 'Rulemaking' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <FormField
+                  control={form.control}
+                  name="annex"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Annex</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 1" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="casr"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CASR</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 61" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="description"
@@ -283,6 +360,20 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
                       defaultValue={field.value}
                       placeholder="Select team members..."
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., High Priority, Core, Technical" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

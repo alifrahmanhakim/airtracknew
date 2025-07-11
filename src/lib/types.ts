@@ -33,7 +33,7 @@ export type SubProject = {
 export type Project = {
   id: string;
   name: string;
-  ownerId: string; // New field to associate project with a user
+  ownerId: string;
   description: string;
   startDate: string;
   endDate: string;
@@ -43,6 +43,10 @@ export type Project = {
   notes: string;
   team: User[];
   subProjects: SubProject[];
+  projectType: 'Rulemaking' | 'Tim Kerja';
+  annex?: string;
+  casr?: string;
+  tags?: string[];
 };
 
     

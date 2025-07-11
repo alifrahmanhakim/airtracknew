@@ -127,7 +127,7 @@ export async function addProject(
 
 export async function updateProject(
     projectId: string,
-    projectData: Partial<Omit<Project, 'id' | 'tasks' | 'subProjects' | 'documents'>>
+    projectData: Partial<Project>
 ): Promise<{ success: boolean; error?: string }> {
     try {
         const projectRef = doc(db, 'projects', projectId);
@@ -142,6 +142,9 @@ export async function updateProject(
                 avatarUrl: member.avatarUrl,
             }));
         }
+        
+        // Remove id from the update payload as we don't want to update the document id
+        delete updateData.id;
         
         await updateDoc(projectRef, updateData);
         revalidatePath(`/projects/${projectId}`);

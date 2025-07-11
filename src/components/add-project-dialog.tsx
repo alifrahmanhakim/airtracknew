@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { addProject } from '@/lib/actions';
 import { findUserById } from '@/lib/data';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -43,6 +44,10 @@ const projectSchema = z.object({
   startDate: z.date({ required_error: 'Start date is required.' }),
   endDate: z.date({ required_error: 'End date is required.' }),
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
+  projectType: z.enum(['Rulemaking', 'Tim Kerja'], { required_error: 'You must select a project type.' }),
+  annex: z.string().optional(),
+  casr: z.string().optional(),
+  tags: z.string().optional(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -68,8 +73,11 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       name: '',
       description: '',
       team: [],
+      projectType: 'Tim Kerja',
     },
   });
+
+  const projectType = form.watch('projectType');
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
@@ -101,6 +109,10 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       subProjects: [],
       documents: [],
       notes: '',
+      projectType: data.projectType,
+      annex: data.annex,
+      casr: data.casr,
+      tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
     };
     
     const result = await addProject(newProjectData);
@@ -114,8 +126,7 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       });
       setOpen(false);
       form.reset();
-      // The revalidatePath in the server action will handle refreshing the data.
-      // No need for router.refresh() here, which can sometimes be unreliable.
+      router.refresh();
     } else {
       toast({
         variant: 'destructive',
@@ -144,6 +155,37 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 pr-2">
             <FormField
               control={form.control}
+              name="projectType"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Project Type</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="Tim Kerja" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Tim Kerja</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="Rulemaking" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Rulemaking</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
@@ -155,6 +197,38 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                 </FormItem>
               )}
             />
+
+            {projectType === 'Rulemaking' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <FormField
+                  control={form.control}
+                  name="annex"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Annex</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 1" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="casr"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CASR</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 61" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="description"
@@ -261,6 +335,20 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                       defaultValue={field.value}
                       placeholder="Select team members..."
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., High Priority, Core, Technical" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
