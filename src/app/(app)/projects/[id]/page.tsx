@@ -24,7 +24,11 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
   useEffect(() => {
     const projectId = params.id;
-    if (!projectId) return;
+    if (!projectId) {
+      setIsLoading(false);
+      setError("No project ID provided.");
+      return;
+    };
 
     const fetchProject = async () => {
       setIsLoading(true);
@@ -46,7 +50,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
     };
 
     fetchProject();
-  }, [params]);
+  }, [params.id]);
 
   if (isLoading) {
     return (
