@@ -70,7 +70,8 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
     defaultValues: {
       title: task.title,
       assigneeId: task.assigneeId,
-      startDate: parseISO(task.startDate),
+      // Fallback for startDate to prevent crash on older data
+      startDate: parseISO(task.startDate || task.dueDate),
       dueDate: parseISO(task.dueDate),
       status: task.status,
     },
