@@ -14,6 +14,7 @@ import {
   startOfYear,
   endOfYear,
   eachDayOfInterval,
+  isSameMonth,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
@@ -74,10 +75,16 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
   }, [tasks]);
 
    React.useEffect(() => {
-    if (todayRef.current) {
-      todayRef.current.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+    if (todayRef.current && timelineRef.current) {
+        const timelineWidth = timelineRef.current.offsetWidth;
+        const todayPosition = todayRef.current.offsetLeft;
+        
+        timelineRef.current.scrollTo({
+            left: todayPosition - timelineWidth / 2,
+            behavior: 'smooth',
+        });
     }
-   }, [viewMode, days]);
+   }, [viewMode, days, months]);
 
   if (sortedTasks.length === 0) {
     return (
@@ -113,31 +120,37 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
 
     sortedTasks.forEach(task => {
         let taskStartOffset: number;
+        
+        const taskDueDate = parseISO(task.dueDate);
 
         if (viewMode === 'day') {
-            taskStartOffset = differenceInDays(parseISO(task.dueDate), timelineStart);
+            taskStartOffset = differenceInDays(taskDueDate, timelineStart);
         } else { // month view
-            const dayInYear = differenceInDays(parseISO(task.dueDate), startOfYear(parseISO(task.dueDate)));
-            const totalDaysInYear = differenceInDays(endOfYear(parseISO(task.dueDate)), startOfYear(parseISO(task.dueDate))) + 1;
-            const monthOffset = (parseISO(task.dueDate).getMonth() - timelineStart.getMonth() + 12 * (parseISO(task.dueDate).getFullYear() - timelineStart.getFullYear()));
-            taskStartOffset = monthOffset * MONTH_WIDTH + (dayInYear / totalDaysInYear) * MONTH_WIDTH * 0.8;
+            const monthIndex = taskDueDate.getMonth() - timelineStart.getMonth() + 12 * (taskDueDate.getFullYear() - timelineStart.getFullYear());
+            const dayInMonth = taskDueDate.getDate();
+            const daysInMonth = getDaysInMonth(taskDueDate);
+            taskStartOffset = (monthIndex * MONTH_WIDTH) + ((dayInMonth / daysInMonth) * MONTH_WIDTH);
         }
 
         let laneIndex = 0;
         
         while (true) {
-            if (!occupiedLanes[laneIndex] || occupiedLanes[laneIndex].end < (viewMode === 'day' ? taskStartOffset : (taskStartOffset/MONTH_WIDTH))) {
-                 occupiedLanes[laneIndex] = { end: (viewMode === 'day' ? taskStartOffset : (taskStartOffset/MONTH_WIDTH)) + (viewMode === 'day' ? 3 : 0.5) };
+            const currentOffset = viewMode === 'day' ? taskStartOffset * DAY_WIDTH : taskStartOffset;
+            if (!occupiedLanes[laneIndex] || occupiedLanes[laneIndex].end < currentOffset) {
+                const taskWidth = viewMode === 'day' ? 3 * DAY_WIDTH : MONTH_WIDTH / 2;
+                occupiedLanes[laneIndex] = { end: currentOffset + taskWidth + 10 /* gap */ };
                 break;
             }
             laneIndex++;
         }
+        
+        const taskWidth = viewMode === 'day' ? 3 * DAY_WIDTH : MONTH_WIDTH / 2;
 
         layouts.push({
             task: task,
             top: HEADER_HEIGHT + laneIndex * ROW_HEIGHT,
             left: viewMode === 'day' ? taskStartOffset * DAY_WIDTH : taskStartOffset,
-            width: viewMode === 'day' ? 3 * DAY_WIDTH : MONTH_WIDTH / 4,
+            width: taskWidth,
         });
     });
 
@@ -180,13 +193,17 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
           <div className="sticky top-0 z-20 flex h-16 bg-card border-b">
              {viewMode === 'day' ? (
                 // Day View Headers
-                 days.map((day, index) => (
-                  <div key={index} className="flex-shrink-0 flex flex-col items-center justify-center border-r" style={{ width: `${DAY_WIDTH}px` }}>
-                    <span className={cn("text-xs", {'font-bold text-primary': isToday(day)})}>{format(day, 'd')}</span>
-                    <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
-                     {isSameMonth(day, new Date()) && index === 0 && <span className="text-center font-semibold text-sm">{format(day, 'MMMM yyyy')}</span>}
-                  </div>
-                ))
+                 days.map((day, index) => {
+                    const monthLabel = format(day, 'MMMM yyyy');
+                    const isFirstDayOfMonth = day.getDate() === 1;
+                    return (
+                        <div key={index} className="flex-shrink-0 flex flex-col items-center justify-center border-r relative" style={{ width: `${DAY_WIDTH}px` }}>
+                            {isFirstDayOfMonth && <span className="absolute -top-4 text-center font-semibold text-xs">{monthLabel}</span>}
+                            <span className={cn("text-xs", {'font-bold text-primary': isToday(day)})}>{format(day, 'd')}</span>
+                            <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
+                        </div>
+                    );
+                 })
              ) : (
                 // Month View Headers
                 months.map((month) => (
@@ -218,7 +235,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
 
                 const todayLeft = viewMode === 'day' 
                     ? todayIndex * DAY_WIDTH + (DAY_WIDTH / 2)
-                    : months.findIndex(m => isSameMonth(m, new Date())) * MONTH_WIDTH + (new Date().getDate() / getDaysInMonth(new Date())) * MONTH_WIDTH;
+                    : months.findIndex(m => isSameMonth(m, new Date())) * MONTH_WIDTH + ((new Date().getDate()-1) / getDaysInMonth(new Date())) * MONTH_WIDTH;
 
                 return (
                     <div ref={todayRef} className="absolute top-0 bottom-0 w-1 bg-primary/50 z-0" style={{ left: `${todayLeft}px` }} >
