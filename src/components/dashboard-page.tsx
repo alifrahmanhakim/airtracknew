@@ -50,10 +50,10 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
 
   const chartConfig = {
     count: { label: 'Projects' },
-    'on-track': { label: 'On Track', color: 'hsl(217.2 91.2% 59.8%)' },
-    'at-risk': { label: 'At Risk', color: 'hsl(43 74% 66%)' },
-    'off-track': { label: 'Off Track', color: 'hsl(0 84.2% 60.2%)' },
-    'completed': { label: 'Completed', color: 'hsl(142.1 76.2% 36.3%)' },
+    'On Track': { label: 'On Track', color: 'hsl(var(--chart-1))' },
+    'At Risk': { label: 'At Risk', color: 'hsl(var(--chart-4))' },
+    'Off Track': { label: 'Off Track', color: 'hsl(var(--chart-5))' },
+    Completed: { label: 'Completed', color: 'hsl(var(--chart-2))' },
   };
 
   return (
