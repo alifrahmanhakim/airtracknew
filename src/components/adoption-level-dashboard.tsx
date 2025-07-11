@@ -58,11 +58,11 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 flex flex-col">
           <CardHeader>
             <CardTitle className="text-sm">Total Evaluation Status</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-grow">
             <ChartContainer config={chartConfig} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 5 }}>
@@ -71,9 +71,9 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                   <YAxis fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                   <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}/>
-                  <Bar dataKey="evaluated" stackId="a" fill={CHART_COLORS.blue} name="Evaluated" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="notEvaluated" stackId="a" fill={CHART_COLORS.orange} name="Not Evaluated" />
-                  <Bar dataKey="notFinishYet" stackId="a" fill={CHART_COLORS.red} name="Not Finish Yet" />
+                  <Bar dataKey="evaluated" stackId="a" fill="var(--color-evaluated)" name="Evaluated" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="notEvaluated" stackId="a" fill="var(--color-notEvaluated)" name="Not Evaluated" />
+                  <Bar dataKey="notFinishYet" stackId="a" fill="var(--color-notFinishYet)" name="Not Finish Yet" radius={[0, 0, 0, 0]}/>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -110,11 +110,11 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
             </CardContent>
         </Card>
 
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 flex flex-col">
           <CardHeader>
             <CardTitle className="text-sm">Total Subject & Status</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-grow">
             <ChartContainer config={{}} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 5 }}>
@@ -146,7 +146,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                     <YAxis fontSize={10} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}/>
-                    <Bar dataKey="existingInCasr" stackId="a" fill={CHART_COLORS.green} name="Existing in CASR" />
+                    <Bar dataKey="existingInCasr" stackId="a" fill={CHART_COLORS.green} name="Existing in CASR" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="draftInCasr" stackId="a" fill={CHART_COLORS.purple} name="Draft in CASR" />
                     <Bar dataKey="belumDiAdop" stackId="a" fill={CHART_COLORS.blue} name="Belum Diadop" />
                     <Bar dataKey="tidakDiAdop" stackId="a" fill={CHART_COLORS.gray} name="Tidak Diadop" />
@@ -170,7 +170,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                     <YAxis fontSize={10} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}/>
-                    <Bar dataKey="noDifference" stackId="a" fill={CHART_COLORS.green} name="No Difference" />
+                    <Bar dataKey="noDifference" stackId="a" fill={CHART_COLORS.green} name="No Difference" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="moreExactingOrExceeds" stackId="a" fill={CHART_COLORS.orange} name="More exacting or Exceeds" />
                     <Bar dataKey="differentInCharacter" stackId="a" fill={CHART_COLORS.blue} name="Different in character/Other means of compliance" />
                     <Bar dataKey="lessProtective" stackId="a" fill={CHART_COLORS.red} name="Less Protective" />
