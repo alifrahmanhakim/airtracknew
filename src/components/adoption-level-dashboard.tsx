@@ -38,15 +38,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
 
-  const percentageEvaluationData = useMemo(() => {
-    const total = data.reduce((acc, curr) => acc + curr.evaluated + curr.notEvaluated + curr.notFinishYet, 0);
-    const finished = data.reduce((acc, curr) => acc + curr.evaluated, 0);
-    const notFinishedYet = total - finished;
+  const { percentageEvaluationData, totalPercentage } = useMemo(() => {
+    const evaluated = data.reduce((acc, curr) => acc + curr.evaluated, 0);
+    const notEvaluated = data.reduce((acc, curr) => acc + curr.notEvaluated, 0);
+    const notFinishYet = data.reduce((acc, curr) => acc + curr.notFinishYet, 0);
     
-    return [
-      { name: 'Finished', value: finished, color: CHART_COLORS.blue },
-      { name: 'Not Finish Yet', value: notFinishedYet, color: CHART_COLORS.red },
-    ];
+    const total = evaluated + notEvaluated + notFinishYet;
+    
+    const finishedData = { name: 'Finished', value: evaluated, color: CHART_COLORS.blue };
+    const notFinishedYetData = { name: 'Not Finish Yet', value: notEvaluated + notFinishYet, color: CHART_COLORS.red };
+
+    return {
+      percentageEvaluationData: [finishedData, notFinishedYetData],
+      totalPercentage: total > 0 ? (evaluated / total) * 100 : 0
+    };
   }, [data]);
   
   const chartConfig = {
@@ -102,7 +107,16 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                                     <Cell key={`cell-${entry.name}`} fill={entry.color} />
                                 ))}
                             </Pie>
-                             <Legend iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
+                            <text
+                                x="50%"
+                                y="50%"
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                className="text-2xl font-bold fill-foreground"
+                            >
+                                {`${Math.round(totalPercentage)}%`}
+                            </text>
+                             <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartContainer>
