@@ -286,8 +286,8 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
              <CardContent>
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {(documents || []).map((doc) => (
-                          <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                        {(documents || []).map((doc, index) => (
+                          <div key={doc.id || index} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1 overflow-hidden">
                                 <p className="font-medium truncate">{doc.name}</p>
@@ -411,3 +411,5 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     </main>
   );
 }
+
+    
