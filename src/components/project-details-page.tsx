@@ -195,6 +195,9 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   if (!project) {
     return <div>Loading project details...</div>;
   }
+  
+  const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
+
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -293,7 +296,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                    <Paperclip /> Project Documents
+                    <Paperclip /> {documentsCardTitle}
                 </CardTitle>
                 <AddDocumentLinkDialog projectId={project.id} onDocumentAdd={handleDocumentAdd} />
              </CardHeader>
@@ -458,4 +461,5 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
     </main>
   );
-}
+
+    
