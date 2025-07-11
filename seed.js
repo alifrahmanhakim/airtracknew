@@ -5,8 +5,7 @@
 const { initializeApp } = require('firebase/app');
 const { getFirestore, collection, doc, setDoc } = require('firebase/firestore');
 
-// IMPORTANT: Replace this with your actual Firebase config from src/lib/firebase.ts
-// Note: This script runs in a Node.js environment, so it uses CommonJS `require` syntax.
+// IMPORTANT: This configuration is now aligned with your actual Firebase config from src/lib/firebase.ts
 const firebaseConfig = {
     apiKey: "AIzaSyCVT1PDkGdczXUP_LatsS6Q4K1h0xvXeT0",
     authDomain: "aoc-insight.firebaseapp.com",
