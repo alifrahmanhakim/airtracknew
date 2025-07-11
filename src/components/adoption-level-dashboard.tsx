@@ -59,10 +59,10 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
     <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Total Evaluation Status</CardTitle>
+            <CardTitle className="text-sm text-center">Total Evaluation Status</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-64">
+          <CardContent className="flex items-center justify-center">
+            <ChartContainer config={chartConfig} className="h-64 w-full max-w-lg">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                   <CartesianGrid vertical={false} />
@@ -81,7 +81,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
 
         <Card>
             <CardHeader>
-                <CardTitle className="text-sm">Percentage Evaluation</CardTitle>
+                <CardTitle className="text-sm text-center">Percentage Evaluation</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-center">
                  <ChartContainer config={{}} className="h-48 w-48">
@@ -111,10 +111,10 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Total Subject & Status</CardTitle>
+            <CardTitle className="text-sm text-center">Total Subject & Status</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={{}} className="h-64">
+          <CardContent className="flex items-center justify-center">
+            <ChartContainer config={{}} className="h-64 w-full max-w-lg">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                   <CartesianGrid vertical={false} />
@@ -133,10 +133,10 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Gap Status</CardTitle>
+          <CardTitle className="text-sm text-center">Gap Status</CardTitle>
         </CardHeader>
-        <CardContent>
-            <ChartContainer config={{}} className="h-64">
+        <CardContent className="flex items-center justify-center">
+            <ChartContainer config={{}} className="h-64 w-full max-w-lg">
                 <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                     <CartesianGrid vertical={false} />
@@ -157,10 +157,10 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
       
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Level of Implementation</CardTitle>
+          <CardTitle className="text-sm text-center">Level of Implementation</CardTitle>
         </CardHeader>
-        <CardContent>
-            <ChartContainer config={{}} className="h-64">
+        <CardContent className="flex items-center justify-center">
+            <ChartContainer config={{}} className="h-64 w-full max-w-lg">
                 <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                     <CartesianGrid vertical={false} />
