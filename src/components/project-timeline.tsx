@@ -165,7 +165,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
       <div className="flex w-full border-t">
         {/* Task List Pane (Fixed Left) */}
         <div 
-          className="bg-card z-10 border-r shrink-0"
+          className="bg-card z-20 border-r shrink-0"
           style={{ width: `${TASK_LIST_WIDTH}px`, height: `${totalHeight}px` }}
         >
             <div className="sticky top-0 flex items-center h-16 px-4 font-semibold border-b bg-card">
@@ -220,21 +220,22 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
               )}
             </div>
             
-            {/* Vertical Grid Lines - Rendered on top of rows but behind tasks */}
-            <div className="absolute top-0 left-0 w-full z-0" style={{ height: `${totalHeight}px` }}>
+            {/* Vertical Grid Lines & Horizontal Row Lines */}
+            <div className="absolute top-0 left-0 w-full h-full z-0">
+                {/* Vertical Lines */}
                 {days.map((day, index) => {
                     const isMonthStart = day.getDate() === 1;
                     return (
-                        <div key={`v-line-${index}`} className={cn(
-                            "absolute top-0 h-full border-r",
-                            isMonthStart ? "border-solid border-border" : "border-dashed border-border/50"
-                        )} style={{ left: `${(index + 1) * dayWidth}px` }} />
+                        <div key={`v-line-${index}`} 
+                             className={cn(
+                                "absolute top-0 h-full w-px",
+                                isMonthStart ? "bg-border" : "bg-border/80 border-l border-dashed border-border/80"
+                             )}
+                             style={{ left: `${(index + 1) * dayWidth - 1}px` }} 
+                        />
                     );
                 })}
-            </div>
-            
-            {/* Horizontal Row Lines */}
-            <div className="absolute top-0 left-0 w-full h-full -z-10">
+                {/* Horizontal Lines */}
                 {layouts.map(({ task, top }) => (
                      <div key={`h-line-${task.id}`} className="absolute w-full border-b border-border/50" style={{ top: `${HEADER_HEIGHT + top + ROW_HEIGHT -1}px`, height: '1px' }} />
                 ))}
