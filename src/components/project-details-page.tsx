@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState } from 'react';
-import type { Project, Task, User } from '@/lib/types';
+import type { Project, Task, User, SubProject } from '@/lib/types';
 import { findUserById } from '@/lib/data';
 import {
   Card,
@@ -39,6 +40,8 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Progress } from './ui/progress';
 import { EditProjectDialog } from './edit-project-dialog';
+import { AddTaskDialog } from './add-task-dialog';
+import { AddSubProjectDialog } from './add-subproject-dialog';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -48,6 +51,7 @@ type ProjectDetailsPageProps = {
 export function ProjectDetailsPage({ project: initialProject, users }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
   const [tasks, setTasks] = useState<Task[]>(initialProject.tasks);
+  const [subProjects, setSubProjects] = useState<SubProject[]>(initialProject.subProjects || []);
 
   const handleTaskCompletionChange = (taskId: string, completed: boolean) => {
     setTasks(
@@ -61,7 +65,16 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   
   const handleProjectUpdate = (updatedProject: Project) => {
     setProject(updatedProject);
+    // If team members were updated, we might need to reflect that
   };
+
+  const handleTaskAdd = (newTask: Task) => {
+    setTasks([...tasks, newTask]);
+  };
+
+  const handleSubProjectAdd = (newSubProject: SubProject) => {
+    setSubProjects([...subProjects, newSubProject]);
+  }
 
   const getDocumentIcon = (type: Project['documents'][0]['type']) => {
     switch (type) {
@@ -84,6 +97,13 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     'To Do': 'border-transparent bg-gray-400 text-white',
     'Blocked': 'border-transparent bg-red-500 text-white',
   };
+  
+  const subProjectStatusStyles: { [key in SubProject['status']]: string } = {
+    'On Track': 'bg-blue-500 text-blue-500',
+    'At Risk': 'bg-yellow-500 text-yellow-500',
+    'Off Track': 'bg-red-500 text-red-500',
+    'Completed': 'bg-green-500 text-green-500',
+  }
 
   const projectManager = findUserById(project.tasks[0]?.assigneeId || users[0].id);
   const totalTasks = tasks.length;
@@ -104,10 +124,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList /> Tahapan Kegiatan
               </CardTitle>
+              <AddTaskDialog onTaskAdd={handleTaskAdd} teamMembers={project.team} />
             </CardHeader>
             <CardContent>
               <Table>
@@ -121,7 +142,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tasks.map((task) => {
+                  {tasks.length > 0 ? tasks.map((task) => {
                     const assignee = findUserById(task.assigneeId);
                     const isCompleted = task.status === 'Done';
                     return (
@@ -156,7 +177,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                         </TableCell>
                       </TableRow>
                     );
-                  })}
+                  }) : (
+                    <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada tugas.</TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -196,14 +221,35 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           </Card>
           
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                     <Folder /> Sub-Proyek
                 </CardTitle>
+                <AddSubProjectDialog onSubProjectAdd={handleSubProjectAdd} />
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground">Fitur untuk menambah dan mengelola sub-proyek akan tersedia di sini.</p>
-                {/* Placeholder for sub-projects list */}
+              {subProjects.length > 0 ? (
+                <div className="space-y-4">
+                  {subProjects.map(sub => (
+                    <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div>
+                        <p className="font-semibold">{sub.name}</p>
+                        <p className="text-sm text-muted-foreground">{sub.description}</p>
+                      </div>
+                      <Badge variant="outline" className={cn("text-xs font-semibold", {
+                          'border-transparent bg-blue-500 text-white': sub.status === 'On Track',
+                          'border-transparent bg-yellow-500 text-white': sub.status === 'At Risk',
+                          'border-transparent bg-red-500 text-white': sub.status === 'Off Track',
+                          'border-transparent bg-green-500 text-white': sub.status === 'Completed',
+                      })}>
+                        {sub.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-4">Belum ada sub-proyek.</p>
+              )}
             </CardContent>
           </Card>
 

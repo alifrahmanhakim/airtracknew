@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -21,6 +22,13 @@ export type Task = {
   status: 'Done' | 'In Progress' | 'To Do' | 'Blocked';
 };
 
+export type SubProject = {
+  id: string;
+  name: string;
+  description: string;
+  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
+}
+
 export type Project = {
   id: string;
   name: string;
@@ -32,4 +40,5 @@ export type Project = {
   documents: Document[];
   notes: string;
   team: User[];
+  subProjects: SubProject[];
 };

@@ -1,3 +1,4 @@
+
 import type { User, Project } from './types';
 
 export const users: User[] = [
@@ -28,6 +29,10 @@ export const projects: Project[] = [
     ],
     notes: 'Phase 1 of software development completed ahead of schedule. Hardware integration is the current focus and is proceeding as planned. Team morale is high.',
     team: [users[0], users[1], users[2], users[3]],
+    subProjects: [
+        { id: 'sub-1-1', name: 'UI/UX Redesign', description: 'Redesign the user interface for the new system', status: 'On Track' },
+        { id: 'sub-1-2', name: 'Backend Refactor', description: 'Refactor the backend to improve performance', status: 'Completed' },
+    ],
   },
   {
     id: 'proj-2',
@@ -48,6 +53,7 @@ export const projects: Project[] = [
     ],
     notes: 'Engine compatibility tests are showing unexpected wear, causing delays. The regulatory approval is blocked pending results from these tests. This puts the project timeline at risk.',
     team: [users[1], users[0], users[4], users[2]],
+    subProjects: [],
   },
   {
     id: 'proj-3',
@@ -68,6 +74,7 @@ export const projects: Project[] = [
     ],
     notes: 'The development of the flight control software is significantly behind schedule due to unforeseen complexity. This has a cascading effect on all subsequent tasks, putting the project completion date in jeopardy.',
     team: [users[2], users[0], users[3], users[1]],
+    subProjects: [],
   },
   {
     id: 'proj-4',
@@ -87,6 +94,7 @@ export const projects: Project[] = [
     ],
     notes: 'Project completed successfully on all fronts. Customer feedback on the new experience has been overwhelmingly positive. The marketing campaign generated significant buzz.',
     team: [users[3], users[2], users[0], users[1]],
+    subProjects: [],
   },
 ];
 
