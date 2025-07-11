@@ -255,7 +255,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                     <TooltipTrigger asChild>
                     <div
                         className={cn(
-                        "absolute h-10 rounded-md text-white flex items-center justify-between px-3 cursor-pointer transition-all duration-200 shadow group",
+                        "absolute h-10 rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer transition-all duration-200 shadow group",
                         statusConfig[task.status].color
                         )}
                         style={{
@@ -264,8 +264,8 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                             width: `${width}px`,
                         }}
                     >
-                        <p className="text-xs font-semibold truncate flex-1">{task.title}</p>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity pl-2">
+                        <p className="text-xs font-semibold truncate">{task.title}</p>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                            <EditTaskDialog
                                 projectId={projectId}
                                 task={task}
