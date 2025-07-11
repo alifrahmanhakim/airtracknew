@@ -223,7 +223,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                                         "absolute top-0 h-full w-px",
                                         isMonthStart ? "bg-border" : "bg-transparent border-l border-dashed border-border/80"
                                     )}
-                                    style={{ left: `${(index + 1) * dayWidth -1}px`}} 
+                                    style={{ left: `${(index * dayWidth) + dayWidth -1}px`}} 
                                 />
                             );
                         })
@@ -236,7 +236,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                                         "absolute top-0 h-full w-px",
                                         isMonthStart ? "bg-border" : "bg-transparent border-l border-dashed border-border/80"
                                     )}
-                                    style={{ left: `${(index + 1) * WEEK_WIDTH - 1}px`}} 
+                                    style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} 
                                 />
                             );
                         })
@@ -263,7 +263,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                     }
 
                     return (
-                        <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-10" style={{ left: `${todayLeft}px` }} >
+                        <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
                             <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                 Today
                             </div>
