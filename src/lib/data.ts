@@ -2,11 +2,11 @@
 import type { User, Project, ComplianceDataRow, AdoptionDataPoint } from './types';
 
 export const users: User[] = [
+  { id: '8aOs7OSaL8XFXLq7DxzbnuXN5eC3', name: 'Chewy Sihusky', email: 'chewysihusky@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
   { id: 'user-1', name: 'Alex Johnson', email: 'alex.johnson@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
   { id: 'user-2', name: 'Maria Garcia', email: 'maria.garcia@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC' },
   { id: 'user-3', name: 'James Smith', email: 'james.smith@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC Assistant' },
   { id: 'user-4', name: 'Patricia Williams', email: 'patricia.williams@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
-  { id: 'user-5', name: 'Robert Brown', email: 'robert.brown@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
 ];
 
 // This data can be used to seed your Firestore database.
@@ -126,17 +126,21 @@ export function aggregateComplianceData(rawData: ComplianceDataRow[]): AdoptionD
   return Object.entries(groupedBySL).map(([sl, rows]) => {
     const point: AdoptionDataPoint = {
       sl: sl,
+      // Total Evaluation Status
       evaluated: rows.filter(r => r.evaluationStatus === 'Evaluated').length,
       notEvaluated: rows.filter(r => r.evaluationStatus === 'Not Evaluated').length,
       notFinishYet: rows.filter(r => r.evaluationStatus === 'Not Finish Yet').length,
+      // Total Subject & Status
       totalSubject: rows.filter(r => r.subjectStatus !== 'Not Applicable').length,
       standard: rows.filter(r => r.subjectStatus === 'Standard').length,
       recommendation: rows.filter(r => r.subjectStatus === 'Recommendation').length,
+      // Gap Status
       existingInCasr: rows.filter(r => r.gapStatus === 'Existing in CASR').length,
       draftInCasr: rows.filter(r => r.gapStatus === 'Draft in CASR').length,
       belumDiAdop: rows.filter(r => r.gapStatus === 'Belum Diadop').length,
       tidakDiAdop: rows.filter(r => r.gapStatus === 'Tidak Diadop').length,
       managementDecision: rows.filter(r => r.gapStatus === 'Management Decision').length,
+      // Level of Implementation
       noDifference: rows.filter(r => r.implementationLevel === 'No Difference').length,
       moreExactingOrExceeds: rows.filter(r => r.implementationLevel === 'More Exacting or Exceeds').length,
       differentInCharacter: rows.filter(r => r.implementationLevel === 'Different in Character').length,
@@ -159,4 +163,4 @@ export const getProjectsForUser = (userId: string, allProjects: Project[], allUs
 }
 
 export const findProjectById = (id: string, allProjects: Project[]) => allProjects.find(p => p.id === id);
-export const findUserById = (id: string, allUsers: User[]) => allUsers.find(u => u.id === id);
+export const findUserById = (id: string, allUsers: User[] = users) => allUsers.find(u => u.id === id);

@@ -7,23 +7,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Plane } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { users } from '@/lib/data';
 import { useState } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { User } from '@/lib/types';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedUserId) {
-        // In a real app, you'd handle auth and tokens.
-        // Here, we'll use localStorage to simulate a session.
-        localStorage.setItem('loggedInUserId', selectedUserId);
-        router.push('/dashboard');
-    } else {
-        alert("Please select a user to log in as.");
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setError("No user found with this email.");
+        setIsLoading(false);
+        return;
+      }
+      
+      const userDoc = querySnapshot.docs[0];
+      const userData = { id: userDoc.id, ...userDoc.data() } as User;
+
+      // In a real app, you'd also verify the password.
+      // Here, we'll just check if the user exists.
+      localStorage.setItem('loggedInUserId', userData.id);
+      router.push('/dashboard');
+
+    } catch (err) {
+      console.error("Login Error:", err);
+      setError("An error occurred during login. Please try again.");
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -38,37 +63,40 @@ export default function LoginPage() {
             </div>
           <CardTitle className="text-2xl">AirTrack Login</CardTitle>
           <CardDescription>
-            Welcome! Please log in to continue. (Simulation)
+            Welcome! Please log in to continue.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label>Simulate Login As</Label>
-              <Select onValueChange={setSelectedUserId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a user..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map(user => (
-                    <SelectItem key={user.id} value={user.id}>{user.name} ({user.role})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" defaultValue="test@example.com" />
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="m@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" defaultValue="password" />
+              <Input 
+                id="password" 
+                type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
+            
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login
             </Button>
+
             <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
