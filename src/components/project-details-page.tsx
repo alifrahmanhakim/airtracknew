@@ -46,6 +46,7 @@ import {
   Link as LinkIcon,
   Trash2,
   Loader2,
+  ListTimeline,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -60,6 +61,7 @@ import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
 import { deleteDocument } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { ProjectTimeline } from './project-timeline';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -175,13 +177,25 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         </div>
         <EditProjectDialog 
           project={project} 
-          allUsers={users} 
+          allUsers={users}
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <ListTimeline /> Project Timeline
+                </CardTitle>
+                <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ProjectTimeline tasks={tasks} />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
