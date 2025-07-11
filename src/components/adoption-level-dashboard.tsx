@@ -17,6 +17,7 @@ const CHART_COLORS = {
   orange: 'hsl(var(--chart-2))',
   green: 'hsl(var(--chart-4))',
   gray: 'hsl(var(--muted-foreground))',
+  purple: 'hsl(var(--chart-5))',
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -146,7 +147,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}/>
                     <Bar dataKey="existingInCasr" stackId="a" fill={CHART_COLORS.green} name="Existing in CASR" />
-                    <Bar dataKey="draftInCasr" stackId="a" fill="hsl(var(--chart-5))" name="Draft in CASR" />
+                    <Bar dataKey="draftInCasr" stackId="a" fill={CHART_COLORS.purple} name="Draft in CASR" />
                     <Bar dataKey="belumDiAdop" stackId="a" fill={CHART_COLORS.blue} name="Belum Diadop" />
                     <Bar dataKey="tidakDiAdop" stackId="a" fill={CHART_COLORS.gray} name="Tidak Diadop" />
                     <Bar dataKey="managementDecision" stackId="a" fill={CHART_COLORS.orange} name="Management Decision" />
@@ -173,7 +174,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
                     <Bar dataKey="moreExactingOrExceeds" stackId="a" fill={CHART_COLORS.orange} name="More exacting or Exceeds" />
                     <Bar dataKey="differentInCharacter" stackId="a" fill={CHART_COLORS.blue} name="Different in character/Other means of compliance" />
                     <Bar dataKey="lessProtective" stackId="a" fill={CHART_COLORS.red} name="Less Protective" />
-                    <Bar dataKey="significantDifference" stackId="a" fill="hsl(var(--chart-5))" name="Significant Difference" />
+                    <Bar dataKey="significantDifference" stackId="a" fill={CHART_COLORS.purple} name="Significant Difference" />
                     <Bar dataKey="notApplicable" stackId="a" fill={CHART_COLORS.gray} name="Not Applicable" />
                 </BarChart>
                 </ResponsiveContainer>
