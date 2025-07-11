@@ -46,7 +46,7 @@ import {
   Link as LinkIcon,
   Trash2,
   Loader2,
-  ListTimeline,
+  ListTree,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -187,7 +187,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <ListTimeline /> Project Timeline
+                    <ListTree /> Project Timeline
                 </CardTitle>
                 <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
             </CardHeader>
