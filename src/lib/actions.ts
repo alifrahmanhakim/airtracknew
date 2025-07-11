@@ -8,6 +8,9 @@ import {
 } from '@/ai/flows/summarize-project-status';
 import { projects } from './data';
 import type { Document } from './types';
+import { db } from './firebase';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+
 
 export async function getAiSummary(
   input: SummarizeProjectStatusInput
@@ -33,20 +36,26 @@ export async function addDocument(
   document: Omit<Document, 'id' | 'uploadDate'>
 ): Promise<{ success: boolean; data?: Document; error?: string }> {
   try {
-    // In a real app, this would save to a database.
-    // Here, we simulate it by updating the in-memory data.
-    const project = projects.find((p) => p.id === projectId);
-    if (!project) {
-      throw new Error('Project not found');
-    }
-
     const newDocument: Document = {
       ...document,
       id: `doc-${Date.now()}`,
       uploadDate: new Date().toISOString(),
     };
 
-    project.documents.push(newDocument);
+    // Update Firestore
+    const projectRef = doc(db, 'projects', projectId);
+    await updateDoc(projectRef, {
+      documents: arrayUnion(newDocument)
+    });
+
+    // Also update the local data for immediate UI feedback until everything is on Firestore
+    const project = projects.find((p) => p.id === projectId);
+    if (project) {
+        project.documents.push(newDocument);
+    } else {
+        console.warn("Project not found in local data. UI might not update immediately.");
+    }
+
 
     return { success: true, data: newDocument };
   } catch (error) {

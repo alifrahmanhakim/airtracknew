@@ -9,6 +9,8 @@ export const users: User[] = [
   { id: 'user-5', name: 'Robert Brown', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
 ];
 
+// This data can be used to seed your Firestore database.
+// The app will gradually be updated to read from Firestore instead of this static file.
 export const projects: Project[] = [
   {
     id: 'proj-1',
