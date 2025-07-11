@@ -20,6 +20,7 @@ async function fetchProjectData(id: string): Promise<Project | null> {
         const projectSnap = await getDoc(projectRef);
 
         if (projectSnap.exists()) {
+            // Ensure all fields including adoptionData are included
             return { id: projectSnap.id, ...projectSnap.data() } as Project;
         } else {
             return null;
