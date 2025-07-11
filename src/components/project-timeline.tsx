@@ -126,6 +126,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
   
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
+  const totalHeight = HEADER_HEIGHT + sortedTasks.length * ROW_HEIGHT;
 
   return (
     <TooltipProvider>
@@ -212,7 +213,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                 </div>
                 
                 {/* Vertical Grid Lines */}
-                <div className="absolute top-0 left-0 w-full h-full">
+                <div className="absolute top-0 left-0 w-full" style={{ height: `${totalHeight}px` }}>
                     {viewMode === 'day' ? (
                         days.map((day, index) => {
                             const isMonthStart = day.getDate() === 1;
@@ -220,7 +221,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                                 <div key={`v-line-${index}`} 
                                     className={cn(
                                         "absolute top-0 h-full w-px",
-                                        isMonthStart ? "bg-border" : "bg-border/80 border-l border-dashed border-border/80"
+                                        isMonthStart ? "bg-border" : "bg-transparent border-l border-dashed border-border/80"
                                     )}
                                     style={{ left: `${(index + 1) * dayWidth -1}px`}} 
                                 />
@@ -233,7 +234,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                                 <div key={`v-line-${index}`} 
                                     className={cn(
                                         "absolute top-0 h-full w-px",
-                                        isMonthStart ? "bg-border" : "bg-border/80 border-l border-dashed border-border/80"
+                                        isMonthStart ? "bg-border" : "bg-transparent border-l border-dashed border-border/80"
                                     )}
                                     style={{ left: `${(index + 1) * WEEK_WIDTH - 1}px`}} 
                                 />
