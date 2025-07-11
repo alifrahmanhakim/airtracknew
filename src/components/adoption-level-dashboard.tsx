@@ -57,15 +57,14 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1 flex flex-col">
+        <Card>
           <CardHeader>
             <CardTitle className="text-sm">Total Evaluation Status</CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow">
+          <CardContent>
             <ChartContainer config={chartConfig} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis fontSize={10} tickLine={false} axisLine={false} />
@@ -80,11 +79,11 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-1 flex flex-col">
+        <Card>
             <CardHeader>
                 <CardTitle className="text-sm">Percentage Evaluation</CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow flex items-center justify-center">
+            <CardContent className="flex items-center justify-center">
                  <ChartContainer config={{}} className="h-48 w-48">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -110,14 +109,14 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
             </CardContent>
         </Card>
 
-        <Card className="lg:col-span-1 flex flex-col">
+        <Card>
           <CardHeader>
             <CardTitle className="text-sm">Total Subject & Status</CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow">
+          <CardContent>
             <ChartContainer config={{}} className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis fontSize={10} tickLine={false} axisLine={false} />
@@ -131,7 +130,6 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>
 
       <Card>
         <CardHeader>
@@ -140,7 +138,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
         <CardContent>
             <ChartContainer config={{}} className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                     <YAxis fontSize={10} tickLine={false} axisLine={false} />
@@ -164,7 +162,7 @@ export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
         <CardContent>
             <ChartContainer config={{}} className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="sl" fontSize={10} tickLine={false} axisLine={false} />
                     <YAxis fontSize={10} tickLine={false} axisLine={false} />
