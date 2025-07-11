@@ -290,6 +290,12 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                      {documents.length === 0 && !isUploading && (
                         <p className="text-muted-foreground text-center py-4">No documents yet.</p>
                     )}
+                    {isUploading && (
+                        <div className="flex items-center justify-center p-4">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            <p className="ml-2">Uploading document...</p>
+                        </div>
+                    )}
                 </div>
              </CardContent>
           </Card>
