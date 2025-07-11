@@ -192,7 +192,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     'Completed': 'border-transparent bg-green-500 text-white',
   }
 
-  const projectManager = findUserById(project.ownerId || users[0].id);
+  const projectManager = findUserById(project.ownerId || users[0].id, users);
   const tasks = project.tasks || [];
   const documents = project.documents || [];
   const subProjects = project.subProjects || [];
@@ -284,7 +284,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 </TableHeader>
                 <TableBody>
                   {tasks.length > 0 ? tasks.map((task) => {
-                    const assignee = findUserById(task.assigneeId);
+                    const assignee = findUserById(task.assigneeId, users);
                     return (
                       <TableRow key={task.id}>
                         <TableCell className="font-medium">
@@ -295,7 +295,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             <Avatar className="h-6 w-6">
                               <AvatarImage src={assignee?.avatarUrl} data-ai-hint="person portrait" />
                               <AvatarFallback>
-                                {assignee?.name.charAt(0)}
+                                {assignee?.name?.charAt(0) || assignee?.email?.charAt(0) || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <span className="text-sm">{assignee?.name || 'Unassigned'}</span>
@@ -442,7 +442,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                   <div key={user.id} className="flex items-center gap-4">
                       <Avatar>
                           <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback>{user.name?.charAt(0) || user.email?.charAt(0) || '?'}</AvatarFallback>
                       </Avatar>
                       <div>
                           <p className="font-medium">{user.name}</p>
