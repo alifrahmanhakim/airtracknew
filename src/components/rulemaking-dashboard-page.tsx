@@ -2,7 +2,7 @@
 'use client';
 
 import type { Project, User } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
 import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
