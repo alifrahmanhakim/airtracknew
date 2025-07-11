@@ -147,7 +147,6 @@ export default function TeamPage() {
                                     </Avatar>
                                     <div className="grid gap-1">
                                         <p className="text-sm font-medium leading-none">{user.name}</p>
-                                        <p className="text-sm text-muted-foreground">{user.id}</p>
                                     </div>
                                 </div>
                             </TableCell>
