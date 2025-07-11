@@ -35,6 +35,7 @@ import {
   Folder,
   FileUp,
   Loader2,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,9 @@ import { EditTaskDialog } from './edit-task-dialog';
 import { EditSubProjectDialog } from './edit-subproject-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { addDocument } from '@/lib/actions';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
+import Link from 'next/link';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -94,39 +98,50 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     
-    const getFileType = (fileName: string): ProjectDocument['type'] => {
-        const extension = fileName.split('.').pop()?.toLowerCase();
-        if (extension === 'pdf') return 'PDF';
-        if (extension === 'doc' || extension === 'docx') return 'Word';
-        if (extension === 'xls' || extension === 'xlsx') return 'Excel';
-        if (['png', 'jpg', 'jpeg', 'gif'].includes(extension || '')) return 'Image';
-        return 'Other';
-    }
+    try {
+        const storageRef = ref(storage, `projects/${project.id}/${file.name}`);
+        const uploadResult = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(uploadResult.ref);
 
-    const newDocumentData = {
-        name: file.name,
-        type: getFileType(file.name),
-        url: '#', 
-    };
+        const getFileType = (fileName: string): ProjectDocument['type'] => {
+            const extension = fileName.split('.').pop()?.toLowerCase();
+            if (extension === 'pdf') return 'PDF';
+            if (extension === 'doc' || extension === 'docx') return 'Word';
+            if (extension === 'xls' || extension === 'xlsx') return 'Excel';
+            if (['png', 'jpg', 'jpeg', 'gif'].includes(extension || '')) return 'Image';
+            return 'Other';
+        }
 
-    const result = await addDocument(project.id, newDocumentData);
-    setIsUploading(false);
+        const newDocumentData = {
+            name: file.name,
+            type: getFileType(file.name),
+            url: downloadURL, 
+        };
 
-    if (result.success && result.data) {
-        setProject(prev => ({ ...prev, documents: [...(prev.documents || []), result.data as ProjectDocument] }));
-        toast({
-            title: "Upload Successful",
-            description: `${file.name} has been added to the project.`,
-        });
-    } else {
+        const result = await addDocument(project.id, newDocumentData);
+
+        if (result.success && result.data) {
+            setProject(prev => ({ ...prev, documents: [...(prev.documents || []), result.data as ProjectDocument] }));
+            toast({
+                title: "Upload Successful",
+                description: `${file.name} has been added to the project.`,
+            });
+        } else {
+            throw new Error(result.error || "Failed to save document metadata.");
+        }
+
+    } catch(error) {
+        console.error("Upload failed", error);
         toast({
             variant: 'destructive',
             title: "Upload Failed",
-            description: result.error,
+            description: error instanceof Error ? error.message : "An unknown error occurred during file upload.",
         });
-    }
-     if(fileInputRef.current) {
-        fileInputRef.current.value = "";
+    } finally {
+        setIsUploading(false);
+        if(fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
     }
   }
 
@@ -260,10 +275,15 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                         {documents.map((doc) => (
                           <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
                             {getDocumentIcon(doc.type)}
-                            <div className="flex-1">
+                            <div className="flex-1 overflow-hidden">
                                 <p className="font-medium truncate">{doc.name}</p>
                                 {doc.uploadDate && <p className="text-xs text-muted-foreground">Uploaded: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
                             </div>
+                            <Button asChild variant="ghost" size="icon">
+                                <Link href={doc.url} target="_blank" rel="noopener noreferrer">
+                                    <LinkIcon className="h-4 w-4" />
+                                </Link>
+                            </Button>
                           </div>
                         ))}
                     </div>
