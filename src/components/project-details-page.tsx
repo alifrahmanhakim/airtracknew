@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { Project, Task, User, SubProject, Document as ProjectDocument } from '@/lib/types';
 import { findUserById } from '@/lib/data';
 import {
@@ -33,9 +33,8 @@ import {
   ClipboardList,
   Paperclip,
   Folder,
-  FileUp,
-  Loader2,
   Link as LinkIcon,
+  Plus,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -45,11 +44,9 @@ import { AddTaskDialog } from './add-task-dialog';
 import { AddSubProjectDialog } from './add-subproject-dialog';
 import { EditTaskDialog } from './edit-task-dialog';
 import { EditSubProjectDialog } from './edit-subproject-dialog';
-import { useToast } from '@/hooks/use-toast';
-import { addDocument } from '@/lib/actions';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { AddDocumentLinkDialog } from './add-document-link-dialog';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -58,9 +55,7 @@ type ProjectDetailsPageProps = {
 
 export function ProjectDetailsPage({ project: initialProject, users }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
-  const [isUploading, setIsUploading] = useState(false);
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const handleTaskAdd = (newTask: Task) => {
     setProject(prev => ({...prev, tasks: [...(prev.tasks || []), newTask]}));
@@ -83,73 +78,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         subProjects: (prev.subProjects || []).map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub)
      }));
   }
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-        handleFileUpload(file);
-    }
-  };
-
-  const handleFileUpload = async (file: File) => {
-    if (!project) {
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Project context is not available.",
-        });
-        return;
-    }
-    
-    setIsUploading(true);
-
-    try {
-      const storageRef = ref(storage, `projects/${project.id}/${file.name}`);
-      const uploadResult = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(uploadResult.ref);
-
-      const getFileType = (fileName: string): ProjectDocument['type'] => {
-        const extension = fileName.split('.').pop()?.toLowerCase();
-        if (extension === 'pdf') return 'PDF';
-        if (extension === 'doc' || extension === 'docx') return 'Word';
-        if (extension === 'xls' || extension === 'xlsx') return 'Excel';
-        if (['png', 'jpg', 'jpeg', 'gif'].includes(extension || '')) return 'Image';
-        return 'Other';
-      };
-
-      const newDocumentData = {
-        name: file.name,
-        type: getFileType(file.name),
-        url: downloadURL,
-      };
-
-      const result = await addDocument(project.id, newDocumentData);
-
-      if (result.success && result.data) {
-        setProject(prev => ({ ...prev, documents: [...(prev.documents || []), result.data as ProjectDocument] }));
-        toast({
-          title: "Upload Successful",
-          description: `${file.name} has been added to the project.`,
-        });
-      } else {
-        throw new Error(result.error || "Failed to save document metadata.");
-      }
-    } catch (error) {
-      console.error("Upload failed:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-      toast({
-        variant: 'destructive',
-        title: "Upload Failed",
-        description: `Could not upload ${file.name}. Reason: ${errorMessage}. Check console for details.`,
-      });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
+  
+  const handleDocumentAdd = (newDocument: ProjectDocument) => {
+    setProject(prev => ({ ...prev, documents: [...(prev.documents || []), newDocument] }));
+  }
 
   const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
@@ -199,7 +131,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
-        <EditProjectDialog project={project} allUsers={users} />
+        <EditProjectDialog 
+          project={project} 
+          allUsers={users} 
+          onProjectUpdate={() => router.refresh()} 
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -268,16 +204,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 <CardTitle className="flex items-center gap-2">
                     <Paperclip /> Project Documents
                 </CardTitle>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    className="hidden"
-                />
-                <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
-                     Upload Document
-                </Button>
+                <AddDocumentLinkDialog projectId={project.id} onDocumentAdd={handleDocumentAdd} />
              </CardHeader>
              <CardContent>
                 <div className="space-y-4">
@@ -287,24 +214,18 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1 overflow-hidden">
                                 <p className="font-medium truncate">{doc.name}</p>
-                                {doc.uploadDate && <p className="text-xs text-muted-foreground">Uploaded: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
+                                {doc.uploadDate && <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
                             </div>
                             <Button asChild variant="ghost" size="icon">
-                                <Link href={doc.url} target="_blank" rel="noopener noreferrer">
+                                <a href={doc.url} target="_blank" rel="noopener noreferrer">
                                     <LinkIcon className="h-4 w-4" />
-                                </Link>
+                                </a>
                             </Button>
                           </div>
                         ))}
                     </div>
-                     {documents.length === 0 && !isUploading && (
-                        <p className="text-muted-foreground text-center py-4">No documents yet.</p>
-                    )}
-                    {isUploading && (
-                        <div className="flex items-center justify-center p-4">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="ml-2">Uploading document...</p>
-                        </div>
+                     {documents.length === 0 && (
+                        <p className="text-muted-foreground text-center py-4">No documents linked yet.</p>
                     )}
                 </div>
              </CardContent>

@@ -33,12 +33,23 @@ export async function getAiSummary(
 
 export async function addDocument(
   projectId: string,
-  document: Omit<Document, 'id' | 'uploadDate'>
+  documentData: { name: string, url: string }
 ): Promise<{ success: boolean; data?: Document; error?: string }> {
   try {
+    const getFileType = (fileName: string): Document['type'] => {
+      const extension = fileName.split('.').pop()?.toLowerCase();
+      if (['pdf'].includes(extension || '')) return 'PDF';
+      if (['doc', 'docx'].includes(extension || '')) return 'Word';
+      if (['xls', 'xlsx'].includes(extension || '')) return 'Excel';
+      if (['png', 'jpg', 'jpeg', 'gif'].includes(extension || '')) return 'Image';
+      return 'Other';
+    };
+
     const newDocument: Document = {
-      ...document,
       id: `doc-${Date.now()}`,
+      name: documentData.name,
+      url: documentData.url,
+      type: getFileType(documentData.name),
       uploadDate: new Date().toISOString(),
     };
 
