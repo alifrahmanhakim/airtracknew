@@ -104,12 +104,13 @@ export const projects: Project[] = [
   },
 ];
 
-export const getProjectsForUser = (userId: string) => {
+export const getProjectsForUser = (userId: string, allProjects: Project[]) => {
     const user = findUserById(userId);
     if (user?.role === 'Sub-Directorate Head') {
-        return projects; // Admins see all projects
+        return allProjects; // Admins see all projects
     }
-    return projects.filter(p => p.ownerId === userId || p.team.some(member => member.id === userId));
+    // Ensure team array exists before checking
+    return allProjects.filter(p => p.ownerId === userId || (p.team && p.team.some(member => member.id === userId)));
 }
 
 export const findProjectById = (id: string) => projects.find(p => p.id === id);
