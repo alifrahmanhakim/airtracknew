@@ -19,6 +19,7 @@ import {
   min,
   addMonths,
   isSameDay,
+  startOfDay,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
@@ -223,10 +224,14 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
             <div className="absolute top-0 left-0 w-full h-full -z-10">
                 {days.map((day, index) => {
                     const isMonthStart = day.getDate() === 1;
+                    const isWeekStart = isSameDay(day, startOfISOWeek(day));
+                    const isDayView = viewMode === 'day';
+
                     return (
                         <div key={`v-line-${index}`} className={cn("absolute top-0 h-full border-r", {
-                            "border-border": isMonthStart, // Bolder line for month start
-                            "border-border/50": !isMonthStart,
+                            "border-border": isMonthStart, 
+                            "border-border/60": !isMonthStart && isWeekStart,
+                            "border-border/30": !isMonthStart && !isWeekStart && isDayView,
                         })} style={{ left: `${(index + 1) * dayWidth}px` }} />
                     );
                 })}
@@ -241,10 +246,10 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
             
             {/* Today Marker */}
             {(() => {
-                const todayOffset = differenceInDays(new Date(), timelineStart);
-                if (todayOffset < 0 || todayOffset > totalDays) return null;
+                const todayOffsetDays = differenceInDays(startOfDay(new Date()), timelineStart);
+                if (todayOffsetDays < 0 || todayOffsetDays > totalDays) return null;
 
-                const todayLeft = todayOffset * dayWidth + (dayWidth / 2);
+                const todayLeft = todayOffsetDays * dayWidth;
 
                 return (
                     <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-0" style={{ left: `${todayLeft}px` }} >
