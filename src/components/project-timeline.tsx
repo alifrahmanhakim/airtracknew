@@ -221,7 +221,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
             </div>
             
             {/* Vertical Grid Lines */}
-            <div className="absolute top-0 left-0 w-full h-full -z-10">
+            <div className="absolute top-0 left-0 w-full -z-10" style={{ height: `${taskLayouts.totalHeight}px` }}>
                 {days.map((day, index) => {
                     const isMonthStart = day.getDate() === 1;
                     const isWeekStart = isSameDay(day, startOfISOWeek(day));
