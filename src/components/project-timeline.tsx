@@ -137,14 +137,14 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
         while (true) {
             const currentOffset = viewMode === 'day' ? taskStartOffset * DAY_WIDTH : taskStartOffset;
             if (!occupiedLanes[laneIndex] || occupiedLanes[laneIndex].end < currentOffset) {
-                const taskWidth = viewMode === 'day' ? 3 * DAY_WIDTH : MONTH_WIDTH / 2;
-                occupiedLanes[laneIndex] = { end: currentOffset + taskWidth + 10 /* gap */ };
+                const taskWidth = viewMode === 'day' ? 3 * DAY_WIDTH : 30; // Min width for month view
+                occupiedLanes[laneIndex] = { end: currentOffset + taskWidth + 120 /* gap for text */ };
                 break;
             }
             laneIndex++;
         }
         
-        const taskWidth = viewMode === 'day' ? 3 * DAY_WIDTH : MONTH_WIDTH / 2;
+        const taskWidth = viewMode === 'day' ? 3 * DAY_WIDTH : 30;
 
         layouts.push({
             task: task,
@@ -235,7 +235,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
 
                 const todayLeft = viewMode === 'day' 
                     ? todayIndex * DAY_WIDTH + (DAY_WIDTH / 2)
-                    : months.findIndex(m => isSameMonth(m, new Date())) * MONTH_WIDTH + ((new Date().getDate()-1) / getDaysInMonth(new Date())) * MONTH_WIDTH;
+                    : months.findIndex(m => isSameMonth(m, new Date())) * MONTH_WIDTH + ((new Date().getDate() - 1) / getDaysInMonth(new Date())) * MONTH_WIDTH;
 
                 return (
                     <div ref={todayRef} className="absolute top-0 bottom-0 w-1 bg-primary/50 z-0" style={{ left: `${todayLeft}px` }} >
@@ -254,18 +254,30 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                 <Tooltip key={task.id}>
                     <TooltipTrigger asChild>
                     <div
-                        className={cn(
-                        "absolute h-10 rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer transition-all duration-200 shadow group",
-                        statusConfig[task.status].color
-                        )}
+                        className="absolute group"
                         style={{
                             top: `${top - HEADER_HEIGHT + 6}px`,
                             left: `${left}px`,
-                            width: `${width}px`,
+                            height: '40px',
                         }}
                     >
-                        <p className="text-xs font-semibold truncate">{task.title}</p>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className={cn(
+                            "absolute h-10 rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer transition-all duration-200 shadow",
+                            statusConfig[task.status].color
+                            )}
+                            style={{
+                                width: `${width}px`,
+                                left: viewMode === 'month' ? '115px' : '0' // Offset bar in month view to make space for text
+                            }}
+                        >
+                           {viewMode === 'day' && <p className="text-xs font-semibold truncate">{task.title}</p>}
+                        </div>
+
+                        <div className="absolute h-10 flex items-center" style={{ width: '150px', left: viewMode === 'month' ? '-10px' : `${width + 5}px`}}>
+                           <p className="text-xs font-semibold truncate text-foreground pl-2">{task.title}</p>
+                        </div>
+                        
+                        <div className={cn("absolute right-0 top-0 h-10 flex items-center opacity-0 group-hover:opacity-100 transition-opacity", viewMode === 'month' ? 'right-[-125px]' : 'right-[-35px]')}>
                            <EditTaskDialog
                                 projectId={projectId}
                                 task={task}
