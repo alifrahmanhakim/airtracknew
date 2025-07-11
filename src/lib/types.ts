@@ -2,6 +2,7 @@
 export type User = {
   id: string;
   name: string;
+  email?: string; // Add email as an optional field
   avatarUrl: string;
   role: 'Sub-Directorate Head' | 'Team Lead' | 'PIC' | 'PIC Assistant' | 'Functional';
 };

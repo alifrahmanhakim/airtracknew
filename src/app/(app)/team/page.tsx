@@ -131,7 +131,7 @@ export default function TeamPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
                         {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
@@ -146,7 +146,7 @@ export default function TeamPage() {
                                         <AvatarFallback>{user.name ? user.name.charAt(0) : '?'}</AvatarFallback>
                                     </Avatar>
                                     <div className="grid gap-1">
-                                        <p className="text-sm font-medium leading-none">{user.name}</p>
+                                        <p className="text-sm font-medium leading-none">{user.email || user.name}</p>
                                     </div>
                                 </div>
                             </TableCell>
