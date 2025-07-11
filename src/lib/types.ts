@@ -18,6 +18,7 @@ export type Task = {
   id: string;
   title: string;
   assigneeId: string;
+  startDate: string;
   dueDate: string;
   status: 'Done' | 'In Progress' | 'To Do' | 'Blocked';
 };

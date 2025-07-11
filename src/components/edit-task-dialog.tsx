@@ -43,8 +43,12 @@ import { updateTask } from '@/lib/actions';
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
   assigneeId: z.string().min(1, 'Assignee is required.'),
+  startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
   status: z.enum(['Done', 'In Progress', 'To Do', 'Blocked']),
+}).refine(data => data.dueDate >= data.startDate, {
+  message: "End date cannot be earlier than start date.",
+  path: ["dueDate"],
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
@@ -66,6 +70,7 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
     defaultValues: {
       title: task.title,
       assigneeId: task.assigneeId,
+      startDate: parseISO(task.startDate),
       dueDate: parseISO(task.dueDate),
       status: task.status,
     },
@@ -76,6 +81,7 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
     const updatedTask: Task = {
       ...task,
       ...data,
+      startDate: format(data.startDate, 'yyyy-MM-dd'),
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
     };
     
@@ -106,7 +112,7 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
             <span className="sr-only">Edit Task</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
@@ -129,24 +135,40 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
               )}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
+               <FormField
                 control={form.control}
-                name="assigneeId"
+                name="startDate"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assignee</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a team member" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {teamMembers.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Start Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={'outline'}
+                            className={cn(
+                              'w-full pl-3 text-left font-normal',
+                              !field.value && 'text-muted-foreground'
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, 'PPP')
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -190,6 +212,28 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
                 )}
               />
             </div>
+             <FormField
+                control={form.control}
+                name="assigneeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Assignee</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a team member" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {teamMembers.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             <FormField
               control={form.control}
               name="status"

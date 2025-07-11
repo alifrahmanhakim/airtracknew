@@ -11,10 +11,12 @@ import {
   startOfMonth,
   endOfMonth,
   isToday,
-  startOfYear,
-  endOfYear,
+  startOfISOWeek,
+  endOfISOWeek,
   eachDayOfInterval,
   isSameMonth,
+  max,
+  min
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
@@ -45,7 +47,7 @@ const TASK_LIST_WIDTH = 250;
 const DAY_WIDTH = 40;
 const MONTH_WIDTH = 120;
 const ROW_HEIGHT = 52;
-const HEADER_HEIGHT = 70;
+const HEADER_HEIGHT = 64; // Adjusted for two-line header
 
 export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }: ProjectTimelineProps) {
   const timelineRef = React.useRef<HTMLDivElement>(null);
@@ -53,32 +55,34 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('month');
 
-  const { sortedTasks, months, days, timelineStart, timelineEnd } = React.useMemo(() => {
+  const { sortedTasks, months, days, timelineStart, timelineEnd, totalDays } = React.useMemo(() => {
     if (!tasks || tasks.length === 0) {
-      return { sortedTasks: [], months: [], days: [], timelineStart: new Date(), timelineEnd: new Date() };
+      return { sortedTasks: [], months: [], days: [], timelineStart: new Date(), timelineEnd: new Date(), totalDays: 0 };
     }
 
     const sorted = [...tasks].sort((a, b) => {
-        const dateA = parseISO(a.dueDate).getTime();
-        const dateB = parseISO(b.dueDate).getTime();
+        const dateA = parseISO(a.startDate).getTime();
+        const dateB = parseISO(b.startDate).getTime();
         if (dateA === dateB) {
             return a.title.localeCompare(b.title);
         }
         return dateA - dateB;
     });
 
-    const dueDates = sorted.map(t => parseISO(t.dueDate));
+    const allDates = sorted.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
     
-    let startDate = dueDates.length > 0 ? dueDates[0] : new Date();
-    let endDate = dueDates.length > 0 ? dueDates[dueDates.length - 1] : new Date();
-    
-    const tStart = startOfYear(startDate);
-    const tEnd = endOfYear(endDate);
+    let tStart = allDates.length > 0 ? min(allDates) : new Date();
+    let tEnd = allDates.length > 0 ? max(allDates) : new Date();
+
+    // Extend timeline by a bit on each side for padding
+    tStart = addDays(startOfISOWeek(tStart), -7);
+    tEnd = addDays(endOfISOWeek(tEnd), 7);
     
     const monthInterval = eachMonthOfInterval({ start: tStart, end: tEnd });
     const dayInterval = eachDayOfInterval({ start: tStart, end: tEnd });
+    const diffDays = differenceInDays(tEnd, tStart) + 1;
 
-    return { sortedTasks: sorted, months: monthInterval, days: dayInterval, timelineStart: tStart, timelineEnd: tEnd };
+    return { sortedTasks: sorted, months: monthInterval, days: dayInterval, timelineStart: tStart, timelineEnd: tEnd, totalDays: diffDays };
   }, [tasks]);
 
    React.useEffect(() => {
@@ -120,48 +124,21 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
 
   const totalGridWidth = viewMode === 'day' 
     ? days.length * DAY_WIDTH 
-    : months.length * MONTH_WIDTH;
+    : totalDays * (MONTH_WIDTH / 30.44); // Average days in a month
 
   const taskLayouts = React.useMemo(() => {
-    const layouts: { task: Task; top: number; left: number; width: number }[] = [];
-    const occupiedLanes: { end: number }[] = [];
-
-    sortedTasks.forEach(task => {
-        let taskStartOffset: number;
-        
-        const taskDueDate = parseISO(task.dueDate);
-
-        if (viewMode === 'day') {
-            taskStartOffset = differenceInDays(taskDueDate, timelineStart);
-        } else { // month view
-            const monthIndex = taskDueDate.getMonth() - timelineStart.getMonth() + 12 * (taskDueDate.getFullYear() - timelineStart.getFullYear());
-            const dayInMonth = taskDueDate.getDate();
-            const daysInMonth = getDaysInMonth(taskDueDate);
-            taskStartOffset = (monthIndex * MONTH_WIDTH) + ((dayInMonth / daysInMonth) * MONTH_WIDTH);
-        }
-
-        let laneIndex = 0;
-        
-        while (true) {
-            const currentOffset = viewMode === 'day' ? taskStartOffset * DAY_WIDTH : taskStartOffset;
-            if (!occupiedLanes[laneIndex] || occupiedLanes[laneIndex].end < currentOffset) {
-                const taskWidth = viewMode === 'day' ? DAY_WIDTH : 30; // Min width for month view
-                occupiedLanes[laneIndex] = { end: currentOffset + taskWidth + 5 };
-                break;
-            }
-            laneIndex++;
-        }
-        
+    const layouts: { task: Task; top: number}[] = [];
+    
+    sortedTasks.forEach((task, index) => {
         layouts.push({
             task: task,
-            top: laneIndex * ROW_HEIGHT,
-            left: viewMode === 'day' ? taskStartOffset * DAY_WIDTH : taskStartOffset,
-            width: viewMode === 'day' ? DAY_WIDTH : 30,
+            top: index * ROW_HEIGHT,
         });
     });
 
-    return { layouts, totalHeight: HEADER_HEIGHT + occupiedLanes.length * ROW_HEIGHT };
-  }, [sortedTasks, timelineStart, days, months, viewMode]);
+    const totalHeight = HEADER_HEIGHT + sortedTasks.length * ROW_HEIGHT;
+    return { layouts, totalHeight };
+  }, [sortedTasks, viewMode]);
 
   return (
     <TooltipProvider>
@@ -193,7 +170,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
       <div className="flex w-full border-t">
         {/* Task List Pane (Fixed Left) */}
         <div 
-          className="bg-card z-30 border-r"
+          className="bg-card z-10 border-r shrink-0"
           style={{ width: `${TASK_LIST_WIDTH}px`, height: `${taskLayouts.totalHeight}px` }}
         >
             <div className="flex items-center h-16 px-4 font-semibold border-b">
@@ -217,7 +194,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
         {/* Timeline Grid Pane (Scrollable Right) */}
         <div ref={timelineRef} className="overflow-x-auto w-full" onScroll={handleScroll}>
           <div
-            className="relative bg-background"
+            className="relative"
             style={{ width: `${totalGridWidth}px`, height: `${taskLayouts.totalHeight}px` }}
           >
             {/* Headers */}
@@ -228,54 +205,65 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                       const isFirstDayOfMonth = day.getDate() === 1;
                       return (
                           <div key={index} className="flex-shrink-0 flex flex-col items-center justify-center border-r relative" style={{ width: `${DAY_WIDTH}px` }}>
-                              {isFirstDayOfMonth && <span className="absolute -top-4 text-center font-semibold text-xs">{monthLabel}</span>}
+                              {isFirstDayOfMonth && <span className="absolute -top-4 text-center font-semibold text-xs whitespace-nowrap">{monthLabel}</span>}
                               <span className={cn("text-xs", {'font-bold text-primary': isToday(day)})}>{format(day, 'd')}</span>
                               <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
                           </div>
                       );
                   })
               ) : (
-                  months.map((month) => (
-                      <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex items-center justify-center border-r"
-                          style={{ width: `${MONTH_WIDTH}px` }}
-                      >
-                          {format(month, 'MMM yyyy')}
-                      </div>
-                  ))
+                  months.map((month) => {
+                      const monthWidth = getDaysInMonth(month) * (MONTH_WIDTH / 30.44);
+                      return (
+                        <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex items-center justify-center border-r"
+                            style={{ width: `${monthWidth}px` }}
+                        >
+                            {format(month, 'MMMM yyyy')}
+                        </div>
+                      )
+                  })
               )}
             </div>
             
-            {/* Horizontal Row Lines */}
-            <div className="absolute top-0 left-0 w-full h-full -z-20">
-                {taskLayouts.layouts.map(({ task, top }) => (
-                     <div key={`row-${task.id}`} className="absolute w-full border-b" style={{ top: `${top + HEADER_HEIGHT + ROW_HEIGHT -1}px`, height: '1px' }} />
-                ))}
+            {/* Vertical Grid Lines */}
+            <div className="absolute top-0 left-0 w-full h-full -z-10">
+                {viewMode === 'day' ? 
+                  days.map((day, index) => (
+                      <div key={`v-line-${index}`} className="absolute top-0 h-full border-r border-border/50" style={{ left: `${(index + 1) * DAY_WIDTH}px` }} />
+                  )) :
+                  months.map((month, index) => {
+                       const monthWidth = getDaysInMonth(month) * (MONTH_WIDTH / 30.44);
+                       const prevMonthWidth = index > 0 ? getDaysInMonth(months[index-1]) * (MONTH_WIDTH / 30.44) : 0;
+                       const left = index > 0 ? (taskLayouts.layouts[index -1]?.left ?? 0) + prevMonthWidth : monthWidth;
+                       
+                       let totalWidth = 0;
+                       for(let i=0; i<=index; i++) {
+                           totalWidth += getDaysInMonth(months[i]) * (MONTH_WIDTH / 30.44);
+                       }
+                       
+                       return <div key={`v-line-${index}`} className="absolute top-0 h-full border-r border-border/50" style={{ left: `${totalWidth}px` }} />
+                  })
+                }
             </div>
             
-            {/* Vertical Grid Lines */}
-            <div className="absolute top-0 left-0 h-full -z-10">
-              {viewMode === 'day' ? 
-                days.map((day, index) => (
-                    <div key={index} className="absolute top-0 h-full border-r" style={{ left: `${(index + 1) * DAY_WIDTH}px` }} />
-                )) :
-                months.map((month, index) => (
-                    <div key={index} className="absolute top-0 h-full border-r" style={{ left: `${(index + 1) * MONTH_WIDTH}px` }} />
-                ))
-              }
+            {/* Horizontal Row Lines */}
+            <div className="absolute top-0 left-0 w-full h-full -z-10">
+                {taskLayouts.layouts.map(({ task, top }) => (
+                     <div key={`h-line-${task.id}`} className="absolute w-full border-b border-border/50" style={{ top: `${HEADER_HEIGHT + top + ROW_HEIGHT -1}px`, height: '1px' }} />
+                ))}
             </div>
             
             {/* Today Marker */}
             {(() => {
-                const todayIndex = days.findIndex(isToday);
-                if (todayIndex === -1) return null;
+                const todayOffset = differenceInDays(new Date(), timelineStart);
+                if (todayOffset < 0 || todayOffset > totalDays) return null;
 
-                const todayLeft = viewMode === 'day' 
-                    ? todayIndex * DAY_WIDTH + (DAY_WIDTH / 2)
-                    : months.findIndex(m => isSameMonth(m, new Date())) * MONTH_WIDTH + ((new Date().getDate() - 1) / getDaysInMonth(new Date())) * MONTH_WIDTH;
+                const dayWidth = viewMode === 'day' ? DAY_WIDTH : (MONTH_WIDTH / 30.44);
+                const todayLeft = todayOffset * dayWidth + (dayWidth / 2);
 
                 return (
-                    <div ref={todayRef} className="absolute top-0 bottom-0 w-1 bg-primary/50 z-0" style={{ left: `${todayLeft}px` }} >
-                        <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md z-30">
+                    <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-0" style={{ left: `${todayLeft}px` }} >
+                        <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                             Today
                         </div>
                     </div>
@@ -284,13 +272,24 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
 
             {/* Task Bars */}
             <div className="relative w-full" style={{ height: `${taskLayouts.totalHeight - HEADER_HEIGHT}px` }}>
-              {taskLayouts.layouts.map(({ task, top, left, width }) => {
+              {taskLayouts.layouts.map(({ task, top }) => {
                   const assignee = findUserById(task.assigneeId);
+                  const taskStart = parseISO(task.startDate);
+                  const taskEnd = parseISO(task.dueDate);
+
+                  const startOffset = differenceInDays(taskStart, timelineStart);
+                  const duration = differenceInDays(taskEnd, taskStart) + 1;
+                  
+                  const dayWidth = viewMode === 'day' ? DAY_WIDTH : (MONTH_WIDTH / 30.44);
+
+                  const left = startOffset * dayWidth;
+                  const width = duration * dayWidth - (viewMode === 'day' ? 2 : 4); // small padding
+                  
                   return (
                   <Tooltip key={task.id}>
                       <TooltipTrigger asChild>
                       <div
-                          className="absolute group"
+                          className="absolute group flex items-center"
                           style={{
                               top: `${top + 6}px`,
                               left: `${left}px`,
@@ -299,10 +298,12 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                           }}
                       >
                           <div className={cn(
-                              "h-full rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer transition-all duration-200 shadow",
+                              "h-full w-full rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer transition-all duration-200 shadow-sm",
                               statusConfig[task.status].color
                               )}
-                          />
+                          >
+                            <p className='text-xs font-bold truncate text-white/90'>{task.title}</p>
+                          </div>
                            <div className="absolute right-[-35px] top-0 h-full flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <EditTaskDialog
                                     projectId={projectId}
@@ -315,6 +316,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                       </TooltipTrigger>
                       <TooltipContent>
                           <p className="font-bold">{task.title}</p>
+                          <p className="text-sm"><span className="font-semibold">Duration:</span> {format(taskStart, 'PPP')} - {format(taskEnd, 'PPP')}</p>
                           <div className="flex items-center gap-2 mt-2">
                               {assignee && <Avatar className="h-6 w-6">
                                   <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
@@ -322,7 +324,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                               </Avatar>}
                               <div>
                                   <p className="font-semibold">{assignee?.name || 'Unassigned'}</p>
-                                  <p className="text-sm"><span className="font-semibold">Due:</span> {format(parseISO(task.dueDate), 'PPP')}</p>
+                                  <p className="text-sm"><span className="font-semibold">Status:</span> {task.status}</p>
                               </div>
                           </div>
                       </TooltipContent>
