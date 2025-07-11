@@ -30,6 +30,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { users, findUserById } from '@/lib/data';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const navItems = [
   { href: '/dashboard', label: 'Tim Kerja', icon: Home },
@@ -96,15 +97,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="flex flex-col gap-3">
-            <div className='flex items-center gap-2'>
-                <Avatar className="h-9 w-9">
-                    <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                    <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                    <span className='text-sm font-semibold'>{currentUser.name}</span>
-                    <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
+            <div className='flex items-center justify-between gap-2'>
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                        <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                        <span className='text-sm font-semibold'>{currentUser.name}</span>
+                        <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
+                    </div>
                 </div>
+                <ThemeToggle />
             </div>
             <SidebarMenu>
                 <SidebarMenuItem>
