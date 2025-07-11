@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   FolderKanban,
   Home,
@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { users } from '@/lib/data';
+import { users, findUserById } from '@/lib/data';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -40,7 +40,31 @@ const navItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const currentUser = users[0];
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = React.useState<typeof users[0] | undefined>(undefined);
+
+  React.useEffect(() => {
+    const userId = localStorage.getItem('loggedInUserId');
+    if (userId) {
+      const user = findUserById(userId);
+      setCurrentUser(user);
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('loggedInUserId');
+    router.push('/login');
+  };
+  
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+          <p>Loading user profile...</p>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -83,11 +107,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                        <Link href="/login">
-                            <LogOut />
-                            <span>Logout</span>
-                        </Link>
+                    <SidebarMenuButton onClick={handleLogout}>
+                        <LogOut />
+                        <span>Logout</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>

@@ -88,15 +88,15 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const handleFileUpload = (source: 'Computer' | 'Google Drive' | 'OneDrive') => {
     const newDocument = {
         id: `doc-${Date.now()}`,
-        name: `Dokumen dari ${source}.pdf`,
+        name: `Document from ${source}.pdf`,
         type: 'PDF' as const,
         uploadDate: new Date().toISOString(),
         url: '#',
     };
     setDocuments([...documents, newDocument]);
     toast({
-        title: "Unggah Berhasil",
-        description: `Dokumen dari ${source} berhasil ditambahkan (simulasi).`,
+        title: "Upload Successful",
+        description: `Document from ${source} has been added (simulation).`,
     });
   }
 
@@ -116,22 +116,22 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   };
 
   const statusStyles: { [key in Task['status']]: string } = {
-    'Selesai': 'border-transparent bg-green-500 text-white',
-    'Sedang Berjalan': 'border-transparent bg-blue-500 text-white',
-    'Akan Dikerjakan': 'border-transparent bg-gray-400 text-white',
-    'Terhambat': 'border-transparent bg-red-500 text-white',
+    'Done': 'border-transparent bg-green-500 text-white',
+    'In Progress': 'border-transparent bg-blue-500 text-white',
+    'To Do': 'border-transparent bg-gray-400 text-white',
+    'Blocked': 'border-transparent bg-red-500 text-white',
   };
   
   const subProjectStatusStyles: { [key in SubProject['status']]: string } = {
-    'Sesuai Jalur': 'border-transparent bg-blue-500 text-white',
-    'Beresiko': 'border-transparent bg-yellow-500 text-white',
-    'Keluar Jalur': 'border-transparent bg-red-500 text-white',
-    'Selesai': 'border-transparent bg-green-500 text-white',
+    'On Track': 'border-transparent bg-blue-500 text-white',
+    'At Risk': 'border-transparent bg-yellow-500 text-white',
+    'Off Track': 'border-transparent bg-red-500 text-white',
+    'Completed': 'border-transparent bg-green-500 text-white',
   }
 
   const projectManager = findUserById(project.tasks[0]?.assigneeId || users[0].id);
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((task) => task.status === 'Selesai').length;
+  const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
@@ -150,7 +150,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <ClipboardList /> Tahapan Kegiatan
+                <ClipboardList /> Tasks
               </CardTitle>
               <AddTaskDialog onTaskAdd={handleTaskAdd} teamMembers={project.team} />
             </CardHeader>
@@ -158,11 +158,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tugas</TableHead>
-                    <TableHead>Penanggung Jawab</TableHead>
-                    <TableHead>Batas Waktu</TableHead>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Assignee</TableHead>
+                    <TableHead>Due Date</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -197,7 +197,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                     );
                   }) : (
                     <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada tugas.</TableCell>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">No tasks yet.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -208,26 +208,26 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                    <Paperclip /> Dokumen Kegiatan
+                    <Paperclip /> Project Documents
                 </CardTitle>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button>
-                            <FileUp className="mr-2 h-4 w-4" /> Unggah Dokumen
+                            <FileUp className="mr-2 h-4 w-4" /> Upload Document
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleFileUpload('Computer')}>
                             <UploadCloud className="mr-2 h-4 w-4" />
-                            <span>Dari Komputer</span>
+                            <span>From Computer</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleFileUpload('Google Drive')}>
                             <svg className="mr-2 h-4 w-4" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Google Drive</title><path d="M19.14 7.5L12 18.27l-7.14-10.77h14.28zM6.18 6l5.82-3.87L17.82 6H6.18zM3.86 8.53L1.53 12.4l5.82 3.87.79-1.2-4.28-2.54zM20.14 8.53l-2.62 3.96-4.28 2.54.79 1.2 5.82-3.87z"/></svg>
-                            <span>Dari Google Drive</span>
+                            <span>From Google Drive</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleFileUpload('OneDrive')}>
                              <svg className="mr-2 h-4 w-4" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Microsoft OneDrive</title><path d="M4.464 14.802c-2.005-.73-3.06-2.204-3.06-3.805 0-2.35 2.05-3.957 4.573-3.957 1.18 0 2.12.33 2.872.937l-1.89 1.803c-.34-.311-.699-.48-1.077-.48-.96 0-1.638.646-1.638 1.62 0 .937.525 1.48 1.481 1.83l2.844 1.02c2.478.885 3.515 2.08 3.515 3.929 0 2.512-1.92 4.29-4.803 4.29-1.574 0-2.91-.553-3.77-1.39l1.83-1.86c.466.45 1.08.72 1.77.72 1.11 0 1.83-.67 1.83-1.742.001-.937-.53-1.54-1.638-1.944zM23.616 9.155c-.24-.22-2.13-1.98-2.13-1.98s-3.4-.3-3.64-.33c-.238-.03-2.122-1.98-2.122-1.98s-.24.21-.3.3l-1.95 2.1c-.06.09.21.36.21.36s2.06 1.9 2.12 1.98c.06.08 3.63.3 3.63.3s2.13 1.98 2.13 1.98.3-.21.36-.3l1.95-2.1c.06-.09-.21-.36-.21-.36zm-6.21 4.23s-2.06-1.9-2.12-1.98c-.06-.08-3.63-.3-3.63-.3s-2.13-1.98-2.13-1.98-.3.21-.36.3l-1.95 2.1s.21.27.21.36 2.06 1.9 2.12 1.98c.06.08 3.63.3 3.63.3s2.13 1.98 2.13 1.98.3-.21.36-.3l1.95-2.1s-.21-.27-.21-.36z"/></svg>
-                            <span>Dari OneDrive</span>
+                            <span>From OneDrive</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -240,7 +240,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             {getDocumentIcon(doc.type)}
                             <div className="flex-1">
                                 <p className="font-medium truncate">{doc.name}</p>
-                                <p className="text-xs text-muted-foreground">Diunggah: {format(parseISO(doc.uploadDate), 'PPP')}</p>
+                                <p className="text-xs text-muted-foreground">Uploaded: {format(parseISO(doc.uploadDate), 'PPP')}</p>
                             </div>
                           </div>
                         ))}
@@ -252,7 +252,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                    <Folder /> Sub-Proyek
+                    <Folder /> Sub-Projects
                 </CardTitle>
                 <AddSubProjectDialog onSubProjectAdd={handleSubProjectAdd} />
             </CardHeader>
@@ -275,7 +275,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-center py-4">Belum ada sub-proyek.</p>
+                <p className="text-muted-foreground text-center py-4">No sub-projects yet.</p>
               )}
             </CardContent>
           </Card>
@@ -286,7 +286,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         <div className="lg:col-span-1 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Ringkasan Proyek</CardTitle>
+              <CardTitle>Project Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -299,22 +299,22 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Status</span>
                 <Badge variant="outline" className={cn("text-xs font-semibold", {
-                    'border-transparent bg-blue-500 text-white': project.status === 'Sesuai Jalur',
-                    'border-transparent bg-yellow-500 text-white': project.status === 'Beresiko',
-                    'border-transparent bg-red-500 text-white': project.status === 'Keluar Jalur',
-                    'border-transparent bg-green-500 text-white': project.status === 'Selesai',
+                    'border-transparent bg-blue-500 text-white': project.status === 'On Track',
+                    'border-transparent bg-yellow-500 text-white': project.status === 'At Risk',
+                    'border-transparent bg-red-500 text-white': project.status === 'Off Track',
+                    'border-transparent bg-green-500 text-white': project.status === 'Completed',
                 })}>{project.status}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Manajer Proyek</span>
+                <span className="text-muted-foreground">Project Manager</span>
                 <span className="font-medium">{projectManager?.name}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Mulai</span>
+                <span className="text-muted-foreground">Start</span>
                 <span className="font-medium">{format(parseISO(project.startDate), 'PPP')}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Selesai</span>
+                <span className="text-muted-foreground">End</span>
                 <span className="font-medium">{format(parseISO(project.endDate), 'PPP')}</span>
               </div>
             </CardContent>
@@ -323,7 +323,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users /> Tim yang Terlibat
+                <Users /> Team Involved
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -345,5 +345,3 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
       </div>
     </main>
   );
-
-    

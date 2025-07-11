@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -62,20 +63,20 @@ export function AiSummaryDialog({ taskCompletion, notes: initialNotes }: AiSumma
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Sparkles className="mr-2 h-4 w-4" />
-          Ringkasan AI
+          AI Summary
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Buat Ringkasan AI</DialogTitle>
+          <DialogTitle>Generate AI Summary</DialogTitle>
           <DialogDescription>
-            Tinjau catatan proyek dan penyelesaian tugas, lalu buat ringkasan singkat.
+            Review project notes and task completion, then generate a concise summary.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="task-completion" className="text-right">
-              Penyelesaian
+              Completion
             </Label>
             <div id="task-completion" className="col-span-3 font-medium">
               {taskCompletion}%
@@ -83,7 +84,7 @@ export function AiSummaryDialog({ taskCompletion, notes: initialNotes }: AiSumma
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="notes" className="text-right pt-2">
-              Catatan
+              Notes
             </Label>
             <Textarea
               id="notes"
@@ -97,13 +98,13 @@ export function AiSummaryDialog({ taskCompletion, notes: initialNotes }: AiSumma
         {isLoading && (
           <div className="flex items-center justify-center p-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-2">Membuat ringkasan...</p>
+            <p className="ml-2">Generating summary...</p>
           </div>
         )}
         {summary && (
           <Alert>
             <Sparkles className="h-4 w-4" />
-            <AlertTitle>Ringkasan yang Dihasilkan AI</AlertTitle>
+            <AlertTitle>AI-Generated Summary</AlertTitle>
             <AlertDescription>
                 <p className="mt-2">{summary.summary}</p>
                 <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">{summary.progress}</p>
@@ -113,7 +114,7 @@ export function AiSummaryDialog({ taskCompletion, notes: initialNotes }: AiSumma
         <DialogFooter>
           <Button onClick={handleGenerateSummary} disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-            Buat
+            Generate
           </Button>
         </DialogFooter>
       </DialogContent>

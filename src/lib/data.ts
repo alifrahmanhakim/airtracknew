@@ -2,101 +2,113 @@
 import type { User, Project } from './types';
 
 export const users: User[] = [
-  { id: 'user-1', name: 'Alex Johnson', avatarUrl: 'https://placehold.co/100x100.png', role: 'Ketua Tim' },
+  { id: 'user-1', name: 'Alex Johnson', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
   { id: 'user-2', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC' },
-  { id: 'user-3', name: 'James Smith', avatarUrl: 'https://placehold.co/100x100.png', role: 'Asisten PIC' },
-  { id: 'user-4', name: 'Patricia Williams', avatarUrl: 'https://placehold.co/100x100.png', role: 'Fungsional' },
-  { id: 'user-5', name: 'Robert Brown', avatarUrl: 'https://placehold.co/100x100.png', role: 'Kepala Sub-Direktorat' },
+  { id: 'user-3', name: 'James Smith', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC Assistant' },
+  { id: 'user-4', name: 'Patricia Williams', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
+  { id: 'user-5', name: 'Robert Brown', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
 ];
 
 export const projects: Project[] = [
   {
     id: 'proj-1',
-    name: 'Sistem Pengendalian Lalu Lintas Udara Generasi Berikutnya',
-    description: 'Pengembangan dan penerapan sistem pengendalian lalu lintas udara generasi baru untuk meningkatkan keselamatan dan efisiensi.',
+    ownerId: 'user-1',
+    name: 'Next-Gen Air Traffic Control System',
+    description: 'Development and deployment of a new generation air traffic control system to enhance safety and efficiency.',
     startDate: '2023-01-15',
     endDate: '2024-12-31',
-    status: 'Sesuai Jalur',
+    status: 'On Track',
     tasks: [
-      { id: 'task-1-1', title: 'Desain Arsitektur Sistem', assigneeId: 'user-1', dueDate: '2023-03-31', status: 'Selesai' },
-      { id: 'task-1-2', title: 'Pengembangan Perangkat Lunak - Fase 1', assigneeId: 'user-2', dueDate: '2023-08-31', status: 'Selesai' },
-      { id: 'task-1-3', title: 'Integrasi Perangkat Keras', assigneeId: 'user-3', dueDate: '2024-02-28', status: 'Sedang Berjalan' },
-      { id: 'task-1-4', title: 'Mockup Antarmuka Pengguna', assigneeId: 'user-4', dueDate: '2024-05-15', status: 'Akan Dikerjakan' },
+      { id: 'task-1-1', title: 'System Architecture Design', assigneeId: 'user-1', dueDate: '2023-03-31', status: 'Done' },
+      { id: 'task-1-2', title: 'Software Development - Phase 1', assigneeId: 'user-2', dueDate: '2023-08-31', status: 'Done' },
+      { id: 'task-1-3', title: 'Hardware Integration', assigneeId: 'user-3', dueDate: '2024-02-28', status: 'In Progress' },
+      { id: 'task-1-4', title: 'User Interface Mockups', assigneeId: 'user-4', dueDate: '2024-05-15', status: 'To Do' },
     ],
     documents: [
-      { id: 'doc-1-1', name: 'Piagam Proyek.pdf', type: 'PDF', uploadDate: '2023-01-20', url: '#' },
-      { id: 'doc-1-2', name: 'Persyaratan Sistem.docx', type: 'Word', uploadDate: '2023-02-10', url: '#' },
+      { id: 'doc-1-1', name: 'Project Charter.pdf', type: 'PDF', uploadDate: '2023-01-20', url: '#' },
+      { id: 'doc-1-2', name: 'System Requirements.docx', type: 'Word', uploadDate: '2023-02-10', url: '#' },
     ],
-    notes: 'Fase 1 pengembangan perangkat lunak selesai lebih cepat dari jadwal. Integrasi perangkat keras menjadi fokus saat ini dan berjalan sesuai rencana. Semangat tim tinggi.',
+    notes: 'Software development phase 1 was completed ahead of schedule. Hardware integration is the current focus and is proceeding as planned. Team morale is high.',
     team: [users[0], users[1], users[2], users[3]],
     subProjects: [
-        { id: 'sub-1-1', name: 'Desain Ulang UI/UX', description: 'Mendesain ulang antarmuka pengguna untuk sistem baru', status: 'Sesuai Jalur' },
-        { id: 'sub-1-2', name: 'Refactor Backend', description: 'Memfaktorkan ulang backend untuk meningkatkan kinerja', status: 'Selesai' },
+        { id: 'sub-1-1', name: 'UI/UX Redesign', description: 'Redesigning the user interface for the new system', status: 'On Track' },
+        { id: 'sub-1-2', name: 'Backend Refactor', description: 'Refactoring the backend for performance improvements', status: 'Completed' },
     ],
   },
   {
     id: 'proj-2',
-    name: 'Inisiatif Bahan Bakar Penerbangan Berkelanjutan',
-    description: 'Penelitian dan implementasi bahan bakar penerbangan berkelanjutan (SAF) di seluruh armada untuk mengurangi emisi karbon.',
+    ownerId: 'user-2',
+    name: 'Sustainable Aviation Fuel Initiative',
+    description: 'Research and implementation of sustainable aviation fuels (SAFs) across the fleet to reduce carbon emissions.',
     startDate: '2023-06-01',
     endDate: '2025-05-30',
-    status: 'Beresiko',
+    status: 'At Risk',
     tasks: [
-      { id: 'task-2-1', title: 'Identifikasi & Pemeriksaan Pemasok', assigneeId: 'user-2', dueDate: '2023-09-30', status: 'Selesai' },
-      { id: 'task-2-2', title: 'Pengujian Kompatibilitas Mesin', assigneeId: 'user-1', dueDate: '2024-04-30', status: 'Sedang Berjalan' },
-      { id: 'task-2-3', title: 'Pengajuan Persetujuan Regulasi', assigneeId: 'user-5', dueDate: '2024-08-15', status: 'Terhambat' },
-      { id: 'task-2-4', title: 'Pengaturan Logistik dan Rantai Pasokan', assigneeId: 'user-3', dueDate: '2025-01-20', status: 'Akan Dikerjakan' },
+      { id: 'task-2-1', title: 'Supplier Identification & Vetting', assigneeId: 'user-2', dueDate: '2023-09-30', status: 'Done' },
+      { id: 'task-2-2', title: 'Engine Compatibility Testing', assigneeId: 'user-1', dueDate: '2024-04-30', status: 'In Progress' },
+      { id: 'task-2-3', title: 'Regulatory Approval Submission', assigneeId: 'user-5', dueDate: '2024-08-15', status: 'Blocked' },
+      { id: 'task-2-4', title: 'Logistics and Supply Chain Setup', assigneeId: 'user-3', dueDate: '2025-01-20', status: 'To Do' },
     ],
     documents: [
-      { id: 'doc-2-1', name: 'Makalah Riset SAF.pdf', type: 'PDF', uploadDate: '2023-06-05', url: '#' },
-      { id: 'doc-2-2', name: 'Daftar Pemasok.xlsx', type: 'Excel', uploadDate: '2023-09-15', url: '#' },
+      { id: 'doc-2-1', name: 'SAF Research Paper.pdf', type: 'PDF', uploadDate: '2023-06-05', url: '#' },
+      { id: 'doc-2-2', name: 'Supplier Shortlist.xlsx', type: 'Excel', uploadDate: '2023-09-15', url: '#' },
     ],
-    notes: 'Uji kompatibilitas mesin menunjukkan keausan tak terduga yang menyebabkan penundaan. Persetujuan regulasi terhambat menunggu hasil dari pengujian ini. Hal ini membahayakan jadwal proyek.',
+    notes: 'Engine compatibility tests are showing unexpected wear, causing delays. Regulatory submission is blocked pending results from these tests. This puts the project timeline at risk.',
     team: [users[1], users[0], users[4], users[2]],
     subProjects: [],
   },
   {
     id: 'proj-3',
-    name: 'Program Inspeksi Drone Otomatis',
-    description: 'Menerapkan program inspeksi pesawat otomatis menggunakan armada drone otonom.',
+    ownerId: 'user-1',
+    name: 'Automated Drone Inspection Program',
+    description: 'Implementing an automated aircraft inspection program using a fleet of autonomous drones.',
     startDate: '2024-02-01',
     endDate: '2024-11-30',
-    status: 'Keluar Jalur',
+    status: 'Off Track',
     tasks: [
-      { id: 'task-3-1', title: 'Pengadaan Armada Drone', assigneeId: 'user-3', dueDate: '2024-03-15', status: 'Selesai' },
-      { id: 'task-3-2', title: 'Pengembangan Perangkat Lunak Kontrol Penerbangan', assigneeId: 'user-1', dueDate: '2024-07-31', status: 'Sedang Berjalan' },
-      { id: 'task-3-3', title: 'Pelatihan AI Pengenalan Gambar', assigneeId: 'user-4', dueDate: '2024-09-30', status: 'Akan Dikerjakan' },
-      { id: 'task-3-4', title: 'Uji Coba Lapangan', assigneeId: 'user-2', dueDate: '2024-11-15', status: 'Akan Dikerjakan' },
+      { id: 'task-3-1', title: 'Drone Fleet Procurement', assigneeId: 'user-3', dueDate: '2024-03-15', status: 'Done' },
+      { id: 'task-3-2', title: 'Flight Control Software Development', assigneeId: 'user-1', dueDate: '2024-07-31', status: 'In Progress' },
+      { id: 'task-3-3', title: 'Image Recognition AI Training', assigneeId: 'user-4', dueDate: '2024-09-30', status: 'To Do' },
+      { id: 'task-3-4', title: 'Field Trials', assigneeId: 'user-2', dueDate: '2024-11-15', status: 'To Do' },
     ],
     documents: [
-      { id: 'doc-3-1', name: 'Lembar Spesifikasi Drone.pdf', type: 'PDF', uploadDate: '2024-02-10', url: '#' },
-      { id: 'doc-3-2', name: 'Proposal Model AI.docx', type: 'Word', uploadDate: '2024-03-20', url: '#' },
+      { id: 'doc-3-1', name: 'Drone Spec Sheet.pdf', type: 'PDF', uploadDate: '2024-02-10', url: '#' },
+      { id: 'doc-3-2', name: 'AI Model Proposal.docx', type: 'Word', uploadDate: '2024-03-20', url: '#' },
     ],
-    notes: 'Pengembangan perangkat lunak kontrol penerbangan jauh di belakang jadwal karena kompleksitas yang tidak terduga. Ini memiliki efek berantai pada semua tugas berikutnya, membahayakan tanggal penyelesaian proyek.',
+    notes: 'Flight control software development is significantly behind schedule due to unforeseen complexities. This has a knock-on effect on all subsequent tasks, jeopardizing the project completion date.',
     team: [users[2], users[0], users[3], users[1]],
     subProjects: [],
   },
   {
     id: 'proj-4',
-    name: 'Perombakan Pengalaman Penumpang',
-    description: 'Desain ulang lengkap pengalaman penumpang dalam penerbangan, dari tempat duduk hingga hiburan.',
+    ownerId: 'user-5',
+    name: 'Passenger Experience Overhaul',
+    description: 'A complete redesign of the in-flight passenger experience, from seating to entertainment.',
     startDate: '2024-01-10',
     endDate: '2024-09-20',
-    status: 'Selesai',
+    status: 'Completed',
     tasks: [
-      { id: 'task-4-1', title: 'Survei dan Analisis Umpan Balik Pelanggan', assigneeId: 'user-4', dueDate: '2024-02-28', status: 'Selesai' },
-      { id: 'task-4-2', title: 'Desain & Prototyping Kursi Baru', assigneeId: 'user-3', dueDate: '2024-05-31', status: 'Selesai' },
-      { id: 'task-4-3', title: 'Peningkatan Sistem Hiburan Dalam Penerbangan', assigneeId: 'user-1', dueDate: '2024-08-15', status: 'Selesai' },
-      { id: 'task-4-4', title: 'Kampanye Pemasaran Peluncuran', assigneeId: 'user-2', dueDate: '2024-09-15', status: 'Selesai' },
+      { id: 'task-4-1', title: 'Customer Feedback Surveys & Analysis', assigneeId: 'user-4', dueDate: '2024-02-28', status: 'Done' },
+      { id: 'task-4-2', title: 'New Seat Design & Prototyping', assigneeId: 'user-3', dueDate: '2024-05-31', status: 'Done' },
+      { id: 'task-4-3', title: 'In-Flight Entertainment System Upgrade', assigneeId: 'user-1', dueDate: '2024-08-15', status: 'Done' },
+      { id: 'task-4-4', title: 'Launch Marketing Campaign', assigneeId: 'user-2', dueDate: '2024-09-15', status: 'Done' },
     ],
     documents: [
-        { id: 'doc-4-1', name: 'Desain Akhir.pdf', type: 'PDF', uploadDate: '2024-06-01', url: '#' },
+        { id: 'doc-4-1', name: 'Final Designs.pdf', type: 'PDF', uploadDate: '2024-06-01', url: '#' },
     ],
-    notes: 'Proyek selesai dengan sukses di semua lini. Umpan balik pelanggan tentang pengalaman baru sangat positif. Kampanye pemasaran menghasilkan gebrakan yang signifikan.',
+    notes: 'Project completed successfully across all deliverables. Customer feedback on the new experience has been overwhelmingly positive. Marketing campaign generated significant buzz.',
     team: [users[3], users[2], users[0], users[1]],
     subProjects: [],
   },
 ];
+
+export const getProjectsForUser = (userId: string) => {
+    const user = findUserById(userId);
+    if (user?.role === 'Sub-Directorate Head') {
+        return projects; // Admins see all projects
+    }
+    return projects.filter(p => p.ownerId === userId || p.team.some(member => member.id === userId));
+}
 
 export const findProjectById = (id: string) => projects.find(p => p.id === id);
 export const findUserById = (id: string) => users.find(u => u.id === id);

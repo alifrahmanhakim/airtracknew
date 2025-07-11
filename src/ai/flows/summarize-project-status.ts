@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -20,8 +21,8 @@ const SummarizeProjectStatusInputSchema = z.object({
 export type SummarizeProjectStatusInput = z.infer<typeof SummarizeProjectStatusInputSchema>;
 
 const SummarizeProjectStatusOutputSchema = z.object({
-  summary: z.string().describe('A brief summary of the project status, in Indonesian.'),
-  progress: z.string().describe('A one-sentence summary of what was generated, in Indonesian.')
+  summary: z.string().describe('A brief summary of the project status.'),
+  progress: z.string().describe('A one-sentence summary of what was generated.')
 });
 export type SummarizeProjectStatusOutput = z.infer<typeof SummarizeProjectStatusOutputSchema>;
 
@@ -35,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'summarizeProjectStatusPrompt',
   input: {schema: SummarizeProjectStatusInputSchema},
   output: {schema: SummarizeProjectStatusOutputSchema},
-  prompt: `You are a project manager tasked with summarizing project statuses. Your output must be in Indonesian.
+  prompt: `You are a project manager tasked with summarizing project statuses.
 
   Based on the task completion percentage and project notes provided, generate a concise summary of the project's current status.
 
@@ -55,7 +56,7 @@ const summarizeProjectStatusFlow = ai.defineFlow(
     const {output} = await prompt(input);
     return {
       ...output,
-      progress: 'Ringkasan status proyek berhasil dibuat berdasarkan penyelesaian tugas dan catatan yang diberikan.'
+      progress: 'Project status summary generated based on task completion and provided notes.'
     } as SummarizeProjectStatusOutput;
   }
 );

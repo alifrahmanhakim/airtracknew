@@ -40,10 +40,10 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Nama tugas harus diisi.'),
-  assigneeId: z.string().min(1, 'Penanggung jawab harus dipilih.'),
-  dueDate: z.date({ required_error: "Batas waktu harus diisi." }),
-  status: z.enum(['Selesai', 'Sedang Berjalan', 'Akan Dikerjakan', 'Terhambat']),
+  title: z.string().min(1, 'Task name is required.'),
+  assigneeId: z.string().min(1, 'Assignee is required.'),
+  dueDate: z.date({ required_error: "Due date is required." }),
+  status: z.enum(['Done', 'In Progress', 'To Do', 'Blocked']),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
@@ -76,8 +76,8 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
     };
     onTaskUpdate(updatedTask);
     toast({
-      title: 'Tugas Diperbarui',
-      description: `"${data.title}" berhasil diperbarui.`,
+      title: 'Task Updated',
+      description: `"${data.title}" has been successfully updated.`,
     });
     setOpen(false);
   };
@@ -87,14 +87,14 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-7 w-7">
             <Pencil className="h-4 w-4" />
-            <span className="sr-only">Edit Tugas</span>
+            <span className="sr-only">Edit Task</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Edit Tugas</DialogTitle>
+          <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
-            Lakukan perubahan pada tugas. Klik simpan setelah selesai.
+            Make changes to the task. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -104,7 +104,7 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Tugas</FormLabel>
+                  <FormLabel>Task Name</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -118,11 +118,11 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
                 name="assigneeId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Penanggung Jawab</FormLabel>
+                    <FormLabel>Assignee</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Pilih anggota tim" />
+                          <SelectValue placeholder="Select a team member" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -140,7 +140,7 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
                 name="dueDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Batas Waktu</FormLabel>
+                    <FormLabel>Due Date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -154,7 +154,7 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
                             {field.value ? (
                               format(field.value, 'PPP')
                             ) : (
-                              <span>Pilih tanggal</span>
+                              <span>Pick a date</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -183,14 +183,14 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih status" />
+                        <SelectValue placeholder="Select a status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Akan Dikerjakan">Akan Dikerjakan</SelectItem>
-                      <SelectItem value="Sedang Berjalan">Sedang Berjalan</SelectItem>
-                      <SelectItem value="Terhambat">Terhambat</SelectItem>
-                      <SelectItem value="Selesai">Selesai</SelectItem>
+                      <SelectItem value="To Do">To Do</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Blocked">Blocked</SelectItem>
+                      <SelectItem value="Done">Done</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -198,7 +198,7 @@ export function EditTaskDialog({ task, onTaskUpdate, teamMembers }: EditTaskDial
               )}
             />
             <DialogFooter>
-              <Button type="submit">Simpan Perubahan</Button>
+              <Button type="submit">Save Changes</Button>
             </DialogFooter>
           </form>
         </Form>

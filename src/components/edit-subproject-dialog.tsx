@@ -31,9 +31,9 @@ import type { SubProject } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const subProjectSchema = z.object({
-  name: z.string().min(1, 'Nama sub-proyek harus diisi.'),
-  description: z.string().min(1, 'Deskripsi harus diisi.'),
-  status: z.enum(['Sesuai Jalur', 'Beresiko', 'Keluar Jalur', 'Selesai']),
+  name: z.string().min(1, 'Sub-project name is required.'),
+  description: z.string().min(1, 'Description is required.'),
+  status: z.enum(['On Track', 'At Risk', 'Off Track', 'Completed']),
 });
 
 type SubProjectFormValues = z.infer<typeof subProjectSchema>;
@@ -63,8 +63,8 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
     };
     onSubProjectUpdate(updatedSubProject);
     toast({
-      title: 'Sub-Proyek Diperbarui',
-      description: `"${data.name}" berhasil diperbarui.`,
+      title: 'Sub-Project Updated',
+      description: `"${data.name}" has been successfully updated.`,
     });
     setOpen(false);
   };
@@ -74,14 +74,14 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-7 w-7">
             <Pencil className="h-4 w-4" />
-            <span className="sr-only">Edit Sub-Proyek</span>
+            <span className="sr-only">Edit Sub-Project</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Edit Sub-Proyek</DialogTitle>
+          <DialogTitle>Edit Sub-Project</DialogTitle>
           <DialogDescription>
-            Lakukan perubahan pada sub-proyek. Klik simpan setelah selesai.
+            Make changes to the sub-project. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -91,7 +91,7 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Sub-Proyek</FormLabel>
+                  <FormLabel>Sub-Project Name</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -104,7 +104,7 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea {...field} rows={3} />
                   </FormControl>
@@ -121,14 +121,14 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih status" />
+                        <SelectValue placeholder="Select a status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Sesuai Jalur">Sesuai Jalur</SelectItem>
-                      <SelectItem value="Beresiko">Beresiko</SelectItem>
-                      <SelectItem value="Keluar Jalur">Keluar Jalur</SelectItem>
-                      <SelectItem value="Selesai">Selesai</SelectItem>
+                      <SelectItem value="On Track">On Track</SelectItem>
+                      <SelectItem value="At Risk">At Risk</SelectItem>
+                      <SelectItem value="Off Track">Off Track</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -136,7 +136,7 @@ export function EditSubProjectDialog({ subProject, onSubProjectUpdate }: EditSub
               )}
             />
             <DialogFooter>
-              <Button type="submit">Simpan Perubahan</Button>
+              <Button type="submit">Save Changes</Button>
             </DialogFooter>
           </form>
         </Form>

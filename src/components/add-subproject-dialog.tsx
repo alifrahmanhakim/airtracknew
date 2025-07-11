@@ -30,8 +30,8 @@ import { Plus } from 'lucide-react';
 import type { SubProject } from '@/lib/types';
 
 const subProjectSchema = z.object({
-  name: z.string().min(1, 'Nama sub-proyek harus diisi.'),
-  description: z.string().min(1, 'Deskripsi harus diisi.'),
+  name: z.string().min(1, 'Sub-project name is required.'),
+  description: z.string().min(1, 'Description is required.'),
 });
 
 type SubProjectFormValues = z.infer<typeof subProjectSchema>;
@@ -57,12 +57,12 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
       id: `subproj-${Date.now()}`,
       name: data.name,
       description: data.description,
-      status: 'Sesuai Jalur', 
+      status: 'On Track', 
     };
     onSubProjectAdd(newSubProject);
     toast({
-      title: 'Sub-Proyek Ditambahkan',
-      description: `"${data.name}" berhasil ditambahkan.`,
+      title: 'Sub-Project Added',
+      description: `"${data.name}" has been successfully added.`,
     });
     setOpen(false);
     form.reset();
@@ -73,14 +73,14 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-2 h-4 w-4" />
-          Tambah Sub-Proyek
+          Add Sub-Project
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Tambah Sub-Proyek Baru</DialogTitle>
+          <DialogTitle>Add New Sub-Project</DialogTitle>
           <DialogDescription>
-            Isi detail untuk sub-proyek baru Anda.
+            Fill in the details for your new sub-project.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -90,7 +90,7 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Sub-Proyek</FormLabel>
+                  <FormLabel>Sub-Project Name</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -103,7 +103,7 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea {...field} rows={3} />
                   </FormControl>
@@ -112,7 +112,7 @@ export function AddSubProjectDialog({ onSubProjectAdd }: AddSubProjectDialogProp
               )}
             />
             <DialogFooter>
-              <Button type="submit">Tambah Sub-Proyek</Button>
+              <Button type="submit">Add Sub-Project</Button>
             </DialogFooter>
           </form>
         </Form>

@@ -40,9 +40,9 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Nama tugas harus diisi.'),
-  assigneeId: z.string().min(1, 'Penanggung jawab harus dipilih.'),
-  dueDate: z.date({ required_error: "Batas waktu harus diisi." }),
+  title: z.string().min(1, 'Task name is required.'),
+  assigneeId: z.string().min(1, 'Assignee is required.'),
+  dueDate: z.date({ required_error: "Due date is required." }),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
@@ -70,12 +70,12 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
       title: data.title,
       assigneeId: data.assigneeId,
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
-      status: 'Akan Dikerjakan',
+      status: 'To Do',
     };
     onTaskAdd(newTask);
     toast({
-      title: 'Tugas Ditambahkan',
-      description: `"${data.title}" berhasil ditambahkan.`,
+      title: 'Task Added',
+      description: `"${data.title}" has been successfully added.`,
     });
     setOpen(false);
     form.reset();
@@ -86,14 +86,14 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-2 h-4 w-4" />
-          Tambah Tugas
+          Add Task
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Tambah Tugas Baru</DialogTitle>
+          <DialogTitle>Add New Task</DialogTitle>
           <DialogDescription>
-            Isi detail untuk tugas baru. Tugas akan ditambahkan ke proyek saat ini.
+            Fill in the details for the new task. It will be added to the current project.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -103,7 +103,7 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Tugas</FormLabel>
+                  <FormLabel>Task Name</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -117,11 +117,11 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
                 name="assigneeId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Penanggung Jawab</FormLabel>
+                    <FormLabel>Assignee</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Pilih anggota tim" />
+                          <SelectValue placeholder="Select a team member" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -139,7 +139,7 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
                 name="dueDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Batas Waktu</FormLabel>
+                    <FormLabel>Due Date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -153,7 +153,7 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
                             {field.value ? (
                               format(field.value, 'PPP')
                             ) : (
-                              <span>Pilih tanggal</span>
+                              <span>Pick a date</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -174,7 +174,7 @@ export function AddTaskDialog({ onTaskAdd, teamMembers }: AddTaskDialogProps) {
               />
             </div>
             <DialogFooter>
-              <Button type="submit">Tambah Tugas</Button>
+              <Button type="submit">Add Task</Button>
             </DialogFooter>
           </form>
         </Form>

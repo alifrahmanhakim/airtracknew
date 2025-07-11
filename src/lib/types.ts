@@ -3,13 +3,13 @@ export type User = {
   id: string;
   name: string;
   avatarUrl: string;
-  role: 'Kepala Sub-Direktorat' | 'Ketua Tim' | 'PIC' | 'Asisten PIC' | 'Fungsional';
+  role: 'Sub-Directorate Head' | 'Team Lead' | 'PIC' | 'PIC Assistant' | 'Functional';
 };
 
 export type Document = {
   id: string;
   name: string;
-  type: 'PDF' | 'Word' | 'Excel' | 'Image' | 'Lainnya';
+  type: 'PDF' | 'Word' | 'Excel' | 'Image' | 'Other';
   uploadDate: string;
   url: string;
 };
@@ -19,23 +19,24 @@ export type Task = {
   title: string;
   assigneeId: string;
   dueDate: string;
-  status: 'Selesai' | 'Sedang Berjalan' | 'Akan Dikerjakan' | 'Terhambat';
+  status: 'Done' | 'In Progress' | 'To Do' | 'Blocked';
 };
 
 export type SubProject = {
   id: string;
   name: string;
   description: string;
-  status: 'Sesuai Jalur' | 'Beresiko' | 'Keluar Jalur' | 'Selesai';
+  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
 }
 
 export type Project = {
   id: string;
   name: string;
+  ownerId: string; // New field to associate project with a user
   description: string;
   startDate: string;
   endDate: string;
-  status: 'Sesuai Jalur' | 'Beresiko' | 'Keluar Jalur' | 'Selesai';
+  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
   tasks: Task[];
   documents: Document[];
   notes: string;
