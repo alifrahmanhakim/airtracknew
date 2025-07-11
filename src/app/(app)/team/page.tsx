@@ -102,12 +102,12 @@ export default function TeamPage() {
                 <CardContent>
                     <div className="space-y-4">
                         {[...Array(5)].map((_, i) => (
-                             <div key={i} className="flex items-center space-x-4">
+                             <div key={i} className="flex items-center space-x-4 p-2">
                                 <Skeleton className="h-10 w-10 rounded-full" />
-                                <div className="space-y-2">
-                                    <Skeleton className="h-4 w-32" />
-                                    <Skeleton className="h-4 w-24" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="h-4 w-4/5" />
                                 </div>
+                                <Skeleton className="h-4 w-1/5" />
                             </div>
                         ))}
                     </div>
