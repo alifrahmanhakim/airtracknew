@@ -53,7 +53,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     const implementationLevelData = Object.entries(countBy('implementationLevel')).map(([name, value]) => ({ name, value }));
     const statusData = Object.entries(countBy('status')).map(([name, value]) => ({ name, value }));
     const adaPerubahanData = Object.entries(countBy('adaPerubahan')).map(([name, value]) => ({ name, value }));
-    const annexData = Object.entries(countBy('annex')).map(([name, value]) => ({ name: truncateText(name, 25), value, fullName: name })).sort((a,b) => b.value - a.value);
+    const annexData = Object.entries(countBy('annex')).map(([name, value]) => ({ name: truncateText(name, 35), value, fullName: name })).sort((a,b) => b.value - a.value);
     
     const statusTotal = statusData.reduce((acc, curr) => acc + curr.value, 0);
     const finalStatusCount = statusData.find(s => s.name === 'Final')?.value || 0;
@@ -161,10 +161,10 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             <CardContent className="pl-2 h-[400px]">
                 <ChartContainer config={chartConfig(analyticsData.annexData)}>
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 10, right: 30, top: 20, bottom: 20 }}>
+                        <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" width={180} interval={0} tick={{ fontSize: 12 }} />
+                            <YAxis dataKey="name" type="category" width={250} interval={0} tick={{ fontSize: 12 }} />
                              <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
                                 content={({ active, payload }) => {
