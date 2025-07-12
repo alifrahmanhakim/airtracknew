@@ -116,7 +116,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                          <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
                     </PieChart>
                 </ChartContainer>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center pointer-events-none">
                     <p className="text-2xl font-bold">{analyticsData.finalStatusPercentage.toFixed(0)}%</p>
                     <p className="text-sm text-muted-foreground">Final</p>
                 </div>
@@ -146,7 +146,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                         <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
                     </PieChart>
                 </ChartContainer>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center pointer-events-none">
                     <p className="text-2xl font-bold">{analyticsData.yaAdaPerubahanPercentage.toFixed(0)}%</p>
                     <p className="text-sm text-muted-foreground">Proposed</p>
                 </div>
@@ -159,33 +159,35 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                 <CardDescription>Shows the count of records for each Annex, sorted by volume.</CardDescription>
             </CardHeader>
             <CardContent className="pl-2 h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 10, right: 30, top: 20, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={180} interval={0} tick={{ fontSize: 12 }} />
-                         <ChartTooltip
-                            cursor={{ fill: 'hsl(var(--muted))' }}
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                    const data = payload[0].payload;
-                                    return (
-                                        <div className="p-2 bg-background border rounded-lg shadow-lg text-xs">
-                                            <p className="font-bold">{data.fullName}</p>
-                                            <p><span className="font-semibold">Count:</span> {data.value}</p>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            }}
-                        />
-                        <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
-                            {analyticsData.annexData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+                <ChartContainer config={chartConfig(analyticsData.annexData)}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 10, right: 30, top: 20, bottom: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                            <XAxis type="number" />
+                            <YAxis dataKey="name" type="category" width={180} interval={0} tick={{ fontSize: 12 }} />
+                             <ChartTooltip
+                                cursor={{ fill: 'hsl(var(--muted))' }}
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        const data = payload[0].payload;
+                                        return (
+                                            <div className="p-2 bg-background border rounded-lg shadow-lg text-xs">
+                                                <p className="font-bold">{data.fullName}</p>
+                                                <p><span className="font-semibold">Count:</span> {data.value}</p>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                            <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
+                                {analyticsData.annexData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </ChartContainer>
             </CardContent>
         </Card>
 
@@ -195,30 +197,32 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             <CardDescription>Shows the count for each unique implementation level across all records.</CardDescription>
             </CardHeader>
             <CardContent className="pl-2 h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={analyticsData.implementationLevelData} layout="horizontal" margin={{ right: 30, top: 20, bottom: 120 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                         <XAxis 
-                            dataKey="name" 
-                            type="category" 
-                            angle={-45} 
-                            textAnchor="end" 
-                            height={100} 
-                            tick={{ fontSize: 12 }}
-                            interval={0}
-                        />
-                        <YAxis type="number" allowDecimals={false} />
-                        <ChartTooltip
-                            cursor={{ fill: 'hsl(var(--muted))' }}
-                            content={<ChartTooltipContent indicator="dot" />}
-                        />
-                        <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
-                            {analyticsData.implementationLevelData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+                <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsData.implementationLevelData} layout="horizontal" margin={{ right: 30, top: 20, bottom: 120 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                             <XAxis 
+                                dataKey="name" 
+                                type="category" 
+                                angle={-45} 
+                                textAnchor="end" 
+                                height={100} 
+                                tick={{ fontSize: 12 }}
+                                interval={0}
+                            />
+                            <YAxis type="number" allowDecimals={false} />
+                            <ChartTooltip
+                                cursor={{ fill: 'hsl(var(--muted))' }}
+                                content={<ChartTooltipContent indicator="dot" />}
+                            />
+                            <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
+                                {analyticsData.implementationLevelData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </ChartContainer>
             </CardContent>
         </Card>
     </div>
