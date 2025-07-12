@@ -129,7 +129,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex items-center gap-2">
                 <LiveClock />
-                <SidebarTrigger />
             </div>
           </div>
         </SidebarHeader>
@@ -197,7 +196,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <div className="animate-in fade-in-50 duration-500">
+        <div className="p-2 absolute top-0 left-0">
+          <SidebarTrigger />
+        </div>
+        <div className="animate-in fade-in-50 duration-500 pt-12">
             {children}
         </div>
       </SidebarInset>
