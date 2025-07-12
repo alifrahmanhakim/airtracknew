@@ -185,7 +185,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                        const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
                        const lastDoneTask = project.tasks
                          ?.filter(t => t.status === 'Done')
-                         .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())[0];
+                         .sort((a, b) => new Date(b.doneDate || b.dueDate).getTime() - new Date(a.doneDate || a.dueDate).getTime())[0];
                        
                        return (
                         <Card key={project.id} className="flex flex-col hover:shadow-lg transition-shadow duration-300">
@@ -235,7 +235,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                     <p className="font-semibold text-foreground">Last Update</p>
                                     {lastDoneTask ? (
                                         <p className="text-muted-foreground">
-                                          {lastDoneTask.title} on {format(parseISO(lastDoneTask.dueDate), 'dd MMM yyyy')}
+                                          {lastDoneTask.title} on {format(parseISO(lastDoneTask.doneDate || lastDoneTask.dueDate), 'dd MMM yyyy')}
                                         </p>
                                       ) : (
                                         <p className="text-muted-foreground">No tasks completed yet</p>

@@ -28,6 +28,7 @@ export type Task = {
   assigneeId: string;
   startDate: string;
   dueDate: string;
+  doneDate?: string; // Add optional completion date
   status: 'Done' | 'In Progress' | 'To Do' | 'Blocked';
   attachments?: Attachment[];
 };

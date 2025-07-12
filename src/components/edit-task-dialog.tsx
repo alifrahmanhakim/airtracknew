@@ -53,6 +53,7 @@ const taskSchema = z.object({
   startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
   status: z.enum(['Done', 'In Progress', 'To Do', 'Blocked']),
+  doneDate: z.date().optional(),
   attachments: z.array(attachmentSchema).optional(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
@@ -81,6 +82,7 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
       startDate: parseISO(task.startDate || task.dueDate),
       dueDate: parseISO(task.dueDate),
       status: task.status,
+      doneDate: task.doneDate ? parseISO(task.doneDate) : undefined,
       attachments: task.attachments || [],
     },
   });
@@ -89,6 +91,16 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
     control: form.control,
     name: 'attachments',
   });
+  
+  const watchedStatus = form.watch('status');
+  
+  const handleStatusChange = (status: Task['status']) => {
+    form.setValue('status', status);
+    if (status === 'Done' && !form.getValues('doneDate')) {
+        form.setValue('doneDate', new Date());
+    }
+  }
+
 
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
@@ -97,6 +109,7 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
       ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+      doneDate: data.doneDate ? format(data.doneDate, 'yyyy-MM-dd') : undefined,
       attachments: data.attachments,
     };
     
@@ -249,29 +262,71 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
                   </FormItem>
                 )}
               />
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="To Do">To Do</SelectItem>
-                      <SelectItem value="In Progress">In Progress</SelectItem>
-                      <SelectItem value="Blocked">Blocked</SelectItem>
-                      <SelectItem value="Done">Done</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={handleStatusChange} value={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a status" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        <SelectItem value="To Do">To Do</SelectItem>
+                        <SelectItem value="In Progress">In Progress</SelectItem>
+                        <SelectItem value="Blocked">Blocked</SelectItem>
+                        <SelectItem value="Done">Done</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                {watchedStatus === 'Done' && (
+                    <FormField
+                        control={form.control}
+                        name="doneDate"
+                        render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Completion Date</FormLabel>
+                            <Popover>
+                            <PopoverTrigger asChild>
+                                <FormControl>
+                                <Button
+                                    variant={'outline'}
+                                    className={cn(
+                                    'w-full pl-3 text-left font-normal',
+                                    !field.value && 'text-muted-foreground'
+                                    )}
+                                >
+                                    {field.value ? (
+                                    format(field.value, 'PPP')
+                                    ) : (
+                                    <span>Pick a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                                />
+                            </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                )}
+            </div>
 
             <Separator />
 
