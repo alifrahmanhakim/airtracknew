@@ -41,6 +41,7 @@ export default function CcefodPage() {
   
   const [recordToDelete, setRecordToDelete] = useState<CcefodRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "ccefodRecords"), orderBy("createdAt", "desc"));
@@ -100,7 +101,7 @@ export default function CcefodPage() {
     return records.filter(record => record.annex === analyticsAnnexFilter);
   }, [records, analyticsAnnexFilter]);
 
-  const handleExportCsv = () => {
+  const confirmExport = () => {
     if (records.length === 0) {
         toast({
             variant: 'destructive',
@@ -129,6 +130,7 @@ export default function CcefodPage() {
             link.click();
             document.body.removeChild(link);
         }
+        setIsExporting(false);
     }, 500);
   };
 
@@ -143,7 +145,7 @@ export default function CcefodPage() {
     }
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 print:hidden">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                 <div>
                     <h1 className="text-3xl font-bold">CC/EFOD Monitoring</h1>
                     <p className="text-muted-foreground">
@@ -159,7 +161,7 @@ export default function CcefodPage() {
                   </TabsList>
                 </div>
             </div>
-            <div className={cn(activeTab !== 'form' && 'print:hidden')}>
+            <div className={cn(activeTab !== 'form' ? 'print:hidden' : '')}>
                 <TabsContent value="form">
                 <Card className="max-w-4xl mx-auto">
                     <CardHeader>
@@ -174,7 +176,7 @@ export default function CcefodPage() {
                 </Card>
                 </TabsContent>
             </div>
-            <div className={cn(activeTab !== 'records' && 'print:hidden')}>
+            <div className={cn(activeTab !== 'records' ? 'print:hidden' : '')}>
                 <TabsContent value="records">
                 <Card>
                     <CardHeader>
@@ -186,7 +188,7 @@ export default function CcefodPage() {
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
-                                <Button variant="outline" size="icon" onClick={handleExportCsv}>
+                                <Button variant="outline" size="icon" onClick={() => setIsExporting(true)}>
                                     <FileSpreadsheet className="h-4 w-4" />
                                     <span className="sr-only">Export as CSV</span>
                                 </Button>
@@ -199,7 +201,7 @@ export default function CcefodPage() {
                 </Card>
                 </TabsContent>
             </div>
-            <div className={cn(activeTab !== 'analytics' && 'print:hidden')}>
+            <div className={cn(activeTab !== 'analytics' ? 'print:hidden' : '')}>
                 <TabsContent value="analytics">
                     <Card>
                         <CardHeader>
@@ -254,6 +256,23 @@ export default function CcefodPage() {
                 <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
                     {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={isExporting} onOpenChange={setIsExporting}>
+            <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Confirm Export</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Are you sure you want to export all {records.length} records as a CSV file?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmExport}>
+                    Export
                 </AlertDialogAction>
             </AlertDialogFooter>
             </AlertDialogContent>
