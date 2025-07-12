@@ -161,48 +161,23 @@ export default function CcefodPage() {
                   </TabsList>
                 </div>
             </div>
-            <div className={cn(activeTab !== 'form' ? 'print:hidden' : '')}>
-                <TabsContent value="form">
-                <Card className="max-w-4xl mx-auto">
-                    <CardHeader>
-                    <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
-                    <CardDescription>
-                        Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di Firestore.
-                    </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                    <CcefodForm onFormSubmit={() => {}} />
-                    </CardContent>
-                </Card>
+            
+            <div className={cn(activeTab === 'records' ? 'hidden' : 'max-w-7xl mx-auto w-full')}>
+                <TabsContent value="form" className={cn(activeTab !== 'form' ? 'print:hidden' : '')}>
+                    <Card className="max-w-4xl mx-auto">
+                        <CardHeader>
+                        <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
+                        <CardDescription>
+                            Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di Firestore.
+                        </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                        <CcefodForm onFormSubmit={() => {}} />
+                        </CardContent>
+                    </Card>
                 </TabsContent>
-            </div>
-            <div className={cn(activeTab !== 'records' ? 'print:hidden' : '')}>
-                <TabsContent value="records">
-                <Card>
-                    <CardHeader>
-                        <div className='flex justify-between items-start'>
-                            <div>
-                                <CardTitle>CC/EFOD Records</CardTitle>
-                                <CardDescription>
-                                    Berikut adalah daftar data yang telah dimasukkan dari Firestore.
-                                </CardDescription>
-                            </div>
-                            <div className="flex items-center gap-2 print:hidden">
-                                <Button variant="outline" size="icon" onClick={() => setIsExporting(true)}>
-                                    <FileSpreadsheet className="h-4 w-4" />
-                                    <span className="sr-only">Export as CSV</span>
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <CcefodRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
-                    </CardContent>
-                </Card>
-                </TabsContent>
-            </div>
-            <div className={cn(activeTab !== 'analytics' ? 'print:hidden' : '')}>
-                <TabsContent value="analytics">
+                
+                <TabsContent value="analytics" className={cn(activeTab !== 'analytics' ? 'print:hidden' : '')}>
                     <Card>
                         <CardHeader>
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -235,6 +210,31 @@ export default function CcefodPage() {
                     </Card>
                 </TabsContent>
             </div>
+            
+            <TabsContent value="records" className={cn(activeTab !== 'records' ? 'print:hidden' : '')}>
+                <Card>
+                    <CardHeader>
+                        <div className='flex justify-between items-start'>
+                            <div>
+                                <CardTitle>CC/EFOD Records</CardTitle>
+                                <CardDescription>
+                                    Berikut adalah daftar data yang telah dimasukkan dari Firestore.
+                                </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2 print:hidden">
+                                <Button variant="outline" size="icon" onClick={() => setIsExporting(true)}>
+                                    <FileSpreadsheet className="h-4 w-4" />
+                                    <span className="sr-only">Export as CSV</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <CcefodRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
         </Tabs>
     );
   }
