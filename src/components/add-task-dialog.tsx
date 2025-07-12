@@ -66,6 +66,12 @@ const taskOptions = [
   { value: 'Penyusunan KP/PM', label: 'Penyusunan KP/PM' },
   { value: 'Persetujuan Manajemen', label: 'Persetujuan Manajemen' },
   { value: 'Evaluasi Bagkum', label: 'Evaluasi Bagkum' },
+  { value: 'Revisi oleh Direktorat hasil koreksi Bagkum record keeping dan sinkronisasi', label: 'Revisi oleh Direktorat hasil koreksi Bagkum record keeping dan sinkronisasi' },
+  { value: 'Finalisasi oleh Bagkum', label: 'Finalisasi oleh Bagkum' },
+  { value: 'Evaluasi oleh Biro Hukum', label: 'Evaluasi oleh Biro Hukum' },
+  { value: 'Evaluasi oleh Kumham', label: 'Evaluasi oleh Kumham' },
+  { value: 'Setneg dan Pengesahan', label: 'Setneg dan Pengesahan' },
+  { value: 'Sosialisasi oleh Direktorat', label: 'Sosialisasi oleh Direktorat' },
 ];
 
 export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDialogProps) {
