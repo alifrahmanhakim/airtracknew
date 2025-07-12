@@ -107,54 +107,33 @@
 }
 
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .print-container, .print-container * {
-    visibility: visible;
-  }
-  .print-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-  
-  #ccefod-page, #ccefod-page * {
-    visibility: visible;
-  }
-  
-  [data-sidebar="sidebar"], [data-sidebar="trigger"], .print-hidden {
-    display: none;
+  [data-print-content="form"],
+  [data-print-content="records"]:not(.print\:hidden),
+  [data-print-content="analytics"]:not(.print\:hidden) {
+    display: block;
   }
 
-  body > div > div > div:first-child {
-    display: none; /* Hides the sidebar wrapper */
+  body > [data-sidebar-wrapper] {
+    display: block;
   }
 
-  main {
-    margin: 0 !important;
+  [data-sidebar="sidebar"],
+  [data-sidebar="trigger"],
+  .print-hidden,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  main, #ccefod-page {
     padding: 0 !important;
+    margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
-  }
-  
-  #ccefod-page {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .print-visible {
-    display: block !important;
   }
 
   @page {
     size: auto;
     margin: 0.5in;
-  }
-
-  .print\:hidden {
-    display: none !important;
   }
 
   .dark {
@@ -179,4 +158,3 @@
     background-color: white !important;
   }
 }
-
