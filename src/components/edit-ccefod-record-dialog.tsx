@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -88,22 +87,24 @@ export function EditCcefodRecordDialog({ record, onRecordUpdate }: EditCcefodRec
             Make changes to the record for Annex Ref: <span className='font-semibold'>{record.annexReference}</span>
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-grow pr-6 -mr-6">
-            <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <CcefodSharedFormFields form={form} />
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 min-h-0">
+                <ScrollArea className="h-full pr-6">
+                    <div className="space-y-8 py-4">
+                        <CcefodSharedFormFields form={form} />
+                    </div>
+                </ScrollArea>
+                <DialogFooter className="pt-4 border-t mt-4">
+                    <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+                        Cancel
+                    </Button>
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Changes
+                    </Button>
+                </DialogFooter>
             </form>
-            </Form>
-        </ScrollArea>
-        <DialogFooter className="pt-4 border-t mt-auto">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
-                Cancel
-            </Button>
-            <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
-            </Button>
-        </DialogFooter>
+        </Form>
       </DialogContent>
     </Dialog>
   );
