@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Printer, FileSpreadsheet } from 'lucide-react';
+import { Loader2, FileSpreadsheet } from 'lucide-react';
 import { ImportCcefodCsvDialog } from '@/components/import-ccefod-csv-dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -100,10 +100,6 @@ export default function CcefodPage() {
     return records.filter(record => record.annex === analyticsAnnexFilter);
   }, [records, analyticsAnnexFilter]);
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleExportCsv = () => {
     if (records.length === 0) {
         toast({
@@ -113,19 +109,27 @@ export default function CcefodPage() {
         });
         return;
     }
+    
+    toast({
+        title: 'Preparing Export',
+        description: 'Your CSV file is being generated...',
+    });
 
-    const csv = Papa.unparse(records);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'ccefod_records_export.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+    // Use a small timeout to allow the toast to render before the UI might freeze on large exports
+    setTimeout(() => {
+        const csv = Papa.unparse(records);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'ccefod_records_export.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }, 500);
   };
 
   const renderContent = () => {
@@ -186,10 +190,6 @@ export default function CcefodPage() {
                                     <FileSpreadsheet className="h-4 w-4" />
                                     <span className="sr-only">Export as CSV</span>
                                 </Button>
-                                <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
-                                    <Printer className="h-4 w-4" />
-                                    <span className="sr-only">Print Records</span>
-                                </Button>
                             </div>
                         </div>
                     </CardHeader>
@@ -224,10 +224,6 @@ export default function CcefodPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <Button variant="outline" size="icon" onClick={handlePrint}>
-                                        <Printer className="h-4 w-4" />
-                                        <span className="sr-only">Print Analytics</span>
-                                    </Button>
                                 </div>
                             </div>
                         </CardHeader>
