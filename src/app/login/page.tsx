@@ -10,68 +10,128 @@ import { Plane, Loader2 } from "lucide-react";
 import { useState } from 'react';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
 import { db, auth, googleProvider } from '@/lib/firebase';
-import { signInWithPopup, User as FirebaseAuthUser } from 'firebase/auth';
+import { signInWithPopup, User as FirebaseAuthUser, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import type { User } from '@/lib/types';
-import { Separator } from '@/components/ui/separator';
-import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoginView, setIsLoginView] = useState(true);
+
+  // Login State
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginIsLoading, setLoginIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  // Signup State
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupIsLoading, setSignupIsLoading] = useState(false);
+  const [signupError, setSignupError] = useState('');
+  
+  // Google State
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState('');
+
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
+    setLoginIsLoading(true);
+    setLoginError('');
 
     try {
-      if (!email) {
-        setError("Please enter an email address.");
-        setIsLoading(false);
+      if (!loginEmail) {
+        setLoginError("Please enter an email address.");
+        setLoginIsLoading(false);
         return;
       }
       
       const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", email));
+      const q = query(usersRef, where("email", "==", loginEmail));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        setError("No user found with this email. Please check your credentials or sign up.");
-        setIsLoading(false);
+        setLoginError("No user found with this email. Please check your credentials or sign up.");
+        setLoginIsLoading(false);
         return;
       }
       
       const userDoc = querySnapshot.docs[0];
-      
       localStorage.setItem('loggedInUserId', userDoc.id);
-      
       window.location.href = '/dashboard';
 
     } catch (err) {
       console.error("Login Error:", err);
-      setError("An error occurred during login. Please try again.");
-      setIsLoading(false);
+      setLoginError("An error occurred during login. Please try again.");
+      setLoginIsLoading(false);
     }
   };
   
-  const handleGoogleLogin = async () => {
+  const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignupIsLoading(true);
+    setSignupError('');
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", signupEmail));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        setSignupError("An account with this email already exists. Please log in.");
+        setSignupIsLoading(false);
+        return;
+      }
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
+      const firebaseUser = userCredential.user;
+      
+      await updateProfile(firebaseUser, { displayName: signupName });
+
+      const newUser: User = {
+        id: firebaseUser.uid,
+        name: signupName,
+        email: signupEmail,
+        avatarUrl: `https://placehold.co/100x100.png`,
+        role: 'Functional'
+      };
+      await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+
+      localStorage.setItem('loggedInUserId', firebaseUser.uid);
+      window.location.href = '/dashboard';
+
+    } catch (err: any) {
+      console.error("Signup Error:", err);
+      if (err.code === 'auth/email-already-in-use') {
+        setSignupError("This email is already in use. Please log in.");
+      } else if (err.code === 'auth/weak-password') {
+        setSignupError("Password should be at least 6 characters.");
+      } else {
+        setSignupError("An error occurred during sign up. Please try again.");
+      }
+      setSignupIsLoading(false);
+    }
+  };
+
+  
+  const handleGoogleAuth = async () => {
     setIsGoogleLoading(true);
-    setError('');
+    setLoginError('');
+    setSignupError('');
+
     try {
         const result = await signInWithPopup(auth, googleProvider);
         const firebaseUser = result.user;
 
-        const userRef = doc(db, 'users', firebaseUser.uid);
-        const userSnap = await getDocs(query(collection(db, 'users'), where('email', '==', firebaseUser.email)));
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where("email", "==", firebaseUser.email));
+        const userSnap = await getDocs(q);
 
-        let userIdToLogin = firebaseUser.uid;
+        let userIdToLogin: string;
 
         if (userSnap.empty) {
-            // User doesn't exist, so create a new document (sign up)
+            // User doesn't exist, create a new document
             const newUser: User = {
                 id: firebaseUser.uid,
                 name: firebaseUser.displayName || 'New User',
@@ -82,7 +142,7 @@ export default function LoginPage() {
             await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
             userIdToLogin = firebaseUser.uid;
         } else {
-            // User exists, just get their ID to log in.
+            // User exists, get their ID to log in.
             userIdToLogin = userSnap.docs[0].id;
         }
 
@@ -90,82 +150,87 @@ export default function LoginPage() {
         window.location.href = '/dashboard';
 
     } catch (err) {
-        console.error("Google Login Error:", err);
-        setError("Failed to sign in with Google. Please try again.");
+        console.error("Google Auth Error:", err);
+        const errorMsg = "Failed to sign in with Google. Please try again.";
+        setLoginError(errorMsg);
+        setSignupError(errorMsg);
         setIsGoogleLoading(false);
     }
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-sm animate-in fade-in-0 zoom-in-95 duration-500">
-        <CardHeader className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
-                    <Plane className="h-6 w-6" />
-                </div>
+    <main className="flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{backgroundImage: "url('/background.jpg')"}}>
+        <div className="absolute inset-0 bg-black/50" />
+      <Card className="relative w-full max-w-sm bg-white/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
+        <div className={cn("transition-transform duration-700 ease-in-out", !isLoginView && "-translate-x-full")}>
+            <div className="w-full flex-shrink-0" style={{ transform: `translateX(${isLoginView ? '0%' : '100%'})`, transition: 'transform 0.7s ease-in-out' }}>
+                <CardHeader className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
+                            <Plane className="h-6 w-6" />
+                        </div>
+                    </div>
+                    <CardTitle className="text-2xl">AirTrack Login</CardTitle>
+                    <CardDescription className="text-white/80">Enter your credentials to access your dashboard.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleEmailLogin} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="login-email">Email</Label>
+                            <Input id="login-email" type="email" placeholder="name@example.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="login-password">Password</Label>
+                            <Input id="login-password" type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60" />
+                        </div>
+                        {loginError && <p className="text-sm text-red-400 text-center">{loginError}</p>}
+                        <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={loginIsLoading}>
+                            {loginIsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
+                        </Button>
+                    </form>
+                    <p className="mt-4 text-center text-sm">Don't have an account?{" "}
+                        <button onClick={() => setIsLoginView(false)} className="underline hover:text-primary">Sign up</button>
+                    </p>
+                </CardContent>
             </div>
-          <CardTitle className="text-2xl">AirTrack Login</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your dashboard.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleEmailLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="name@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </div>
-            
-            {error && <p className="text-sm text-destructive text-center">{error}</p>}
+        </div>
 
-            <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Login
-            </Button>
-          </form>
-
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+        <div className="absolute top-0 left-0 w-full h-full" style={{ transform: `translateX(${isLoginView ? '100%' : '0%'})`, transition: 'transform 0.7s ease-in-out' }}>
+            <div className="w-full h-full">
+                <CardHeader className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
+                            <Plane className="h-6 w-6" />
+                        </div>
+                    </div>
+                    <CardTitle className="text-2xl">Create an Account</CardTitle>
+                    <CardDescription className="text-white/80">Enter your details to get started.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleEmailSignup} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="signup-name">Name</Label>
+                            <Input id="signup-name" type="text" placeholder="John Doe" value={signupName} onChange={(e) => setSignupName(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="signup-email">Email</Label>
+                            <Input id="signup-email" type="email" placeholder="name@example.com" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="signup-password">Password</Label>
+                            <Input id="signup-password" type="password" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                        </div>
+                        {signupError && <p className="text-sm text-red-400 text-center">{signupError}</p>}
+                        <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={signupIsLoading}>
+                            {signupIsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
+                        </Button>
+                    </form>
+                    <p className="mt-4 text-center text-sm">Already have an account?{" "}
+                        <button onClick={() => setIsLoginView(true)} className="underline hover:text-primary">Log in</button>
+                    </p>
+                </CardContent>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-        
-          <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
-            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
-              <svg role="img" viewBox="0 0 24 24" className="mr-2 h-4 w-4"><path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.98-4.66 1.98-3.56 0-6.21-2.76-6.21-6.22s2.65-6.22 6.21-6.22c2.03 0 3.28.79 4.25 1.74l2.53-2.39C18.49 3.46 15.96 2 12.48 2 7.1 2 3.1 6.02 3.1 11s4.01 9 9.38 9c5.14 0 9.02-3.46 9.02-9.22 0-.6-.06-1.18-.16-1.74h-8.88z"></path></svg>
-            )}
-            Google
-          </Button>
-
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link href="/signup" className="underline hover:text-primary">
-              Sign up
-            </Link>
-          </p>
-        </CardContent>
+        </div>
       </Card>
     </main>
   );

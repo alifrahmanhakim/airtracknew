@@ -118,7 +118,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
                         <AvatarFallback>{currentUser.name?.charAt(0) || currentUser.email?.charAt(0) || '?'}</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col group-data-[collapsible=icon]:hidden">
                         <span className='text-sm font-semibold'>{currentUser.name}</span>
                         <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
                     </div>
