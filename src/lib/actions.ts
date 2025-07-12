@@ -120,9 +120,9 @@ export async function addProject(
           role: member.role,
           avatarUrl: member.avatarUrl,
         })),
-        complianceData: [],
-        adoptionData: [],
-        checklist: [], // Initialize with an empty checklist
+        complianceData: projectData.complianceData || [],
+        adoptionData: projectData.adoptionData || [],
+        checklist: projectData.checklist || [],
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
