@@ -25,7 +25,6 @@ type ChecklistCardProps = {
 export function ChecklistCard({ project }: ChecklistCardProps) {
   const [checklist, setChecklist] = React.useState<ChecklistItem[]>(project.checklist || []);
   const [newItemText, setNewItemText] = React.useState('');
-  const [isLoading, setIsLoading] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const { toast } = useToast();
 
@@ -34,7 +33,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
   }, [project.checklist]);
 
   const handleUpdate = async (updatedChecklist: ChecklistItem[]) => {
-    setIsLoading(true);
+    setIsGenerating(true);
     const result = await updateProjectChecklist(project.id, updatedChecklist);
     if (result.success) {
       setChecklist(updatedChecklist);
@@ -47,7 +46,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
       // Revert to original state on failure
       setChecklist(project.checklist || []);
     }
-    setIsLoading(false);
+    setIsGenerating(false);
   };
 
   const handleToggleItem = (itemId: string) => {
@@ -82,25 +81,30 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
             projectDescription: project.description
         });
         
-        const newItems = result.items.map(itemText => ({
-            id: `item-${Date.now()}-${Math.random()}`,
-            text: itemText,
-            completed: false,
-        }));
-        const updatedChecklist = [...checklist, ...newItems];
-        handleUpdate(updatedChecklist);
-        toast({
-            title: 'Checklist Generated!',
-            description: `${newItems.length} items have been added to your checklist.`,
-        });
+        if (result && result.items) {
+          const newItems = result.items.map(itemText => ({
+              id: `item-${Date.now()}-${Math.random()}`,
+              text: itemText,
+              completed: false,
+          }));
+          
+          const updatedChecklist = [...checklist, ...newItems];
+          await handleUpdate(updatedChecklist); // Let handleUpdate manage the state
+          
+          toast({
+              title: 'Checklist Generated!',
+              description: `${newItems.length} items have been added to your checklist.`,
+          });
+        } else {
+           throw new Error("AI did not return any items.");
+        }
     } catch (error) {
         toast({
             variant: 'destructive',
             title: 'Error',
             description: 'Failed to generate AI checklist. Please try again.',
         });
-    } finally {
-        setIsGenerating(false);
+        setIsGenerating(false); // Ensure loading state is turned off on error
     }
   }
 
@@ -119,7 +123,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
             </div>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={handleGenerateChecklist} disabled={isGenerating || isLoading}>
+                    <Button variant="outline" size="sm" onClick={handleGenerateChecklist} disabled={isGenerating}>
                         {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                         <span className="sr-only">Generate with AI</span>
                     </Button>
@@ -137,9 +141,9 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
               value={newItemText}
               onChange={(e) => setNewItemText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-              disabled={isLoading || isGenerating}
+              disabled={isGenerating}
             />
-            <Button onClick={handleAddItem} disabled={isLoading || isGenerating || !newItemText.trim()}>
+            <Button onClick={handleAddItem} disabled={isGenerating || !newItemText.trim()}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -155,7 +159,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
                     id={item.id}
                     checked={item.completed}
                     onCheckedChange={() => handleToggleItem(item.id)}
-                    disabled={isLoading || isGenerating}
+                    disabled={isGenerating}
                   />
                   <label
                     htmlFor={item.id}
@@ -173,7 +177,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => handleRemoveItem(item.id)}
-                        disabled={isLoading || isGenerating}
+                        disabled={isGenerating}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -190,7 +194,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
               </p>
             )}
           </div>
-          {(isLoading || isGenerating) && <Loader2 className="h-4 w-4 animate-spin text-primary mx-auto mt-2" />}
+          {isGenerating && <Loader2 className="h-4 w-4 animate-spin text-primary mx-auto mt-2" />}
         </CardContent>
       </Card>
     </TooltipProvider>
