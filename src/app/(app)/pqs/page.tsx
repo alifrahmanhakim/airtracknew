@@ -20,13 +20,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Printer } from 'lucide-react';
+import { Loader2, Printer, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PqsForm } from '@/components/pqs-form';
 import { PqsRecordsTable } from '@/components/pqs-records-table';
 import { PqsAnalyticsDashboard } from '@/components/pqs-analytics-dashboard';
 import { ImportPqsCsvDialog } from '@/components/import-pqs-csv-dialog';
+import Papa from 'papaparse';
 
 
 export default function PqsPage() {
@@ -88,6 +89,30 @@ export default function PqsPage() {
     window.print();
   };
 
+  const handleExportCsv = () => {
+    if (records.length === 0) {
+        toast({
+            variant: 'destructive',
+            title: 'No Data to Export',
+            description: 'There are no records to export.',
+        });
+        return;
+    }
+
+    const csv = Papa.unparse(records);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'pqs_records_export.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -141,10 +166,16 @@ export default function PqsPage() {
                                         A list of all Protocol Questions records from Firestore.
                                     </CardDescription>
                                 </div>
-                                <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
-                                    <Printer className="h-4 w-4" />
-                                    <span className="sr-only">Print Records</span>
-                                </Button>
+                                <div className="flex items-center gap-2 print:hidden">
+                                    <Button variant="outline" size="icon" onClick={handleExportCsv}>
+                                        <FileSpreadsheet className="h-4 w-4" />
+                                        <span className="sr-only">Export as CSV</span>
+                                    </Button>
+                                    <Button variant="outline" size="icon" onClick={handlePrint}>
+                                        <Printer className="h-4 w-4" />
+                                        <span className="sr-only">Print Records</span>
+                                    </Button>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -165,7 +196,7 @@ export default function PqsPage() {
                                     </CardDescription>
                                 </div>
                                 <div className="flex items-center gap-2 print:hidden">
-                                    <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
+                                    <Button variant="outline" size="icon" onClick={handlePrint}>
                                         <Printer className="h-4 w-4" />
                                         <span className="sr-only">Print Analytics</span>
                                     </Button>
