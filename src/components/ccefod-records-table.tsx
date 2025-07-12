@@ -235,7 +235,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
             </DropdownMenu>
         </div>
         <div className="border rounded-md overflow-x-auto">
-          <Table className="min-w-full table-fixed">
+          <Table className="min-w-full">
             <TableHeader>
               <TableRow>
                 {visibleColumns.map((col, index) => (
@@ -243,14 +243,13 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                         key={col.key} 
                         className={cn(
                           "cursor-pointer", 
-                          index < visibleColumns.length -1 ? "border-r" : "",
                           col.key === 'standardPractice' && 'w-[40%]'
                         )} 
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right sticky right-0 bg-background/95 z-10">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -262,10 +261,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                      return (
                         <TableCell 
                             key={col.key} 
-                            className={cn(
-                                "align-top whitespace-normal",
-                                index < visibleColumns.length - 1 ? "border-r" : ""
-                            )}
+                            className="align-top whitespace-normal"
                         >
                             {(() => {
                                 const value = record[col.key as keyof CcefodRecord] as string | undefined;
