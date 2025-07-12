@@ -137,7 +137,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       });
       setOpen(false);
       form.reset();
-      router.refresh();
+      window.location.reload();
     } else {
       toast({
         variant: 'destructive',

@@ -129,7 +129,7 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
       });
       setOpen(false);
       form.reset();
-      router.refresh();
+      window.location.reload();
     } else {
       toast({
         variant: 'destructive',
