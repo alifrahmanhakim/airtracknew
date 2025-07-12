@@ -81,29 +81,31 @@ export function EditCcefodRecordDialog({ record, onRecordUpdate }: EditCcefodRec
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>Edit CC/EFOD Record</DialogTitle>
-          <DialogDescription>
-            Make changes to the record for Annex Ref: <span className='font-semibold'>{record.annexReference}</span>
-          </DialogDescription>
-        </DialogHeader>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-                <ScrollArea className="max-h-[60vh] pr-6">
-                    <div className="space-y-8 py-4">
-                        <CcefodSharedFormFields form={form} />
-                    </div>
-                </ScrollArea>
-                <DialogFooter className="pt-4 mt-4 border-t">
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" disabled={isLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Save Changes
-                    </Button>
-                </DialogFooter>
-            </form>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Edit CC/EFOD Record</DialogTitle>
+              <DialogDescription>
+                Make changes to the record for Annex Ref: <span className='font-semibold'>{record.annexReference}</span>
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex-grow overflow-y-auto pr-6 my-4">
+                <div className="space-y-8">
+                    <CcefodSharedFormFields form={form} />
+                </div>
+            </div>
+
+            <DialogFooter className="pt-4 border-t flex-shrink-0">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+                    Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Changes
+                </Button>
+            </DialogFooter>
+          </form>
         </Form>
       </DialogContent>
     </Dialog>
