@@ -16,6 +16,7 @@ import {
   Quote,
   Undo,
   Redo,
+  Pilcrow,
 } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import DOMPurify from 'dompurify';
@@ -53,6 +54,14 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
         <Strikethrough className="h-4 w-4" />
       </Toggle>
       <Separator orientation="vertical" className="h-8 mx-1" />
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('paragraph')}
+        onPressedChange={() => editor.chain().focus().setParagraph().run()}
+        aria-label="Toggle Paragraph"
+      >
+        <Pilcrow className="h-4 w-4" />
+      </Toggle>
       <Toggle
         size="sm"
         pressed={editor.isActive('heading', { level: 1 })}
@@ -134,7 +143,7 @@ export function RichTextInput({ name }: RichTextInputProps) {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: DOMPurify.sanitize(initialContent),
+    content: typeof window !== 'undefined' ? DOMPurify.sanitize(initialContent) : initialContent,
     editorProps: {
       attributes: {
         class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none px-3 py-2',
@@ -142,7 +151,7 @@ export function RichTextInput({ name }: RichTextInputProps) {
     },
     onUpdate({ editor }) {
       const html = editor.getHTML();
-      const sanitizedHtml = DOMPurify.sanitize(html);
+      const sanitizedHtml = typeof window !== 'undefined' ? DOMPurify.sanitize(html) : html;
       setValue(name, sanitizedHtml, {
         shouldValidate: true,
         shouldDirty: true,
@@ -152,7 +161,7 @@ export function RichTextInput({ name }: RichTextInputProps) {
   });
 
   React.useEffect(() => {
-    if (editor && !editor.isDestroyed) {
+    if (editor && !editor.isDestroyed && typeof window !== 'undefined') {
         const currentEditorContent = editor.getHTML();
         const currentFormValue = DOMPurify.sanitize(watch(name) || '');
         if (currentEditorContent !== currentFormValue) {
@@ -162,7 +171,7 @@ export function RichTextInput({ name }: RichTextInputProps) {
   }, [watch(name), editor]);
 
   return (
-    <div className='rounded-md border border-input focus-within:ring-2 focus-within:ring-ring'>
+    <div className={cn('rounded-md border border-input focus-within:ring-2 focus-within:ring-ring', isSubmitting ? 'bg-muted' : '')}>
         <TiptapToolbar editor={editor} />
         <EditorContent editor={editor} className="min-h-[120px]"/>
     </div>
