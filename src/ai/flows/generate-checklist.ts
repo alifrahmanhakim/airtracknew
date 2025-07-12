@@ -40,7 +40,7 @@ const prompt = ai.definePrompt({
   Project Name: {{{projectName}}}
   Project Description: {{{projectDescription}}}
 
-  Generate the checklist items.`,
+  Generate the checklist items and ensure your output is a valid JSON object matching the specified schema, containing a single key "items" which is an array of strings.`,
 });
 
 const generateChecklistFlow = ai.defineFlow(
