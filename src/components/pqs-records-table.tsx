@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -76,8 +77,6 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     answer: false,
     poc: false,
     icaoStatus: true,
-    cap: false,
-    sspComponent: false,
     status: true,
     createdAt: true,
   });
