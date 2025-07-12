@@ -107,26 +107,31 @@
 }
 
 @media print {
-  body > [data-sidebar-wrapper] {
-    display: block;
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-
+  
   [data-sidebar="sidebar"],
   [data-sidebar="trigger"],
   .print\:hidden {
     display: none !important;
   }
 
-  main, 
-  #ccefod-page, #pqs-page,
-  .p-4.md\:p-8 {
+  main {
     padding: 0 !important;
     margin: 0 !important;
+  }
+  
+  #ccefod-page, #pqs-page {
+      padding: 0 !important;
+      margin: 0 !important;
   }
 
   .card {
     border: 1px solid #e2e8f0;
     box-shadow: none;
+    break-inside: avoid;
   }
 
   @page {
@@ -135,6 +140,7 @@
   }
 
   .dark {
+    color-scheme: light !important;
     --background: 240 10% 98% !important;
     --foreground: 222 22% 11% !important;
     --card: 0 0% 100% !important;
@@ -150,7 +156,6 @@
     --accent: 210 40% 96.1% !important;
     --accent-foreground: 222 22% 11% !important;
     --border: 214.3 31.8% 91.4% !important;
-    color-scheme: light !important;
   }
   .dark body {
     background-color: white !important;

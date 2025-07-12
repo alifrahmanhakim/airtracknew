@@ -115,63 +115,69 @@ export default function PqsPage() {
                   </TabsList>
                 </div>
             </div>
-            <TabsContent value="form" className={cn(activeTab !== 'form' && 'print:hidden')}>
-            <Card className="max-w-4xl mx-auto">
-                <CardHeader>
-                <CardTitle>Protocol Question (PQ) Form</CardTitle>
-                <CardDescription>
-                    Fill out the form below to add a new PQ record.
-                </CardDescription>
-                </CardHeader>
-                <CardContent>
-                <PqsForm onFormSubmit={() => {}} />
-                </CardContent>
-            </Card>
-            </TabsContent>
-            <TabsContent value="records" className={cn(activeTab !== 'records' && 'print:hidden')}>
-            <Card>
-                <CardHeader>
-                    <div className='flex justify-between items-start'>
-                        <div>
-                            <CardTitle>PQs Records</CardTitle>
-                            <CardDescription>
-                                A list of all Protocol Questions records from Firestore.
-                            </CardDescription>
-                        </div>
-                        <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
-                            <Printer className="h-4 w-4" />
-                            <span className="sr-only">Print Records</span>
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <PqsRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
-                </CardContent>
-            </Card>
-            </TabsContent>
-            <TabsContent value="analytics" className={cn(activeTab !== 'analytics' && 'print:hidden')}>
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div>
-                                <CardTitle>PQs Analytics Dashboard</CardTitle>
-                                <CardDescription>
-                                    Visualizations of the Protocol Questions data.
-                                </CardDescription>
-                            </div>
-                            <div className="flex items-center gap-2 print:hidden">
-                                 <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
+            <div className={cn(activeTab !== 'form' && 'print:hidden')}>
+                <TabsContent value="form">
+                    <Card className="max-w-4xl mx-auto">
+                        <CardHeader>
+                        <CardTitle>Protocol Question (PQ) Form</CardTitle>
+                        <CardDescription>
+                            Fill out the form below to add a new PQ record.
+                        </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                        <PqsForm onFormSubmit={() => {}} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </div>
+            <div className={cn(activeTab !== 'records' && 'print:hidden')}>
+                <TabsContent value="records">
+                    <Card>
+                        <CardHeader>
+                            <div className='flex justify-between items-start'>
+                                <div>
+                                    <CardTitle>PQs Records</CardTitle>
+                                    <CardDescription>
+                                        A list of all Protocol Questions records from Firestore.
+                                    </CardDescription>
+                                </div>
+                                <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
                                     <Printer className="h-4 w-4" />
-                                    <span className="sr-only">Print Analytics</span>
+                                    <span className="sr-only">Print Records</span>
                                 </Button>
                             </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <PqsAnalyticsDashboard records={records} />
-                    </CardContent>
-                </Card>
-            </TabsContent>
+                        </CardHeader>
+                        <CardContent>
+                            <PqsRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </div>
+            <div className={cn(activeTab !== 'analytics' && 'print:hidden')}>
+                <TabsContent value="analytics">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <CardTitle>PQs Analytics Dashboard</CardTitle>
+                                    <CardDescription>
+                                        Visualizations of the Protocol Questions data.
+                                    </CardDescription>
+                                </div>
+                                <div className="flex items-center gap-2 print:hidden">
+                                    <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
+                                        <Printer className="h-4 w-4" />
+                                        <span className="sr-only">Print Analytics</span>
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <PqsAnalyticsDashboard records={records} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </div>
         </Tabs>
     );
   }

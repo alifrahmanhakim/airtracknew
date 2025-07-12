@@ -130,76 +130,82 @@ export default function CcefodPage() {
                   </TabsList>
                 </div>
             </div>
-            <TabsContent value="form" className={cn(activeTab !== 'form' && 'print:hidden')}>
-            <Card className="max-w-4xl mx-auto">
-                <CardHeader>
-                <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
-                <CardDescription>
-                    Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di Firestore.
-                </CardDescription>
-                </CardHeader>
-                <CardContent>
-                <CcefodForm onFormSubmit={() => {}} />
-                </CardContent>
-            </Card>
-            </TabsContent>
-            <TabsContent value="records" className={cn(activeTab !== 'records' && 'print:hidden')}>
-            <Card>
-                <CardHeader>
-                    <div className='flex justify-between items-start'>
-                        <div>
-                            <CardTitle>CC/EFOD Records</CardTitle>
-                            <CardDescription>
-                                Berikut adalah daftar data yang telah dimasukkan dari Firestore.
-                            </CardDescription>
-                        </div>
-                        <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
-                            <Printer className="h-4 w-4" />
-                            <span className="sr-only">Print Records</span>
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <CcefodRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
-                </CardContent>
-            </Card>
-            </TabsContent>
-            <TabsContent value="analytics" className={cn(activeTab !== 'analytics' && 'print:hidden')}>
+            <div className={cn(activeTab !== 'form' && 'print:hidden')}>
+                <TabsContent value="form">
+                <Card className="max-w-4xl mx-auto">
+                    <CardHeader>
+                    <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
+                    <CardDescription>
+                        Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di Firestore.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    <CcefodForm onFormSubmit={() => {}} />
+                    </CardContent>
+                </Card>
+                </TabsContent>
+            </div>
+            <div className={cn(activeTab !== 'records' && 'print:hidden')}>
+                <TabsContent value="records">
                 <Card>
                     <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className='flex justify-between items-start'>
                             <div>
-                                <CardTitle>CC/EFOD Analytics Dashboard</CardTitle>
+                                <CardTitle>CC/EFOD Records</CardTitle>
                                 <CardDescription>
-                                    Visualisasi data dari catatan yang telah dimasukkan.
+                                    Berikut adalah daftar data yang telah dimasukkan dari Firestore.
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2 print:hidden">
-                                <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
-                                <Select value={analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
-                                    <SelectTrigger id="annex-filter" className="w-full sm:w-[280px]">
-                                        <SelectValue placeholder="Filter by Annex..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {annexOptions.map(annex => (
-                                            <SelectItem key={annex} value={annex}>
-                                                {annex === 'all' ? 'All Annexes' : annex}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                 <Button variant="outline" size="icon" onClick={handlePrint}>
-                                    <Printer className="h-4 w-4" />
-                                    <span className="sr-only">Print Analytics</span>
-                                </Button>
-                            </div>
+                            <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
+                                <Printer className="h-4 w-4" />
+                                <span className="sr-only">Print Records</span>
+                            </Button>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <CcefodAnalyticsDashboard records={filteredAnalyticsRecords} />
+                        <CcefodRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
                     </CardContent>
                 </Card>
-            </TabsContent>
+                </TabsContent>
+            </div>
+            <div className={cn(activeTab !== 'analytics' && 'print:hidden')}>
+                <TabsContent value="analytics">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <CardTitle>CC/EFOD Analytics Dashboard</CardTitle>
+                                    <CardDescription>
+                                        Visualisasi data dari catatan yang telah dimasukkan.
+                                    </CardDescription>
+                                </div>
+                                <div className="flex items-center gap-2 print:hidden">
+                                    <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
+                                    <Select value={analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
+                                        <SelectTrigger id="annex-filter" className="w-full sm:w-[280px]">
+                                            <SelectValue placeholder="Filter by Annex..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {annexOptions.map(annex => (
+                                                <SelectItem key={annex} value={annex}>
+                                                    {annex === 'all' ? 'All Annexes' : annex}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Button variant="outline" size="icon" onClick={handlePrint}>
+                                        <Printer className="h-4 w-4" />
+                                        <span className="sr-only">Print Analytics</span>
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <CcefodAnalyticsDashboard records={filteredAnalyticsRecords} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </div>
         </Tabs>
     );
   }
