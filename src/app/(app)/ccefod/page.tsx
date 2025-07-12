@@ -25,14 +25,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2 } from 'lucide-react';
+import { Loader2, Printer } from 'lucide-react';
 import { ImportCcefodCsvDialog } from '@/components/import-ccefod-csv-dialog';
+import { Button } from '@/components/ui/button';
 
 
 export default function CcefodPage() {
   const [records, setRecords] = useState<CcefodRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [analyticsAnnexFilter, setAnalyticsAnnexFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('form');
   const { toast } = useToast();
   
   const [recordToDelete, setRecordToDelete] = useState<CcefodRecord | null>(null);
@@ -96,6 +98,10 @@ export default function CcefodPage() {
     return records.filter(record => record.annex === analyticsAnnexFilter);
   }, [records, analyticsAnnexFilter]);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -106,8 +112,8 @@ export default function CcefodPage() {
       );
     }
     return (
-        <Tabs defaultValue="form" className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 print:hidden">
                 <div>
                     <h1 className="text-3xl font-bold">CC/EFOD Monitoring</h1>
                     <p className="text-muted-foreground">
@@ -123,7 +129,7 @@ export default function CcefodPage() {
                   </TabsList>
                 </div>
             </div>
-            <TabsContent value="form">
+            <TabsContent value="form" data-print-content="form" className={activeTab !== 'form' ? 'print:hidden' : ''}>
             <Card className="max-w-4xl mx-auto">
                 <CardHeader>
                 <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
@@ -136,20 +142,28 @@ export default function CcefodPage() {
                 </CardContent>
             </Card>
             </TabsContent>
-            <TabsContent value="records">
+            <TabsContent value="records" data-print-content="records" className={activeTab !== 'records' ? 'print:hidden' : ''}>
             <Card>
                 <CardHeader>
-                <CardTitle>CC/EFOD Records</CardTitle>
-                <CardDescription>
-                    Berikut adalah daftar data yang telah dimasukkan dari Firestore.
-                </CardDescription>
+                    <div className='flex justify-between items-start'>
+                        <div>
+                            <CardTitle>CC/EFOD Records</CardTitle>
+                            <CardDescription>
+                                Berikut adalah daftar data yang telah dimasukkan dari Firestore.
+                            </CardDescription>
+                        </div>
+                        <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
+                            <Printer className="h-4 w-4" />
+                            <span className="sr-only">Print Records</span>
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <CcefodRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
                 </CardContent>
             </Card>
             </TabsContent>
-            <TabsContent value="analytics">
+            <TabsContent value="analytics" data-print-content="analytics" className={activeTab !== 'analytics' ? 'print:hidden' : ''}>
                 <Card>
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -159,7 +173,7 @@ export default function CcefodPage() {
                                     Visualisasi data dari catatan yang telah dimasukkan.
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 print:hidden">
                                 <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
                                 <Select value={analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
                                     <SelectTrigger id="annex-filter" className="w-full sm:w-[280px]">
@@ -173,6 +187,10 @@ export default function CcefodPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                 <Button variant="outline" size="icon" onClick={handlePrint}>
+                                    <Printer className="h-4 w-4" />
+                                    <span className="sr-only">Print Analytics</span>
+                                </Button>
                             </div>
                         </div>
                     </CardHeader>
@@ -186,7 +204,7 @@ export default function CcefodPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8" id="ccefod-page">
        {renderContent()}
        
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
