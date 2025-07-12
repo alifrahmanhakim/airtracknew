@@ -23,12 +23,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { ScrollArea } from './ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
-const csvHeaders = [
-    "pqNumber", "protocolQuestion", "guidance", "icaoReferences", 
-    "ppq", "criticalElement", "remarks", "evidence", "answer", "poc", 
-    "icaoStatus", "cap", "sspComponent", "status"
-];
-
 export function ImportPqsCsvDialog() {
   const [open, setOpen] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
@@ -50,21 +44,13 @@ export function ImportPqsCsvDialog() {
       header: true,
       skipEmptyLines: 'greedy',
       dynamicTyping: true,
-      quoteChar: '"',
       complete: (results) => {
         if (results.errors.length) {
-          setError(`Error parsing CSV: ${results.errors[0].message}`);
-          setParsedData([]);
+            const firstError = results.errors[0];
+            setError(`Error parsing CSV on row ${firstError.row}: ${firstError.message}`);
+            setParsedData([]);
         } else {
-          // Validate headers
-          const headers = results.meta.fields || [];
-          const missingHeaders = csvHeaders.filter(h => !headers.includes(h));
-          if (missingHeaders.length > 0) {
-              setError(`CSV is missing required headers: ${missingHeaders.join(', ')}`);
-              setParsedData([]);
-          } else {
-              setParsedData(results.data as PqFormValues[]);
-          }
+            setParsedData(results.data as PqFormValues[]);
         }
         setIsParsing(false);
       },
@@ -128,7 +114,7 @@ export function ImportPqsCsvDialog() {
         <DialogHeader>
           <DialogTitle>Import PQs from CSV</DialogTitle>
           <DialogDescription>
-            Select a CSV file to import. The file must contain the following headers: {csvHeaders.join(', ')}.
+            Select a CSV file to import. The parser will match headers from your file to the required fields.
           </DialogDescription>
         </DialogHeader>
         
