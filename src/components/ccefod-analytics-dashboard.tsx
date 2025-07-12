@@ -243,7 +243,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
                     <ResponsiveContainer width="100%" height={400}>
-                        <BarChart data={analyticsData.implementationLevelData} layout="horizontal" margin={{ right: 30, top: 20, bottom: 120 }}>
+                        <BarChart data={analyticsData.implementationLevelData} layout="horizontal" margin={{ right: 30, top: 20, bottom: 80 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                              <XAxis 
                                 dataKey="name" 
@@ -260,7 +260,6 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 wrapperStyle={{ zIndex: 1000 }}
                                 content={<ChartTooltipContent indicator="dot" />}
                             />
-                             <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: "80px" }}/>
                             <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
                                 {analyticsData.implementationLevelData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
