@@ -1,6 +1,7 @@
 "use client"
 
 import { useToast } from "@/hooks/use-toast"
+import { CopyableToast } from "./copyable-toast"
 import {
   Toast,
   ToastClose,
@@ -16,6 +17,23 @@ export function Toaster() {
   return (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
+        if (props.variant === 'destructive') {
+          return (
+            <CopyableToast key={id} {...props}>
+                <div className="grid gap-1">
+                  {title && <ToastTitle>{title}</ToastTitle>}
+                  {description && (
+                    <ToastDescription className="select-text">
+                      {description}
+                    </ToastDescription>
+                  )}
+                </div>
+                {action}
+                <ToastClose />
+            </CopyableToast>
+          )
+        }
+
         return (
           <Toast key={id} {...props}>
             <div className="grid gap-1">
