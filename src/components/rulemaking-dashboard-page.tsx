@@ -183,6 +183,9 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                        const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
                        const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                        const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
+                       const lastDoneTask = project.tasks
+                         ?.filter(t => t.status === 'Done')
+                         .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())[0];
                        
                        return (
                         <Card key={project.id} className="flex flex-col hover:shadow-lg transition-shadow duration-300">
@@ -225,6 +228,13 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                         <Clock className="h-3.5 w-3.5" />
                                         <span>{format(parseISO(project.endDate), 'dd-MM-yyyy')}</span>
                                     </div>
+                                </div>
+                                <div className="flex items-start gap-2 text-sm pt-2 border-t mt-4">
+                                  <CheckCircle className="h-4 w-4 mt-0.5 shrink-0 text-green-500" />
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-foreground">Last Update</p>
+                                    <p className="text-muted-foreground">{lastDoneTask ? lastDoneTask.title : 'No tasks completed yet'}</p>
+                                  </div>
                                 </div>
                             </CardContent>
                              <CardFooter className="pt-4 flex flex-wrap gap-2 border-t mt-auto">
