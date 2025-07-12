@@ -79,7 +79,7 @@ export function CcefodSharedFormFields({ form }: CcefodSharedFormFieldsProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Apakah ada perubahan ?</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Pilih..." /></SelectTrigger>
                     </FormControl>
@@ -100,7 +100,7 @@ export function CcefodSharedFormFields({ form }: CcefodSharedFormFieldsProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Usulan perubahan</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
                         <FormControl>
                           <SelectTrigger><SelectValue placeholder="Pilih usulan..." /></SelectTrigger>
                         </FormControl>
@@ -140,7 +140,7 @@ export function CcefodSharedFormFields({ form }: CcefodSharedFormFieldsProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Annex</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Pilih Annex..." /></SelectTrigger>
                     </FormControl>
@@ -279,7 +279,7 @@ export function CcefodSharedFormFields({ form }: CcefodSharedFormFieldsProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Pilih status..." /></SelectTrigger>
                     </FormControl>
