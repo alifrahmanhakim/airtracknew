@@ -318,6 +318,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                     <TableHead>Start Date</TableHead>
                     <TableHead>Due Date</TableHead>
                     <TableHead>Completed On</TableHead>
+                    <TableHead>Attachments</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -329,22 +330,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                     return (
                       <TableRow key={task.id}>
                         <TableCell className="font-medium">
-                          <div className='flex items-center gap-2'>
-                            <span>{task.title}</span>
-                             {attachmentCount > 0 && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Paperclip className="h-3 w-3" />
-                                      <span className="text-xs">{attachmentCount}</span>
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{attachmentCount} attachment(s)</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                          </div>
+                          {task.title}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -363,6 +349,26 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                           {task.doneDate ? format(parseISO(task.doneDate), 'PPP') : 'N/A'}
                         </TableCell>
                         <TableCell>
+                          {attachmentCount > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {task.attachments?.map((att) => (
+                                <a
+                                  key={att.id}
+                                  href={att.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-primary hover:underline flex items-center gap-1.5"
+                                >
+                                  <LinkIcon className="h-3 w-3" />
+                                  <span className="truncate max-w-[120px]">{att.name}</span>
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No files</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                             {task.status}
                           </Badge>
@@ -377,7 +383,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                     );
                   }) : (
                     <TableRow>
-                        <TableCell colSpan={7} className="text-center text-muted-foreground">No tasks yet.</TableCell>
+                        <TableCell colSpan={8} className="text-center text-muted-foreground">No tasks yet.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
