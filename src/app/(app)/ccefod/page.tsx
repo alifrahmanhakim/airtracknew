@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from 'lucide-react';
+import { ImportCcefodCsvDialog } from '@/components/import-ccefod-csv-dialog';
 
 
 export default function CcefodPage() {
@@ -106,18 +107,21 @@ export default function CcefodPage() {
     }
     return (
         <Tabs defaultValue="form" className="w-full">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                 <div>
                     <h1 className="text-3xl font-bold">CC/EFOD Monitoring</h1>
                     <p className="text-muted-foreground">
                         Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
                     </p>
                 </div>
-                <TabsList>
-                    <TabsTrigger value="form">Input Form</TabsTrigger>
-                    <TabsTrigger value="records">Records</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                </TabsList>
+                <div className='flex items-center gap-2'>
+                  <ImportCcefodCsvDialog />
+                  <TabsList>
+                      <TabsTrigger value="form">Input Form</TabsTrigger>
+                      <TabsTrigger value="records">Records</TabsTrigger>
+                      <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  </TabsList>
+                </div>
             </div>
             <TabsContent value="form">
             <Card className="max-w-4xl mx-auto">

@@ -7,9 +7,9 @@ import {
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
 import type { Document, Project, SubProject, Task, User, CcefodRecord } from './types';
-import type { CcefodFormValues } from '@/components/ccefod-form';
+import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { db } from './firebase';
-import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
 
@@ -389,4 +389,39 @@ export async function deleteCcefodRecord(
         const message = error instanceof Error ? error.message : 'An unknown error occurred';
         return { success: false, error: `Failed to delete CCEFOD record: ${message}` };
     }
+}
+
+export async function importCcefodRecords(records: CcefodFormValues[]): Promise<{ success: boolean, count: number, error?: string }> {
+  const batch = writeBatch(db);
+  const recordsCollection = collection(db, 'ccefodRecords');
+  let validRecordsCount = 0;
+
+  for (const record of records) {
+    const validation = ccefodFormSchema.safeParse(record);
+    if (validation.success) {
+      const newDocRef = doc(recordsCollection);
+      batch.set(newDocRef, {
+        ...validation.data,
+        createdAt: new Date().toISOString()
+      });
+      validRecordsCount++;
+    } else {
+      // Optionally log or handle invalid records
+      console.warn('Skipping invalid record:', validation.error.format());
+    }
+  }
+
+  if (validRecordsCount === 0) {
+    return { success: false, count: 0, error: 'No valid records found in the CSV to import.' };
+  }
+
+  try {
+    await batch.commit();
+    revalidatePath('/ccefod');
+    return { success: true, count: validRecordsCount };
+  } catch (error) {
+    console.error('Import CCEFOD Records Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, count: 0, error: `Failed to import records: ${message}` };
+  }
 }
