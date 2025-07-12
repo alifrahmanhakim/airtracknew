@@ -48,9 +48,10 @@ const formSchema = z.object({
   differenceReason: z.string().optional(),
   remarks: z.string().optional(),
   status: z.enum(['Existing', 'Draft', 'Final']),
+  id: z.string().optional(), // To hold a unique ID for each record
 });
 
-type CcefodFormValues = z.infer<typeof formSchema>;
+export type CcefodFormValues = z.infer<typeof formSchema>;
 
 const annexOptions = [
     "1. PERSONNEL LICENSING","2. RULES OF THE AIR","3. METEOROLOGICAL SERVICE FOR INTERNATIONAL AIR NAVIGATION","4. AERONAUTICAL CHARTS","5. UNITS OF MEASUREMENT TO BE USED IN AIR AND GROUND OPERATIONS","6. OPERATION OF AIRCRAFT, PART I INTERNATIONAL COMMERICIAL AIR TRANSPORT - AEROPLANES","6.  OPERATION OF AIRCRAFT, PART II INTERNATIONAL GENERAL  AVIATION - AEROPLANES","6. OPERATION OF AIRCRAFT, PART III INTERNATIONAL OPERATIONS -HELICOPTERS","6. OPERATION OF AIRCRAFT, PART IV - REMOTELY PILOTED AIRCRAFT SYSTEMS","7. AIRCRAFT NATIONALITY AND REGISTRATION MARKS","8. AIRWORTHINESS OF AIRCRAFT","9. FACILITATION","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME I RADIO NAVIGATION AIDS","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME II COMMUNICATION PROCEDURES","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME III PART I - DIGITAL DATA COMMUNICATION SYSTEM","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME V AERONAUTICAL RADIO FREQUENCY SPECTRUM UTILIZATION","10. AERONAUTICAL TEL, VOLUME VI  — COMMUNICATION SYSTEMS AND PROCEDURES RELATING TO RPAS","11. AIR TRAFFIC SERVICES","12. SEARCH AND RESCUE","13. AIRCRAFT ACCIDENT AND INCIDENT INVESTIGATION","14. AERODROMES, VOLUME I AERODROME DESIGN AND OPERATIONS","15. AERONAUTICAL INFORMATION SERVICES","16. ENVIRONMENTAL PROTECTION, VOLUME  I","16. ENVIRONMENTAL PROTECTION, VOLUME II AIRCRAFT ENGINE EMISSIONS","16. ENVIRONMENTAL PROTECTION, VOLUME III - AIRCRAFT CO2 EMISSIONS","16. ENVIRONMENTAL PROTECTION, VOLUME IV (CORSIA)","18. THE SAFE TRANSPORT OF DANGEROUS GOODS BY AIR","19. SAFETY MANAGEMENT"
@@ -66,28 +67,36 @@ const implementationLevelOptions = [
 
 const statusOptions = ["Existing","Draft","Final"];
 
-export function CcefodForm() {
+type CcefodFormProps = {
+  onFormSubmit: (data: CcefodFormValues) => void;
+};
+
+export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<CcefodFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      adaPerubahan: 'TIDAK',
+    },
   });
 
   const adaPerubahan = form.watch('adaPerubahan');
 
   const onSubmit = (data: CcefodFormValues) => {
     setIsLoading(true);
-    console.log(data);
-    // In a real app, you would send this data to a server/API
+    const dataWithId = { ...data, id: `record-${Date.now()}` };
+    
+    // In a real app, you would send this to a server/API
     setTimeout(() => {
+        onFormSubmit(dataWithId);
         setIsLoading(false);
         toast({
             title: 'Data Added Successfully!',
             description: 'Your CCEFOD monitoring data has been saved.',
         });
-        form.reset();
+        form.reset({ adaPerubahan: 'TIDAK' });
     }, 1000);
   };
 
@@ -318,7 +327,7 @@ export function CcefodForm() {
             />
 
         <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => form.reset()}>
+            <Button type="button" variant="outline" onClick={() => form.reset({ adaPerubahan: 'TIDAK' })}>
                 Reset
             </Button>
             <Button type="submit" disabled={isLoading}>
