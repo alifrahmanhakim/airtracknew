@@ -14,7 +14,7 @@ import type { CcefodRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Pencil, Trash2, ArrowUpDown, Search, Info } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -23,6 +23,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -30,6 +38,7 @@ import {
 } from './ui/tooltip';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import type { Table as TanstackTable, ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender } from '@tanstack/react-table'
 
 type CcefodRecordsTableProps = {
   records: CcefodRecord[];
@@ -45,6 +54,23 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
   const [filter, setFilter] = useState('');
   const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
+
+  const [columnVisibility, setColumnVisibility] = useState<Record<keyof CcefodRecord, boolean>>({
+    id: false,
+    createdAt: true,
+    adaPerubahan: true,
+    usulanPerubahan: false,
+    isiUsulan: false,
+    annex: true,
+    annexReference: true,
+    standardPractice: true,
+    legislationReference: true,
+    implementationLevel: false,
+    differenceText: false,
+    differenceReason: false,
+    remarks: false,
+    status: true
+  });
 
   const annexOptions = useMemo(() => {
     const annexes = new Set(records.map(r => r.annex));
@@ -94,6 +120,22 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
   }
+  
+  const columnDefs: { key: keyof CcefodRecord; header: string; width?: string }[] = [
+    { key: 'annex', header: 'Annex' },
+    { key: 'annexReference', header: 'Annex Ref.' },
+    { key: 'standardPractice', header: 'Standard/Practice' },
+    { key: 'legislationReference', header: 'Legislation' },
+    { key: 'status', header: 'Status' },
+    { key: 'createdAt', header: 'Created At' },
+    { key: 'adaPerubahan', header: 'Ada Perubahan?'},
+    { key: 'usulanPerubahan', header: 'Usulan Perubahan'},
+    { key: 'isiUsulan', header: 'Isi Usulan'},
+    { key: 'implementationLevel', header: 'Implementation Level'},
+    { key: 'differenceText', header: 'Text of Difference'},
+    { key: 'differenceReason', header: 'Reason for Difference'},
+    { key: 'remarks', header: 'Remarks'},
+  ];
 
   if (records.length === 0) {
     return (
@@ -130,76 +172,84 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                     ))}
                 </SelectContent>
             </Select>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="ml-auto">
+                    Kolom <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {columnDefs.map((col) => {
+                        return (
+                            <DropdownMenuCheckboxItem
+                            key={col.key}
+                            className="capitalize"
+                            checked={columnVisibility[col.key]}
+                            onCheckedChange={(value) =>
+                                setColumnVisibility(prev => ({...prev, [col.key]: !!value }))
+                            }
+                            >
+                            {col.header}
+                            </DropdownMenuCheckboxItem>
+                        )
+                    })}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
-        <div className="border rounded-md">
+        <div className="border rounded-md overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('annex')}>
-                    <div className="flex items-center">Annex {renderSortIcon('annex')}</div>
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('annexReference')}>
-                    <div className="flex items-center">Annex Ref. {renderSortIcon('annexReference')}</div>
-                </TableHead>
-                 <TableHead className="cursor-pointer" onClick={() => handleSort('standardPractice')}>
-                    <div className="flex items-center">Standard/Practice {renderSortIcon('standardPractice')}</div>
-                </TableHead>
-                 <TableHead className="cursor-pointer" onClick={() => handleSort('legislationReference')}>
-                    <div className="flex items-center">Legislation {renderSortIcon('legislationReference')}</div>
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
-                    <div className="flex items-center">Status {renderSortIcon('status')}</div>
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('createdAt')}>
-                    <div className="flex items-center">Created At {renderSortIcon('createdAt')}</div>
-                </TableHead>
+                {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
+                    <TableHead key={col.key} className="cursor-pointer whitespace-nowrap" onClick={() => handleSort(col.key)}>
+                        <div className="flex items-center">{col.header} {renderSortIcon(col.key)}</div>
+                    </TableHead>
+                ))}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id}>
-                  <TableCell className="font-medium max-w-xs truncate">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span>{record.annex}</span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{record.annex}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>{record.annexReference}</TableCell>
-                   <TableCell className="max-w-[200px] truncate">
-                    <Tooltip>
-                        <TooltipTrigger asChild><span>{record.standardPractice}</span></TooltipTrigger>
-                        <TooltipContent className="max-w-md"><p>{record.standardPractice}</p></TooltipContent>
-                    </Tooltip>
-                   </TableCell>
-                   <TableCell className="max-w-[200px] truncate">
-                    <Tooltip>
-                        <TooltipTrigger asChild><span>{record.legislationReference}</span></TooltipTrigger>
-                        <TooltipContent className="max-w-md"><p>{record.legislationReference}</p></TooltipContent>
-                    </Tooltip>
-                   </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        record.status === 'Final'
-                          ? 'default'
-                          : record.status === 'Draft'
-                          ? 'secondary'
-                          : 'outline'
-                      }
-                      className={cn({'bg-emerald-500/80 text-white': record.status === 'Final'})}
-                    >
-                      {record.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                      {record.createdAt ? format(parseISO(record.createdAt), 'PPP') : 'N/A'}
-                  </TableCell>
-                  <TableCell className="text-right">
+                  {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
+                     <TableCell key={col.key}>
+                        {(() => {
+                            const value = record[col.key] as string | undefined;
+                             const isTruncated = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan'].includes(col.key);
+                             const content = (
+                                <>
+                                {col.key === 'status' && value ? (
+                                    <Badge
+                                    variant={value === 'Final' ? 'default' : value === 'Draft' ? 'secondary' : 'outline'}
+                                    className={cn({'bg-emerald-500/80 text-white': value === 'Final'})}
+                                    >
+                                    {value}
+                                    </Badge>
+                                ) : col.key === 'createdAt' && value ? (
+                                    format(parseISO(value), 'PPP')
+                                ) : (
+                                    value || 'N/A'
+                                )}
+                                </>
+                             );
+
+                             if (isTruncated && value && value.length > 50) {
+                                return (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <p className="max-w-[200px] truncate">{value}</p>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
+                                </Tooltip>
+                                );
+                             }
+                             return content;
+                        })()}
+                    </TableCell>
+                  ))}
+                  <TableCell className="text-right whitespace-nowrap">
                     <div className="flex justify-end gap-2">
                        <Tooltip>
                             <TooltipTrigger asChild>
