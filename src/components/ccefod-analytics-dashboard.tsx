@@ -16,13 +16,13 @@ import {
   YAxis,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { CcefodFormValues } from './ccefod-form';
+import type { CcefodRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Info, PieChartIcon, BarChartIcon, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type CcefodAnalyticsDashboardProps = {
-  records: CcefodFormValues[];
+  records: CcefodRecord[];
 };
 
 const CHART_COLORS = [

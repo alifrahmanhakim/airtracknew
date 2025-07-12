@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { CcefodFormValues } from './ccefod-form';
+import type { CcefodRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -32,15 +32,16 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 type CcefodRecordsTableProps = {
-  records: CcefodFormValues[];
+  records: CcefodRecord[];
+  onDelete: (record: CcefodRecord) => void;
 };
 
 type SortDescriptor = {
-    column: keyof CcefodFormValues;
+    column: keyof CcefodRecord;
     direction: 'asc' | 'desc';
 } | null;
 
-export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
+export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProps) {
   const [filter, setFilter] = useState('');
   const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
@@ -80,7 +81,7 @@ export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
     return filteredData;
   }, [records, filter, annexFilter, sort]);
 
-  const handleSort = (column: keyof CcefodFormValues) => {
+  const handleSort = (column: keyof CcefodRecord) => {
     setSort(prevSort => {
         if (prevSort?.column === column) {
             return { column, direction: prevSort.direction === 'asc' ? 'desc' : 'asc' };
@@ -89,7 +90,7 @@ export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
     });
   }
 
-  const renderSortIcon = (column: keyof CcefodFormValues) => {
+  const renderSortIcon = (column: keyof CcefodRecord) => {
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
   }
@@ -99,7 +100,7 @@ export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
         <p className="font-semibold">No records found.</p>
-        <p className="text-sm">Submit the form to add a new record.</p>
+        <p className="text-sm">Submit the form to add a new record to Firestore.</p>
       </div>
     );
   }
@@ -202,15 +203,15 @@ export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
                     <div className="flex justify-end gap-2">
                        <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon">
+                                <Button variant="ghost" size="icon" disabled>
                                     <Pencil className="h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent><p>Edit Record</p></TooltipContent>
+                            <TooltipContent><p>Edit Record (coming soon)</p></TooltipContent>
                        </Tooltip>
                        <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>

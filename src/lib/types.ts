@@ -1,4 +1,5 @@
 
+
 export type User = {
   id: string;
   name: string;
@@ -73,6 +74,23 @@ export type AdoptionDataPoint = {
   significantDifference: number;
   notApplicable: number;
 };
+
+export type CcefodRecord = {
+  id: string;
+  createdAt: string;
+  adaPerubahan: 'YA' | 'TIDAK';
+  usulanPerubahan?: string;
+  isiUsulan?: string;
+  annex: string;
+  annexReference: string;
+  standardPractice: string;
+  legislationReference: string;
+  implementationLevel: "No difference" | "More exacting or exceeds" | "Different in character or other means of compliance" | "Less protective or patially implemented or not implemented" | "Not applicable" | "No  Information  Provided" | "Insufficient  Information  Provided";
+  differenceText?: string;
+  differenceReason?: string;
+  remarks?: string;
+  status: 'Existing' | 'Draft' | 'Final';
+}
 
 
 export type Project = {

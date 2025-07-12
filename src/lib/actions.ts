@@ -6,7 +6,8 @@ import {
   type SummarizeProjectStatusInput,
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
-import type { Document, Project, SubProject, Task, User, ComplianceDataRow } from './types';
+import type { Document, Project, SubProject, Task, User, CcefodRecord } from './types';
+import type { CcefodFormValues } from '@/components/ccefod-form';
 import { db } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
@@ -98,8 +99,6 @@ export async function addProject(
     projectData: Omit<Project, 'id'>
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
     try {
-      // Data is now prepared with defaults on the client-side in add-project-dialog.tsx
-      // We still map the team to a cleaner structure for Firestore.
       const preparedProjectData = {
         ...projectData,
         team: projectData.team.map(member => ({
@@ -108,6 +107,8 @@ export async function addProject(
           role: member.role,
           avatarUrl: member.avatarUrl,
         })),
+        complianceData: [],
+        adoptionData: [],
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
@@ -320,5 +321,44 @@ export async function deleteUser(
         console.error('Delete User Error:', error);
         const message = error instanceof Error ? error.message : 'An unknown error occurred';
         return { success: false, error: `Failed to delete user: ${message}` };
+    }
+}
+
+// CCEFOD Actions
+export async function addCcefodRecord(
+  recordData: CcefodFormValues
+): Promise<{ success: boolean; data?: CcefodRecord; error?: string }> {
+  try {
+    const newRecordData = {
+        ...recordData,
+        createdAt: new Date().toISOString(),
+    };
+    const docRef = await addDoc(collection(db, 'ccefodRecords'), newRecordData);
+    revalidatePath('/ccefod');
+    
+    const newRecord: CcefodRecord = { id: docRef.id, ...newRecordData };
+    return { success: true, data: newRecord };
+  } catch (error) {
+    console.error('Add CCEFOD Record Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return {
+      success: false,
+      error: `Failed to add CCEFOD record: ${message}`,
+    };
+  }
+}
+
+export async function deleteCcefodRecord(
+    recordId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const recordRef = doc(db, 'ccefodRecords', recordId);
+        await deleteDoc(recordRef);
+        revalidatePath('/ccefod');
+        return { success: true };
+    } catch (error) {
+        console.error('Delete CCEFOD Record Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to delete CCEFOD record: ${message}` };
     }
 }

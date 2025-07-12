@@ -26,6 +26,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { addCcefodRecord } from '@/lib/actions';
+import type { CcefodRecord } from '@/lib/types';
+
 
 const formSchema = z.object({
   adaPerubahan: z.enum(['YA', 'TIDAK']),
@@ -48,8 +51,6 @@ const formSchema = z.object({
   differenceReason: z.string().optional(),
   remarks: z.string().optional(),
   status: z.enum(['Existing', 'Draft', 'Final']),
-  id: z.string().optional(), // To hold a unique ID for each record
-  createdAt: z.string().optional(), // To hold creation date
 });
 
 export type CcefodFormValues = z.infer<typeof formSchema>;
@@ -69,7 +70,7 @@ const implementationLevelOptions = [
 const statusOptions = ["Existing","Draft","Final"];
 
 type CcefodFormProps = {
-  onFormSubmit: (data: CcefodFormValues) => void;
+  onFormSubmit: (data: CcefodRecord) => void;
 };
 
 export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
@@ -98,24 +99,27 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
 
   const adaPerubahan = form.watch('adaPerubahan');
 
-  const onSubmit = (data: CcefodFormValues) => {
+  const onSubmit = async (data: CcefodFormValues) => {
     setIsLoading(true);
-    const dataWithId: CcefodFormValues = { 
-        ...data, 
-        id: `record-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-    };
     
-    // In a real app, you would send this to a server/API
-    setTimeout(() => {
-        onFormSubmit(dataWithId);
-        setIsLoading(false);
+    const result = await addCcefodRecord(data);
+
+    setIsLoading(false);
+
+    if (result.success && result.data) {
+        onFormSubmit(result.data);
         toast({
             title: 'Data Added Successfully!',
-            description: 'Your CCEFOD monitoring data has been saved.',
+            description: 'Your CCEFOD monitoring data has been saved to Firestore.',
         });
         form.reset(defaultFormValues);
-    }, 1000);
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || 'Failed to add record.',
+        });
+    }
   };
 
   return (
