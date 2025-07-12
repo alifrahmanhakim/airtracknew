@@ -207,14 +207,14 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id}>
                   {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                     <TableCell key={col.key}>
+                     <TableCell key={col.key} className="whitespace-nowrap">
                         {(() => {
                             const value = record[col.key] as string | undefined;
                              const isTruncated = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan'].includes(col.key);
