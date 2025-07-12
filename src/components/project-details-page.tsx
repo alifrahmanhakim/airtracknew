@@ -70,6 +70,7 @@ import { ProjectTimeline } from './project-timeline';
 import { ComplianceDataEditor } from './compliance-data-editor';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { ChecklistCard } from './checklist-card';
+import { AdoptionLevelDashboard } from '@/components/adoption-level-dashboard';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -232,6 +233,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const aggregatedData = aggregateComplianceData(complianceData);
   
   const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
+
+  const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
+  const currentTaskIndex = standardTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
+  const currentTask = currentTaskIndex !== -1 ? standardTaskOptions[currentTaskIndex] : null;
+  const nextTask = currentTaskIndex !== -1 && currentTaskIndex < standardTaskOptions.length - 1 ? standardTaskOptions[currentTaskIndex + 1] : null;
 
   return (
     <TooltipProvider>
@@ -444,7 +450,40 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
           <ChecklistCard project={project} />
-          
+
+          {project.projectType === 'Rulemaking' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>What's Next?</CardTitle>
+                <CardDescription>
+                  Guidance on the next steps based on the standard rulemaking process.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {currentTask ? (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-semibold text-muted-foreground">CURRENT TASK</p>
+                      <p className="font-bold text-lg text-primary">{currentTask.label}</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="font-semibold text-muted-foreground">NEXT TASK</p>
+                        <p className="font-semibold">{nextTask ? nextTask.label : 'Project Finalization'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Flag className="h-5 w-5 text-green-600" />
+                    <p className="font-semibold text-green-600">All standard tasks completed!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Project Summary</CardTitle>

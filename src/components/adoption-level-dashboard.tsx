@@ -1,154 +1,127 @@
-// This file is being renamed to checklist-card.tsx
+// This file has been replaced by compliance-data-editor.tsx and is no longer needed.
+// This component now handles the visualization of compliance data.
 'use client';
 
-import * as React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { updateProjectChecklist } from '@/lib/actions';
-import type { Project, ChecklistItem } from '@/lib/types';
-import { Loader2, Plus, Trash2, ListChecks } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './ui/tooltip';
+import { Bar, BarChart, CartesianGrid, Legend, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis, Text, TooltipProps } from "recharts";
+import type { AdoptionDataPoint } from "@/lib/types";
+import { Info } from "lucide-react";
 
-type ChecklistCardProps = {
-  project: Project;
+type AdoptionLevelDashboardProps = {
+    data: AdoptionDataPoint[];
+}
+
+const COLORS = {
+    'Evaluated': '#16a34a', // green-600
+    'Not Evaluated': '#f97316', // orange-500
+    'Not Finish Yet': '#eab308', // yellow-500
+    'Standard': '#2563eb', // blue-600
+    'Recommendation': '#4f46e5', // indigo-600
+    'Existing in CASR': '#16a34a', // green-600
+    'Draft in CASR': '#ca8a04', // yellow-600
+    'Belum Diadop': '#f97316', // orange-500
+    'Tidak Diadop': '#dc2626', // red-600
+    'Management Decision': '#6b7280', // gray-500
+    'No Difference': '#16a34a',
+    'More Exacting or Exceeds': '#2563eb',
+    'Different in Character': '#ca8a04',
+    'Less Protective': '#f97316',
+    'Significant Difference': '#dc2626',
+    'Not Applicable': '#6b7280',
 };
 
-export function ChecklistCard({ project }: ChecklistCardProps) {
-  const [checklist, setChecklist] = React.useState<ChecklistItem[]>(project.checklist || []);
-  const [newItemText, setNewItemText] = React.useState('');
-  const [isLoading, setIsLoading] = React.useState(false);
-  const { toast } = useToast();
 
-  React.useEffect(() => {
-    setChecklist(project.checklist || []);
-  }, [project.checklist]);
-
-  const handleUpdate = async (updatedChecklist: ChecklistItem[]) => {
-    setIsLoading(true);
-    const result = await updateProjectChecklist(project.id, updatedChecklist);
-    if (result.success) {
-      setChecklist(updatedChecklist);
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Error updating checklist',
-        description: result.error,
-      });
-      // Revert to original state on failure
-      setChecklist(project.checklist || []);
-    }
-    setIsLoading(false);
-  };
-
-  const handleToggleItem = (itemId: string) => {
-    const updated = checklist.map((item) =>
-      item.id === itemId ? { ...item, completed: !item.completed } : item
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-2 bg-background border rounded-lg shadow-lg text-xs">
+        <p className="font-bold">{label}</p>
+        {payload.map(p => (
+            <p key={p.name} style={{ color: p.color }}>
+                {p.name}: {p.value}
+            </p>
+        ))}
+      </div>
     );
-    handleUpdate(updated);
-  };
+  }
+  return null;
+};
 
-  const handleAddItem = () => {
-    if (newItemText.trim() === '') return;
-    const newItem: ChecklistItem = {
-      id: `item-${Date.now()}`,
-      text: newItemText.trim(),
-      completed: false,
-    };
-    const updated = [...checklist, newItem];
-    setNewItemText('');
-    handleUpdate(updated);
-  };
 
-  const handleRemoveItem = (itemId: string) => {
-    const updated = checklist.filter((item) => item.id !== itemId);
-    handleUpdate(updated);
-  };
-  
-  const completedCount = checklist.filter(item => item.completed).length;
-  const totalCount = checklist.length;
-  const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
+    if (!data || data.length === 0) {
+        return <p>No data to display.</p>
+    }
 
-  return (
-    <TooltipProvider>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ListChecks />
-            Project Checklist
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Add a new checklist item..."
-              value={newItemText}
-              onChange={(e) => setNewItemText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-              disabled={isLoading}
-            />
-            <Button onClick={handleAddItem} disabled={isLoading || !newItemText.trim()}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="space-y-1 text-sm text-muted-foreground">
-              <p>{completedCount} of {totalCount} completed</p>
-          </div>
+    const evaluationStatusData = data.map(d => ({
+        sl: d.sl,
+        'Evaluated': d.evaluated,
+        'Not Evaluated': d.notEvaluated,
+        'Not Finish Yet': d.notFinishYet
+    }));
 
-          <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-            {checklist.length > 0 ? (
-              checklist.map((item) => (
-                <div key={item.id} className="flex items-center gap-3 group">
-                  <Checkbox
-                    id={item.id}
-                    checked={item.completed}
-                    onCheckedChange={() => handleToggleItem(item.id)}
-                    disabled={isLoading}
-                  />
-                  <label
-                    htmlFor={item.id}
-                    className={cn(
-                      'flex-grow text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-                      item.completed && 'line-through text-muted-foreground'
-                    )}
-                  >
-                    {item.text}
-                  </label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleRemoveItem(item.id)}
-                        disabled={isLoading}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Delete item</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-center text-muted-foreground py-4">
-                No checklist items yet. Add one above to get started.
-              </p>
-            )}
-          </div>
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary mx-auto mt-2" />}
-        </CardContent>
-      </Card>
-    </TooltipProvider>
-  );
+    const subjectStatusData = data.map(d => ({
+        sl: d.sl,
+        'Total Subject': d.totalSubject,
+        'Standard': d.standard,
+        'Recommendation': d.recommendation
+    }));
+
+    const gapStatusData = data.map(d => ({
+        sl: d.sl,
+        'Existing in CASR': d.existingInCasr,
+        'Draft in CASR': d.draftInCasr,
+        'Belum Diadop': d.belumDiAdop,
+        'Tidak Diadop': d.tidakDiAdop,
+        'Management Decision': d.managementDecision
+    }));
+
+    const implementationLevelData = data.map(d => ({
+        sl: d.sl,
+        'No Difference': d.noDifference,
+        'More Exacting or Exceeds': d.moreExactingOrExceeds,
+        'Different in Character': d.differentInCharacter,
+        'Less Protective': d.lessProtective,
+        'Significant Difference': d.significantDifference,
+        'Not Applicable': d.notApplicable
+    }));
+
+    return (
+        <div className="space-y-8">
+            <ChartSection title="Total Evaluation Status" data={evaluationStatusData} colors={['Evaluated', 'Not Evaluated', 'Not Finish Yet']} />
+            <ChartSection title="Total Subject & Status" data={subjectStatusData} colors={['Total Subject', 'Standard', 'Recommendation']} />
+            <ChartSection title="Gap Status" data={gapStatusData} colors={['Existing in CASR', 'Draft in CASR', 'Belum Diadop', 'Tidak Diadop', 'Management Decision']} />
+            <ChartSection title="Level of Implementation" data={implementationLevelData} colors={['No Difference', 'More Exacting or Exceeds', 'Different in Character', 'Less Protective', 'Significant Difference', 'Not Applicable']} />
+        </div>
+    );
+}
+
+function ChartSection({ title, data, colors }: { title: string, data: any[], colors: string[] }) {
+    const totalRecords = data.reduce((sum, current) => sum + Object.values<number>(current).slice(1).reduce((s, c) => s + c, 0), 0);
+
+    if (totalRecords === 0) {
+        return null; // Don't render chart if there's no data
+    }
+
+    return (
+        <div>
+            <h3 className="font-semibold text-lg mb-4">{title}</h3>
+            <ResponsiveContainer width="100%" height={250}>
+                <BarChart
+                    data={data}
+                    margin={{
+                        top: 20, right: 30, left: 20, bottom: 5,
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="sl" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
+                    <Legend />
+                    {colors.map(colorKey => (
+                        <Bar key={colorKey} dataKey={colorKey} stackId="a" fill={COLORS[colorKey as keyof typeof COLORS] || '#8884d8'} />
+                    ))}
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    )
 }
