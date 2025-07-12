@@ -263,8 +263,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                         <TableCell 
                             key={col.key} 
                             className={cn(
-                                "align-top",
-                                isRichText ? 'whitespace-normal' : 'whitespace-nowrap',
+                                "align-top whitespace-normal",
                                 index < visibleColumns.length - 1 ? "border-r" : ""
                             )}
                         >
@@ -282,17 +281,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                                 
                                 let displayValue: React.ReactNode = value || 'N/A';
 
-                                if (col.key === 'legislationReference' && value && value.length > 30) {
-                                    return (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <p className="truncate max-w-xs">{value}</p>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
-                                    </Tooltip>
-                                    );
-                                }
-
                                 if (col.key === 'status' && value) {
                                     displayValue = <Badge
                                     className={cn({
@@ -305,7 +293,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                                     </Badge>
                                 }
 
-                                return <div className="truncate">{displayValue}</div>;
+                                return <div>{displayValue}</div>;
                             })()}
                         </TableCell>
                      )
