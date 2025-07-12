@@ -1,3 +1,4 @@
+
 // This script is NOT part of the application runtime.
 // It is a utility script to seed the Firestore database with initial data.
 // To use it, run `npm run seed` from your terminal.
@@ -8,12 +9,12 @@ const { getFirestore, collection, doc, setDoc } = require('firebase/firestore');
 // IMPORTANT: This configuration is now aligned with your actual Firebase config from src/lib/firebase.ts
 const firebaseConfig = {
     apiKey: "AIzaSyCVT1PDkGdczXUP_LatsS6Q4K1h0xvXeT0",
-    authDomain: "aoc-insight.firebaseapp.com",
-    projectId: "aoc-insight",
-    storageBucket: "aoc-insight.appspot.com",
-    messagingSenderId: "795850632942",
-    appId: "1:795850632942:web:55b981db48b076bfadcdff",
-    measurementId: "G-CNFZC766E2"
+    authDomain: "fir-studi-189f7.firebaseapp.com",
+    projectId: "fir-studi-189f7",
+    storageBucket: "fir-studi-189f7.appspot.com",
+    messagingSenderId: "1052187394339",
+    appId: "1:1052187394339:web:0b73fb519541315e7146c2",
+    measurementId: "G-G5D12H2TCS"
 };
 
 
