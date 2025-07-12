@@ -113,6 +113,7 @@ export async function addProject(
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
     try {
       // Reconstruct the object to ensure no undefined fields are passed to Firestore.
+      // This is the definitive fix for the "Unsupported field value: undefined" error.
       const preparedProjectData: Omit<Project, 'id'> = {
         name: projectData.name,
         description: projectData.description,
