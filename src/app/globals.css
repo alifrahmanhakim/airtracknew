@@ -118,7 +118,7 @@
   }
 
   main, 
-  #ccefod-page,
+  #ccefod-page, #pqs-page,
   .p-4.md\:p-8 {
     padding: 0 !important;
     margin: 0 !important;

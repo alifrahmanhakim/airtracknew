@@ -160,7 +160,7 @@ export default function PqsPage() {
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
-                                 <Button variant="outline" size="icon" onClick={handlePrint}>
+                                 <Button variant="outline" size="icon" onClick={handlePrint} className="print:hidden">
                                     <Printer className="h-4 w-4" />
                                     <span className="sr-only">Print Analytics</span>
                                 </Button>
