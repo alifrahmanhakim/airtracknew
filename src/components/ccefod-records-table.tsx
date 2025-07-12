@@ -203,7 +203,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
             <TableHeader>
               <TableRow>
                 {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                    <TableHead key={col.key} className="cursor-pointer" onClick={() => handleSort(col.key)}>
+                    <TableHead key={col.key} className="cursor-pointer border-r last:border-r-0" onClick={() => handleSort(col.key)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key)}</div>
                     </TableHead>
                 ))}
@@ -214,7 +214,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
               {processedRecords.map((record) => (
                 <TableRow key={record.id}>
                   {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                     <TableCell key={col.key} className="break-words">
+                     <TableCell key={col.key} className="break-words border-r last:border-r-0 align-top">
                         {(() => {
                             const value = record[col.key] as string | undefined;
                              const isLongText = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key);
@@ -249,7 +249,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                         })()}
                     </TableCell>
                   ))}
-                  <TableCell className="text-right">
+                  <TableCell className="text-right align-top">
                     <div className="flex justify-end gap-2">
                        <Tooltip>
                             <TooltipTrigger asChild>
