@@ -123,7 +123,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             <CardContent className="h-[300px] relative">
                 <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-full">
                     <PieChart>
-                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
                         <Pie 
                             data={analyticsData.statusData} 
                             dataKey="value" 
@@ -153,7 +153,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             <CardContent className="h-[300px] relative">
                 <ChartContainer config={chartConfig(analyticsData.adaPerubahanData)} className="mx-auto aspect-square h-full">
                     <PieChart>
-                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
                         <Pie 
                             data={analyticsData.adaPerubahanData} 
                             dataKey="value" 
@@ -189,6 +189,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                             <YAxis dataKey="name" type="category" width={180} interval={0} tick={{ fontSize: 12 }} />
                              <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
+                                wrapperStyle={{ zIndex: 1000 }}
                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                         const data = payload[0].payload;
@@ -235,6 +236,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                             <YAxis type="number" allowDecimals={false} />
                             <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
+                                wrapperStyle={{ zIndex: 1000 }}
                                 content={<ChartTooltipContent indicator="dot" />}
                             />
                             <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
