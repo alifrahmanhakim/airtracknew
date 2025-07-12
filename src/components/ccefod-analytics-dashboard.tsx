@@ -104,6 +104,25 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         </div>
       ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
 
+    const annexTotal = annexData.reduce((acc, curr) => acc + curr.value, 0);
+    const annexPercentages = annexData
+      .map(item => ({
+        name: item.fullName,
+        value: item.value,
+        percentage: annexTotal > 0 ? (item.value / annexTotal) * 100 : 0,
+      }))
+      .sort((a, b) => b.percentage - a.percentage);
+
+    const topAnnexDescription = annexPercentages.length > 0 ? (
+        <div>
+          {annexPercentages.slice(0, 3).map(item => (
+            <p key={item.name} className="text-sm text-muted-foreground">
+              <span className="font-bold">{item.percentage.toFixed(0)}%</span> {truncateText(item.name, 40)} ({item.value} records)
+            </p>
+          ))}
+        </div>
+      ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
+
     return {
       implementationLevelData,
       statusData,
@@ -112,6 +131,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       finalStatusPercentage,
       yaAdaPerubahanPercentage,
       topImplementationDescription: topImplementationDescription,
+      topAnnexDescription: topAnnexDescription,
     };
   }, [records]);
 
@@ -199,7 +219,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle>Distribution by Annex</CardTitle>
-                <CardDescription>Shows the count of records for each Annex, sorted by volume.</CardDescription>
+                {analyticsData.topAnnexDescription}
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.annexData)}>
@@ -274,3 +294,5 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     </TooltipProvider>
   );
 }
+
+    
