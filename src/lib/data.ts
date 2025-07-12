@@ -183,20 +183,13 @@ export function aggregateComplianceData(rawData: ComplianceDataRow[]): AdoptionD
 
 
 export const getProjectsForUser = (userId: string, allProjects: Project[], allUsers: User[]) => {
-    const user = allUsers.find(u => u.id === userId);
-    if (user?.role === 'Sub-Directorate Head') {
-        return allProjects; // Admins see all projects
-    }
-    // Filter projects where the user is the owner or a team member.
-    // This is a safer check that ensures team is an array and members have IDs.
-    return allProjects.filter(p => {
-        const isOwner = p.ownerId === userId;
-        const isTeamMember = Array.isArray(p.team) && p.team.some(member => member && member.id === userId);
-        return isOwner || isTeamMember;
-    });
+    // For now, return all projects for all users.
+    return allProjects;
 }
 
 export const findProjectById = (id: string, allProjects: Project[]) => allProjects.find(p => p.id === id);
 export const findUserById = (id: string, allUsers: User[] = users) => allUsers.find(u => u.id === id);
+
+    
 
     
