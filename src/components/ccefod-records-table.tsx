@@ -16,6 +16,13 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Pencil, Trash2, ArrowUpDown, Search, Info } from 'lucide-react';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -35,10 +42,20 @@ type SortDescriptor = {
 
 export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
   const [filter, setFilter] = useState('');
+  const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
+
+  const annexOptions = useMemo(() => {
+    const annexes = new Set(records.map(r => r.annex));
+    return ['all', ...Array.from(annexes)];
+  }, [records]);
 
   const processedRecords = useMemo(() => {
     let filteredData = [...records];
+    
+    if (annexFilter !== 'all') {
+        filteredData = filteredData.filter(record => record.annex === annexFilter);
+    }
     
     if (filter) {
         const lowercasedFilter = filter.toLowerCase();
@@ -61,7 +78,7 @@ export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
     }
 
     return filteredData;
-  }, [records, filter, sort]);
+  }, [records, filter, annexFilter, sort]);
 
   const handleSort = (column: keyof CcefodFormValues) => {
     setSort(prevSort => {
@@ -90,7 +107,7 @@ export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative w-full max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
@@ -100,6 +117,18 @@ export function CcefodRecordsTable({ records }: CcefodRecordsTableProps) {
                     className="pl-9"
                 />
             </div>
+            <Select value={annexFilter} onValueChange={setAnnexFilter}>
+                <SelectTrigger className="w-full sm:w-[280px]">
+                    <SelectValue placeholder="Filter by Annex..." />
+                </SelectTrigger>
+                <SelectContent>
+                    {annexOptions.map(annex => (
+                        <SelectItem key={annex} value={annex}>
+                            {annex === 'all' ? 'All Annexes' : annex}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
         </div>
         <div className="border rounded-md">
           <Table>
