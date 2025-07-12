@@ -162,8 +162,8 @@ export default function LoginPage() {
     <main className="flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{backgroundImage: "url('/background.jpg')"}}>
         <div className="absolute inset-0 bg-black/50" />
       <Card className="relative w-full max-w-sm bg-white/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
-        <div className={cn("transition-transform duration-700 ease-in-out", !isLoginView && "-translate-x-full")}>
-            <div className="w-full flex-shrink-0" style={{ transform: `translateX(${isLoginView ? '0%' : '100%'})`, transition: 'transform 0.7s ease-in-out' }}>
+        <div className={cn("transition-transform duration-700 ease-in-out flex", !isLoginView && "-translate-x-full")}>
+            <div className="w-full flex-shrink-0">
                 <CardHeader className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-4">
                         <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
@@ -193,10 +193,8 @@ export default function LoginPage() {
                     </p>
                 </CardContent>
             </div>
-        </div>
 
-        <div className="absolute top-0 left-0 w-full h-full" style={{ transform: `translateX(${isLoginView ? '100%' : '0%'})`, transition: 'transform 0.7s ease-in-out' }}>
-            <div className="w-full h-full">
+            <div className="w-full flex-shrink-0">
                 <CardHeader className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-4">
                         <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
