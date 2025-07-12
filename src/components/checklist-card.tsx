@@ -34,7 +34,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
 
   const handleUpdate = async (updatedChecklist: ChecklistItem[]) => {
     setIsGenerating(true);
-    const result = await updateProjectChecklist(project.id, updatedChecklist);
+    const result = await updateProjectChecklist(project.id, updatedChecklist, project.projectType);
     if (result.success) {
       setChecklist(updatedChecklist);
     } else {

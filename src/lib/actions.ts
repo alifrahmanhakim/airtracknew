@@ -391,10 +391,12 @@ export async function deleteUser(
 
 export async function updateProjectChecklist(
     projectId: string,
-    checklist: ChecklistItem[]
+    checklist: ChecklistItem[],
+    projectType: 'Rulemaking' | 'Tim Kerja'
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const projectRef = doc(db, 'projects', projectId);
+      const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+      const projectRef = doc(db, collectionName, projectId);
       await updateDoc(projectRef, { checklist });
       revalidatePath(`/projects/${projectId}`);
       return { success: true };
