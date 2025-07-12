@@ -186,7 +186,11 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                        const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
                        const lastDoneTask = project.tasks
                          ?.filter(t => t.status === 'Done')
-                         .sort((a, b) => new Date(b.doneDate || b.dueDate).getTime() - new Date(a.doneDate || a.dueDate).getTime())[0];
+                         .sort((a, b) => {
+                            const dateA = a.doneDate ? parseISO(a.doneDate) : parseISO(a.dueDate);
+                            const dateB = b.doneDate ? parseISO(b.doneDate) : parseISO(b.dueDate);
+                            return dateB.getTime() - dateA.getTime();
+                         })[0];
 
                        const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
                        const currentTaskIndex = taskOptions.findIndex(option => !doneTaskTitles.has(option.value));
@@ -194,93 +198,93 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                        const nextTask = currentTaskIndex !== -1 && currentTaskIndex < taskOptions.length - 1 ? taskOptions[currentTaskIndex + 1] : null;
                        
                        return (
-                        <Card key={project.id} className="flex flex-col hover:shadow-lg transition-shadow duration-300">
-                            <CardHeader className="pb-4">
-                                <div className="flex justify-between items-start">
-                                    <CardTitle className="text-xl font-bold">
-                                        <Link href={`/projects/${project.id}`} className="hover:underline hover:text-primary">
+                        <Link href={`/projects/${project.id}`} key={project.id} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg">
+                            <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
+                                <CardHeader className="pb-4">
+                                    <div className="flex justify-between items-start">
+                                        <CardTitle className="text-xl font-bold">
                                             CASR {project.casr}
-                                        </Link>
-                                    </CardTitle>
-                                    <Badge variant="outline" className={cn("text-xs font-semibold border-2", {
-                                        "border-green-500/50 bg-green-50 text-green-700": project.status === 'Completed',
-                                        "border-blue-500/50 bg-blue-50 text-blue-700": project.status === 'On Track',
-                                        "border-yellow-500/50 bg-yellow-50 text-yellow-700": project.status === 'At Risk',
-                                        "border-red-500/50 bg-red-50 text-red-700": project.status === 'Off Track',
-                                    })}>
-                                        <currentStatus.icon className={cn("h-3 w-3 mr-1", currentStatus.color)} />
-                                        {currentStatus.label}
-                                    </Badge>
-                                </div>
-                                <CardDescription className="h-10 text-sm">{project.name}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex-grow space-y-4">
-                                <div>
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-medium text-muted-foreground">Progress</span>
-                                        <span className="text-sm font-bold">{Math.round(progress)}%</span>
+                                        </CardTitle>
+                                        <Badge variant="outline" className={cn("text-xs font-semibold border-2", {
+                                            "border-green-500/50 bg-green-50 text-green-700": project.status === 'Completed',
+                                            "border-blue-500/50 bg-blue-50 text-blue-700": project.status === 'On Track',
+                                            "border-yellow-500/50 bg-yellow-50 text-yellow-700": project.status === 'At Risk',
+                                            "border-red-500/50 bg-red-50 text-red-700": project.status === 'Off Track',
+                                        })}>
+                                            <currentStatus.icon className={cn("h-3 w-3 mr-1", currentStatus.color)} />
+                                            {currentStatus.label}
+                                        </Badge>
                                     </div>
-                                    <Progress value={progress} />
-                                </div>
-                                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                    <div className="flex items-center gap-2">
-                                        <Avatar className="h-6 w-6">
-                                            <AvatarImage src={project.team[0]?.avatarUrl} alt={project.team[0]?.name} data-ai-hint="person portrait" />
-                                            <AvatarFallback>{project.team[0]?.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <span>{project.team[0]?.name}</span>
+                                    <CardDescription className="h-10 text-sm">{project.name}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow space-y-4">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-sm font-medium text-muted-foreground">Progress</span>
+                                            <span className="text-sm font-bold">{Math.round(progress)}%</span>
+                                        </div>
+                                        <Progress value={progress} />
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Clock className="h-3.5 w-3.5" />
-                                        <span>{format(parseISO(project.endDate), 'dd-MM-yyyy')}</span>
+                                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-2">
+                                            <Avatar className="h-6 w-6">
+                                                <AvatarImage src={project.team[0]?.avatarUrl} alt={project.team[0]?.name} data-ai-hint="person portrait" />
+                                                <AvatarFallback>{project.team[0]?.name.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <span>{project.team[0]?.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Clock className="h-3.5 w-3.5" />
+                                            <span>{format(parseISO(project.endDate), 'dd-MM-yyyy')}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="space-y-3 pt-3 border-t mt-4">
-                                    <div className="flex items-start gap-2 text-sm">
-                                      <CheckCircle className="h-4 w-4 mt-0.5 shrink-0 text-green-500" />
-                                      <div className="flex-1">
-                                        <p className="font-semibold text-foreground">Last Update</p>
-                                        {lastDoneTask ? (
-                                            <p className="text-muted-foreground">
-                                              {lastDoneTask.title} on {format(parseISO(lastDoneTask.doneDate || lastDoneTask.dueDate), 'dd MMM yyyy')}
-                                            </p>
-                                          ) : (
-                                            <p className="text-muted-foreground">No tasks completed yet</p>
-                                          )}
-                                      </div>
-                                    </div>
-                                    <div className="p-3 rounded-md bg-muted/50">
-                                        {currentTask ? (
-                                            <div className="space-y-2">
-                                                <div>
-                                                    <p className="text-xs font-semibold text-muted-foreground">CURRENT TASK</p>
-                                                    <p className="font-semibold text-primary">{currentTask.label}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                    <div className="space-y-3 pt-3 border-t mt-4">
+                                        <div className="flex items-start gap-2 text-sm">
+                                          <CheckCircle className="h-4 w-4 mt-0.5 shrink-0 text-green-500" />
+                                          <div className="flex-1">
+                                            <p className="font-semibold text-foreground">Last Update</p>
+                                            {lastDoneTask ? (
+                                                <p className="text-muted-foreground">
+                                                  {lastDoneTask.title} on {format(parseISO(lastDoneTask.doneDate || lastDoneTask.dueDate), 'dd MMM yyyy')}
+                                                </p>
+                                              ) : (
+                                                <p className="text-muted-foreground">No tasks completed yet</p>
+                                              )}
+                                          </div>
+                                        </div>
+                                        <div className="p-3 rounded-md bg-muted/50">
+                                            {currentTask ? (
+                                                <div className="space-y-2">
                                                     <div>
-                                                        <p className="text-xs font-semibold text-muted-foreground">NEXT</p>
-                                                        <p className="font-semibold text-foreground">{nextTask ? nextTask.label : 'Project Finalization'}</p>
+                                                        <p className="text-xs font-semibold text-muted-foreground">CURRENT TASK</p>
+                                                        <p className="font-semibold text-primary">{currentTask.label}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                                        <div>
+                                                            <p className="text-xs font-semibold text-muted-foreground">NEXT</p>
+                                                            <p className="font-semibold text-foreground">{nextTask ? nextTask.label : 'Project Finalization'}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2">
-                                                 <Flag className="h-4 w-4 text-green-600" />
-                                                 <p className="font-semibold text-green-600">All tasks completed!</p>
-                                            </div>
-                                        )}
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                     <Flag className="h-4 w-4 text-green-600" />
+                                                     <p className="font-semibold text-green-600">All tasks completed!</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                             <CardFooter className="pt-4 flex flex-wrap gap-2 border-t mt-auto">
-                                {project.tags?.map(tag => (
-                                    <Badge key={tag} variant="outline" className={cn("font-medium", getTagColor(tag))}>
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </CardFooter>
-                        </Card>
+                                </CardContent>
+                                 <CardFooter className="pt-4 flex flex-wrap gap-2 border-t mt-auto">
+                                    {project.tags?.map(tag => (
+                                        <Badge key={tag} variant="outline" className={cn("font-medium", getTagColor(tag))}>
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </CardFooter>
+                            </Card>
+                        </Link>
                        );
                    })}
                 </main>
