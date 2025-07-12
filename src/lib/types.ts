@@ -112,6 +112,12 @@ export type PqRecord = {
   status: 'Existing' | 'Draft' | 'Final';
 }
 
+export type ChecklistItem = {
+  id: string;
+  text: string;
+  completed: boolean;
+};
+
 
 export type Project = {
   id: string;
@@ -132,4 +138,5 @@ export type Project = {
   tags?: string[];
   complianceData?: ComplianceDataRow[]; // Raw data
   adoptionData?: AdoptionDataPoint[]; // Aggregated data (can be deprecated or computed)
+  checklist?: ChecklistItem[];
 };

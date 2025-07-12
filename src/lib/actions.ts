@@ -6,7 +6,7 @@ import {
   type SummarizeProjectStatusInput,
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
-import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord } from './types';
+import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem } from './types';
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
 import { db } from './firebase';
@@ -110,6 +110,7 @@ export async function addProject(
         })),
         complianceData: [],
         adoptionData: [],
+        checklist: [], // Initialize with an empty checklist
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
@@ -324,6 +325,22 @@ export async function deleteUser(
         return { success: false, error: `Failed to delete user: ${message}` };
     }
 }
+
+export async function updateProjectChecklist(
+    projectId: string,
+    checklist: ChecklistItem[]
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, { checklist });
+      revalidatePath(`/projects/${projectId}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Update Checklist Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: `Failed to update checklist: ${message}` };
+    }
+  }
 
 // CCEFOD Actions
 export async function addCcefodRecord(

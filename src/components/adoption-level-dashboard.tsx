@@ -1,280 +1,154 @@
-
+// This file is being renamed to checklist-card.tsx
 'use client';
 
-import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import type { AdoptionDataPoint } from '@/lib/types';
-import { ChartContainer, ChartTooltipContent } from './ui/chart';
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { updateProjectChecklist } from '@/lib/actions';
+import type { Project, ChecklistItem } from '@/lib/types';
+import { Loader2, Plus, Trash2, ListChecks } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
-type AdoptionLevelDashboardProps = {
-  data: AdoptionDataPoint[];
+type ChecklistCardProps = {
+  project: Project;
 };
 
-const CHART_COLORS = {
-    blue: 'hsl(var(--chart-1))',
-    red: 'hsl(var(--chart-3))',
-    orange: 'hsl(var(--chart-2))',
-    green: 'hsl(var(--chart-4))',
-    gray: 'hsl(var(--muted-foreground))',
-    purple: 'hsl(var(--chart-5))',
-};
+export function ChecklistCard({ project }: ChecklistCardProps) {
+  const [checklist, setChecklist] = React.useState<ChecklistItem[]>(project.checklist || []);
+  const [newItemText, setNewItemText] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { toast } = useToast();
 
-const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="p-2 bg-background border rounded-lg shadow-lg text-xs">
-          <p className="font-bold">{data.sl}</p>
-          {payload.map((entry: any) => (
-            <p key={entry.name} style={{ color: entry.color }}>{`${entry.name}: ${entry.value}`}</p>
-          ))}
-        </div>
-      );
+  React.useEffect(() => {
+    setChecklist(project.checklist || []);
+  }, [project.checklist]);
+
+  const handleUpdate = async (updatedChecklist: ChecklistItem[]) => {
+    setIsLoading(true);
+    const result = await updateProjectChecklist(project.id, updatedChecklist);
+    if (result.success) {
+      setChecklist(updatedChecklist);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error updating checklist',
+        description: result.error,
+      });
+      // Revert to original state on failure
+      setChecklist(project.checklist || []);
     }
-    return null;
-};
-
-export function AdoptionLevelDashboard({ data }: AdoptionLevelDashboardProps) {
-  const { 
-    totalEvaluationData, 
-    percentageEvaluationData,
-    totalEvaluationPercentage,
-    totalSubjectData,
-    totalSubjectPercentage,
-    gapStatusData,
-    gapStatusPercentage,
-    levelImplementationData,
-    levelImplementationPercentage
-  } = useMemo(() => {
-    if (!data || data.length === 0) {
-      return {
-        totalEvaluationData: [],
-        percentageEvaluationData: [],
-        totalEvaluationPercentage: 0,
-        totalSubjectData: [],
-        totalSubjectPercentage: 0,
-        gapStatusData: [],
-        gapStatusPercentage: 0,
-        levelImplementationData: [],
-        levelImplementationPercentage: 0,
-      };
-    }
-    // Total Evaluation Status
-    const totalEvalData = data.map(item => ({
-      sl: item.sl,
-      evaluated: item.evaluated,
-      notEvaluated: item.notEvaluated,
-      notFinishYet: item.notFinishYet
-    }));
-
-    // Percentage Evaluation
-    const evaluated = data.reduce((acc, curr) => acc + curr.evaluated, 0);
-    const notEvaluated = data.reduce((acc, curr) => acc + curr.notEvaluated, 0);
-    const notFinishYet = data.reduce((acc, curr) => acc + curr.notFinishYet, 0);
-    const totalEval = evaluated + notEvaluated + notFinishYet;
-    const evalData = [
-      { name: 'Finished', value: evaluated, color: CHART_COLORS.green },
-      { name: 'Not Finished Yet', value: notEvaluated + notFinishYet, color: CHART_COLORS.red },
-    ];
-    const evalPercentage = totalEval > 0 ? (evaluated / totalEval) * 100 : 0;
-
-    // Total Subject & Status
-    const totalSubData = data.map(item => ({
-        sl: item.sl,
-        totalSubject: item.totalSubject,
-        standard: item.standard,
-        recommendation: item.recommendation
-    }));
-    const totalStandard = data.reduce((acc, curr) => acc + curr.standard, 0);
-    const totalSubjects = data.reduce((acc, curr) => acc + curr.totalSubject, 0);
-    const subjectPercentage = totalSubjects > 0 ? (totalStandard / totalSubjects) * 100 : 0;
-
-
-    // Gap Status
-    const gapData = data.map(item => ({
-        sl: item.sl,
-        existingInCasr: item.existingInCasr,
-        draftInCasr: item.draftInCasr,
-        belumDiAdop: item.belumDiAdop,
-        tidakDiAdop: item.tidakDiAdop,
-        managementDecision: item.managementDecision
-    }));
-    const totalExistingInCasr = data.reduce((acc, curr) => acc + curr.existingInCasr, 0);
-    const totalGapSubjects = data.reduce((acc, curr) => acc + curr.existingInCasr + curr.draftInCasr + curr.belumDiAdop + curr.tidakDiAdop + curr.managementDecision, 0);
-    const gapPercentage = totalGapSubjects > 0 ? (totalExistingInCasr / totalGapSubjects) * 100 : 0;
-    
-    // Level of Implementation
-    const implData = data.map(item => ({
-        sl: item.sl,
-        noDifference: item.noDifference,
-        moreExactingOrExceeds: item.moreExactingOrExceeds,
-        differentInCharacter: item.differentInCharacter,
-        lessProtective: item.lessProtective,
-        significantDifference: item.significantDifference,
-        notApplicable: item.notApplicable,
-    }));
-    const totalNoDifference = data.reduce((acc, curr) => acc + curr.noDifference, 0);
-    const totalImplementationSubjects = data.reduce((acc, curr) => acc + curr.noDifference + curr.moreExactingOrExceeds + curr.differentInCharacter + curr.lessProtective + curr.significantDifference + curr.notApplicable, 0);
-    const implPercentage = totalImplementationSubjects > 0 ? (totalNoDifference / totalImplementationSubjects) * 100 : 0;
-
-    return { 
-        totalEvaluationData: totalEvalData,
-        percentageEvaluationData: evalData,
-        totalEvaluationPercentage: evalPercentage,
-        totalSubjectData: totalSubData,
-        totalSubjectPercentage: subjectPercentage,
-        gapStatusData: gapData,
-        gapStatusPercentage: gapPercentage,
-        levelImplementationData: implData,
-        levelImplementationPercentage: implPercentage
-    };
-  }, [data]);
-  
-  const chartConfig = {
-    sl: { label: "State Letter" },
-    evaluated: { label: "Evaluated", color: "hsl(var(--chart-1))" },
-    notEvaluated: { label: "Not Evaluated", color: "hsl(var(--chart-2))" },
-    notFinishYet: { label: "Not Finish Yet", color: "hsl(var(--chart-3))" },
-    totalSubject: { label: "Total Subject", color: "hsl(var(--chart-1))" },
-    standard: { label: "Standard", color: "hsl(var(--chart-2))" },
-    recommendation: { label: "Recommendation", color: "hsl(var(--chart-3))" },
-    existingInCasr: { label: "Existing in CASR", color: "hsl(var(--chart-1))" },
-    draftInCasr: { label: "Draft in CASR", color: "hsl(var(--chart-2))" },
-    belumDiAdop: { label: "Belum Diadop", color: "hsl(var(--chart-3))" },
-    tidakDiAdop: { label: "Tidak Diadop", color: "hsl(var(--chart-4))" },
-    managementDecision: { label: "Management Decision", color: "hsl(var(--chart-5))" },
-    noDifference: { label: "No Difference", color: "hsl(var(--chart-1))" },
-    moreExactingOrExceeds: { label: "More exacting or Exceeds", color: "hsl(var(--chart-2))" },
-    differentInCharacter: { label: "Different in character/Other means of compliance", color: "hsl(var(--chart-3))" },
-    lessProtective: { label: "Less Protective", color: "hsl(var(--chart-4))" },
-    significantDifference: { label: "Significant Difference", color: "hsl(var(--chart-5))" },
-    notApplicable: { label: "Not Applicable", color: "hsl(var(--muted))" },
+    setIsLoading(false);
   };
 
+  const handleToggleItem = (itemId: string) => {
+    const updated = checklist.map((item) =>
+      item.id === itemId ? { ...item, completed: !item.completed } : item
+    );
+    handleUpdate(updated);
+  };
+
+  const handleAddItem = () => {
+    if (newItemText.trim() === '') return;
+    const newItem: ChecklistItem = {
+      id: `item-${Date.now()}`,
+      text: newItemText.trim(),
+      completed: false,
+    };
+    const updated = [...checklist, newItem];
+    setNewItemText('');
+    handleUpdate(updated);
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    const updated = checklist.filter((item) => item.id !== itemId);
+    handleUpdate(updated);
+  };
+  
+  const completedCount = checklist.filter(item => item.completed).length;
+  const totalCount = checklist.length;
+  const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Evaluation Status</CardTitle>
-            <CardDescription>{totalEvaluationPercentage.toFixed(1)}% Evaluated</CardDescription>
-          </CardHeader>
-          <CardContent className='h-[250px]'>
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={totalEvaluationData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                    <XAxis dataKey="sl" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }}/>
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                    <Legend wrapperStyle={{fontSize: "12px", paddingTop: '10px'}}/>
-                    <Bar dataKey="evaluated" stackId="a" fill="hsl(var(--chart-1))" name="Evaluated" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="notEvaluated" stackId="a" fill="hsl(var(--chart-2))" name="Not Evaluated" />
-                    <Bar dataKey="notFinishYet" stackId="a" fill="hsl(var(--chart-3))" name="Not Finish Yet" radius={[4, 4, 0, 0]} />
-                </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>Percentage Evaluation</CardTitle>
-                <CardDescription>Overall Progress</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Tooltip content={<CustomTooltip />} />
-                        <Pie
-                        data={percentageEvaluationData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        innerRadius={60}
-                        dataKey="value"
-                        strokeWidth={2}
-                        >
-                        {percentageEvaluationData.map((entry) => (
-                            <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                        ))}
-                        </Pie>
-                    </PieChart>
-                </ResponsiveContainer>
-                <div className="text-center -mt-4">
-                    <p className="text-2xl font-bold">{totalEvaluationPercentage.toFixed(1)}%</p>
-                    <p className="text-sm text-muted-foreground">Finished</p>
+    <TooltipProvider>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ListChecks />
+            Project Checklist
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Add a new checklist item..."
+              value={newItemText}
+              onChange={(e) => setNewItemText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
+              disabled={isLoading}
+            />
+            <Button onClick={handleAddItem} disabled={isLoading || !newItemText.trim()}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="space-y-1 text-sm text-muted-foreground">
+              <p>{completedCount} of {totalCount} completed</p>
+          </div>
+
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+            {checklist.length > 0 ? (
+              checklist.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 group">
+                  <Checkbox
+                    id={item.id}
+                    checked={item.completed}
+                    onCheckedChange={() => handleToggleItem(item.id)}
+                    disabled={isLoading}
+                  />
+                  <label
+                    htmlFor={item.id}
+                    className={cn(
+                      'flex-grow text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+                      item.completed && 'line-through text-muted-foreground'
+                    )}
+                  >
+                    {item.text}
+                  </label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                       <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleRemoveItem(item.id)}
+                        disabled={isLoading}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Delete item</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-            </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Subject & Status</CardTitle>
-            <CardDescription>{totalSubjectPercentage.toFixed(1)}% Standard</CardDescription>
-          </CardHeader>
-          <CardContent className='h-[250px]'>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={totalSubjectData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                <XAxis dataKey="sl" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }}/>
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                <Legend wrapperStyle={{fontSize: "12px", paddingTop: '10px'}}/>
-                <Bar dataKey="standard" stackId="a" fill="hsl(var(--chart-2))" name="Standard" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="recommendation" stackId="a" fill="hsl(var(--chart-3))" name="Recommendation" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Gap Status</CardTitle>
-          <CardDescription>{gapStatusPercentage.toFixed(1)}% Existing in CASR</CardDescription>
-        </CardHeader>
-        <CardContent className="pl-2 h-[400px]">
-            <ChartContainer config={chartConfig} className="w-full h-full">
-                 <BarChart data={gapStatusData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="sl" angle={-45} textAnchor="end" height={50} tick={{ fontSize: 10 }} interval={0} />
-                    <YAxis />
-                    <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                    <Legend verticalAlign="bottom" wrapperStyle={{paddingTop: '20px'}}/>
-                    <Bar dataKey="existingInCasr" stackId="a" fill="hsl(var(--chart-1))" name={chartConfig.existingInCasr.label} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="draftInCasr" stackId="a" fill="hsl(var(--chart-2))" name={chartConfig.draftInCasr.label} />
-                    <Bar dataKey="belumDiAdop" stackId="a" fill="hsl(var(--chart-3))" name={chartConfig.belumDiAdop.label} />
-                    <Bar dataKey="tidakDiAdop" stackId="a" fill="hsl(var(--chart-4))" name={chartConfig.tidakDiAdop.label} />
-                    <Bar dataKey="managementDecision" stackId="a" fill="hsl(var(--chart-5))" name={chartConfig.managementDecision.label} radius={[4, 4, 0, 0]} />
-                </BarChart>
-            </ChartContainer>
+              ))
+            ) : (
+              <p className="text-sm text-center text-muted-foreground py-4">
+                No checklist items yet. Add one above to get started.
+              </p>
+            )}
+          </div>
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary mx-auto mt-2" />}
         </CardContent>
       </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Level of Implementation</CardTitle>
-          <CardDescription>{levelImplementationPercentage.toFixed(1)}% No Difference</CardDescription>
-        </CardHeader>
-        <CardContent className="pl-2 h-[400px]">
-           <ChartContainer config={chartConfig} className="w-full h-full">
-                <BarChart data={levelImplementationData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="sl" angle={-45} textAnchor="end" height={50} tick={{ fontSize: 10 }} interval={0}/>
-                    <YAxis />
-                    <Tooltip content={<ChartTooltipContent indicator="dot" />} />
-                    <Legend verticalAlign="bottom" wrapperStyle={{paddingTop: '20px'}}/>
-                    <Bar dataKey="noDifference" stackId="a" fill="hsl(var(--chart-1))" name={chartConfig.noDifference.label} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="moreExactingOrExceeds" stackId="a" fill="hsl(var(--chart-2))" name={chartConfig.moreExactingOrExceeds.label} />
-                    <Bar dataKey="differentInCharacter" stackId="a" fill="hsl(var(--chart-3))" name={chartConfig.differentInCharacter.label} />
-                    <Bar dataKey="lessProtective" stackId="a" fill="hsl(var(--chart-4))" name={chartConfig.lessProtective.label} />
-                    <Bar dataKey="significantDifference" stackId="a" fill="hsl(var(--chart-5))" name={chartConfig.significantDifference.label} />
-                    <Bar dataKey="notApplicable" stackId="a" fill="hsl(var(--muted))" name={chartConfig.notApplicable.label} radius={[4, 4, 0, 0]} />
-                </BarChart>
-            </ChartContainer>
-        </CardContent>
-      </Card>
-    </div>
+    </TooltipProvider>
   );
 }
