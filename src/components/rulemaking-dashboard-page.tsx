@@ -233,7 +233,13 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                   <CheckCircle className="h-4 w-4 mt-0.5 shrink-0 text-green-500" />
                                   <div className="flex-1">
                                     <p className="font-semibold text-foreground">Last Update</p>
-                                    <p className="text-muted-foreground">{lastDoneTask ? lastDoneTask.title : 'No tasks completed yet'}</p>
+                                    {lastDoneTask ? (
+                                        <p className="text-muted-foreground">
+                                          {lastDoneTask.title} on {format(parseISO(lastDoneTask.dueDate), 'dd MMM yyyy')}
+                                        </p>
+                                      ) : (
+                                        <p className="text-muted-foreground">No tasks completed yet</p>
+                                      )}
                                   </div>
                                 </div>
                             </CardContent>
