@@ -40,28 +40,13 @@ export function Combobox({
   className,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState(value);
-
-  // Update internal state only when the external value changes.
-  React.useEffect(() => {
-    if (value !== inputValue) {
-      setInputValue(value);
-    }
-  }, [value]);
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? '' : currentValue;
-    onChange(newValue);
-    setInputValue(newValue); // Sync input with selection
+    onChange(currentValue);
     setOpen(false);
   };
-  
-  const handleInputChange = (newInputValue: string) => {
-    setInputValue(newInputValue);
-    onChange(newInputValue); // Allow free text typing
-  };
 
-  const displayLabel = options.find((option) => option.value.toLowerCase() === value.toLowerCase())?.label || value;
+  const displayLabel = options.find((option) => option.value.toLowerCase() === value?.toLowerCase())?.label || value;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -80,8 +65,8 @@ export function Combobox({
         <Command>
           <CommandInput
             placeholder="Search or type..."
-            value={inputValue}
-            onValueChange={handleInputChange}
+            value={value}
+            onValueChange={onChange} // Directly update the parent state
           />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
