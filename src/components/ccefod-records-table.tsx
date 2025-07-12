@@ -235,7 +235,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
             </DropdownMenu>
         </div>
         <div className="border rounded-md overflow-x-auto">
-          <Table className="min-w-[1800px]">
+          <Table className="min-w-[1600px]">
             <TableHeader>
               <TableRow>
                 {visibleColumns.map((col) => (
@@ -243,7 +243,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                         key={col.key} 
                         className={cn(
                           "cursor-pointer align-top", 
-                          col.key === 'standardPractice' && 'w-[800px]'
+                          col.key === 'standardPractice' && 'w-[600px]'
                         )} 
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
