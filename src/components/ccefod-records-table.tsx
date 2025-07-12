@@ -157,14 +157,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key]);
 
-  const stripHtml = (html: string) => {
-    if (typeof document === 'undefined') {
-        return html.replace(/<[^>]+>/g, '');
-    }
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
-  }
-
   if (records.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
@@ -267,42 +259,43 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                             const value = record[col.key as keyof CcefodRecord] as string | undefined;
                              const isRichText = col.key === 'standardPractice';
                              
-                             let displayValue = value || 'N/A';
+                             let displayValue: React.ReactNode = value || 'N/A';
+                             
                              if (isRichText && value) {
-                                displayValue = stripHtml(value);
+                                return (
+                                    <div 
+                                        className="prose dark:prose-invert max-w-xs max-h-24 overflow-hidden text-ellipsis"
+                                        dangerouslySetInnerHTML={{ __html: value }}
+                                    />
+                                );
                              }
 
-                             const content = (
-                                <>
-                                {col.key === 'status' && value ? (
-                                    <Badge
-                                    className={cn({
-                                        'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
-                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
-                                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                    })}
-                                    >
-                                    {value}
-                                    </Badge>
-                                ) : col.key === 'createdAt' && value ? (
-                                    format(parseISO(value), 'PPP')
-                                ) : (
-                                    displayValue
-                                )}
-                                </>
-                             );
-
-                             if ((isRichText || ['annex', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key)) && displayValue.length > 50) {
+                             if (['annex', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key) && value && value.length > 50) {
                                 return (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <p className="truncate max-w-xs">{displayValue}</p>
+                                        <p className="truncate max-w-xs">{value}</p>
                                     </TooltipTrigger>
-                                    <TooltipContent className="max-w-md"><p>{displayValue}</p></TooltipContent>
+                                    <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
                                 </Tooltip>
                                 );
                              }
-                             return <div className="max-w-xs truncate">{content}</div>;
+
+                             if (col.key === 'status' && value) {
+                                displayValue = <Badge
+                                className={cn({
+                                    'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
+                                    'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
+                                    'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                })}
+                                >
+                                {value}
+                                </Badge>
+                             } else if (col.key === 'createdAt' && value) {
+                                 displayValue = format(parseISO(value), 'PPP');
+                             }
+
+                             return <div className="max-w-xs truncate">{displayValue}</div>;
                         })()}
                     </TableCell>
                   ))}
