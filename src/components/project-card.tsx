@@ -74,7 +74,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <div className="flex items-center gap-2 text-muted-foreground">
                 <Avatar className="h-6 w-6">
                     <AvatarImage src={team[0]?.avatarUrl} alt={team[0]?.name} data-ai-hint="person portrait" />
-                    <AvatarFallback>{team[0]?.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{team[0]?.name?.charAt(0) || team[0]?.email?.charAt(0) || '?'}</AvatarFallback>
                 </Avatar>
                 <span>{team[0]?.name}</span>
             </div>

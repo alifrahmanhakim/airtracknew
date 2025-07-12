@@ -34,6 +34,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import type { User } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Tim Kerja', icon: Home },
@@ -123,7 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex items-center gap-2">
                     <Avatar className="h-9 w-9">
                         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                        <AvatarFallback>{currentUser.name?.charAt(0) || '?'}</AvatarFallback>
+                        <AvatarFallback>{currentUser.name?.charAt(0) || currentUser.email?.charAt(0) || '?'}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
                         <span className='text-sm font-semibold'>{currentUser.name}</span>
@@ -143,7 +144,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarTrigger />
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset>
+        <div className="animate-in fade-in-50 duration-500">
+            {children}
+        </div>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
