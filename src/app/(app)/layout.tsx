@@ -26,23 +26,28 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { users as staticUsers } from '@/lib/data';
-import { ThemeToggle } from '@/components/theme-toggle';
 import type { User } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/theme-toggle';
 
-const navItems = [
-  { href: '/dashboard', label: 'Tim Kerja', icon: Home },
-  { href: '/rulemaking', label: 'Rulemaking', icon: Landmark },
-  { href: '/documents', label: 'Documents', icon: FileText },
-  { href: '/team', label: 'Team', icon: Users },
-  { href: '/reports', label: 'Reports', icon: LineChart },
-];
+const navItems = {
+    dashboards: [
+      { href: '/dashboard', label: 'Tim Kerja', icon: Home },
+      { href: '/rulemaking', label: 'Rulemaking', icon: Landmark },
+    ],
+    workspace: [
+      { href: '/documents', label: 'Documents', icon: FileText },
+      { href: '/team', label: 'Team', icon: Users },
+      { href: '/reports', label: 'Reports', icon: LineChart },
+    ]
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -58,7 +63,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             if (userSnap.exists()) {
                 setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
             } else {
-                // Fallback or error handling
                 console.log("User not found in Firestore, redirecting to login");
                 router.push('/login');
             }
@@ -103,24 +107,46 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname.startsWith(item.href)}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+            <SidebarGroup>
+                <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
+                <SidebarMenu>
+                    {navItems.dashboards.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                        asChild
+                        isActive={pathname.startsWith(item.href)}
+                        >
+                        <Link href={item.href}>
+                            <item.icon />
+                            <span>{item.label}</span>
+                        </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
+             <SidebarGroup>
+                <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+                <SidebarMenu>
+                    {navItems.workspace.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                        asChild
+                        isActive={pathname.startsWith(item.href)}
+                        >
+                        <Link href={item.href}>
+                            <item.icon />
+                            <span>{item.label}</span>
+                        </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
         </SidebarContent>
         <SidebarFooter className="flex flex-col gap-3">
-            <div className='flex items-center justify-between gap-2'>
+            <SidebarSeparator />
+            <div className='flex items-center justify-between gap-2 px-2'>
                 <div className="flex items-center gap-2">
                     <Avatar className="h-9 w-9">
                         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
