@@ -38,7 +38,6 @@ import {
 } from './ui/tooltip';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Table as TanstackTable, ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender } from '@tanstack/react-table'
 
 type CcefodRecordsTableProps = {
   records: CcefodRecord[];
@@ -55,7 +54,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
   const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
 
-  const [columnVisibility, setColumnVisibility] = useState<Record<keyof CcefodRecord, boolean>>({
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
     createdAt: true,
     adaPerubahan: true,
@@ -95,8 +94,8 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
 
     if (sort) {
         filteredData.sort((a, b) => {
-            const aVal = a[sort.column] ?? '';
-            const bVal = b[sort.column] ?? '';
+            const aVal = a[sort.column as keyof CcefodRecord] ?? '';
+            const bVal = b[sort.column as keyof CcefodRecord] ?? '';
             
             if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
             if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
@@ -198,25 +197,25 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div className="border rounded-md">
-          <Table className="table-fixed w-full">
+        <div className="border rounded-md overflow-x-auto">
+          <Table className="min-w-full">
             <TableHeader>
               <TableRow>
                 {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                    <TableHead key={col.key} className="cursor-pointer border-r last:border-r-0" onClick={() => handleSort(col.key)}>
-                        <div className="flex items-center">{col.header} {renderSortIcon(col.key)}</div>
+                    <TableHead key={col.key} className="cursor-pointer whitespace-nowrap" onClick={() => handleSort(col.key as keyof CcefodRecord)}>
+                        <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right w-[100px]">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id}>
                   {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                     <TableCell key={col.key} className="break-words border-r last:border-r-0 align-top">
+                     <TableCell key={col.key} className="whitespace-nowrap">
                         {(() => {
-                            const value = record[col.key] as string | undefined;
+                            const value = record[col.key as keyof CcefodRecord] as string | undefined;
                              const isLongText = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key);
                              const content = (
                                 <>
@@ -239,17 +238,17 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                                 return (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <p>{value}</p>
+                                        <p className="truncate max-w-xs">{value}</p>
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
                                 </Tooltip>
                                 );
                              }
-                             return content;
+                             return <div className="max-w-xs truncate">{content}</div>;
                         })()}
                     </TableCell>
                   ))}
-                  <TableCell className="text-right align-top">
+                  <TableCell className="text-right sticky right-0 bg-background/95">
                     <div className="flex justify-end gap-2">
                        <Tooltip>
                             <TooltipTrigger asChild>
@@ -283,3 +282,5 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
     </TooltipProvider>
   );
 }
+
+    
