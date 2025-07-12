@@ -2,15 +2,10 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
-import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { DateRange } from 'react-day-picker';
-import { Calendar as CalendarIcon, Filter, Info } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { Info } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
@@ -30,21 +25,10 @@ const statusConfig: { [key in Task['status']]: { color: string; label: string } 
 };
 
 export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().setMonth(new Date().getMonth() - 3)),
-    to: new Date(),
-  });
-
-  const filteredTasks = React.useMemo(() => {
+  const sortedTasks = React.useMemo(() => {
     return tasks
-      .filter((task) => {
-        if (!dateRange?.from) return true;
-        const taskDueDate = parseISO(task.dueDate);
-        const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
-        return isWithinInterval(taskDueDate, { start: startOfDay(dateRange.from), end: end });
-      })
       .sort((a, b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime());
-  }, [tasks, dateRange]);
+  }, [tasks]);
 
   return (
     <TooltipProvider>
@@ -54,43 +38,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
                 <CardTitle>Interactive Project Timeline</CardTitle>
-                <CardDescription>A centralized timeline of all tasks across projects. Filter by date.</CardDescription>
+                <CardDescription>A centralized timeline of all tasks across projects.</CardDescription>
               </div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date"
-                    variant={'outline'}
-                    className={cn(
-                      'w-full sm:w-[300px] justify-start text-left font-normal',
-                      !dateRange && 'text-muted-foreground'
-                    )}
-                  >
-                    <Filter className="mr-2 h-4 w-4" />
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, 'LLL dd, y')} - {format(dateRange.to, 'LLL dd, y')}
-                        </>
-                      ) : (
-                        format(dateRange.from, 'LLL dd, y')
-                      )
-                    ) : (
-                      <span>Filter by date range...</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    numberOfMonths={2}
-                  />
-                </PopoverContent>
-              </Popover>
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-2 items-center mt-4 pt-4 border-t">
               <span className="text-sm font-semibold">Legend:</span>
@@ -104,8 +53,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
           </CardHeader>
           <CardContent className="h-[60vh] overflow-y-auto">
             <div className="relative pl-6 before:absolute before:left-[1.10rem] before:top-0 before:h-full before:w-0.5 before:bg-border">
-              {filteredTasks.length > 0 ? (
-                filteredTasks.map((task) => (
+              {sortedTasks.length > 0 ? (
+                sortedTasks.map((task) => (
                   <div key={task.id} className="relative mb-8 flex items-start">
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -134,7 +83,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                 ))
               ) : (
                 <div className="text-center py-10 text-muted-foreground">
-                  <p>No tasks found within the selected date range.</p>
+                  <p>No tasks found for any projects.</p>
                 </div>
               )}
             </div>
