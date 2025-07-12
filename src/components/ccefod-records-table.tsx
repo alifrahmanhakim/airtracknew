@@ -126,12 +126,12 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
     { key: 'annexReference', header: 'Annex Ref.' },
     { key: 'standardPractice', header: 'Standard/Practice' },
     { key: 'legislationReference', header: 'Legislation' },
+    { key: 'implementationLevel', header: 'Implementation Level'},
     { key: 'status', header: 'Status' },
     { key: 'createdAt', header: 'Created At' },
     { key: 'adaPerubahan', header: 'Ada Perubahan?'},
     { key: 'usulanPerubahan', header: 'Usulan Perubahan'},
     { key: 'isiUsulan', header: 'Isi Usulan'},
-    { key: 'implementationLevel', header: 'Implementation Level'},
     { key: 'differenceText', header: 'Text of Difference'},
     { key: 'differenceReason', header: 'Reason for Difference'},
     { key: 'remarks', header: 'Remarks'},
@@ -198,23 +198,23 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div className="border rounded-md overflow-x-auto">
+        <div className="border rounded-md">
           <Table>
             <TableHeader>
               <TableRow>
                 {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                    <TableHead key={col.key} className="cursor-pointer whitespace-nowrap" onClick={() => handleSort(col.key)}>
+                    <TableHead key={col.key} className="cursor-pointer" onClick={() => handleSort(col.key)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id}>
                   {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                     <TableCell key={col.key} className="whitespace-nowrap">
+                     <TableCell key={col.key}>
                         {(() => {
                             const value = record[col.key] as string | undefined;
                              const isTruncated = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'implementationLevel'].includes(col.key);
@@ -249,7 +249,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                         })()}
                     </TableCell>
                   ))}
-                  <TableCell className="text-right whitespace-nowrap">
+                  <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                        <Tooltip>
                             <TooltipTrigger asChild>
