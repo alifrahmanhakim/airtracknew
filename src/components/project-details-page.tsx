@@ -148,7 +148,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     if (!taskToDelete) return;
 
     setIsDeletingTask(taskToDelete.id);
-    const result = await deleteTask(project.id, taskToDelete.id);
+    const result = await deleteTask(project.id, taskToDelete.id, project.projectType);
     setIsDeletingTask(null);
 
     if (result.success) {
@@ -307,7 +307,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList /> Tasks
               </CardTitle>
-              <AddTaskDialog projectId={project.id} onTaskAdd={handleTaskAdd} teamMembers={project.team} />
+              <AddTaskDialog projectId={project.id} projectType={project.projectType} onTaskAdd={handleTaskAdd} teamMembers={project.team} />
             </CardHeader>
             <CardContent>
               <Table>
@@ -362,7 +362,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right flex justify-end items-center gap-1">
-                            <EditTaskDialog projectId={project.id} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
+                            <EditTaskDialog projectId={project.id} projectType={project.projectType} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isDeletingTask === task.id}>
                                 {isDeletingTask === task.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             </Button>
@@ -606,3 +606,5 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     </TooltipProvider>
   );
 }
+
+    

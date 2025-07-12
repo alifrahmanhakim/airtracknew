@@ -252,10 +252,12 @@ export async function deleteProject(
 
 export async function addTask(
     projectId: string,
-    taskData: Task
+    taskData: Task,
+    projectType: 'Rulemaking' | 'Tim Kerja'
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const projectRef = doc(db, collectionName, projectId);
         await updateDoc(projectRef, {
             tasks: arrayUnion(taskData)
         });
@@ -270,10 +272,12 @@ export async function addTask(
 
 export async function updateTask(
     projectId: string,
-    updatedTask: Task
+    updatedTask: Task,
+    projectType: 'Rulemaking' | 'Tim Kerja'
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const projectRef = doc(db, collectionName, projectId);
         const projectSnap = await getDoc(projectRef);
         if (projectSnap.exists()) {
             const project = projectSnap.data() as Project;
@@ -293,10 +297,12 @@ export async function updateTask(
 
 export async function deleteTask(
     projectId: string,
-    taskId: string
+    taskId: string,
+    projectType: 'Rulemaking' | 'Tim Kerja'
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const projectRef = doc(db, collectionName, projectId);
         const projectSnap = await getDoc(projectRef);
         if (projectSnap.exists()) {
             const project = projectSnap.data() as Project;
@@ -611,3 +617,5 @@ export async function importPqRecords(records: PqFormValues[]): Promise<{ succes
     return { success: false, count: 0, error: `Failed to import records: ${message}` };
   }
 }
+
+    

@@ -64,12 +64,13 @@ type TaskFormValues = z.infer<typeof taskSchema>;
 
 type EditTaskDialogProps = {
   projectId: string;
+  projectType: 'Rulemaking' | 'Tim Kerja';
   task: Task;
   onTaskUpdate: (updatedTask: Task) => void;
   teamMembers: User[];
 };
 
-export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: EditTaskDialogProps) {
+export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, teamMembers }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -113,7 +114,7 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
       attachments: data.attachments,
     };
     
-    const result = await updateTask(projectId, updatedTask);
+    const result = await updateTask(projectId, updatedTask, projectType);
     setIsSubmitting(false);
 
     if (result.success) {
@@ -391,3 +392,5 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
     </Dialog>
   );
 }
+
+    

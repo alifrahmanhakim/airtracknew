@@ -55,13 +55,14 @@ type TaskFormValues = z.infer<typeof taskSchema>;
 
 type AddTaskDialogProps = {
   projectId: string;
+  projectType: 'Rulemaking' | 'Tim Kerja';
   onTaskAdd: (newTask: Task) => void;
   teamMembers: User[];
 };
 
 const taskOptions = defaultTaskOptions;
 
-export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDialogProps) {
+export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -85,7 +86,7 @@ export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDial
       status: 'To Do',
     };
     
-    const result = await addTask(projectId, newTask);
+    const result = await addTask(projectId, newTask, projectType);
     setIsSubmitting(false);
 
     if (result.success) {
@@ -250,3 +251,5 @@ export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDial
     </Dialog>
   );
 }
+
+    
