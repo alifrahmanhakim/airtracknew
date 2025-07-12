@@ -2,113 +2,169 @@
 'use client';
 
 import * as React from 'react';
+import { useEditor, EditorContent, type Editor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import {
+  Bold,
+  Italic,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Heading1,
+  Heading2,
+  Heading3,
+  Quote,
+  Undo,
+  Redo,
+} from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
-import { cn } from '@/lib/utils';
 import DOMPurify from 'dompurify';
-import { Bold, Italic, Underline } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from './toggle-group';
+import { Toggle } from './toggle';
 import { Separator } from './separator';
+import { cn } from '@/lib/utils';
 
-interface RichTextInputProps extends React.HTMLAttributes<HTMLDivElement> {
+const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
+  if (!editor) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 border-b border-input p-2">
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('bold')}
+        onPressedChange={() => editor.chain().focus().toggleBold().run()}
+        aria-label="Toggle bold"
+      >
+        <Bold className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('italic')}
+        onPressedChange={() => editor.chain().focus().toggleItalic().run()}
+        aria-label="Toggle italic"
+      >
+        <Italic className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('strike')}
+        onPressedChange={() => editor.chain().focus().toggleStrike().run()}
+        aria-label="Toggle strikethrough"
+      >
+        <Strikethrough className="h-4 w-4" />
+      </Toggle>
+      <Separator orientation="vertical" className="h-8 mx-1" />
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('heading', { level: 1 })}
+        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        aria-label="Toggle Heading 1"
+      >
+        <Heading1 className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('heading', { level: 2 })}
+        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        aria-label="Toggle Heading 2"
+      >
+        <Heading2 className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('heading', { level: 3 })}
+        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        aria-label="Toggle Heading 3"
+      >
+        <Heading3 className="h-4 w-4" />
+      </Toggle>
+       <Separator orientation="vertical" className="h-8 mx-1" />
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('bulletList')}
+        onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
+        aria-label="Toggle bullet list"
+      >
+        <List className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('orderedList')}
+        onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
+        aria-label="Toggle ordered list"
+      >
+        <ListOrdered className="h-4 w-4" />
+      </Toggle>
+       <Toggle
+        size="sm"
+        pressed={editor.isActive('blockquote')}
+        onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
+        aria-label="Toggle blockquote"
+      >
+        <Quote className="h-4 w-4" />
+      </Toggle>
+      <Separator orientation="vertical" className="h-8 mx-1" />
+      <Toggle
+        size="sm"
+        onPressedChange={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().undo()}
+        aria-label="Undo"
+      >
+        <Undo className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        onPressedChange={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().redo()}
+        aria-label="Redo"
+      >
+        <Redo className="h-4 w-4" />
+      </Toggle>
+    </div>
+  );
+};
+
+
+interface RichTextInputProps {
   name: string;
 }
 
-const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
-  ({ className, name, ...props }, ref) => {
-    const { register, setValue, watch, formState: { isSubmitting } } = useFormContext();
-    const contentRef = React.useRef<HTMLDivElement>(null);
-    const [isMounted, setIsMounted] = React.useState(false);
+export function RichTextInput({ name }: RichTextInputProps) {
+  const { setValue, watch, formState: { isSubmitting } } = useFormContext();
+  const initialContent = watch(name) || '';
 
-    const value = watch(name);
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: DOMPurify.sanitize(initialContent),
+    editorProps: {
+      attributes: {
+        class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none px-3 py-2',
+      },
+    },
+    onUpdate({ editor }) {
+      const html = editor.getHTML();
+      const sanitizedHtml = DOMPurify.sanitize(html);
+      setValue(name, sanitizedHtml, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    },
+    editable: !isSubmitting,
+  });
 
-    React.useEffect(() => {
-        setIsMounted(true);
-        register(name);
-    }, [register, name]);
-
-    // Set initial content from form state once component is mounted and on value change
-    React.useEffect(() => {
-        if (isMounted && contentRef.current) {
-            const cleanValue = DOMPurify.sanitize(value || '', { USE_PROFILES: { html: true } });
-            if (contentRef.current.innerHTML !== cleanValue) {
-                contentRef.current.innerHTML = cleanValue;
-            }
-        }
-    }, [isMounted, value]);
-
-    const handleInput = (event: React.FormEvent<HTMLDivElement>) => {
-      const dirtyHTML = event.currentTarget.innerHTML;
-      const cleanHTML = DOMPurify.sanitize(dirtyHTML, { USE_PROFILES: { html: true } });
-      setValue(name, cleanHTML, { shouldValidate: true, shouldDirty: true });
-    };
-    
-    const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      const paste = event.clipboardData.getData('text/html') || event.clipboardData.getData('text/plain');
-      const cleanPaste = DOMPurify.sanitize(paste, { USE_PROFILES: { html: true } });
-      
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-      
-      selection.deleteFromDocument();
-      const range = selection.getRangeAt(0);
-      
-      const fragment = range.createContextualFragment(cleanPaste);
-      const lastNode = fragment.lastChild;
-      range.insertNode(fragment);
-
-      if(lastNode) {
-        const newRange = document.createRange();
-        newRange.setStartAfter(lastNode);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      }
-
-      handleInput({ currentTarget: event.currentTarget } as React.FormEvent<HTMLDivElement>);
-    };
-
-    const execCmd = (command: string) => {
-        document.execCommand(command, false);
-        if(contentRef.current) {
-            contentRef.current.focus();
-            handleInput({ currentTarget: contentRef.current } as React.FormEvent<HTMLDivElement>);
+  React.useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+        const currentEditorContent = editor.getHTML();
+        const currentFormValue = DOMPurify.sanitize(watch(name) || '');
+        if (currentEditorContent !== currentFormValue) {
+            editor.commands.setContent(currentFormValue, false);
         }
     }
+  }, [watch(name), editor]);
 
-    return (
-        <div className='rounded-md border border-input focus-within:ring-2 focus-within:ring-ring'>
-            <div className='p-2 border-b'>
-                 <ToggleGroup type="multiple">
-                    <ToggleGroupItem value="bold" aria-label="Toggle bold" onClick={() => execCmd('bold')}>
-                        <Bold className="h-4 w-4" />
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="italic" aria-label="Toggle italic" onClick={() => execCmd('italic')}>
-                        <Italic className="h-4 w-4" />
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="underline" aria-label="Toggle underline" onClick={() => execCmd('underline')}>
-                        <Underline className="h-4 w-4" />
-                    </ToggleGroupItem>
-                 </ToggleGroup>
-            </div>
-            <div
-                ref={(el) => {
-                    if (typeof ref === 'function') ref(el);
-                    (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-                }}
-                contentEditable={!isSubmitting}
-                onInput={handleInput}
-                onPaste={handlePaste}
-                className={cn(
-                'flex min-h-[120px] w-full bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm prose dark:prose-invert max-w-none',
-                className
-                )}
-                {...props}
-            />
-      </div>
-    );
-  }
-);
-RichTextInput.displayName = 'RichTextInput';
-
-export { RichTextInput };
+  return (
+    <div className='rounded-md border border-input focus-within:ring-2 focus-within:ring-ring'>
+        <TiptapToolbar editor={editor} />
+        <EditorContent editor={editor} className="min-h-[120px]"/>
+    </div>
+  );
+}

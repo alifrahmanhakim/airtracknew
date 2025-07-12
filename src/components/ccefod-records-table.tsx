@@ -146,7 +146,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
     { key: 'legislationReference', header: 'Legislation' },
     { key: 'implementationLevel', header: 'Implementation Level'},
     { key: 'status', header: 'Status' },
-    { key: 'createdAt', header: 'Created At' },
     { key: 'adaPerubahan', header: 'Ada Perubahan?'},
     { key: 'usulanPerubahan', header: 'Usulan Perubahan'},
     { key: 'isiUsulan', header: 'Isi Usulan'},
@@ -255,7 +254,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                 <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
                   {visibleColumns.map((col, index) => {
                      const isRichText = col.key === 'standardPractice';
-                     const isLongText = ['annex', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key);
+                     const isLongText = ['legislationReference'].includes(col.key);
 
                      return (
                         <TableCell 
