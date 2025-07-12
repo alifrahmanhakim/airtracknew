@@ -12,10 +12,12 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
+  Text,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CcefodRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 
 type CcefodAnalyticsDashboardProps = {
@@ -35,6 +37,26 @@ const truncateText = (text: string, length: number) => {
     if (text.length <= length) return text;
     return text.substring(0, length) + '...';
 }
+
+const CustomizedAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  const maxChars = 20; // Adjust this value as needed
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <text x={0} y={0} dy={16} textAnchor="end" fill="#666" transform="rotate(-45)">
+            {truncateText(payload.value, maxChars)}
+          </text>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{payload.value}</p>
+        </TooltipContent>
+      </Tooltip>
+    </g>
+  );
+};
 
 export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardProps) {
   const analyticsData = useMemo(() => {
@@ -158,9 +180,9 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                 <CardTitle>Distribution by Annex</CardTitle>
                 <CardDescription>Shows the count of records for each Annex, sorted by volume.</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2 h-[400px]">
+            <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.annexData)}>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={400}>
                         <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" />
@@ -203,11 +225,11 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                              <XAxis 
                                 dataKey="name" 
-                                type="category" 
-                                angle={-45} 
-                                textAnchor="end" 
-                                height={100} 
-                                tick={{ fontSize: 12 }}
+                                type="category"
+                                tickLine={false}
+                                axisLine={false}
+                                tick={<CustomizedAxisTick />}
+                                height={100}
                                 interval={0}
                             />
                             <YAxis type="number" allowDecimals={false} />
@@ -228,3 +250,5 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     </div>
   );
 }
+
+    
