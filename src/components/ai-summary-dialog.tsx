@@ -107,7 +107,6 @@ export function AiSummaryDialog({ taskCompletion, notes: initialNotes }: AiSumma
             <AlertTitle>AI-Generated Summary</AlertTitle>
             <AlertDescription>
                 <p className="mt-2">{summary.summary}</p>
-                <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">{summary.progress}</p>
             </AlertDescription>
           </Alert>
         )}

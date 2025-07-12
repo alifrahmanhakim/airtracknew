@@ -22,7 +22,6 @@ export type SummarizeProjectStatusInput = z.infer<typeof SummarizeProjectStatusI
 
 const SummarizeProjectStatusOutputSchema = z.object({
   summary: z.string().describe('A brief summary of the project status.'),
-  progress: z.string().describe('A one-sentence summary of what was generated.')
 });
 export type SummarizeProjectStatusOutput = z.infer<typeof SummarizeProjectStatusOutputSchema>;
 
@@ -43,7 +42,7 @@ const prompt = ai.definePrompt({
   Task Completion: {{{taskCompletion}}}%
   Notes: {{{notes}}}
 
-  Summary:`, 
+  Generate the summary and ensure your output is a valid JSON object matching the specified schema.`, 
 });
 
 const summarizeProjectStatusFlow = ai.defineFlow(
@@ -54,9 +53,6 @@ const summarizeProjectStatusFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return {
-      ...output,
-      progress: 'Project status summary generated based on task completion and provided notes.'
-    } as SummarizeProjectStatusOutput;
+    return output!;
   }
 );
