@@ -75,11 +75,24 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const defaultFormValues: Partial<CcefodFormValues> = {
+      adaPerubahan: 'TIDAK',
+      usulanPerubahan: '',
+      isiUsulan: '',
+      annex: '',
+      annexReference: '',
+      standardPractice: '',
+      legislationReference: '',
+      implementationLevel: 'No difference',
+      differenceText: '',
+      differenceReason: '',
+      remarks: '',
+      status: 'Draft',
+  };
+
   const form = useForm<CcefodFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      adaPerubahan: 'TIDAK',
-    },
+    defaultValues: defaultFormValues,
   });
 
   const adaPerubahan = form.watch('adaPerubahan');
@@ -96,7 +109,7 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
             title: 'Data Added Successfully!',
             description: 'Your CCEFOD monitoring data has been saved.',
         });
-        form.reset({ adaPerubahan: 'TIDAK' });
+        form.reset(defaultFormValues);
     }, 1000);
   };
 
@@ -327,7 +340,7 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
             />
 
         <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => form.reset({ adaPerubahan: 'TIDAK' })}>
+            <Button type="button" variant="outline" onClick={() => form.reset(defaultFormValues)}>
                 Reset
             </Button>
             <Button type="submit" disabled={isLoading}>
