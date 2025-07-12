@@ -14,7 +14,7 @@ import type { User } from "@/lib/types";
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Trash2, AlertTriangle, Loader2, UserCheck, UserX } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +26,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { deleteUser } from '@/lib/actions';
+import { deleteUser, updateUserApproval } from '@/lib/actions';
 import { AssignRoleDialog } from '@/components/assign-role-dialog';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function TeamPage() {
   const [users, setUsers] = React.useState<User[]>([]);
@@ -70,6 +72,23 @@ export default function TeamPage() {
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
   };
   
+  const handleApprovalChange = async (user: User, isApproved: boolean) => {
+    const result = await updateUserApproval(user.id, isApproved);
+    if (result.success) {
+      handleUserUpdate({ ...user, isApproved });
+      toast({
+        title: `User ${isApproved ? 'Approved' : 'Unapproved'}`,
+        description: `${user.name} has been ${isApproved ? 'approved' : 'unapproved'}.`,
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: result.error || 'Failed to update approval status.',
+      });
+    }
+  };
+
   const handleDeleteClick = (user: User) => {
     if (user.id === currentUser?.id) {
         toast({ variant: 'destructive', title: 'Error', description: "You cannot delete yourself." });
@@ -122,6 +141,7 @@ export default function TeamPage() {
   const isAdmin = currentUser?.role === 'Sub-Directorate Head';
 
   return (
+    <TooltipProvider>
     <div className="p-4 md:p-8">
       <Card>
         <CardHeader>
@@ -136,6 +156,7 @@ export default function TeamPage() {
                     <TableRow>
                         <TableHead>User</TableHead>
                         <TableHead>Role</TableHead>
+                        <TableHead>Status</TableHead>
                         {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
                 </TableHeader>
@@ -155,10 +176,35 @@ export default function TeamPage() {
                                 </div>
                             </TableCell>
                             <TableCell>{user.role}</TableCell>
+                            <TableCell>
+                                <div className={cn("flex items-center gap-2 text-sm", user.isApproved ? "text-green-600" : "text-yellow-600")}>
+                                    {user.isApproved ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                                    <span>{user.isApproved ? 'Approved' : 'Pending'}</span>
+                                </div>
+                            </TableCell>
                             {isAdmin && (
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-2">
                                         <AssignRoleDialog user={user} onUserUpdate={handleUserUpdate} />
+                                         {user.isApproved ? (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, false)}>
+                                                        <UserX className="h-4 w-4 text-yellow-600" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent><p>Unapprove User</p></TooltipContent>
+                                            </Tooltip>
+                                        ) : (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, true)}>
+                                                        <UserCheck className="h-4 w-4 text-green-600" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent><p>Approve User</p></TooltipContent>
+                                            </Tooltip>
+                                        )}
                                         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(user)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -193,5 +239,6 @@ export default function TeamPage() {
             </AlertDialogContent>
       </AlertDialog>
     </div>
+    </TooltipProvider>
   );
 }

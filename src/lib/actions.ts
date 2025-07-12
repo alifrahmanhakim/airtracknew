@@ -131,6 +131,7 @@ export async function addTimKerjaProject(
         avatarUrl: member.avatarUrl || "https://placehold.co/100x100.png",
       })),
       tags: projectData.tags || [],
+      // Explicitly add default empty values for fields not in the form
       projectType: 'Tim Kerja' as const,
       tasks: [],
       subProjects: [],
@@ -173,6 +174,7 @@ export async function addRulemakingProject(
         avatarUrl: member.avatarUrl || "https://placehold.co/100x100.png",
       })),
       tags: projectData.tags || [],
+      // Explicitly add default empty values for fields not in the form
       projectType: 'Rulemaking' as const,
       tasks: [],
       subProjects: [],
@@ -196,7 +198,7 @@ export async function addRulemakingProject(
 export async function updateProject(
     projectId: string,
     projectType: Project['projectType'],
-    projectData: Partial<Omit<Project, 'id' | 'projectType'>>
+    projectData: Partial<Omit<Project, 'id'>>
 ): Promise<{ success: boolean; error?: string }> {
     try {
         const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
@@ -374,6 +376,22 @@ export async function updateUserRole(
       console.error('Update User Role Error:', error);
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
       return { success: false, error: `Failed to update user role: ${message}` };
+    }
+}
+
+export async function updateUserApproval(
+    userId: string,
+    isApproved: boolean
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, { isApproved });
+      revalidatePath('/team');
+      return { success: true };
+    } catch (error) {
+      console.error('Update User Approval Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: `Failed to update approval status: ${message}` };
     }
 }
   
@@ -617,7 +635,3 @@ export async function importPqRecords(records: PqFormValues[]): Promise<{ succes
     return { success: false, count: 0, error: `Failed to import records: ${message}` };
   }
 }
-
-    
-
-    

@@ -3,9 +3,10 @@
 export type User = {
   id: string;
   name: string;
-  email?: string; // Add email as an optional field
+  email?: string;
   avatarUrl: string;
   role: 'Sub-Directorate Head' | 'Team Lead' | 'PIC' | 'PIC Assistant' | 'Functional';
+  isApproved?: boolean;
 };
 
 export type Document = {

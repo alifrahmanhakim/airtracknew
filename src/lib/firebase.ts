@@ -8,13 +8,12 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY", // Replace with your actual config
+    apiKey: "AIzaSyCVT1PDkGdczXUP_LatsS6Q4K1h0xvXeT0", // Replace with your actual config
     authDomain: "aoc-insight.firebaseapp.com",
     projectId: "aoc-insight",
     storageBucket: "aoc-insight.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your actual config
-    appId: "YOUR_APP_ID", // Replace with your actual config
-    measurementId: "YOUR_MEASUREMENT_ID" // Replace with your actual config
+    messagingSenderId: "795850632942", // Replace with your actual config
+    appId: "G-CNFZC766E2", // Replace with your actual config
 };
 
 
