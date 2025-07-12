@@ -76,13 +76,13 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
   
   const handleGenerateChecklist = async () => {
     setIsGenerating(true);
-    const result = await generateChecklist({
-        projectName: project.name,
-        projectDescription: project.description
-    });
-    
-    if (result.success && result.data) {
-        const newItems = result.data.items.map(itemText => ({
+    try {
+        const result = await generateChecklist({
+            projectName: project.name,
+            projectDescription: project.description
+        });
+        
+        const newItems = result.items.map(itemText => ({
             id: `item-${Date.now()}-${Math.random()}`,
             text: itemText,
             completed: false,
@@ -93,15 +93,15 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
             title: 'Checklist Generated!',
             description: `${newItems.length} items have been added to your checklist.`,
         });
-    } else {
+    } catch (error) {
         toast({
             variant: 'destructive',
             title: 'Error',
-            description: result.error || 'Failed to generate checklist items.',
+            description: 'Failed to generate AI checklist. Please try again.',
         });
+    } finally {
+        setIsGenerating(false);
     }
-
-    setIsGenerating(false);
   }
 
   const completedCount = checklist.filter(item => item.completed).length;

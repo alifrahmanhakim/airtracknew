@@ -7,7 +7,7 @@ import {
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
 import {
-    generateChecklist as generateChecklistAction,
+    generateChecklist,
     type GenerateChecklistInput,
     type GenerateChecklistOutput
 } from '@/ai/flows/generate-checklist';
@@ -18,6 +18,9 @@ import { db } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
+// Re-export AI flows to be used in client components
+// This avoids exposing the AI implementation details to the client
+export { generateChecklist };
 
 export async function getAiSummary(
   input: SummarizeProjectStatusInput
@@ -37,25 +40,6 @@ export async function getAiSummary(
     };
   }
 }
-
-export async function generateChecklist(
-    input: GenerateChecklistInput
-  ): Promise<{
-    success: boolean;
-    data?: GenerateChecklistOutput;
-    error?: string;
-  }> {
-    try {
-      const result = await generateChecklistAction(input);
-      return { success: true, data: result };
-    } catch (error) {
-      console.error('AI Checklist Generation Error:', error);
-      return {
-        success: false,
-        error: 'Failed to generate AI checklist. Please try again.',
-      };
-    }
-  }
 
 export async function addDocument(
   projectId: string,
