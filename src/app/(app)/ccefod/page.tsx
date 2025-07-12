@@ -60,11 +60,6 @@ export default function CcefodPage() {
     return () => unsubscribe();
   }, [toast]);
   
-
-  const handleRecordAdded = (newRecord: CcefodRecord) => {
-    setRecords(prevRecords => [newRecord, ...prevRecords]);
-  };
-  
   const handleDeleteRequest = (record: CcefodRecord) => {
     setRecordToDelete(record);
   };
@@ -129,7 +124,7 @@ export default function CcefodPage() {
                 </CardDescription>
                 </CardHeader>
                 <CardContent>
-                <CcefodForm onFormSubmit={handleRecordAdded} />
+                <CcefodForm onFormSubmit={() => {}} />
                 </CardContent>
             </Card>
             </TabsContent>
