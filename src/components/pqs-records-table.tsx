@@ -53,7 +53,6 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
-    createdAt: true,
     pqNumber: true,
     protocolQuestion: true,
     guidance: false,
@@ -68,6 +67,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     cap: false,
     sspComponent: false,
     status: true,
+    createdAt: true,
   });
 
   const processedRecords = useMemo(() => {
@@ -113,9 +113,17 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
   const columnDefs: { key: keyof PqRecord; header: string; width?: string }[] = [
     { key: 'pqNumber', header: 'PQ Number' },
     { key: 'protocolQuestion', header: 'Protocol Question' },
+    { key: 'guidance', header: 'Guidance' },
+    { key: 'icaoReferences', header: 'ICAO References' },
     { key: 'ppq', header: 'PPQ' },
     { key: 'criticalElement', header: 'Critical Element'},
+    { key: 'remarks', header: 'Remarks'},
+    { key: 'evidence', header: 'Evidence'},
+    { key: 'answer', header: 'Answer'},
+    { key: 'poc', header: 'POC'},
     { key: 'icaoStatus', header: 'ICAO Status'},
+    { key: 'cap', header: 'CAP'},
+    { key: 'sspComponent', header: 'SSP Component'},
     { key: 'status', header: 'Status' },
     { key: 'createdAt', header: 'Created At' },
   ];
@@ -193,7 +201,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                      <TableCell key={col.key} className={cn("whitespace-nowrap", index < visibleColumns.length - 1 ? "border-r" : "")}>
                         {(() => {
                             const value = record[col.key as keyof PqRecord] as string | undefined;
-                             const isLongText = ['protocolQuestion'].includes(col.key);
+                             const isLongText = ['protocolQuestion', 'guidance', 'icaoReferences', 'remarks', 'evidence', 'answer', 'poc', 'cap', 'sspComponent'].includes(col.key);
                              const content = (
                                 <>
                                 {col.key === 'status' && value ? (
