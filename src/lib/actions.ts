@@ -6,6 +6,11 @@ import {
   type SummarizeProjectStatusInput,
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
+import {
+    generateChecklist as generateChecklistFlow,
+    type GenerateChecklistInput,
+    type GenerateChecklistOutput
+} from '@/ai/flows/generate-checklist';
 import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem } from './types';
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
@@ -32,6 +37,25 @@ export async function getAiSummary(
     };
   }
 }
+
+export async function generateChecklist(
+    input: GenerateChecklistInput
+  ): Promise<{
+    success: boolean;
+    data?: GenerateChecklistOutput;
+    error?: string;
+  }> {
+    try {
+      const result = await generateChecklistFlow(input);
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('AI Checklist Generation Error:', error);
+      return {
+        success: false,
+        error: 'Failed to generate AI checklist. Please try again.',
+      };
+    }
+  }
 
 export async function addDocument(
   projectId: string,

@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { updateProjectChecklist } from '@/lib/actions';
+import { updateProjectChecklist, generateChecklist } from '@/lib/actions';
 import type { Project, ChecklistItem } from '@/lib/types';
-import { Loader2, Plus, Trash2, ListChecks } from 'lucide-react';
+import { Loader2, Plus, Trash2, ListChecks, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -26,6 +26,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
   const [checklist, setChecklist] = React.useState<ChecklistItem[]>(project.checklist || []);
   const [newItemText, setNewItemText] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isGenerating, setIsGenerating] = React.useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -73,6 +74,36 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
     handleUpdate(updated);
   };
   
+  const handleGenerateChecklist = async () => {
+    setIsGenerating(true);
+    const result = await generateChecklist({
+        projectName: project.name,
+        projectDescription: project.description
+    });
+    
+    if (result.success && result.data) {
+        const newItems = result.data.items.map(itemText => ({
+            id: `item-${Date.now()}-${Math.random()}`,
+            text: itemText,
+            completed: false,
+        }));
+        const updatedChecklist = [...checklist, ...newItems];
+        handleUpdate(updatedChecklist);
+        toast({
+            title: 'Checklist Generated!',
+            description: `${newItems.length} items have been added to your checklist.`,
+        });
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || 'Failed to generate checklist items.',
+        });
+    }
+
+    setIsGenerating(false);
+  }
+
   const completedCount = checklist.filter(item => item.completed).length;
   const totalCount = checklist.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
@@ -81,9 +112,22 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
     <TooltipProvider>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ListChecks />
-            Project Checklist
+          <CardTitle className="flex items-center justify-between">
+            <div className='flex items-center gap-2'>
+                <ListChecks />
+                Project Checklist
+            </div>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={handleGenerateChecklist} disabled={isGenerating || isLoading}>
+                        {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                        <span className="sr-only">Generate with AI</span>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Generate with AI</p>
+                </TooltipContent>
+            </Tooltip>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -93,9 +137,9 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
               value={newItemText}
               onChange={(e) => setNewItemText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-              disabled={isLoading}
+              disabled={isLoading || isGenerating}
             />
-            <Button onClick={handleAddItem} disabled={isLoading || !newItemText.trim()}>
+            <Button onClick={handleAddItem} disabled={isLoading || isGenerating || !newItemText.trim()}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -111,7 +155,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
                     id={item.id}
                     checked={item.completed}
                     onCheckedChange={() => handleToggleItem(item.id)}
-                    disabled={isLoading}
+                    disabled={isLoading || isGenerating}
                   />
                   <label
                     htmlFor={item.id}
@@ -129,7 +173,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => handleRemoveItem(item.id)}
-                        disabled={isLoading}
+                        disabled={isLoading || isGenerating}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -146,7 +190,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
               </p>
             )}
           </div>
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary mx-auto mt-2" />}
+          {(isLoading || isGenerating) && <Loader2 className="h-4 w-4 animate-spin text-primary mx-auto mt-2" />}
         </CardContent>
       </Card>
     </TooltipProvider>
