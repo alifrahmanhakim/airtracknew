@@ -24,19 +24,18 @@ import { Info } from 'lucide-react';
 import { Label } from './ui/label';
 
 export const formSchema = z.object({
-  section: z.string().min(1, 'Section is required'),
   pqNumber: z.string().min(1, 'PQ Number is required'),
   protocolQuestion: z.string().min(1, 'Protocol Question is required'),
   guidance: z.string().min(1, 'Guidance for Review of Evidence is required'),
   icaoReferences: z.string().min(1, 'ICAO References are required'),
   ppq: z.enum(['YES', 'NO']),
   criticalElement: z.enum(['CE - 1','CE - 2','CE - 3','CE - 4','CE - 5','CE - 6','CE - 7','CE - 8']),
-  remarks: z.string().min(1, 'Remarks are required'),
-  evidence: z.string().min(1, 'Evidence is required'),
-  answer: z.string().min(1, 'Answer is required'),
-  poc: z.string().min(1, 'POC is required'),
+  remarks: z.string().optional(),
+  evidence: z.string().optional(),
+  answer: z.string().optional(),
+  poc: z.string().optional(),
   icaoStatus: z.enum(['Satisfactory', 'No Satisfactory']),
-  cap: z.string().min(1, 'CAP is required'),
+  cap: z.string().optional(),
   sspComponent: z.string().optional(),
   status: z.enum(['Existing', 'Draft', 'Final']),
 });
@@ -55,20 +54,6 @@ type PqsSharedFormFieldsProps = {
 export function PqsSharedFormFields({ form }: PqsSharedFormFieldsProps) {
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
-          name="section"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Section</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="pqNumber"
@@ -82,8 +67,6 @@ export function PqsSharedFormFields({ form }: PqsSharedFormFieldsProps) {
             </FormItem>
           )}
         />
-      </div>
-
       <FormField
         control={form.control}
         name="protocolQuestion"

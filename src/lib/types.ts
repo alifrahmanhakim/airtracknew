@@ -95,19 +95,18 @@ export type CcefodRecord = {
 export type PqRecord = {
   id: string;
   createdAt: string;
-  section: string;
   pqNumber: string;
   protocolQuestion: string;
   guidance: string;
   icaoReferences: string;
   ppq: 'YES' | 'NO';
   criticalElement: 'CE - 1' | 'CE - 2' | 'CE - 3' | 'CE - 4' | 'CE - 5' | 'CE - 6' | 'CE - 7' | 'CE - 8';
-  remarks: string;
-  evidence: string;
-  answer: string;
-  poc: string;
+  remarks?: string;
+  evidence?: string;
+  answer?: string;
+  poc?: string;
   icaoStatus: 'Satisfactory' | 'No Satisfactory';
-  cap: string;
+  cap?: string;
   sspComponent?: string;
   status: 'Existing' | 'Draft' | 'Final';
 }

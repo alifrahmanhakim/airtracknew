@@ -21,7 +21,6 @@ export function PqsForm({ onFormSubmit }: PqsFormProps) {
   const { toast } = useToast();
 
   const defaultFormValues: PqFormValues = {
-    section: '',
     pqNumber: '',
     protocolQuestion: '',
     guidance: '',

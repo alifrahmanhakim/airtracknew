@@ -24,7 +24,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const csvHeaders = [
-    "section", "pqNumber", "protocolQuestion", "guidance", "icaoReferences", 
+    "pqNumber", "protocolQuestion", "guidance", "icaoReferences", 
     "ppq", "criticalElement", "remarks", "evidence", "answer", "poc", 
     "icaoStatus", "cap", "sspComponent", "status"
 ];
@@ -148,8 +148,8 @@ export function ImportPqsCsvDialog() {
                             <Table>
                                 <TableHeader className='sticky top-0 bg-muted/80 backdrop-blur-sm'>
                                     <TableRow>
-                                        <TableHead>Section</TableHead>
                                         <TableHead>PQ Number</TableHead>
+                                        <TableHead>Protocol Question</TableHead>
                                         <TableHead>Critical Element</TableHead>
                                         <TableHead>Status</TableHead>
                                     </TableRow>
@@ -157,8 +157,8 @@ export function ImportPqsCsvDialog() {
                                 <TableBody>
                                     {parsedData.map((row, index) => (
                                         <TableRow key={index}>
-                                            <TableCell className="font-medium truncate max-w-xs">{row.section}</TableCell>
                                             <TableCell>{row.pqNumber}</TableCell>
+                                            <TableCell className="font-medium truncate max-w-xs">{row.protocolQuestion}</TableCell>
                                             <TableCell>{row.criticalElement}</TableCell>
                                             <TableCell>{row.status}</TableCell>
                                         </TableRow>

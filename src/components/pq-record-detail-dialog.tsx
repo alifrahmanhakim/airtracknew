@@ -49,7 +49,6 @@ export function PqRecordDetailDialog({ record, open, onOpenChange }: PqRecordDet
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] pr-6">
             <dl className="divide-y divide-border">
-                <DetailRow label="Section" value={record.section} />
                 <DetailRow label="PQ Number" value={record.pqNumber} />
                 <DetailRow label="Protocol Question" value={record.protocolQuestion} isLongText />
                 <DetailRow label="Guidance for Review of Evidence" value={record.guidance} isLongText />

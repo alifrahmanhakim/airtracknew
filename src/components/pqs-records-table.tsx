@@ -16,13 +16,6 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
@@ -55,14 +48,12 @@ type SortDescriptor = {
 
 export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTableProps) {
   const [filter, setFilter] = useState('');
-  const [sectionFilter, setSectionFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
   const [recordToView, setRecordToView] = useState<PqRecord | null>(null);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
     createdAt: true,
-    section: true,
     pqNumber: true,
     protocolQuestion: true,
     guidance: false,
@@ -79,17 +70,8 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     status: true,
   });
 
-  const sectionOptions = useMemo(() => {
-    const sections = new Set(records.map(r => r.section));
-    return ['all', ...Array.from(sections)];
-  }, [records]);
-
   const processedRecords = useMemo(() => {
     let filteredData = [...records];
-    
-    if (sectionFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.section === sectionFilter);
-    }
     
     if (filter) {
         const lowercasedFilter = filter.toLowerCase();
@@ -112,7 +94,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     }
 
     return filteredData;
-  }, [records, filter, sectionFilter, sort]);
+  }, [records, filter, sort]);
 
   const handleSort = (column: keyof PqRecord) => {
     setSort(prevSort => {
@@ -129,7 +111,6 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
   }
   
   const columnDefs: { key: keyof PqRecord; header: string; width?: string }[] = [
-    { key: 'section', header: 'Section' },
     { key: 'pqNumber', header: 'PQ Number' },
     { key: 'protocolQuestion', header: 'Protocol Question' },
     { key: 'ppq', header: 'PPQ' },
@@ -164,18 +145,6 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                     className="pl-9"
                 />
             </div>
-            <Select value={sectionFilter} onValueChange={setSectionFilter}>
-                <SelectTrigger className="w-full sm:w-[280px]">
-                    <SelectValue placeholder="Filter by Section..." />
-                </SelectTrigger>
-                <SelectContent>
-                    {sectionOptions.map(section => (
-                        <SelectItem key={section} value={section}>
-                            {section === 'all' ? 'All Sections' : section}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="ml-auto">

@@ -5,8 +5,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PqRecord } from '@/lib/types';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,7 +32,6 @@ import { ImportPqsCsvDialog } from '@/components/import-pqs-csv-dialog';
 export default function PqsPage() {
   const [records, setRecords] = useState<PqRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [analyticsSectionFilter, setAnalyticsSectionFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('form');
   const { toast } = useToast();
   
@@ -86,18 +83,6 @@ export default function PqsPage() {
     }
     setRecordToDelete(null);
   };
-
-  const sectionOptions = useMemo(() => {
-    const sections = new Set(records.map(r => r.section).filter(Boolean));
-    return ['all', ...Array.from(sections)];
-  }, [records]);
-
-  const filteredAnalyticsRecords = useMemo(() => {
-    if (analyticsSectionFilter === 'all') {
-      return records;
-    }
-    return records.filter(record => record.section === analyticsSectionFilter);
-  }, [records, analyticsSectionFilter]);
 
   const handlePrint = () => {
     window.print();
@@ -175,19 +160,6 @@ export default function PqsPage() {
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
-                                <Label htmlFor="section-filter" className="text-sm font-medium">Filter by Section</Label>
-                                <Select value={analyticsSectionFilter} onValueChange={setAnalyticsSectionFilter}>
-                                    <SelectTrigger id="section-filter" className="w-full sm:w-[280px]">
-                                        <SelectValue placeholder="Filter by Section..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {sectionOptions.map(section => (
-                                            <SelectItem key={section} value={section}>
-                                                {section === 'all' ? 'All Sections' : section}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                                  <Button variant="outline" size="icon" onClick={handlePrint}>
                                     <Printer className="h-4 w-4" />
                                     <span className="sr-only">Print Analytics</span>
@@ -196,7 +168,7 @@ export default function PqsPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <PqsAnalyticsDashboard records={filteredAnalyticsRecords} />
+                        <PqsAnalyticsDashboard records={records} />
                     </CardContent>
                 </Card>
             </TabsContent>

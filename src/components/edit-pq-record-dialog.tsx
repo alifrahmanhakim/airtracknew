@@ -35,7 +35,6 @@ export function EditPqRecordDialog({ record, onRecordUpdate }: EditPqRecordDialo
   const form = useForm<PqFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      section: record.section,
       pqNumber: record.pqNumber,
       protocolQuestion: record.protocolQuestion,
       guidance: record.guidance,
