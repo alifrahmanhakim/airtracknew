@@ -49,6 +49,7 @@ const formSchema = z.object({
   remarks: z.string().optional(),
   status: z.enum(['Existing', 'Draft', 'Final']),
   id: z.string().optional(), // To hold a unique ID for each record
+  createdAt: z.string().optional(), // To hold creation date
 });
 
 export type CcefodFormValues = z.infer<typeof formSchema>;
@@ -75,7 +76,7 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const defaultFormValues: Partial<CcefodFormValues> = {
+  const defaultFormValues: CcefodFormValues = {
       adaPerubahan: 'TIDAK',
       usulanPerubahan: '',
       isiUsulan: '',
@@ -99,7 +100,11 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
 
   const onSubmit = (data: CcefodFormValues) => {
     setIsLoading(true);
-    const dataWithId = { ...data, id: `record-${Date.now()}` };
+    const dataWithId: CcefodFormValues = { 
+        ...data, 
+        id: `record-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+    };
     
     // In a real app, you would send this to a server/API
     setTimeout(() => {
