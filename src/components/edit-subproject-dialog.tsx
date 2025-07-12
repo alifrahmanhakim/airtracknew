@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
-import type { SubProject } from '@/lib/types';
+import type { Project, SubProject } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { updateSubProject } from '@/lib/actions';
 
@@ -41,11 +41,12 @@ type SubProjectFormValues = z.infer<typeof subProjectSchema>;
 
 type EditSubProjectDialogProps = {
   projectId: string;
+  projectType: Project['projectType'];
   subProject: SubProject;
   onSubProjectUpdate: (newSubProject: SubProject) => void;
 };
 
-export function EditSubProjectDialog({ projectId, subProject, onSubProjectUpdate }: EditSubProjectDialogProps) {
+export function EditSubProjectDialog({ projectId, projectType, subProject, onSubProjectUpdate }: EditSubProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -66,7 +67,7 @@ export function EditSubProjectDialog({ projectId, subProject, onSubProjectUpdate
       ...data,
     };
     
-    const result = await updateSubProject(projectId, updatedSubProject);
+    const result = await updateSubProject(projectId, updatedSubProject, projectType);
     setIsSubmitting(false);
 
     if (result.success) {

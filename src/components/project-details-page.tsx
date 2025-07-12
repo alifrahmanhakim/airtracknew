@@ -431,7 +431,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 <CardTitle className="flex items-center gap-2">
                     <Folder /> Sub-Projects
                 </CardTitle>
-                <AddSubProjectDialog projectId={project.id} onSubProjectAdd={handleSubProjectAdd} />
+                <AddSubProjectDialog projectId={project.id} projectType={project.projectType} onSubProjectAdd={handleSubProjectAdd} />
             </CardHeader>
             <CardContent>
               {subProjects.length > 0 ? (
@@ -446,7 +446,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                         <Badge variant="outline" className={cn("text-xs font-semibold", subProjectStatusStyles[sub.status])}>
                             {sub.status}
                         </Badge>
-                        <EditSubProjectDialog projectId={project.id} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
+                        <EditSubProjectDialog projectId={project.id} projectType={project.projectType} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
                       </div>
                     </div>
                   ))}

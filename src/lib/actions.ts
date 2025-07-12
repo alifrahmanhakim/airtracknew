@@ -321,10 +321,12 @@ export async function deleteTask(
 
 export async function addSubProject(
     projectId: string,
-    subProjectData: SubProject
+    subProjectData: SubProject,
+    projectType: Project['projectType']
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const projectRef = doc(db, collectionName, projectId);
         await updateDoc(projectRef, {
             subProjects: arrayUnion(subProjectData)
         });
@@ -339,10 +341,12 @@ export async function addSubProject(
 
 export async function updateSubProject(
     projectId: string,
-    updatedSubProject: SubProject
+    updatedSubProject: SubProject,
+    projectType: Project['projectType']
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const projectRef = doc(db, collectionName, projectId);
         const projectSnap = await getDoc(projectRef);
         if (projectSnap.exists()) {
             const project = projectSnap.data() as Project;

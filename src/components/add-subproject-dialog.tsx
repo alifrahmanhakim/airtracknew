@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus } from 'lucide-react';
-import type { SubProject } from '@/lib/types';
+import type { Project, SubProject } from '@/lib/types';
 import { addSubProject } from '@/lib/actions';
 
 const subProjectSchema = z.object({
@@ -39,10 +39,11 @@ type SubProjectFormValues = z.infer<typeof subProjectSchema>;
 
 type AddSubProjectDialogProps = {
   projectId: string;
+  projectType: Project['projectType'];
   onSubProjectAdd: (newSubProject: SubProject) => void;
 };
 
-export function AddSubProjectDialog({ projectId, onSubProjectAdd }: AddSubProjectDialogProps) {
+export function AddSubProjectDialog({ projectId, projectType, onSubProjectAdd }: AddSubProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -64,7 +65,7 @@ export function AddSubProjectDialog({ projectId, onSubProjectAdd }: AddSubProjec
       status: 'On Track', 
     };
     
-    const result = await addSubProject(projectId, newSubProject);
+    const result = await addSubProject(projectId, newSubProject, projectType);
     setIsSubmitting(false);
 
     if (result.success) {
