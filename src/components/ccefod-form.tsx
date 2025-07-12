@@ -68,7 +68,7 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <CcefodSharedFormFields form={form} />
         <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => form.reset(defaultFormValues)}>
+            <Button type="button" variant="outline" onClick={() => form.reset(defaultFormValues)} disabled={isLoading}>
                 Reset
             </Button>
             <Button type="submit" disabled={isLoading}>
