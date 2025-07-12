@@ -10,54 +10,70 @@ import { Plane, Loader2 } from "lucide-react";
 import { useState } from 'react';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
 import { db, auth, googleProvider } from '@/lib/firebase';
-import { signInWithPopup, User as FirebaseAuthUser } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
 import type { User } from '@/lib/types';
-import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      if (!email) {
-        setError("Please enter an email address.");
-        setIsLoading(false);
-        return;
-      }
-      
+      // Check if user already exists
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
 
-      if (querySnapshot.empty) {
-        setError("No user found with this email. Please check your credentials or sign up.");
+      if (!querySnapshot.empty) {
+        setError("An account with this email already exists. Please log in.");
         setIsLoading(false);
         return;
       }
       
-      const userDoc = querySnapshot.docs[0];
+      // Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
       
-      localStorage.setItem('loggedInUserId', userDoc.id);
-      
+      // Update profile
+      await updateProfile(firebaseUser, { displayName: name });
+
+      // Create user document in Firestore
+      const newUser: User = {
+        id: firebaseUser.uid,
+        name: name,
+        email: email,
+        avatarUrl: `https://placehold.co/100x100.png`,
+        role: 'Functional'
+      };
+      await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+
+      // Log the user in
+      localStorage.setItem('loggedInUserId', firebaseUser.uid);
       window.location.href = '/dashboard';
 
-    } catch (err) {
-      console.error("Login Error:", err);
-      setError("An error occurred during login. Please try again.");
+    } catch (err: any) {
+      console.error("Signup Error:", err);
+      if (err.code === 'auth/email-already-in-use') {
+        setError("This email is already in use. Please log in.");
+      } else if (err.code === 'auth/weak-password') {
+        setError("Password should be at least 6 characters.");
+      } else {
+        setError("An error occurred during sign up. Please try again.");
+      }
       setIsLoading(false);
     }
   };
-  
+
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     setError('');
@@ -105,13 +121,24 @@ export default function LoginPage() {
                     <Plane className="h-6 w-6" />
                 </div>
             </div>
-          <CardTitle className="text-2xl">AirTrack Login</CardTitle>
+          <CardTitle className="text-2xl">Create an Account</CardTitle>
           <CardDescription>
-            Enter your credentials to access your dashboard.
+            Enter your details to get started.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <form onSubmit={handleEmailSignup} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input 
+                id="name" 
+                type="text" 
+                placeholder="John Doe" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -139,7 +166,7 @@ export default function LoginPage() {
 
             <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Login
+              Sign Up
             </Button>
           </form>
 
@@ -148,7 +175,7 @@ export default function LoginPage() {
                 <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-background px-2 text-muted-foreground">Or sign up with</span>
             </div>
           </div>
         
@@ -160,9 +187,9 @@ export default function LoginPage() {
           </Button>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link href="/signup" className="underline hover:text-primary">
-              Sign up
+            Already have an account?{" "}
+            <Link href="/login" className="underline hover:text-primary">
+              Log in
             </Link>
           </p>
         </CardContent>
