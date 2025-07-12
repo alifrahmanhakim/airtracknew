@@ -117,6 +117,7 @@ export async function addTimKerjaProject(
   projectData: Omit<Project, 'id' | 'projectType' | 'annex' | 'casr' | 'complianceData' | 'adoptionData'>
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   try {
+    // Manually construct the object to ensure no undefined fields
     const preparedProjectData = {
       name: projectData.name,
       description: projectData.description,
@@ -130,12 +131,13 @@ export async function addTimKerjaProject(
         role: member.role,
         avatarUrl: member.avatarUrl,
       })),
-      tasks: projectData.tasks || [],
-      subProjects: projectData.subProjects || [],
-      documents: projectData.documents || [],
-      notes: projectData.notes || '',
       tags: projectData.tags || [],
-      checklist: projectData.checklist || [],
+      // Explicitly set defaults for optional fields
+      tasks: [],
+      subProjects: [],
+      documents: [],
+      notes: '',
+      checklist: [],
     };
     
     const docRef = await addDoc(collection(db, 'timKerjaProjects'), preparedProjectData);
@@ -152,6 +154,7 @@ export async function addRulemakingProject(
   projectData: Omit<Project, 'id' | 'projectType'>
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   try {
+    // Manually construct the object to ensure no undefined fields
     const preparedProjectData = {
       name: projectData.name,
       description: projectData.description,
@@ -167,14 +170,15 @@ export async function addRulemakingProject(
         role: member.role,
         avatarUrl: member.avatarUrl,
       })),
-      tasks: projectData.tasks || [],
-      subProjects: projectData.subProjects || [],
-      documents: projectData.documents || [],
-      notes: projectData.notes || '',
       tags: projectData.tags || [],
-      complianceData: projectData.complianceData || [],
-      adoptionData: projectData.adoptionData || [],
-      checklist: projectData.checklist || [],
+      // Explicitly set defaults for optional fields
+      tasks: [],
+      subProjects: [],
+      documents: [],
+      notes: '',
+      complianceData: [],
+      adoptionData: [],
+      checklist: [],
     };
     
     const docRef = await addDoc(collection(db, 'rulemakingProjects'), preparedProjectData);
@@ -192,6 +196,9 @@ export async function updateProject(
     projectData: Partial<Project>
 ): Promise<{ success: boolean; error?: string }> {
     try {
+        if (!projectData.projectType) {
+            throw new Error("Project type is required to update a project.");
+        }
         const collectionName = projectData.projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
         const projectRef = doc(db, collectionName, projectId);
         
@@ -206,11 +213,12 @@ export async function updateProject(
             }));
         }
         
+        // This is to prevent sending undefined to firestore
         if ('complianceData' in projectData && projectData.complianceData === undefined) {
-            updateData.complianceData = [];
+            delete updateData.complianceData;
         }
         if ('tags' in projectData && projectData.tags === undefined) {
-            updateData.tags = [];
+            delete updateData.tags;
         }
 
         delete updateData.id;
