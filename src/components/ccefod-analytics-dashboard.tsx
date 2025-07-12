@@ -13,11 +13,12 @@ import {
   XAxis,
   YAxis,
   Text,
+  Legend,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CcefodRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 
 type CcefodAnalyticsDashboardProps = {
@@ -93,10 +94,15 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       }))
       .sort((a, b) => b.percentage - a.percentage);
 
-    const topImplementationDescription = implementationPercentages
-      .slice(0, 3)
-      .map(item => `${item.percentage.toFixed(0)}% ${item.name}`)
-      .join(', ');
+    const topImplementationDescription = implementationPercentages.length > 0 ? (
+        <div>
+          {implementationPercentages.slice(0, 3).map(item => (
+            <p key={item.name} className="text-sm text-muted-foreground">
+              <span className="font-bold">{item.percentage.toFixed(0)}%</span> {item.name}
+            </p>
+          ))}
+        </div>
+      ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
 
     return {
       implementationLevelData,
@@ -105,7 +111,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       annexData,
       finalStatusPercentage,
       yaAdaPerubahanPercentage,
-      topImplementationDescription: topImplementationDescription || "No data to describe.",
+      topImplementationDescription: topImplementationDescription,
     };
   }, [records]);
 
@@ -128,6 +134,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
   });
 
   return (
+    <TooltipProvider>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
             <CardHeader>
@@ -230,8 +237,8 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
 
         <Card className="lg:col-span-2">
             <CardHeader>
-            <CardTitle>Level of Implementation Distribution</CardTitle>
-            <CardDescription>{analyticsData.topImplementationDescription}</CardDescription>
+              <CardTitle>Level of Implementation Distribution</CardTitle>
+                {analyticsData.topImplementationDescription}
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
@@ -253,6 +260,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 wrapperStyle={{ zIndex: 1000 }}
                                 content={<ChartTooltipContent indicator="dot" />}
                             />
+                             <Legend content={<ChartLegendContent />} wrapperStyle={{ paddingTop: "80px" }}/>
                             <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
                                 {analyticsData.implementationLevelData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
@@ -264,7 +272,6 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             </CardContent>
         </Card>
     </div>
+    </TooltipProvider>
   );
 }
-
-    
