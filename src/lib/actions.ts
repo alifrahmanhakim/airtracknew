@@ -7,7 +7,7 @@ import {
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
 import {
-    generateChecklist as generateChecklistFlow,
+    generateChecklist as generateChecklistAction,
     type GenerateChecklistInput,
     type GenerateChecklistOutput
 } from '@/ai/flows/generate-checklist';
@@ -46,7 +46,7 @@ export async function generateChecklist(
     error?: string;
   }> {
     try {
-      const result = await generateChecklistFlow(input);
+      const result = await generateChecklistAction(input);
       return { success: true, data: result };
     } catch (error) {
       console.error('AI Checklist Generation Error:', error);
