@@ -14,7 +14,7 @@ import type { User } from "@/lib/types";
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2 } from 'lucide-react';
+import { Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,7 @@ export default function TeamPage() {
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [userToDelete, setUserToDelete] = React.useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -79,7 +80,7 @@ export default function TeamPage() {
 
   const confirmDelete = async () => {
     if (!userToDelete) return;
-
+    setIsDeleting(true);
     const result = await deleteUser(userToDelete.id);
     if (result.success) {
         setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
@@ -87,6 +88,7 @@ export default function TeamPage() {
     } else {
         toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
+    setIsDeleting(false);
     setUserToDelete(null);
   };
 
@@ -171,20 +173,24 @@ export default function TeamPage() {
       </Card>
       
        <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user account for <span className="font-semibold">{userToDelete?.name}</span> and remove them from all projects.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
+            <AlertDialogContent>
+                <AlertDialogHeader className="text-center items-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                        <AlertTriangle className="h-6 w-6 text-red-600" />
+                    </div>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the user account for <span className="font-semibold">{userToDelete?.name}</span> and remove them from all projects.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
+                        {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
       </AlertDialog>
     </div>
   );

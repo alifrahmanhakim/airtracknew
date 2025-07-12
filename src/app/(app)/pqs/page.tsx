@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, FileSpreadsheet } from 'lucide-react';
+import { Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PqsForm } from '@/components/pqs-form';
@@ -215,19 +215,22 @@ export default function PqsPage() {
        
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
             <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the PQ record with number <span className="font-semibold">{recordToDelete?.pqNumber}</span>.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
-                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Delete
-                </AlertDialogAction>
-            </AlertDialogFooter>
+                <AlertDialogHeader className="text-center items-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                        <AlertTriangle className="h-6 w-6 text-red-600" />
+                    </div>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the PQ record with number <span className="font-semibold">{recordToDelete?.pqNumber}</span>.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
+                        {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
 

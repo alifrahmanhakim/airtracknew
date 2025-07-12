@@ -52,6 +52,7 @@ import {
   ArrowRight,
   CheckCircle,
   Flag,
+  AlertTriangle,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -558,59 +559,68 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the document link
-              for <span className="font-semibold">{docToDelete?.name}</span>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteDocument} className={buttonVariants({ variant: 'destructive' })}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
+            <AlertDialogHeader className="text-center items-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the document link
+                    for <span className="font-semibold">{docToDelete?.name}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteDocument} className={buttonVariants({ variant: 'destructive' })}>
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       
       <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the task
-              <span className="font-semibold"> "{taskToDelete?.title}"</span>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteTask} className={buttonVariants({ variant: 'destructive' })}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
+            <AlertDialogHeader className="text-center items-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the task
+                    <span className="font-semibold"> "{taskToDelete?.title}"</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteTask} className={buttonVariants({ variant: 'destructive' })}>
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the project <span className="font-semibold">"{project.name}"</span> and all of its associated data, including tasks, documents, and sub-projects.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingProject}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isDeletingProject}
-              onClick={handleDeleteProject}
-              className={buttonVariants({ variant: 'destructive' })}
-            >
-              {isDeletingProject && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete Project
-            </AlertDialogAction>
-          </AlertDialogFooter>
+            <AlertDialogHeader className="text-center items-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the project <span className="font-semibold">"{project.name}"</span> and all of its associated data, including tasks, documents, and sub-projects.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeletingProject}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                disabled={isDeletingProject}
+                onClick={handleDeleteProject}
+                className={buttonVariants({ variant: 'destructive' })}
+                >
+                {isDeletingProject && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Delete Project
+                </AlertDialogAction>
+            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
