@@ -260,7 +260,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 wrapperStyle={{ zIndex: 1000 }}
                                 content={<ChartTooltipContent indicator="dot" />}
                             />
-                             <Legend content={<ChartLegendContent />} wrapperStyle={{ paddingTop: "80px" }}/>
+                             <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: "80px" }}/>
                             <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
                                 {analyticsData.implementationLevelData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
