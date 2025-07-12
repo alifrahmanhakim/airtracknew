@@ -112,21 +112,33 @@ export async function addProject(
     projectData: Omit<Project, 'id'>
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
     try {
-      // Ensure all optional arrays are initialized to empty arrays if undefined
-      const preparedProjectData = {
-        ...projectData,
+      // Reconstruct the object to ensure no undefined fields are passed to Firestore.
+      const preparedProjectData: Omit<Project, 'id'> = {
+        name: projectData.name,
+        description: projectData.description,
+        ownerId: projectData.ownerId,
+        startDate: projectData.startDate,
+        endDate: projectData.endDate,
+        status: projectData.status,
+        projectType: projectData.projectType,
         team: projectData.team.map(member => ({
           id: member.id,
           name: member.name,
           role: member.role,
           avatarUrl: member.avatarUrl,
         })),
+        tasks: projectData.tasks || [],
+        subProjects: projectData.subProjects || [],
+        documents: projectData.documents || [],
+        notes: projectData.notes || '',
+        annex: projectData.annex || '',
+        casr: projectData.casr || '',
+        tags: projectData.tags || [],
         complianceData: projectData.complianceData || [],
         adoptionData: projectData.adoptionData || [],
         checklist: projectData.checklist || [],
-        tags: projectData.tags || [],
       };
-
+      
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
       revalidatePath('/dashboard');
       revalidatePath('/projects');
