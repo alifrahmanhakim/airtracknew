@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { updateProject } from '@/lib/actions';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Checkbox } from './ui/checkbox';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -57,6 +58,7 @@ const projectSchema = z.object({
   annex: z.string().optional(),
   casr: z.string().optional(),
   tags: z.string().optional(),
+  isHighPriority: z.boolean().default(false),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -76,6 +78,8 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
     value: user.id,
     label: user.name || user.email || user.id,
   }));
+  
+  const highPriorityTag = 'High Priority';
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -91,7 +95,8 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
       projectType: project.projectType,
       annex: project.annex,
       casr: project.casr,
-      tags: project.tags?.join(', '),
+      tags: project.tags?.filter(t => t.toLowerCase() !== highPriorityTag.toLowerCase()).join(', '),
+      isHighPriority: project.tags?.some(t => t.toLowerCase() === highPriorityTag.toLowerCase()),
     },
   });
 
@@ -102,6 +107,12 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
     
     const updatedTeam = data.team.map(userId => allUsers.find(u => u.id === userId)).filter(Boolean) as User[];
     
+    const existingTags = data.tags ? data.tags.split(',').map(tag => tag.trim()) : [];
+    let finalTags = existingTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
+    if (data.isHighPriority) {
+        finalTags.push(highPriorityTag);
+    }
+
     const projectUpdateData: Partial<Project> = { 
         name: data.name,
         description: data.description,
@@ -114,7 +125,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
         projectType: data.projectType,
         annex: data.annex,
         casr: data.casr,
-        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
+        tags: finalTags,
     };
     
     const result = await updateProject(project.id, projectUpdateData);
@@ -371,11 +382,31 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags</FormLabel>
+                  <FormLabel>Other Tags (comma-separated)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., High Priority, Core, Technical" {...field} />
+                    <Input placeholder="e.g., Core, Technical" {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isHighPriority"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border p-3 shadow-sm">
+                    <FormControl>
+                        <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                        <FormLabel>
+                           Mark as High Priority
+                        </FormLabel>
+                    </div>
                 </FormItem>
               )}
             />

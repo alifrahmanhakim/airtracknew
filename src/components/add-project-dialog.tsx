@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { addProject } from '@/lib/actions';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Checkbox } from './ui/checkbox';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -47,6 +48,7 @@ const projectSchema = z.object({
   annex: z.string().optional(),
   casr: z.string().optional(),
   tags: z.string().optional(),
+  isHighPriority: z.boolean().default(false),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -76,6 +78,7 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       annex: '',
       casr: '',
       tags: '',
+      isHighPriority: false,
     },
   });
 
@@ -99,6 +102,14 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       .map(userId => allUsers.find(u => u.id === userId))
       .filter((user): user is User => user !== undefined);
 
+    const existingTags = data.tags ? data.tags.split(',').map(tag => tag.trim()) : [];
+    const highPriorityTag = 'High Priority';
+    
+    let finalTags = existingTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
+    if (data.isHighPriority) {
+        finalTags.push(highPriorityTag);
+    }
+
     const newProjectData: Omit<Project, 'id'> = {
       name: data.name,
       description: data.description,
@@ -114,7 +125,7 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       projectType: data.projectType,
       annex: data.annex || '',
       casr: data.casr || '',
-      tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
+      tags: finalTags,
       complianceData: [],
       adoptionData: [],
     };
@@ -350,11 +361,31 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags</FormLabel>
+                  <FormLabel>Other Tags (comma-separated)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., High Priority, Core, Technical" {...field} />
+                    <Input placeholder="e.g., Core, Technical" {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isHighPriority"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border p-3 shadow-sm">
+                    <FormControl>
+                        <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                        <FormLabel>
+                           Mark as High Priority
+                        </FormLabel>
+                    </div>
                 </FormItem>
               )}
             />
