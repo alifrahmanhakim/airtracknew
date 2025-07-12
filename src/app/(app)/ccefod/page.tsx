@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CcefodRecordsTable } from '@/components/ccefod-records-table';
 import type { CcefodFormValues } from '@/components/ccefod-form';
+import { CcefodAnalyticsDashboard } from '@/components/ccefod-analytics-dashboard';
 
 export default function CcefodPage() {
   const [records, setRecords] = useState<CcefodFormValues[]>([]);
@@ -28,6 +29,7 @@ export default function CcefodPage() {
             <TabsList>
                 <TabsTrigger value="form">Input Form</TabsTrigger>
                 <TabsTrigger value="records">Records</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
         </div>
         <TabsContent value="form">
@@ -55,6 +57,19 @@ export default function CcefodPage() {
                 <CcefodRecordsTable records={records} />
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="analytics">
+            <Card>
+                <CardHeader>
+                    <CardTitle>CC/EFOD Analytics Dashboard</CardTitle>
+                    <CardDescription>
+                        Visualisasi data dari catatan yang telah dimasukkan.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <CcefodAnalyticsDashboard records={records} />
+                </CardContent>
+            </Card>
         </TabsContent>
       </Tabs>
     </div>
