@@ -28,6 +28,7 @@ import {
 import { Loader2, Printer } from 'lucide-react';
 import { ImportCcefodCsvDialog } from '@/components/import-ccefod-csv-dialog';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 
 export default function CcefodPage() {
@@ -129,7 +130,7 @@ export default function CcefodPage() {
                   </TabsList>
                 </div>
             </div>
-            <TabsContent value="form" data-print-content="form" className={activeTab !== 'form' ? 'print:hidden' : ''}>
+            <TabsContent value="form" className={cn(activeTab !== 'form' && 'print:hidden')}>
             <Card className="max-w-4xl mx-auto">
                 <CardHeader>
                 <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
@@ -142,7 +143,7 @@ export default function CcefodPage() {
                 </CardContent>
             </Card>
             </TabsContent>
-            <TabsContent value="records" data-print-content="records" className={activeTab !== 'records' ? 'print:hidden' : ''}>
+            <TabsContent value="records" className={cn(activeTab !== 'records' && 'print:hidden')}>
             <Card>
                 <CardHeader>
                     <div className='flex justify-between items-start'>
@@ -163,7 +164,7 @@ export default function CcefodPage() {
                 </CardContent>
             </Card>
             </TabsContent>
-            <TabsContent value="analytics" data-print-content="analytics" className={activeTab !== 'analytics' ? 'print:hidden' : ''}>
+            <TabsContent value="analytics" className={cn(activeTab !== 'analytics' && 'print:hidden')}>
                 <Card>
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
