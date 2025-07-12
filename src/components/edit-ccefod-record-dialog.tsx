@@ -88,12 +88,14 @@ export function EditCcefodRecordDialog({ record, onRecordUpdate }: EditCcefodRec
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 min-h-0">
-                <ScrollArea className="h-full pr-6">
-                    <div className="space-y-8 py-4">
-                        <CcefodSharedFormFields form={form} />
-                    </div>
-                </ScrollArea>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
+                <div className='flex-1 min-h-0'>
+                    <ScrollArea className="h-full pr-6">
+                        <div className="space-y-8 py-4">
+                            <CcefodSharedFormFields form={form} />
+                        </div>
+                    </ScrollArea>
+                </div>
                 <DialogFooter className="pt-4 border-t mt-4">
                     <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
                         Cancel
