@@ -18,6 +18,7 @@ import {
   max,
   min,
   addMonths,
+  addYears,
   isSameDay,
   startOfDay,
   eachWeekOfInterval,
@@ -59,8 +60,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
   const allUsers = React.useMemo(() => {
-    // In a real app with more complex user data, you might fetch this from a context or a dedicated source.
-    // For now, we can only infer users from the tasks, which is limited.
     return [];
   }, []);
 
@@ -76,16 +75,25 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
         return dateA - dateB;
     });
 
-    const now = new Date();
-    const tStart = startOfISOWeek(addMonths(now, -6));
-    const tEnd = endOfISOWeek(addMonths(now, 6));
+    let tStart, tEnd;
+
+    if (validTasks.length > 0) {
+      const allDates = validTasks.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
+      const earliestDate = min(allDates);
+      tStart = startOfISOWeek(earliestDate);
+      tEnd = endOfISOWeek(addYears(earliestDate, 1));
+    } else {
+      const now = new Date();
+      tStart = startOfISOWeek(addMonths(now, -6));
+      tEnd = endOfISOWeek(addMonths(now, 6));
+    }
     
     const monthInterval = eachMonthOfInterval({ start: tStart, end: tEnd });
     const dayInterval = eachDayOfInterval({ start: tStart, end: tEnd });
     const weekInterval = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
     
     const diffDays = differenceInDays(tEnd, tStart) + 1;
-    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tEnd) + 1;
+    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tStart) + 1;
 
     return { 
         sortedTasks: sorted, 
