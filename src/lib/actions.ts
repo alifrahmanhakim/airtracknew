@@ -47,7 +47,8 @@ export async function getAiSummary(
 
 export async function addDocument(
   projectId: string,
-  documentData: { name: string, url: string }
+  documentData: { name: string, url: string },
+  projectType: Project['projectType']
 ): Promise<{ success: boolean; data?: Document; error?: string }> {
   try {
     const getFileType = (fileName: string): Document['type'] => {
@@ -67,7 +68,8 @@ export async function addDocument(
       uploadDate: new Date().toISOString(),
     };
 
-    const projectRef = doc(db, 'projects', projectId);
+    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
     await updateDoc(projectRef, {
       documents: arrayUnion(newDocument)
     });
@@ -87,10 +89,12 @@ export async function addDocument(
 
 export async function deleteDocument(
     projectId: string,
-    documentId: string
+    documentId: string,
+    projectType: Project['projectType']
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const projectRef = doc(db, collectionName, projectId);
         const projectSnap = await getDoc(projectRef);
         if (projectSnap.exists()) {
             const project = projectSnap.data() as Project;
@@ -225,18 +229,13 @@ export async function updateProject(
 }
 
 export async function deleteProject(
-    projectId: string
+    projectId: string,
+    projectType: Project['projectType']
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const docRefR = doc(db, 'rulemakingProjects', projectId);
-        const docRefT = doc(db, 'timKerjaProjects', projectId);
-
-        const snapR = await getDoc(docRefR);
-        if (snapR.exists()) {
-            await deleteDoc(docRefR);
-        } else {
-            await deleteDoc(docRefT);
-        }
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const docRef = doc(db, collectionName, projectId);
+        await deleteDoc(docRef);
 
         revalidatePath('/dashboard');
         revalidatePath('/rulemaking');
@@ -617,5 +616,3 @@ export async function importPqRecords(records: PqFormValues[]): Promise<{ succes
     return { success: false, count: 0, error: `Failed to import records: ${message}` };
   }
 }
-
-    

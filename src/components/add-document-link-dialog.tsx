@@ -26,7 +26,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Link as LinkIcon } from 'lucide-react';
-import type { Document as ProjectDocument } from '@/lib/types';
+import type { Document as ProjectDocument, Project } from '@/lib/types';
 import { addDocument } from '@/lib/actions';
 
 const documentLinkSchema = z.object({
@@ -38,10 +38,11 @@ type DocumentLinkFormValues = z.infer<typeof documentLinkSchema>;
 
 type AddDocumentLinkDialogProps = {
   projectId: string;
+  projectType: Project['projectType'];
   onDocumentAdd: (newDocument: ProjectDocument) => void;
 };
 
-export function AddDocumentLinkDialog({ projectId, onDocumentAdd }: AddDocumentLinkDialogProps) {
+export function AddDocumentLinkDialog({ projectId, projectType, onDocumentAdd }: AddDocumentLinkDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -57,7 +58,7 @@ export function AddDocumentLinkDialog({ projectId, onDocumentAdd }: AddDocumentL
   const onSubmit = async (data: DocumentLinkFormValues) => {
     setIsSubmitting(true);
     
-    const result = await addDocument(projectId, data);
+    const result = await addDocument(projectId, data, projectType);
     
     setIsSubmitting(false);
 

@@ -122,7 +122,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     if (!docToDelete) return;
 
     setIsDeletingDoc(docToDelete.id);
-    const result = await deleteDocument(project.id, docToDelete.id);
+    const result = await deleteDocument(project.id, docToDelete.id, project.projectType);
     setIsDeletingDoc(null);
 
     if (result.success) {
@@ -384,7 +384,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 <CardTitle className="flex items-center gap-2">
                     <Paperclip /> {documentsCardTitle}
                 </CardTitle>
-                <AddDocumentLinkDialog projectId={project.id} onDocumentAdd={handleDocumentAdd} />
+                <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
              </CardHeader>
              <CardContent>
                 <div className="space-y-4">
@@ -606,5 +606,3 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     </TooltipProvider>
   );
 }
-
-    
