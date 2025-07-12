@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import type { Project, Task, User, SubProject, Document as ProjectDocument, ComplianceDataRow } from '@/lib/types';
-import { findUserById, aggregateComplianceData, taskOptions as standardTaskOptions } from '@/lib/data';
+import { findUserById, aggregateComplianceData, rulemakingTaskOptions } from '@/lib/data';
 import {
   Card,
   CardContent,
@@ -172,7 +172,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
   const handleDeleteProject = async () => {
     setIsDeletingProject(true);
-    const result = await deleteProject(project.id);
+    const result = await deleteProject(project.id, project.projectType);
     setIsDeletingProject(false);
 
     if (result.success) {
@@ -235,9 +235,9 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
 
   const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
-  const currentTaskIndex = standardTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
-  const currentTask = currentTaskIndex !== -1 ? standardTaskOptions[currentTaskIndex] : null;
-  const nextTask = currentTaskIndex !== -1 && currentTaskIndex < standardTaskOptions.length - 1 ? standardTaskOptions[currentTaskIndex + 1] : null;
+  const currentTaskIndex = rulemakingTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
+  const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
+  const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
 
   return (
     <TooltipProvider>

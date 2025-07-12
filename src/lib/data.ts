@@ -10,7 +10,7 @@ export const users: User[] = [
   { id: 'user-4', name: 'Patricia Williams', email: 'patricia.williams@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
 ];
 
-export const taskOptions: ComboboxOption[] = [
+export const rulemakingTaskOptions: ComboboxOption[] = [
     { value: 'Gap Analysis', label: 'Gap Analysis' },
     { value: 'Penyusunan Draft', label: 'Penyusunan Draft' },
     { value: 'Diskusi dengan SME', label: 'Diskusi dengan SME' },
@@ -24,6 +24,18 @@ export const taskOptions: ComboboxOption[] = [
     { value: 'Evaluasi oleh Kumham', label: 'Evaluasi oleh Kumham' },
     { value: 'Setneg dan Pengesahan', label: 'Setneg dan Pengesahan' },
     { value: 'Sosialisasi oleh Direktorat', label: 'Sosialisasi oleh Direktorat' },
+];
+
+export const timKerjaTaskOptions: ComboboxOption[] = [
+    { value: 'Initial Planning', label: 'Initial Planning' },
+    { value: 'Requirement Gathering', label: 'Requirement Gathering' },
+    { value: 'Design Phase', label: 'Design Phase' },
+    { value: 'Development Sprint 1', label: 'Development Sprint 1' },
+    { value: 'Development Sprint 2', label: 'Development Sprint 2' },
+    { value: 'Testing & QA', label: 'Testing & QA' },
+    { value: 'User Acceptance Testing (UAT)', label: 'User Acceptance Testing (UAT)' },
+    { value: 'Deployment', label: 'Deployment' },
+    { value: 'Post-launch Support', label: 'Post-launch Support' },
 ];
 
 // This data can be used to seed your Firestore database.

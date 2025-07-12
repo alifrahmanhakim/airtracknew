@@ -16,7 +16,7 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { AddRulemakingProjectDialog } from './add-rulemaking-project-dialog';
-import { taskOptions } from '@/lib/data';
+import { rulemakingTaskOptions } from '@/lib/data';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -193,9 +193,9 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                          })[0];
 
                        const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
-                       const currentTaskIndex = taskOptions.findIndex(option => !doneTaskTitles.has(option.value));
-                       const currentTask = currentTaskIndex !== -1 ? taskOptions[currentTaskIndex] : null;
-                       const nextTask = currentTaskIndex !== -1 && currentTaskIndex < taskOptions.length - 1 ? taskOptions[currentTaskIndex + 1] : null;
+                       const currentTaskIndex = rulemakingTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
+                       const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
+                       const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
                        
                        return (
                         <Link href={`/projects/${project.id}?type=rulemaking`} key={project.id} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg">

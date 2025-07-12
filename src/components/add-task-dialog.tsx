@@ -39,7 +39,7 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { addTask } from '@/lib/actions';
 import { Combobox } from './ui/combobox';
-import { taskOptions as defaultTaskOptions } from '@/lib/data';
+import { rulemakingTaskOptions, timKerjaTaskOptions } from '@/lib/data';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
@@ -59,8 +59,6 @@ type AddTaskDialogProps = {
   onTaskAdd: (newTask: Task) => void;
   teamMembers: User[];
 };
-
-const taskOptions = defaultTaskOptions;
 
 export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false);
@@ -105,6 +103,8 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
         });
     }
   };
+  
+  const taskOptions = projectType === 'Rulemaking' ? rulemakingTaskOptions : timKerjaTaskOptions;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
