@@ -112,6 +112,7 @@ export async function addProject(
     projectData: Omit<Project, 'id'>
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
     try {
+      // Ensure all optional arrays are initialized to empty arrays if undefined
       const preparedProjectData = {
         ...projectData,
         team: projectData.team.map(member => ({
