@@ -38,6 +38,7 @@ import type { User } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { format } from 'date-fns';
 
 const navItems = {
     dashboards: [
@@ -52,6 +53,22 @@ const navItems = {
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
     ]
 }
+
+function LiveClock() {
+    const [time, setTime] = React.useState(new Date());
+
+    React.useEffect(() => {
+        const timerId = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timerId);
+    }, []);
+
+    return (
+        <div className="text-xs font-mono text-muted-foreground">
+            {format(time, 'HH:mm:ss')}
+        </div>
+    )
+}
+
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -103,11 +120,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground">
-                <Plane className="h-5 w-5" />
-            </Button>
-            <span className="text-lg font-semibold">AirTrack</span>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground">
+                  <Plane className="h-5 w-5" />
+              </Button>
+              <span className="text-lg font-semibold">AirTrack</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <LiveClock />
+                <SidebarTrigger />
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -171,7 +194,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
-            <SidebarTrigger />
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
