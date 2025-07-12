@@ -30,9 +30,9 @@ export default function RulemakingDashboard() {
           const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
           setAllUsers(usersFromDb);
 
-          // Fetch projects
-          const projectsQuerySnapshot = await getDocs(collection(db, "projects"));
-          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+          // Fetch Rulemaking projects
+          const projectsQuerySnapshot = await getDocs(collection(db, "rulemakingProjects"));
+          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project));
           
           const projectsWithDefaults = projectsFromDb.map(p => ({
             ...p,
@@ -41,8 +41,7 @@ export default function RulemakingDashboard() {
           }));
 
           const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
-          const filteredProjects = userVisibleProjects.filter(p => p.projectType === 'Rulemaking');
-          setRulemakingProjects(filteredProjects);
+          setRulemakingProjects(userVisibleProjects);
         } catch (error) {
           console.error("Error fetching projects from Firestore:", error);
         }

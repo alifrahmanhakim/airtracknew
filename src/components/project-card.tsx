@@ -45,13 +45,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   const displayName = projectType === 'Rulemaking' ? `CASR ${casr}` : name;
   const displayDescription = projectType === 'Rulemaking' ? `Annex ${annex} - ${name}` : project.description;
+  const projectLink = projectType === 'Rulemaking' ? `/projects/${project.id}?type=rulemaking` : `/projects/${project.id}?type=timkerja`;
 
   return (
     <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-bold leading-snug">
-             <Link href={`/projects/${project.id}`} className="hover:underline hover:text-primary">
+             <Link href={projectLink} className="hover:underline hover:text-primary">
                 {displayName}
             </Link>
           </CardTitle>

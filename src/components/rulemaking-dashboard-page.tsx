@@ -15,7 +15,7 @@ import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { AddProjectDialog } from './add-project-dialog';
+import { AddRulemakingProjectDialog } from './add-rulemaking-project-dialog';
 import { taskOptions } from '@/lib/data';
 
 type RulemakingDashboardPageProps = {
@@ -88,7 +88,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                 <AddProjectDialog allUsers={allUsers} />
+                 <AddRulemakingProjectDialog allUsers={allUsers} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -164,7 +164,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                         </CardHeader>
                         <CardContent className="space-y-3">
                            {stats.highPriority.length > 0 ? stats.highPriority.map(p => (
-                               <Link key={p.id} href={`/projects/${p.id}`}>
+                               <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`}>
                                 <div className='p-3 rounded-md bg-red-50 border border-red-200 hover:bg-red-100 cursor-pointer'>
                                     <p className='font-bold text-red-800'>CASR {p.casr}</p>
                                     <p className='text-sm text-red-700 truncate'>{p.name}</p>
@@ -198,7 +198,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                        const nextTask = currentTaskIndex !== -1 && currentTaskIndex < taskOptions.length - 1 ? taskOptions[currentTaskIndex + 1] : null;
                        
                        return (
-                        <Link href={`/projects/${project.id}`} key={project.id} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg">
+                        <Link href={`/projects/${project.id}?type=rulemaking`} key={project.id} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg">
                             <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
                                 <CardHeader className="pb-4">
                                     <div className="flex justify-between items-start">

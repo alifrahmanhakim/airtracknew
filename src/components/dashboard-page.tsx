@@ -9,13 +9,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  BarChart as BarChartIcon,
-  CheckCircle,
-  FolderKanban,
-  Users,
-  ListTodo,
-  Frown,
   AlarmClockOff,
+  Frown,
+  FolderKanban,
+  ListTodo,
 } from 'lucide-react';
 import type { Project, User } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -28,7 +25,7 @@ import {
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
-import { AddProjectDialog } from './add-project-dialog';
+import { AddTimKerjaProjectDialog } from './add-tim-kerja-project-dialog';
 
 type DashboardPageProps = {
   projects: Project[];
@@ -71,7 +68,7 @@ export function DashboardPage({ projects, users }: DashboardPageProps) {
                 <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
                 <p className="text-muted-foreground">An overview of all team-based projects.</p>
             </div>
-            <AddProjectDialog allUsers={users} />
+            <AddTimKerjaProjectDialog allUsers={users} />
         </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

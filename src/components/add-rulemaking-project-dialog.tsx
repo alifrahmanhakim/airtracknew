@@ -27,15 +27,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import type { Project, User } from '@/lib/types';
+import type { User } from '@/lib/types';
 import { CalendarIcon, Loader2, Plus } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
-import { addProject } from '@/lib/actions';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { addRulemakingProject } from '@/lib/actions';
 import { Checkbox } from './ui/checkbox';
 
 const projectSchema = z.object({
@@ -44,20 +43,19 @@ const projectSchema = z.object({
   startDate: z.date({ required_error: 'Start date is required.' }),
   endDate: z.date({ required_error: 'End date is required.' }),
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  projectType: z.enum(['Rulemaking', 'Tim Kerja'], { required_error: 'You must select a project type.' }),
-  annex: z.string().optional(),
-  casr: z.string().optional(),
+  annex: z.string().min(1, 'Annex is required.'),
+  casr: z.string().min(1, 'CASR is required.'),
   tags: z.string().optional(),
   isHighPriority: z.boolean().default(false),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
-type AddProjectDialogProps = {
+type AddRulemakingProjectDialogProps = {
   allUsers: User[];
 };
 
-export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
+export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -74,15 +72,12 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       name: '',
       description: '',
       team: [],
-      projectType: 'Tim Kerja',
       annex: '',
       casr: '',
       tags: '',
       isHighPriority: false,
     },
   });
-
-  const projectType = form.watch('projectType');
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
@@ -111,28 +106,27 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
         finalTags.push(highPriorityTag);
     }
 
-    const newProjectData: Omit<Project, 'id'> = {
+    const newProjectData = {
       name: data.name,
       description: data.description,
       ownerId: ownerId,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-      status: 'On Track',
+      status: 'On Track' as const,
       team: teamMembers,
+      annex: data.annex,
+      casr: data.casr,
+      tags: finalTags,
       tasks: [],
       subProjects: [],
       documents: [],
       notes: '',
-      projectType: data.projectType,
-      annex: data.annex,
-      casr: data.casr,
-      tags: finalTags,
       complianceData: [],
       adoptionData: [],
       checklist: [],
     };
     
-    const result = await addProject(newProjectData);
+    const result = await addRulemakingProject(newProjectData);
 
     setIsSubmitting(false);
 
@@ -158,49 +152,18 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Project
+          Add Rulemaking Project
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Project</DialogTitle>
+          <DialogTitle>Add New Rulemaking Project</DialogTitle>
           <DialogDescription>
-            Fill in the details for the new project.
+            Fill in the details for the new rulemaking project.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 pr-2">
-            <FormField
-              control={form.control}
-              name="projectType"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Project Type</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex space-x-4"
-                    >
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Tim Kerja" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Tim Kerja</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Rulemaking" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Rulemaking</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
             <FormField
               control={form.control}
               name="name"
@@ -214,38 +177,34 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                 </FormItem>
               )}
             />
-
-            {projectType === 'Rulemaking' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <FormField
-                  control={form.control}
-                  name="annex"
-                  render={({ field }) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="annex"
+                render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Annex</FormLabel>
-                      <FormControl>
+                    <FormLabel>Annex</FormLabel>
+                    <FormControl>
                         <Input placeholder="e.g., 1" {...field} />
-                      </FormControl>
-                      <FormMessage />
+                    </FormControl>
+                    <FormMessage />
                     </FormItem>
-                  )}
+                )}
                 />
-                 <FormField
-                  control={form.control}
-                  name="casr"
-                  render={({ field }) => (
+                <FormField
+                control={form.control}
+                name="casr"
+                render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CASR</FormLabel>
-                      <FormControl>
+                    <FormLabel>CASR</FormLabel>
+                    <FormControl>
                         <Input placeholder="e.g., 61" {...field} />
-                      </FormControl>
-                      <FormMessage />
+                    </FormControl>
+                    <FormMessage />
                     </FormItem>
-                  )}
+                )}
                 />
-              </div>
-            )}
-
+            </div>
             <FormField
               control={form.control}
               name="description"
@@ -259,7 +218,6 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                 </FormItem>
               )}
             />
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -338,7 +296,6 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                 )}
               />
             </div>
-            
             <FormField
               control={form.control}
               name="team"
@@ -357,7 +314,6 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="tags"
@@ -371,7 +327,6 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="isHighPriority"
@@ -391,7 +346,6 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
                 </FormItem>
               )}
             />
-
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

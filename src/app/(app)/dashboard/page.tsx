@@ -30,9 +30,9 @@ export default function Dashboard() {
           const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
           setAllUsers(usersFromDb);
 
-          // Fetch projects
-          const projectsQuerySnapshot = await getDocs(collection(db, "projects"));
-          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+          // Fetch Tim Kerja projects
+          const projectsQuerySnapshot = await getDocs(collection(db, "timKerjaProjects"));
+          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
           
           const projectsWithDefaults = projectsFromDb.map(p => ({
             ...p,
@@ -41,9 +41,7 @@ export default function Dashboard() {
           }));
 
           const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
-          // Filter for "Tim Kerja" projects for this dashboard
-          const timKerjaProjects = userVisibleProjects.filter(p => p.projectType === 'Tim Kerja');
-          setUserProjects(timKerjaProjects);
+          setUserProjects(userVisibleProjects);
         } catch (error) {
           console.error("Error fetching data from Firestore:", error);
         }

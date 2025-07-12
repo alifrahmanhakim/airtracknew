@@ -108,51 +108,79 @@ export async function deleteDocument(
     }
 }
 
-export async function addProject(
-    projectData: Omit<Project, 'id'>
-  ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
-    try {
-      // Reconstruct the object to ensure no undefined fields are passed to Firestore.
-      // This is the definitive fix for the "Unsupported field value: undefined" error.
-      const preparedProjectData: Omit<Project, 'id'> = {
-        name: projectData.name,
-        description: projectData.description,
-        ownerId: projectData.ownerId,
-        startDate: projectData.startDate,
-        endDate: projectData.endDate,
-        status: projectData.status,
-        projectType: projectData.projectType,
-        team: projectData.team.map(member => ({
-          id: member.id,
-          name: member.name,
-          role: member.role,
-          avatarUrl: member.avatarUrl,
-        })),
-        tasks: projectData.tasks || [],
-        subProjects: projectData.subProjects || [],
-        documents: projectData.documents || [],
-        notes: projectData.notes || '',
-        annex: projectData.annex || '',
-        casr: projectData.casr || '',
-        tags: projectData.tags || [],
-        complianceData: projectData.complianceData || [],
-        adoptionData: projectData.adoptionData || [],
-        checklist: projectData.checklist || [],
-      };
-      
-      const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);
-      revalidatePath('/dashboard');
-      revalidatePath('/projects');
-      revalidatePath('/rulemaking');
-      return { success: true, data: { id: docRef.id } };
-    } catch (error) {
-      console.error('Add Project Error:', error);
-      const message = error instanceof Error ? error.message : 'An unknown error occurred';
-      return {
-        success: false,
-        error: `Failed to add project: ${message}`,
-      };
-    }
+
+export async function addTimKerjaProject(
+  projectData: Omit<Project, 'id' | 'projectType' | 'annex' | 'casr' | 'complianceData' | 'adoptionData'>
+): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
+  try {
+    const preparedProjectData = {
+      name: projectData.name,
+      description: projectData.description,
+      ownerId: projectData.ownerId,
+      startDate: projectData.startDate,
+      endDate: projectData.endDate,
+      status: projectData.status,
+      team: projectData.team.map(member => ({
+        id: member.id,
+        name: member.name,
+        role: member.role,
+        avatarUrl: member.avatarUrl,
+      })),
+      tasks: projectData.tasks || [],
+      subProjects: projectData.subProjects || [],
+      documents: projectData.documents || [],
+      notes: projectData.notes || '',
+      tags: projectData.tags || [],
+      checklist: projectData.checklist || [],
+    };
+    
+    const docRef = await addDoc(collection(db, 'timKerjaProjects'), preparedProjectData);
+    revalidatePath('/dashboard');
+    return { success: true, data: { id: docRef.id } };
+  } catch (error) {
+    console.error('Add Tim Kerja Project Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, error: `Failed to add project: ${message}` };
+  }
+}
+
+export async function addRulemakingProject(
+  projectData: Omit<Project, 'id' | 'projectType'>
+): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
+  try {
+    const preparedProjectData = {
+      name: projectData.name,
+      description: projectData.description,
+      ownerId: projectData.ownerId,
+      startDate: projectData.startDate,
+      endDate: projectData.endDate,
+      status: projectData.status,
+      annex: projectData.annex || '',
+      casr: projectData.casr || '',
+      team: projectData.team.map(member => ({
+        id: member.id,
+        name: member.name,
+        role: member.role,
+        avatarUrl: member.avatarUrl,
+      })),
+      tasks: projectData.tasks || [],
+      subProjects: projectData.subProjects || [],
+      documents: projectData.documents || [],
+      notes: projectData.notes || '',
+      tags: projectData.tags || [],
+      complianceData: projectData.complianceData || [],
+      adoptionData: projectData.adoptionData || [],
+      checklist: projectData.checklist || [],
+    };
+    
+    const docRef = await addDoc(collection(db, 'rulemakingProjects'), preparedProjectData);
+    revalidatePath('/rulemaking');
+    return { success: true, data: { id: docRef.id } };
+  } catch (error) {
+    console.error('Add Rulemaking Project Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, error: `Failed to add project: ${message}` };
+  }
 }
 
 export async function updateProject(
@@ -160,7 +188,8 @@ export async function updateProject(
     projectData: Partial<Project>
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
+        const collectionName = projectData.projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        const projectRef = doc(db, collectionName, projectId);
         
         const updateData: { [key: string]: any } = { ...projectData };
 
@@ -173,7 +202,6 @@ export async function updateProject(
             }));
         }
         
-        // Ensure optional fields are not undefined
         if ('complianceData' in projectData && projectData.complianceData === undefined) {
             updateData.complianceData = [];
         }
@@ -181,8 +209,8 @@ export async function updateProject(
             updateData.tags = [];
         }
 
-        // Remove id from the update payload as we don't want to update the document id
         delete updateData.id;
+        delete updateData.projectType; // Do not store projectType in the document
         
         await updateDoc(projectRef, updateData);
         revalidatePath(`/projects/${projectId}`);
@@ -200,8 +228,16 @@ export async function deleteProject(
     projectId: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const projectRef = doc(db, 'projects', projectId);
-        await deleteDoc(projectRef);
+        const docRefR = doc(db, 'rulemakingProjects', projectId);
+        const docRefT = doc(db, 'timKerjaProjects', projectId);
+
+        const snapR = await getDoc(docRefR);
+        if (snapR.exists()) {
+            await deleteDoc(docRefR);
+        } else {
+            await deleteDoc(docRefT);
+        }
+
         revalidatePath('/dashboard');
         revalidatePath('/rulemaking');
         revalidatePath('/projects');
