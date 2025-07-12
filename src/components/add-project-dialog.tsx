@@ -59,7 +59,7 @@ type AddProjectDialogProps = {
 
 export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
