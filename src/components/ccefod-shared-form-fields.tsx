@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextInput } from './ui/rich-text-input';
 
 export const formSchema = z.object({
     adaPerubahan: z.enum(['YA', 'TIDAK']),
@@ -27,7 +28,9 @@ export const formSchema = z.object({
     isiUsulan: z.string().optional(),
     annex: z.string().min(1, 'Annex is required'),
     annexReference: z.string().min(1, 'Annex Reference is required'),
-    standardPractice: z.string().min(1, 'Standard or Recommended Practice is required'),
+    standardPractice: z.any().refine(val => typeof val === 'string' && val.trim().length > 0, {
+      message: "Standard or Recommended Practice is required"
+    }),
     legislationReference: z.string().min(1, 'State Legislation Reference is required'),
     implementationLevel: z.enum([
       "No difference",
@@ -171,10 +174,7 @@ export function CcefodSharedFormFields({ form }: CcefodSharedFormFieldsProps) {
                 <FormItem>
                 <FormLabel>Standard or Recommended Practice</FormLabel>
                 <FormControl>
-                    <Textarea
-                        rows={10}
-                        {...field}
-                    />
+                    <RichTextInput {...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>

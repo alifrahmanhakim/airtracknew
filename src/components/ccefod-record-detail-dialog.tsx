@@ -18,14 +18,19 @@ type DetailRowProps = {
   label: string;
   value?: string | React.ReactNode;
   isLongText?: boolean;
+  isHtml?: boolean;
 };
 
-const DetailRow = ({ label, value, isLongText = false }: DetailRowProps) => {
+const DetailRow = ({ label, value, isLongText = false, isHtml = false }: DetailRowProps) => {
   if (!value) return null;
   return (
     <div className={`grid grid-cols-1 ${isLongText ? '' : 'sm:grid-cols-3'} gap-1 sm:gap-4 py-3 border-b`}>
       <dt className="font-semibold text-muted-foreground">{label}</dt>
-      <dd className="sm:col-span-2 text-sm">{value}</dd>
+      {isHtml ? (
+        <dd className="sm:col-span-2 text-sm prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: value as string }} />
+      ) : (
+        <dd className="sm:col-span-2 text-sm">{value}</dd>
+      )}
     </div>
   );
 };
@@ -52,7 +57,7 @@ export function CcefodRecordDetailDialog({ record, open, onOpenChange }: CcefodR
             <dl className="divide-y divide-border">
                 <DetailRow label="Annex" value={record.annex} />
                 <DetailRow label="Annex Reference" value={record.annexReference} />
-                <DetailRow label="Standard or Recommended Practice" value={record.standardPractice} isLongText />
+                <DetailRow label="Standard or Recommended Practice" value={record.standardPractice} isLongText isHtml />
                 <DetailRow label="State Legislation, Regulation or Document Reference" value={record.legislationReference} />
                 <DetailRow label="Level of Implementation of SARP's" value={record.implementationLevel} />
                 
