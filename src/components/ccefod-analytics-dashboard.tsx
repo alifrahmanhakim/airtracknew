@@ -18,8 +18,9 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CcefodRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Info, PieChartIcon, BarChartIcon, Edit } from 'lucide-react';
+import { Info, PieChartIcon, BarChartIcon, Edit, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from './ui/scroll-area';
 
 type CcefodAnalyticsDashboardProps = {
   records: CcefodRecord[];
@@ -34,6 +35,11 @@ const CHART_COLORS = [
     'hsl(var(--muted-foreground))',
 ];
 
+const truncateText = (text: string, length: number) => {
+    if (text.length <= length) return text;
+    return text.substring(0, length) + '...';
+}
+
 export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardProps) {
   const analyticsData = useMemo(() => {
     if (records.length === 0) {
@@ -42,35 +48,27 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
 
     const totalRecords = records.length;
     
-    // Implementation Level Distribution
-    const implementationLevels = records.reduce((acc, record) => {
-      const level = record.implementationLevel;
-      acc[level] = (acc[level] || 0) + 1;
+    const countBy = (key: keyof CcefodRecord) => records.reduce((acc, record) => {
+      const value = record[key] as string | undefined;
+      if (value) {
+        acc[value] = (acc[value] || 0) + 1;
+      }
       return acc;
     }, {} as Record<string, number>);
 
-    const implementationLevelData = Object.entries(implementationLevels).map(([name, value]) => ({ 
-        name, 
-        value,
-        percentage: ((value / totalRecords) * 100).toFixed(1)
-    }));
-    
-    // Status Distribution
-    const statuses = records.reduce((acc, record) => {
-      acc[record.status] = (acc[record.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const statusData = Object.entries(statuses).map(([name, value]) => ({ name, value }));
-
-    // Perubahan (Change Proposals)
-    const perubahan = records.filter(r => r.adaPerubahan === 'YA').length;
+    const implementationLevelData = Object.entries(countBy('implementationLevel')).map(([name, value]) => ({ name, value }));
+    const statusData = Object.entries(countBy('status')).map(([name, value]) => ({ name, value }));
+    const adaPerubahanData = Object.entries(countBy('adaPerubahan')).map(([name, value]) => ({ name, value }));
+    const annexData = Object.entries(countBy('annex')).map(([name, value]) => ({ name: truncateText(name, 20), value, fullName: name }));
+    const usulanPerubahanData = Object.entries(countBy('usulanPerubahan')).filter(([name]) => name).map(([name, value]) => ({ name, value }));
 
     return {
       totalRecords,
       implementationLevelData,
       statusData,
-      perubahan,
+      adaPerubahanData,
+      annexData,
+      usulanPerubahanData
     };
   }, [records]);
 
@@ -84,102 +82,138 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     );
   }
 
-  const chartConfigImplementation = {
+  const chartConfig = (data: {name: string, value: number}[]) => ({
       value: { label: 'Count' },
-      ...analyticsData.implementationLevelData.reduce((acc, item, index) => {
+      ...data.reduce((acc, item, index) => {
           acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
           return acc;
       }, {} as any)
-  };
-  
-  const chartConfigStatus = {
-      value: { label: 'Count' },
-      ...analyticsData.statusData.reduce((acc, item, index) => {
-          acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
-          return acc;
-      }, {} as any)
-  };
-
+  });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-       <Card className="lg:col-span-1">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Records</CardTitle>
-          <BarChartIcon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{analyticsData.totalRecords}</div>
-          <p className="text-xs text-muted-foreground">Total records in current view</p>
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-1">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Change Proposals</CardTitle>
-          <Edit className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{analyticsData.perubahan}</div>
-          <p className="text-xs text-muted-foreground">
-            {((analyticsData.perubahan / analyticsData.totalRecords) * 100).toFixed(1)}% of records have changes proposed
-          </p>
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-1">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Status Distribution</CardTitle>
-          <PieChartIcon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-           <ChartContainer config={chartConfigStatus} className="mx-auto aspect-square h-[150px]">
-             <PieChart>
-                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                <Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={40}>
-                    {analyticsData.statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                </Pie>
-             </PieChart>
-           </ChartContainer>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1">
+            <CardHeader>
+                <CardTitle>Status Distribution</CardTitle>
+                <CardDescription>Overview of record statuses</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[200px]">
+                    <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={2}>
+                            {analyticsData.statusData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
+                            ))}
+                        </Pie>
+                    </PieChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+        
+        <Card className="lg:col-span-1">
+            <CardHeader>
+                <CardTitle>Change Proposals</CardTitle>
+                <CardDescription>Records with proposed changes</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={chartConfig(analyticsData.adaPerubahanData)} className="mx-auto aspect-square h-[200px]">
+                    <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Pie data={analyticsData.adaPerubahanData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={2}>
+                            {analyticsData.adaPerubahanData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.adaPerubahanData)[entry.name].color} />
+                            ))}
+                        </Pie>
+                    </PieChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
 
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Level of Implementation Distribution</CardTitle>
-          <CardDescription>Shows the count and percentage for each implementation level across all records in the current view.</CardDescription>
-        </CardHeader>
-        <CardContent className="pl-2 h-[400px]">
-          <ChartContainer config={chartConfigImplementation} className="w-full h-full">
-            <ResponsiveContainer>
-              <BarChart data={analyticsData.implementationLevelData} layout="vertical" margin={{ left: 120, right: 40 }}>
-                <CartesianGrid horizontal={false} />
-                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={200} />
-                <XAxis type="number" hide />
-                <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent indicator="dot" />} />
-                <Bar dataKey="value" radius={5}>
-                    {analyticsData.implementationLevelData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={chartConfigImplementation[entry.name]?.color || CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                </Bar>
-                 {analyticsData.implementationLevelData.map((entry, index) => (
-                    <text
-                        key={`label-${index}`}
-                        x={10} 
-                        y={index * (400 / analyticsData.implementationLevelData.length) + (400 / analyticsData.implementationLevelData.length) / 2 + 5}
-                        dy={-10}
-                        fill="hsl(var(--foreground))"
-                        textAnchor="start"
-                        className="text-xs font-bold"
-                    >
-                        {`${entry.value} (${entry.percentage}%)`}
-                    </text>
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+        <Card className="lg:col-span-1">
+            <CardHeader>
+                <CardTitle>Change Proposal Types</CardTitle>
+                <CardDescription>Breakdown of proposed changes</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {analyticsData.usulanPerubahanData.length > 0 ? (
+                    <ScrollArea className="h-[200px]">
+                        <div className="space-y-2 pr-4">
+                            {analyticsData.usulanPerubahanData.sort((a,b) => b.value - a.value).map((item, index) => (
+                                <div key={item.name} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                                    <span className="text-sm font-medium">{item.name}</span>
+                                    <span className="text-sm font-bold text-primary">{item.value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                ) : (
+                    <div className="flex items-center justify-center h-[200px] text-muted-foreground text-sm">No change proposals.</div>
+                )}
+            </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>Distribution by Annex</CardTitle>
+                <CardDescription>Shows the count of records for each Annex.</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2 h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 10, right: 30, top: 20, bottom: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                        <XAxis type="number" />
+                        <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                        <Tooltip
+                            cursor={{ fill: 'hsl(var(--muted))' }}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    const data = payload[0].payload;
+                                    return (
+                                        <div className="p-2 bg-background border rounded-lg shadow-lg text-xs">
+                                            <p className="font-bold">{data.fullName}</p>
+                                            <p><span className="font-semibold">Count:</span> {data.value}</p>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
+                        <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
+                             {analyticsData.annexData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+            <CardHeader>
+            <CardTitle>Level of Implementation Distribution</CardTitle>
+            <CardDescription>Shows the count for each implementation level.</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2 h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analyticsData.implementationLevelData} layout="vertical" margin={{ right: 30, top: 20, bottom: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                        <XAxis type="number" />
+                        <YAxis dataKey="name" type="category" width={300} interval={0} tick={{ fontSize: 12 }} />
+                        <Tooltip
+                            cursor={{ fill: 'hsl(var(--muted))' }}
+                            content={<ChartTooltipContent indicator="dot" />}
+                        />
+                        <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
+                            {analyticsData.implementationLevelData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
     </div>
   );
 }
+
