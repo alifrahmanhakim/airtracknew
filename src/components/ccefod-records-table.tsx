@@ -235,14 +235,14 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
             </DropdownMenu>
         </div>
         <div className="border rounded-md overflow-x-auto">
-          <Table className="min-w-full">
+          <Table className="min-w-full table-fixed">
             <TableHeader>
               <TableRow>
                 {visibleColumns.map((col, index) => (
                     <TableHead 
                         key={col.key} 
                         className={cn(
-                          "cursor-pointer whitespace-nowrap", 
+                          "cursor-pointer", 
                           index < visibleColumns.length -1 ? "border-r" : "",
                           col.key === 'standardPractice' && 'w-[40%]'
                         )} 
@@ -258,16 +258,14 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                 <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
                   {visibleColumns.map((col, index) => {
                      const isRichText = col.key === 'standardPractice';
-                     const isLongText = ['legislationReference'].includes(col.key);
-
+                     
                      return (
                         <TableCell 
                             key={col.key} 
                             className={cn(
                                 "align-top",
                                 isRichText ? 'whitespace-normal' : 'whitespace-nowrap',
-                                index < visibleColumns.length - 1 ? "border-r" : "",
-                                col.key === 'standardPractice' && 'w-[40%]'
+                                index < visibleColumns.length - 1 ? "border-r" : ""
                             )}
                         >
                             {(() => {
@@ -281,8 +279,10 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                                         />
                                     );
                                 }
+                                
+                                let displayValue: React.ReactNode = value || 'N/A';
 
-                                if (isLongText && value && value.length > 50) {
+                                if (col.key === 'legislationReference' && value && value.length > 30) {
                                     return (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -292,8 +292,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                                     </Tooltip>
                                     );
                                 }
-                                
-                                let displayValue: React.ReactNode = value || 'N/A';
 
                                 if (col.key === 'status' && value) {
                                     displayValue = <Badge
@@ -307,7 +305,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                                     </Badge>
                                 }
 
-                                return <div className="max-w-xs truncate">{displayValue}</div>;
+                                return <div className="truncate">{displayValue}</div>;
                             })()}
                         </TableCell>
                      )
