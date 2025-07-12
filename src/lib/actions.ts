@@ -123,6 +123,7 @@ export async function addProject(
         complianceData: projectData.complianceData || [],
         adoptionData: projectData.adoptionData || [],
         checklist: projectData.checklist || [],
+        tags: projectData.tags || [],
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);

@@ -59,7 +59,7 @@ type AddProjectDialogProps = {
 
 export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -102,10 +102,11 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       .map(userId => allUsers.find(u => u.id === userId))
       .filter((user): user is User => user !== undefined);
 
-    const existingTags = data.tags ? data.tags.split(',').map(tag => tag.trim()) : [];
     const highPriorityTag = 'High Priority';
     
-    let finalTags = existingTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
+    const baseTags = data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    
+    let finalTags = baseTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
     if (data.isHighPriority) {
         finalTags.push(highPriorityTag);
     }
@@ -128,6 +129,7 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       tags: finalTags,
       complianceData: [],
       adoptionData: [],
+      checklist: [],
     };
     
     const result = await addProject(newProjectData);
