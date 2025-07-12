@@ -242,14 +242,14 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                     <TableHead 
                         key={col.key} 
                         className={cn(
-                          "cursor-pointer align-top", 
+                          "cursor-pointer align-middle", 
                           col.key === 'standardPractice' && 'w-[600px]'
                         )} 
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px]">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px] align-middle">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
