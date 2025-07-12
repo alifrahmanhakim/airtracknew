@@ -24,6 +24,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -46,10 +53,16 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
+const criticalElementOptions = ["CE - 1", "CE - 2", "CE - 3", "CE - 4", "CE - 5", "CE - 6", "CE - 7", "CE - 8"];
+const icaoStatusOptions = ["Satisfactory", "No Satisfactory"];
+
+
 export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTableProps) {
   const [filter, setFilter] = useState('');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
   const [recordToView, setRecordToView] = useState<PqRecord | null>(null);
+  const [criticalElementFilter, setCriticalElementFilter] = useState<string>('all');
+  const [icaoStatusFilter, setIcaoStatusFilter] = useState<string>('all');
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
@@ -73,6 +86,14 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
   const processedRecords = useMemo(() => {
     let filteredData = [...records];
     
+    if (criticalElementFilter !== 'all') {
+        filteredData = filteredData.filter(record => record.criticalElement === criticalElementFilter);
+    }
+    
+    if (icaoStatusFilter !== 'all') {
+        filteredData = filteredData.filter(record => record.icaoStatus === icaoStatusFilter);
+    }
+
     if (filter) {
         const lowercasedFilter = filter.toLowerCase();
         filteredData = filteredData.filter(record => 
@@ -94,7 +115,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     }
 
     return filteredData;
-  }, [records, filter, sort]);
+  }, [records, filter, sort, criticalElementFilter, icaoStatusFilter]);
 
   const handleSort = (column: keyof PqRecord) => {
     setSort(prevSort => {
@@ -143,19 +164,35 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Filter records..."
-                    value={filter}
-                    onChange={e => setFilter(e.target.value)}
-                    className="pl-9"
-                />
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+             <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Filter records..."
+                        value={filter}
+                        onChange={e => setFilter(e.target.value)}
+                        className="pl-9 w-full"
+                    />
+                </div>
+                <Select value={criticalElementFilter} onValueChange={setCriticalElementFilter}>
+                    <SelectTrigger><SelectValue placeholder="Filter by CE..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Critical Elements</SelectItem>
+                        {criticalElementOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Select value={icaoStatusFilter} onValueChange={setIcaoStatusFilter}>
+                    <SelectTrigger><SelectValue placeholder="Filter by ICAO Status..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All ICAO Statuses</SelectItem>
+                        {icaoStatusOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                    </SelectContent>
+                </Select>
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="ml-auto">
+                    <Button variant="outline" className="sm:ml-auto w-full sm:w-auto">
                     Columns <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
@@ -186,23 +223,26 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                 {visibleColumns.map((col, index) => (
                     <TableHead 
                         key={col.key} 
-                        className={cn("cursor-pointer whitespace-nowrap", index < visibleColumns.length -1 ? "border-r" : "")} 
+                        className={cn(
+                            "cursor-pointer whitespace-nowrap",
+                            col.key === 'protocolQuestion' && 'w-1/3'
+                        )} 
                         onClick={() => handleSort(col.key as keyof PqRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof PqRecord)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right sticky right-0 bg-background/95 z-10">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
                   {visibleColumns.map((col, index) => (
-                     <TableCell key={col.key} className={cn("whitespace-nowrap", index < visibleColumns.length - 1 ? "border-r" : "")}>
+                     <TableCell key={col.key} className="align-top whitespace-normal">
                         {(() => {
                             const value = record[col.key as keyof PqRecord] as string | undefined;
-                             const isLongText = ['protocolQuestion', 'guidance', 'icaoReferences', 'remarks', 'evidence', 'answer', 'poc', 'cap', 'sspComponent'].includes(col.key);
-                             const content = (
+                            
+                            const content = (
                                 <>
                                 {col.key === 'status' && value ? (
                                     <Badge
@@ -222,21 +262,11 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                                 </>
                              );
 
-                             if (isLongText && value && value.length > 50) {
-                                return (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <p className="truncate max-w-xs">{value}</p>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
-                                </Tooltip>
-                                );
-                             }
-                             return <div className="max-w-xs truncate">{content}</div>;
+                             return <p>{content}</p>;
                         })()}
                     </TableCell>
                   ))}
-                  <TableCell className="text-right sticky right-0 bg-background/95 z-10">
+                  <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-top">
                     <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                        <EditPqRecordDialog record={record} onRecordUpdate={onUpdate} />
                        <Tooltip>
