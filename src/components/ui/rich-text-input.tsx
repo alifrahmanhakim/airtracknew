@@ -12,7 +12,7 @@ interface RichTextInputProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
   ({ className, name, ...props }, ref) => {
-    const { register, setValue, watch } = useFormContext();
+    const { register, setValue, watch, formState: { isSubmitting } } = useFormContext();
     const contentRef = React.useRef<HTMLDivElement>(null);
     const [isMounted, setIsMounted] = React.useState(false);
 
@@ -23,11 +23,12 @@ const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
         register(name);
     }, [register, name]);
 
-    // Set initial content from form state once component is mounted
+    // Set initial content from form state once component is mounted and on value change
     React.useEffect(() => {
-        if (isMounted && contentRef.current && value) {
-            if (contentRef.current.innerHTML !== value) {
-                contentRef.current.innerHTML = value;
+        if (isMounted && contentRef.current) {
+            const cleanValue = DOMPurify.sanitize(value || '', { USE_PROFILES: { html: true } });
+            if (contentRef.current.innerHTML !== cleanValue) {
+                contentRef.current.innerHTML = cleanValue;
             }
         }
     }, [isMounted, value]);
@@ -37,7 +38,7 @@ const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
       const cleanHTML = DOMPurify.sanitize(dirtyHTML, { USE_PROFILES: { html: true } });
       setValue(name, cleanHTML, { shouldValidate: true, shouldDirty: true });
     };
-
+    
     const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
       event.preventDefault();
       const paste = event.clipboardData.getData('text/html') || event.clipboardData.getData('text/plain');
@@ -50,10 +51,17 @@ const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
       const range = selection.getRangeAt(0);
       
       const fragment = range.createContextualFragment(cleanPaste);
+      const lastNode = fragment.lastChild;
       range.insertNode(fragment);
 
       // Move cursor to the end of the pasted content
-      selection.collapseToEnd();
+      if(lastNode) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(lastNode);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      }
 
       // Trigger the input handler to update the form state
       handleInput({ currentTarget: event.currentTarget } as React.FormEvent<HTMLDivElement>);
@@ -65,7 +73,7 @@ const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
             if (typeof ref === 'function') ref(el);
             (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
         }}
-        contentEditable
+        contentEditable={!isSubmitting}
         onInput={handleInput}
         onPaste={handlePaste}
         className={cn(
