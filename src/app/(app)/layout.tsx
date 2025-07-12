@@ -13,6 +13,7 @@ import {
   Plane,
   LogOut,
   Landmark,
+  ClipboardCheck,
 } from 'lucide-react';
 
 import {
@@ -46,6 +47,7 @@ const navItems = {
       { href: '/documents', label: 'Documents', icon: FileText },
       { href: '/team', label: 'Team', icon: Users },
       { href: '/reports', label: 'Reports', icon: LineChart },
+      { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
     ]
 }
 
