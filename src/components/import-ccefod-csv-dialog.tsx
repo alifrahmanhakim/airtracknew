@@ -49,6 +49,7 @@ export function ImportCcefodCsvDialog() {
     Papa.parse<any>(file, {
       header: true,
       skipEmptyLines: true,
+      escapeChar: '"',
       complete: (results) => {
         if (results.errors.length) {
           setError(`Error parsing CSV: ${results.errors[0].message}`);
