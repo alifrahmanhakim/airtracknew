@@ -315,7 +315,9 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                   <TableRow>
                     <TableHead>Task</TableHead>
                     <TableHead>Assignee</TableHead>
+                    <TableHead>Start Date</TableHead>
                     <TableHead>Due Date</TableHead>
+                    <TableHead>Completed On</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -355,7 +357,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                             <span className="text-sm">{assignee?.name || 'Unassigned'}</span>
                           </div>
                         </TableCell>
+                        <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>
                         <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
+                        <TableCell>
+                          {task.doneDate ? format(parseISO(task.doneDate), 'PPP') : 'N/A'}
+                        </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                             {task.status}
@@ -371,7 +377,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                     );
                   }) : (
                     <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">No tasks yet.</TableCell>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground">No tasks yet.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
