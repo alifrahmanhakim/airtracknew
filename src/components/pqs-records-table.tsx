@@ -78,7 +78,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     poc: false,
     icaoStatus: true,
     status: true,
-    createdAt: true,
+    createdAt: false,
   });
 
   const processedRecords = useMemo(() => {
@@ -217,12 +217,12 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
         <div className="border rounded-md overflow-x-auto">
           <Table className="min-w-full">
             <TableHeader>
-              <TableRow>
+              <TableRow className='border-b'>
                 {visibleColumns.map((col, index) => (
                     <TableHead 
                         key={col.key} 
                         className={cn(
-                            "cursor-pointer whitespace-nowrap",
+                            "cursor-pointer whitespace-nowrap border-r last:border-r-0",
                             col.key === 'protocolQuestion' && 'w-1/3'
                         )} 
                         onClick={() => handleSort(col.key as keyof PqRecord)}>
@@ -236,7 +236,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
               {processedRecords.map((record) => (
                 <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
                   {visibleColumns.map((col, index) => (
-                     <TableCell key={col.key} className="align-top whitespace-normal">
+                     <TableCell key={col.key} className="align-top whitespace-normal border-r last:border-r-0">
                         {(() => {
                             const value = record[col.key as keyof PqRecord] as string | undefined;
                             
@@ -255,7 +255,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                                 return format(parseISO(value), 'PPP');
                             }
                             
-                            return value || 'N/A';
+                            return <div>{value || 'N/A'}</div>;
                         })()}
                     </TableCell>
                   ))}
@@ -293,3 +293,5 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     </TooltipProvider>
   );
 }
+
+    
