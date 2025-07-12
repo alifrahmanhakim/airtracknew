@@ -13,6 +13,7 @@ import { db, auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup, User as FirebaseAuthUser, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -159,9 +160,12 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/aoc-insight.firebasestorage.app/o/bg%2FGemini_Generated_Image_rx0ml4rx0ml4rx0m.png?alt=media&token=e8a8ffa5-d518-45cf-a33c-b2392d5d7ad5')"} }>
-        <div className="absolute inset-0 bg-black/50" />
-      <Card className="relative w-full max-w-sm bg-white/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
+    <main className="relative flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/aoc-insight.firebasestorage.app/o/bg%2FGemini_Generated_Image_rx0ml4rx0ml4rx0m.png?alt=media&token=e8a8ffa5-d518-45cf-a33c-b2392d5d7ad5')"} }>
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+      <div className="absolute inset-0 bg-black/50" />
+      <Card className="relative w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
         <div className={cn("transition-transform duration-700 ease-in-out flex", !isLoginView && "-translate-x-full")}>
             <div className="w-full flex-shrink-0">
                 <CardHeader className="text-center">
