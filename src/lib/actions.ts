@@ -109,6 +109,11 @@ export async function addProject(
         tasks: [],
         subProjects: [],
         documents: [],
+        // Ensure optional fields are not undefined
+        annex: projectData.annex || '',
+        casr: projectData.casr || '',
+        tags: projectData.tags || [],
+        notes: projectData.notes || '',
         complianceData: projectData.complianceData || [],
         adoptionData: [], // This will be computed or deprecated
       };
@@ -146,9 +151,12 @@ export async function updateProject(
             }));
         }
         
-        // Handle compliance data updates
-        if (projectData.complianceData) {
-            updateData.complianceData = projectData.complianceData;
+        // Ensure optional fields are not undefined
+        if ('complianceData' in projectData && projectData.complianceData === undefined) {
+            updateData.complianceData = [];
+        }
+        if ('tags' in projectData && projectData.tags === undefined) {
+            updateData.tags = [];
         }
 
         // Remove id from the update payload as we don't want to update the document id
