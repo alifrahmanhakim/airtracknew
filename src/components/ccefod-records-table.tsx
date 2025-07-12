@@ -241,7 +241,11 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                 {visibleColumns.map((col, index) => (
                     <TableHead 
                         key={col.key} 
-                        className={cn("cursor-pointer whitespace-nowrap", index < visibleColumns.length -1 ? "border-r" : "")} 
+                        className={cn(
+                          "cursor-pointer whitespace-nowrap", 
+                          index < visibleColumns.length -1 ? "border-r" : "",
+                          col.key === 'standardPractice' && 'w-[40%]'
+                        )} 
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
                     </TableHead>
@@ -262,7 +266,8 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                             className={cn(
                                 "align-top",
                                 isRichText ? 'whitespace-normal' : 'whitespace-nowrap',
-                                index < visibleColumns.length - 1 ? "border-r" : ""
+                                index < visibleColumns.length - 1 ? "border-r" : "",
+                                col.key === 'standardPractice' && 'w-[40%]'
                             )}
                         >
                             {(() => {
@@ -300,8 +305,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                                     >
                                     {value}
                                     </Badge>
-                                } else if (col.key === 'createdAt' && value) {
-                                    displayValue = format(parseISO(value), 'PPP');
                                 }
 
                                 return <div className="max-w-xs truncate">{displayValue}</div>;
