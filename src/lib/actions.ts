@@ -6,8 +6,9 @@ import {
   type SummarizeProjectStatusInput,
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
-import type { Document, Project, SubProject, Task, User, CcefodRecord } from './types';
+import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord } from './types';
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
+import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
 import { db } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
@@ -421,6 +422,109 @@ export async function importCcefodRecords(records: CcefodFormValues[]): Promise<
     return { success: true, count: validRecordsCount };
   } catch (error) {
     console.error('Import CCEFOD Records Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, count: 0, error: `Failed to import records: ${message}` };
+  }
+}
+
+// Protocol Questions (PQs) Actions
+
+export async function addPqRecord(
+  recordData: PqFormValues
+): Promise<{ success: boolean; data?: PqRecord; error?: string }> {
+  try {
+    const newRecordData = {
+        ...recordData,
+        createdAt: new Date().toISOString(),
+    };
+    const docRef = await addDoc(collection(db, 'pqsRecords'), newRecordData);
+    revalidatePath('/pqs');
+    
+    const newRecord: PqRecord = { id: docRef.id, ...newRecordData };
+    return { success: true, data: newRecord };
+  } catch (error) {
+    console.error('Add PQ Record Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return {
+      success: false,
+      error: `Failed to add PQ record: ${message}`,
+    };
+  }
+}
+
+export async function updatePqRecord(
+    recordId: string,
+    recordData: PqFormValues
+  ): Promise<{ success: boolean; data?: PqRecord; error?: string }> {
+    try {
+      const recordRef = doc(db, 'pqsRecords', recordId);
+      const docSnap = await getDoc(recordRef);
+      if (!docSnap.exists()) {
+        throw new Error("Record not found");
+      }
+      
+      const existingData = docSnap.data() as PqRecord;
+      const updatedData = { ...existingData, ...recordData };
+  
+      await setDoc(recordRef, updatedData);
+      revalidatePath('/pqs');
+      
+      return { success: true, data: updatedData };
+    } catch (error) {
+      console.error('Update PQ Record Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return {
+        success: false,
+        error: `Failed to update PQ record: ${message}`,
+      };
+    }
+  }
+
+export async function deletePqRecord(
+    recordId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const recordRef = doc(db, 'pqsRecords', recordId);
+        await deleteDoc(recordRef);
+        revalidatePath('/pqs');
+        return { success: true };
+    } catch (error) {
+        console.error('Delete PQ Record Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to delete PQ record: ${message}` };
+    }
+}
+
+export async function importPqRecords(records: PqFormValues[]): Promise<{ success: boolean, count: number, error?: string }> {
+  const batch = writeBatch(db);
+  const recordsCollection = collection(db, 'pqsRecords');
+  let validRecordsCount = 0;
+
+  for (const record of records) {
+    const validation = pqFormSchema.safeParse(record);
+    if (validation.success) {
+      const newDocRef = doc(recordsCollection);
+      batch.set(newDocRef, {
+        ...validation.data,
+        createdAt: new Date().toISOString()
+      });
+      validRecordsCount++;
+    } else {
+      // Optionally log or handle invalid records
+      console.warn('Skipping invalid PQ record:', validation.error.format());
+    }
+  }
+
+  if (validRecordsCount === 0) {
+    return { success: false, count: 0, error: 'No valid records found in the CSV to import.' };
+  }
+
+  try {
+    await batch.commit();
+    revalidatePath('/pqs');
+    return { success: true, count: validRecordsCount };
+  } catch (error) {
+    console.error('Import PQ Records Error:', error);
     const message = error instanceof Error ? error.message : 'An unknown error occurred';
     return { success: false, count: 0, error: `Failed to import records: ${message}` };
   }
