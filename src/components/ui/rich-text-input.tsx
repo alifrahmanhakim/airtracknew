@@ -139,11 +139,11 @@ interface RichTextInputProps {
 
 export function RichTextInput({ name }: RichTextInputProps) {
   const { setValue, watch, formState: { isSubmitting } } = useFormContext();
-  const initialContent = watch(name) || '';
+  const watchedValue = watch(name);
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: initialContent,
+    content: watchedValue || '',
     editorProps: {
       attributes: {
         class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none px-3 py-2',
@@ -165,21 +165,17 @@ export function RichTextInput({ name }: RichTextInputProps) {
     }
   }, [isSubmitting, editor]);
 
-  // Watch for external changes to the form value (e.g., from form.reset()) and update the editor
   React.useEffect(() => {
-    const subscription = watch((value, { name: fieldName }) => {
-        if (fieldName === name && editor && !editor.isDestroyed) {
-             const formValue = value[name] || '';
-             const editorValue = editor.getHTML();
-             // Only update if the form value is different from the editor's current content
-             if (formValue !== editorValue) {
-                const sanitizedFormValue = typeof window !== 'undefined' ? DOMPurify.sanitize(formValue) : formValue;
-                editor.commands.setContent(sanitizedFormValue, false);
-             }
-        }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, editor, name]);
+    if (editor && !editor.isDestroyed) {
+      const editorValue = editor.getHTML();
+      const formValue = watchedValue || '';
+      const sanitizedFormValue = typeof window !== 'undefined' ? DOMPurify.sanitize(formValue) : formValue;
+
+      if (sanitizedFormValue !== editorValue) {
+        editor.commands.setContent(sanitizedFormValue, false);
+      }
+    }
+  }, [watchedValue, editor]);
 
 
   return (
