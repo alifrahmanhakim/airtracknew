@@ -117,13 +117,6 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       annex: data.annex,
       casr: data.casr,
       tags: finalTags,
-      tasks: [],
-      subProjects: [],
-      documents: [],
-      notes: '',
-      complianceData: [],
-      adoptionData: [],
-      checklist: [],
     };
     
     const result = await addRulemakingProject(newProjectData);

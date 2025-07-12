@@ -37,12 +37,11 @@ import { useToast } from '@/hooks/use-toast';
 import type { Project, User } from '@/lib/types';
 import { CalendarIcon, Loader2, Pencil } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { updateProject } from '@/lib/actions';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Checkbox } from './ui/checkbox';
 
 const projectSchema = z.object({
@@ -54,7 +53,6 @@ const projectSchema = z.object({
   notes: z.string().optional(),
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
   ownerId: z.string(),
-  projectType: z.enum(['Rulemaking', 'Tim Kerja'], { required_error: 'You must select a project type.' }),
   annex: z.string().optional(),
   casr: z.string().optional(),
   tags: z.string().optional(),
@@ -87,20 +85,17 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
       name: project.name,
       description: project.description,
       status: project.status,
-      startDate: new Date(project.startDate),
-      endDate: new Date(project.endDate),
+      startDate: parseISO(project.startDate),
+      endDate: parseISO(project.endDate),
       notes: project.notes,
       team: project.team.map(user => user.id),
       ownerId: project.ownerId,
-      projectType: project.projectType,
       annex: project.annex,
       casr: project.casr,
       tags: project.tags?.filter(t => t.toLowerCase() !== highPriorityTag.toLowerCase()).join(', '),
       isHighPriority: project.tags?.some(t => t.toLowerCase() === highPriorityTag.toLowerCase()),
     },
   });
-
-  const projectType = form.watch('projectType');
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
@@ -113,7 +108,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
         finalTags.push(highPriorityTag);
     }
 
-    const projectUpdateData: Partial<Project> = { 
+    const projectUpdateData: Partial<Omit<Project, 'id'>> = { 
         name: data.name,
         description: data.description,
         status: data.status,
@@ -122,13 +117,15 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
         notes: data.notes ?? '',
         team: updatedTeam,
         ownerId: data.ownerId,
-        projectType: data.projectType,
-        annex: data.annex,
-        casr: data.casr,
         tags: finalTags,
     };
+
+    if (project.projectType === 'Rulemaking') {
+      projectUpdateData.annex = data.annex;
+      projectUpdateData.casr = data.casr;
+    }
     
-    const result = await updateProject(project.id, projectUpdateData);
+    const result = await updateProject(project.id, project.projectType, projectUpdateData);
     
     setIsSubmitting(false);
 
@@ -158,44 +155,13 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
+          <DialogTitle>Edit {project.projectType} Project</DialogTitle>
           <DialogDescription>
             Make changes to your project here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 pr-2">
-            <FormField
-                control={form.control}
-                name="projectType"
-                render={({ field }) => (
-                    <FormItem className="space-y-3">
-                    <FormLabel>Project Type</FormLabel>
-                    <FormControl>
-                        <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex space-x-4"
-                        >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                            <RadioGroupItem value="Tim Kerja" />
-                            </FormControl>
-                            <FormLabel className="font-normal">Tim Kerja</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                            <RadioGroupItem value="Rulemaking" />
-                            </FormControl>
-                            <FormLabel className="font-normal">Rulemaking</FormLabel>
-                        </FormItem>
-                        </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-
             <FormField
               control={form.control}
               name="name"
@@ -210,7 +176,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
               )}
             />
 
-            {projectType === 'Rulemaking' && (
+            {project.projectType === 'Rulemaking' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <FormField
                   control={form.control}

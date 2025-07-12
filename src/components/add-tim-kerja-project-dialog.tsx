@@ -111,11 +111,6 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
       status: 'On Track' as const,
       team: teamMembers,
       tags: finalTags,
-      tasks: [],
-      subProjects: [],
-      documents: [],
-      notes: '',
-      checklist: [],
     };
     
     const result = await addTimKerjaProject(newProjectData);

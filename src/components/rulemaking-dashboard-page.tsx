@@ -189,7 +189,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                          .sort((a, b) => {
                             const dateA = a.doneDate ? parseISO(a.doneDate) : parseISO(a.dueDate);
                             const dateB = b.doneDate ? parseISO(b.doneDate) : parseISO(b.dueDate);
-                            return dateB.getTime() - dateA.getTime();
+                            return dateB.getTime() - a.getTime();
                          })[0];
 
                        const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
