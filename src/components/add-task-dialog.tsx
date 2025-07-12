@@ -23,7 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -39,6 +38,7 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { addTask } from '@/lib/actions';
+import { Combobox } from './ui/combobox';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
@@ -57,6 +57,16 @@ type AddTaskDialogProps = {
   onTaskAdd: (newTask: Task) => void;
   teamMembers: User[];
 };
+
+const taskOptions = [
+  { value: 'Gap Analysis', label: 'Gap Analysis' },
+  { value: 'Penyusunan Draft', label: 'Penyusunan Draft' },
+  { value: 'Diskusi dengan SME', label: 'Diskusi dengan SME' },
+  { value: 'Diskusi dengan Stakeholder', label: 'Diskusi dengan Stakeholder' },
+  { value: 'Penyusunan KP/PM', label: 'Penyusunan KP/PM' },
+  { value: 'Persetujuan Manajemen', label: 'Persetujuan Manajemen' },
+  { value: 'Evaluasi Bagkum', label: 'Evaluasi Bagkum' },
+];
 
 export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false);
@@ -123,11 +133,14 @@ export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDial
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Task Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  <Combobox 
+                    options={taskOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select a task or type a new one..."
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -216,7 +229,7 @@ export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDial
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assignee</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a team member" />
