@@ -81,8 +81,8 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
                 <CardTitle>Status Distribution</CardTitle>
                 <CardDescription>Overview of all record statuses.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[300px]">
-                <ChartContainer config={chartConfig(analyticsData.statusData)}>
+            <CardContent>
+                <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
@@ -103,8 +103,8 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
                 <CardTitle>ICAO Status Implementation</CardTitle>
                 <CardDescription>Breakdown of ICAO implementation statuses.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[300px]">
-                <ChartContainer config={chartConfig(analyticsData.icaoStatusData)}>
+            <CardContent>
+                <ChartContainer config={chartConfig(analyticsData.icaoStatusData)} className="mx-auto aspect-square h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
@@ -126,8 +126,8 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
                 <CardDescription>Shows the count of records for each critical element.</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-                <ChartContainer config={chartConfig(analyticsData.criticalElementData)}>
-                    <ResponsiveContainer width="100%" height={300}>
+                <ChartContainer config={chartConfig(analyticsData.criticalElementData)} className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={analyticsData.criticalElementData} layout="horizontal" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <XAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} />
                             <YAxis type="number" allowDecimals={false} />
