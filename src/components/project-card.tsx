@@ -48,56 +48,56 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const projectLink = projectType === 'Rulemaking' ? `/projects/${project.id}?type=rulemaking` : `/projects/${project.id}?type=timkerja`;
 
   return (
-    <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-lg font-bold leading-snug">
-             <Link href={projectLink} className="hover:underline hover:text-primary">
-                {displayName}
-            </Link>
-          </CardTitle>
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <currentStatus.icon className={cn("h-4 w-4", currentStatus.color)} />
-            <span className={currentStatus.color}>{currentStatus.label}</span>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground truncate">{displayDescription}</p>
-      </CardHeader>
-      <CardContent className="flex-grow space-y-4 pt-2">
-        <div>
-          <div className="flex items-center justify-between mb-1">
-             <span className="text-sm font-medium text-muted-foreground">Progress</span>
-             <span className="text-sm font-bold">{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} />
-        </div>
-        <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-                <Avatar className="h-6 w-6">
-                    <AvatarImage src={team[0]?.avatarUrl} alt={team[0]?.name} data-ai-hint="person portrait" />
-                    <AvatarFallback>{team[0]?.name?.charAt(0) || team[0]?.email?.charAt(0) || '?'}</AvatarFallback>
-                </Avatar>
-                <span>{team[0]?.name}</span>
+    <Link href={projectLink} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+      <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300 h-full">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <CardTitle className="text-lg font-bold leading-snug">
+              {displayName}
+            </CardTitle>
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <currentStatus.icon className={cn("h-4 w-4", currentStatus.color)} />
+              <span className={currentStatus.color}>{currentStatus.label}</span>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-                 <Clock className="h-4 w-4" />
-                 <span>{format(parseISO(endDate), 'yyyy-MM-dd')}</span>
+          </div>
+          <p className="text-sm text-muted-foreground truncate">{displayDescription}</p>
+        </CardHeader>
+        <CardContent className="flex-grow space-y-4 pt-2">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+               <span className="text-sm font-medium text-muted-foreground">Progress</span>
+               <span className="text-sm font-bold">{Math.round(progress)}%</span>
             </div>
-        </div>
-      </CardContent>
-      <CardFooter className="pt-2 flex-wrap gap-2">
-        {tags?.map(tag => (
-            <Badge key={tag} variant="outline" className={cn("font-medium", getTagColor(tag))}>
-                {tag}
-            </Badge>
-        ))}
-         <div className="ml-auto">
-             <AiSummaryDialog
-                taskCompletion={progress.toFixed(0)}
-                notes={notes || ''}
-             />
-        </div>
-      </CardFooter>
-    </Card>
+            <Progress value={progress} />
+          </div>
+          <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                  <Avatar className="h-6 w-6">
+                      <AvatarImage src={team[0]?.avatarUrl} alt={team[0]?.name} data-ai-hint="person portrait" />
+                      <AvatarFallback>{team[0]?.name?.charAt(0) || team[0]?.email?.charAt(0) || '?'}</AvatarFallback>
+                  </Avatar>
+                  <span>{team[0]?.name}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                   <Clock className="h-4 w-4" />
+                   <span>{format(parseISO(endDate), 'yyyy-MM-dd')}</span>
+              </div>
+          </div>
+        </CardContent>
+        <CardFooter className="pt-2 flex-wrap gap-2 mt-auto">
+          {tags?.map(tag => (
+              <Badge key={tag} variant="outline" className={cn("font-medium", getTagColor(tag))}>
+                  {tag}
+              </Badge>
+          ))}
+           <div className="ml-auto" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+               <AiSummaryDialog
+                  taskCompletion={progress.toFixed(0)}
+                  notes={notes || ''}
+               />
+          </div>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }
