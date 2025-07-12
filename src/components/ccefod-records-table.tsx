@@ -63,8 +63,8 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
     isiUsulan: false,
     annex: true,
     annexReference: true,
-    standardPractice: true,
-    legislationReference: true,
+    standardPractice: false,
+    legislationReference: false,
     implementationLevel: true,
     differenceText: false,
     differenceReason: false,
@@ -199,7 +199,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
             </DropdownMenu>
         </div>
         <div className="border rounded-md">
-          <Table>
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
                 {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
@@ -207,17 +207,17 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id}>
                   {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                     <TableCell key={col.key}>
+                     <TableCell key={col.key} className="break-words">
                         {(() => {
                             const value = record[col.key] as string | undefined;
-                             const isTruncated = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'implementationLevel'].includes(col.key);
+                             const isLongText = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key);
                              const content = (
                                 <>
                                 {col.key === 'status' && value ? (
@@ -235,11 +235,11 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                                 </>
                              );
 
-                             if (isTruncated && value && value.length > 50) {
+                             if (isLongText && value && value.length > 50) {
                                 return (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <p className="max-w-[200px] truncate">{value}</p>
+                                        <p>{value}</p>
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
                                 </Tooltip>
