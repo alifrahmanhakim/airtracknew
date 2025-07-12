@@ -143,7 +143,7 @@ export function RichTextInput({ name }: RichTextInputProps) {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: '', // Start empty, content is set via useEffect
+    content: initialContent,
     editorProps: {
       attributes: {
         class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none px-3 py-2',
@@ -157,38 +157,21 @@ export function RichTextInput({ name }: RichTextInputProps) {
         shouldDirty: true,
       });
     },
-    editable: !isSubmitting,
   });
 
   React.useEffect(() => {
-    if (isSubmitting) {
-        editor?.setEditable(false);
-    } else {
-        editor?.setEditable(true);
+    if (editor) {
+      editor.setEditable(!isSubmitting);
     }
   }, [isSubmitting, editor]);
 
-  React.useEffect(() => {
-    if (editor && !editor.isDestroyed) {
-        const sanitizedInitialContent = typeof window !== 'undefined' ? DOMPurify.sanitize(initialContent) : initialContent;
-        const currentEditorContent = editor.getHTML();
-
-        if (currentEditorContent !== sanitizedInitialContent) {
-            // Use a timeout to ensure the editor is ready for content update
-            setTimeout(() => {
-                editor.commands.setContent(sanitizedInitialContent, false);
-            }, 0);
-        }
-    }
-    // Only run this when the component mounts or the editor instance changes
-  }, [editor]); 
-  
-  // Watch for external changes to the form value and update the editor
+  // Watch for external changes to the form value (e.g., from form.reset()) and update the editor
   React.useEffect(() => {
     const subscription = watch((value, { name: fieldName }) => {
         if (fieldName === name && editor && !editor.isDestroyed) {
              const formValue = value[name] || '';
              const editorValue = editor.getHTML();
+             // Only update if the form value is different from the editor's current content
              if (formValue !== editorValue) {
                 const sanitizedFormValue = typeof window !== 'undefined' ? DOMPurify.sanitize(formValue) : formValue;
                 editor.commands.setContent(sanitizedFormValue, false);
