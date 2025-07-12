@@ -238,11 +238,11 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
           <Table className="min-w-full">
             <TableHeader>
               <TableRow>
-                {visibleColumns.map((col, index) => (
+                {visibleColumns.map((col) => (
                     <TableHead 
                         key={col.key} 
                         className={cn(
-                          "cursor-pointer", 
+                          "cursor-pointer align-top", 
                           col.key === 'standardPractice' && 'w-[40%]'
                         )} 
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
@@ -255,7 +255,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
-                  {visibleColumns.map((col, index) => {
+                  {visibleColumns.map((col) => {
                      const isRichText = col.key === 'standardPractice';
                      
                      return (
