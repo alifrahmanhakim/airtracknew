@@ -93,7 +93,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     const weekInterval = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
     
     const diffDays = differenceInDays(tEnd, tStart) + 1;
-    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tStart) + 1;
+    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tEnd) + 1;
 
     return { 
         sortedTasks: sorted, 
