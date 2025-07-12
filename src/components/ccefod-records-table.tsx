@@ -67,14 +67,14 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
-    createdAt: true,
+    createdAt: false,
     adaPerubahan: true,
     usulanPerubahan: false,
     isiUsulan: false,
     annex: true,
     annexReference: true,
     standardPractice: true,
-    legislationReference: false,
+    legislationReference: true,
     implementationLevel: true,
     differenceText: false,
     differenceReason: false,
