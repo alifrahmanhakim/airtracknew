@@ -16,7 +16,7 @@ import { Loader2 } from 'lucide-react';
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(''); // Password field is kept for UI, but not used in logic
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,12 +26,18 @@ export default function LoginPage() {
     setError('');
 
     try {
+      if (!email) {
+        setError("Please enter an email address.");
+        setIsLoading(false);
+        return;
+      }
+      
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        setError("No user found with this email.");
+        setError("No user found with this email. Please try chewyhusky@gmail.com or another valid user email.");
         setIsLoading(false);
         return;
       }
@@ -42,13 +48,14 @@ export default function LoginPage() {
       // In a real app, you'd also verify the password.
       // Here, we'll just check if the user exists.
       localStorage.setItem('loggedInUserId', userData.id);
-      router.push('/dashboard');
+      
+      // Use window.location.href for a full page reload to ensure server-side rendering picks up the new session
+      window.location.href = '/dashboard';
 
     } catch (err) {
       console.error("Login Error:", err);
       setError("An error occurred during login. Please try again.");
-    } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -63,7 +70,7 @@ export default function LoginPage() {
             </div>
           <CardTitle className="text-2xl">AirTrack Login</CardTitle>
           <CardDescription>
-            Welcome! Please log in to continue.
+            Enter any valid user email to log in.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -73,7 +80,7 @@ export default function LoginPage() {
               <Input 
                 id="email" 
                 type="email" 
-                placeholder="m@example.com" 
+                placeholder="chewysihusky@gmail.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -86,30 +93,16 @@ export default function LoginPage() {
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="any password"
                 required
               />
             </div>
             
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
             <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login
-            </Button>
-
-            <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">
-                    Or continue with
-                    </span>
-                </div>
-            </div>
-            <Button variant="outline" className="w-full transition-transform hover:scale-105" type="button" onClick={handleLogin}>
-              <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-76.2 64.5C307.4 99.8 280.7 86 248 86c-84.3 0-152.3 67.8-152.3 151.4s68 151.4 152.3 151.4c97.9 0 130.4-77.3 134.6-114.3H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
-              Google
             </Button>
           </form>
         </CardContent>
