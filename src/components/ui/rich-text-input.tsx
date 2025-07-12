@@ -5,6 +5,9 @@ import * as React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { cn } from '@/lib/utils';
 import DOMPurify from 'dompurify';
+import { Bold, Italic, Underline } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from './toggle-group';
+import { Separator } from './separator';
 
 interface RichTextInputProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
@@ -54,7 +57,6 @@ const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
       const lastNode = fragment.lastChild;
       range.insertNode(fragment);
 
-      // Move cursor to the end of the pasted content
       if(lastNode) {
         const newRange = document.createRange();
         newRange.setStartAfter(lastNode);
@@ -63,25 +65,47 @@ const RichTextInput = React.forwardRef<HTMLDivElement, RichTextInputProps>(
         selection.addRange(newRange);
       }
 
-      // Trigger the input handler to update the form state
       handleInput({ currentTarget: event.currentTarget } as React.FormEvent<HTMLDivElement>);
     };
 
+    const execCmd = (command: string) => {
+        document.execCommand(command, false);
+        if(contentRef.current) {
+            contentRef.current.focus();
+            handleInput({ currentTarget: contentRef.current } as React.FormEvent<HTMLDivElement>);
+        }
+    }
+
     return (
-      <div
-        ref={(el) => {
-            if (typeof ref === 'function') ref(el);
-            (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-        }}
-        contentEditable={!isSubmitting}
-        onInput={handleInput}
-        onPaste={handlePaste}
-        className={cn(
-          'flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm prose dark:prose-invert max-w-none',
-          className
-        )}
-        {...props}
-      />
+        <div className='rounded-md border border-input focus-within:ring-2 focus-within:ring-ring'>
+            <div className='p-2 border-b'>
+                 <ToggleGroup type="multiple">
+                    <ToggleGroupItem value="bold" aria-label="Toggle bold" onClick={() => execCmd('bold')}>
+                        <Bold className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="italic" aria-label="Toggle italic" onClick={() => execCmd('italic')}>
+                        <Italic className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="underline" aria-label="Toggle underline" onClick={() => execCmd('underline')}>
+                        <Underline className="h-4 w-4" />
+                    </ToggleGroupItem>
+                 </ToggleGroup>
+            </div>
+            <div
+                ref={(el) => {
+                    if (typeof ref === 'function') ref(el);
+                    (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+                }}
+                contentEditable={!isSubmitting}
+                onInput={handleInput}
+                onPaste={handlePaste}
+                className={cn(
+                'flex min-h-[120px] w-full bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm prose dark:prose-invert max-w-none',
+                className
+                )}
+                {...props}
+            />
+      </div>
     );
   }
 );
