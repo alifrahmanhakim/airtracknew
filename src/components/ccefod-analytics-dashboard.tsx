@@ -86,8 +86,17 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     const yaAdaPerubahanPercentage = adaPerubahanTotal > 0 ? (yaAdaPerubahanCount / adaPerubahanTotal) * 100 : 0;
     
     const implementationLevelTotal = implementationLevelData.reduce((acc, curr) => acc + curr.value, 0);
-    const noDifferenceCount = implementationLevelData.find(s => s.name === 'No difference')?.value || 0;
-    const noDifferencePercentage = implementationLevelTotal > 0 ? (noDifferenceCount / implementationLevelTotal) * 100 : 0;
+    const implementationPercentages = implementationLevelData
+      .map(item => ({
+        name: item.name,
+        percentage: implementationLevelTotal > 0 ? (item.value / implementationLevelTotal) * 100 : 0,
+      }))
+      .sort((a, b) => b.percentage - a.percentage);
+
+    const topImplementationDescription = implementationPercentages
+      .slice(0, 3)
+      .map(item => `${item.percentage.toFixed(0)}% ${item.name}`)
+      .join(', ');
 
     return {
       implementationLevelData,
@@ -96,7 +105,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       annexData,
       finalStatusPercentage,
       yaAdaPerubahanPercentage,
-      noDifferencePercentage,
+      topImplementationDescription: topImplementationDescription || "No data to describe.",
     };
   }, [records]);
 
@@ -222,7 +231,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <Card className="lg:col-span-2">
             <CardHeader>
             <CardTitle>Level of Implementation Distribution</CardTitle>
-            <CardDescription>{analyticsData.noDifferencePercentage.toFixed(0)}% of records have 'No difference'.</CardDescription>
+            <CardDescription>{analyticsData.topImplementationDescription}</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
