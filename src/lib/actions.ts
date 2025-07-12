@@ -98,6 +98,8 @@ export async function addProject(
     projectData: Omit<Project, 'id'>
   ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
     try {
+      // Data is now prepared with defaults on the client-side in add-project-dialog.tsx
+      // We still map the team to a cleaner structure for Firestore.
       const preparedProjectData = {
         ...projectData,
         team: projectData.team.map(member => ({
@@ -106,16 +108,6 @@ export async function addProject(
           role: member.role,
           avatarUrl: member.avatarUrl,
         })),
-        tasks: [],
-        subProjects: [],
-        documents: [],
-        // Ensure optional fields are not undefined
-        annex: projectData.annex || '',
-        casr: projectData.casr || '',
-        tags: projectData.tags || [],
-        notes: projectData.notes || '',
-        complianceData: projectData.complianceData || [],
-        adoptionData: [], // This will be computed or deprecated
       };
 
       const docRef = await addDoc(collection(db, 'projects'), preparedProjectData);

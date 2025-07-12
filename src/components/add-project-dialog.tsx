@@ -112,9 +112,11 @@ export function AddProjectDialog({ allUsers }: AddProjectDialogProps) {
       documents: [],
       notes: '',
       projectType: data.projectType,
-      annex: data.annex,
-      casr: data.casr,
+      annex: data.annex || '',
+      casr: data.casr || '',
       tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
+      complianceData: [],
+      adoptionData: [],
     };
     
     const result = await addProject(newProjectData);
