@@ -80,7 +80,7 @@ export function EditCcefodRecordDialog({ record, onRecordUpdate }: EditCcefodRec
             <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Edit CC/EFOD Record</DialogTitle>
           <DialogDescription>
@@ -88,15 +88,13 @@ export function EditCcefodRecordDialog({ record, onRecordUpdate }: EditCcefodRec
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
-                <div className='flex-1 min-h-0'>
-                    <ScrollArea className="h-full pr-6">
-                        <div className="space-y-8 py-4">
-                            <CcefodSharedFormFields form={form} />
-                        </div>
-                    </ScrollArea>
-                </div>
-                <DialogFooter className="pt-4 border-t mt-4">
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+                <ScrollArea className="max-h-[60vh] pr-6">
+                    <div className="space-y-8 py-4">
+                        <CcefodSharedFormFields form={form} />
+                    </div>
+                </ScrollArea>
+                <DialogFooter className="pt-4 mt-4 border-t">
                     <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
                         Cancel
                     </Button>
