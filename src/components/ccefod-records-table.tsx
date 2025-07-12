@@ -253,53 +253,64 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
-                  {visibleColumns.map((col, index) => (
-                     <TableCell key={col.key} className={cn("whitespace-nowrap", index < visibleColumns.length - 1 ? "border-r" : "")}>
-                        {(() => {
-                            const value = record[col.key as keyof CcefodRecord] as string | undefined;
-                             const isRichText = col.key === 'standardPractice';
-                             
-                             let displayValue: React.ReactNode = value || 'N/A';
-                             
-                             if (isRichText && value) {
-                                return (
-                                    <div 
-                                        className="prose dark:prose-invert max-w-xs max-h-24 overflow-hidden text-ellipsis"
-                                        dangerouslySetInnerHTML={{ __html: value }}
-                                    />
-                                );
-                             }
+                  {visibleColumns.map((col, index) => {
+                     const isRichText = col.key === 'standardPractice';
+                     const isLongText = ['annex', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key);
 
-                             if (['annex', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key) && value && value.length > 50) {
-                                return (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <p className="truncate max-w-xs">{value}</p>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
-                                </Tooltip>
-                                );
-                             }
+                     return (
+                        <TableCell 
+                            key={col.key} 
+                            className={cn(
+                                "align-top",
+                                isRichText ? 'whitespace-normal' : 'whitespace-nowrap',
+                                index < visibleColumns.length - 1 ? "border-r" : ""
+                            )}
+                        >
+                            {(() => {
+                                const value = record[col.key as keyof CcefodRecord] as string | undefined;
+                                
+                                if (isRichText && value) {
+                                    return (
+                                        <div 
+                                            className="prose dark:prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: value }}
+                                        />
+                                    );
+                                }
 
-                             if (col.key === 'status' && value) {
-                                displayValue = <Badge
-                                className={cn({
-                                    'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
-                                    'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
-                                    'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                })}
-                                >
-                                {value}
-                                </Badge>
-                             } else if (col.key === 'createdAt' && value) {
-                                 displayValue = format(parseISO(value), 'PPP');
-                             }
+                                if (isLongText && value && value.length > 50) {
+                                    return (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <p className="truncate max-w-xs">{value}</p>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
+                                    </Tooltip>
+                                    );
+                                }
+                                
+                                let displayValue: React.ReactNode = value || 'N/A';
 
-                             return <div className="max-w-xs truncate">{displayValue}</div>;
-                        })()}
-                    </TableCell>
-                  ))}
-                  <TableCell className="text-right sticky right-0 bg-background/95 z-10">
+                                if (col.key === 'status' && value) {
+                                    displayValue = <Badge
+                                    className={cn({
+                                        'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
+                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
+                                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                    })}
+                                    >
+                                    {value}
+                                    </Badge>
+                                } else if (col.key === 'createdAt' && value) {
+                                    displayValue = format(parseISO(value), 'PPP');
+                                }
+
+                                return <div className="max-w-xs truncate">{displayValue}</div>;
+                            })()}
+                        </TableCell>
+                     )
+                  })}
+                  <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-top">
                     <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                        <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
                        <Tooltip>
