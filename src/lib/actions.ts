@@ -7,7 +7,7 @@ import {
   type SummarizeProjectStatusOutput,
 } from '@/ai/flows/summarize-project-status';
 import {
-    generateChecklist,
+    generateChecklist as generateChecklistFlow,
     type GenerateChecklistInput,
     type GenerateChecklistOutput
 } from '@/ai/flows/generate-checklist';
@@ -18,9 +18,13 @@ import { db } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
-// Re-export AI flows to be used in client components
-// This avoids exposing the AI implementation details to the client
-export { generateChecklist };
+// This is the new wrapper function for the AI flow.
+export async function generateChecklist(
+  input: GenerateChecklistInput
+): Promise<GenerateChecklistOutput> {
+  return await generateChecklistFlow(input);
+}
+
 
 export async function getAiSummary(
   input: SummarizeProjectStatusInput
