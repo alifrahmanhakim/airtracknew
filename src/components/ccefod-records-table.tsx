@@ -65,7 +65,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
     annexReference: true,
     standardPractice: true,
     legislationReference: true,
-    implementationLevel: false,
+    implementationLevel: true,
     differenceText: false,
     differenceReason: false,
     remarks: false,
@@ -217,7 +217,7 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                      <TableCell key={col.key} className="whitespace-nowrap">
                         {(() => {
                             const value = record[col.key] as string | undefined;
-                             const isTruncated = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan'].includes(col.key);
+                             const isTruncated = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'implementationLevel'].includes(col.key);
                              const content = (
                                 <>
                                 {col.key === 'status' && value ? (
