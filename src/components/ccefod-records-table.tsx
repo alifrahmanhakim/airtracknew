@@ -39,6 +39,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditCcefodRecordDialog } from './edit-ccefod-record-dialog';
+import { CcefodRecordDetailDialog } from './ccefod-record-detail-dialog';
 
 
 type CcefodRecordsTableProps = {
@@ -56,6 +57,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
   const [filter, setFilter] = useState('');
   const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
+  const [recordToView, setRecordToView] = useState<CcefodRecord | null>(null);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
@@ -219,7 +221,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
-                <TableRow key={record.id} className="border-b">
+                <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
                   {visibleColumns.map((col, index) => (
                      <TableCell key={col.key} className={cn("whitespace-nowrap", index < visibleColumns.length - 1 ? "border-r" : "")}>
                         {(() => {
@@ -260,7 +262,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                     </TableCell>
                   ))}
                   <TableCell className="text-right sticky right-0 bg-background/95 z-10">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                        <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
                        <Tooltip>
                             <TooltipTrigger asChild>
@@ -283,6 +285,13 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
           )}
         </div>
       </div>
+      {recordToView && (
+        <CcefodRecordDetailDialog 
+            record={recordToView}
+            open={!!recordToView}
+            onOpenChange={(open) => { if(!open) setRecordToView(null) }}
+        />
+      )}
     </TooltipProvider>
   );
 }
