@@ -68,11 +68,11 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     pqNumber: true,
     protocolQuestion: true,
     guidance: false,
-    icaoReferences: false,
+    icaoReferences: true,
     ppq: true,
     criticalElement: true,
     remarks: false,
-    evidence: false,
+    evidence: true,
     answer: false,
     poc: false,
     icaoStatus: true,
@@ -241,7 +241,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                         {(() => {
                             const value = record[col.key as keyof PqRecord] as string | undefined;
                             
-                            if (col.key === 'status' && value) {
+                            if (col.key === 'status') {
                                 return (<Badge
                                 className={cn({
                                     'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
