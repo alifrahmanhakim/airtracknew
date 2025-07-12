@@ -9,7 +9,7 @@ import {
 import type { Document, Project, SubProject, Task, User, CcefodRecord } from './types';
 import type { CcefodFormValues } from '@/components/ccefod-form';
 import { db } from './firebase';
-import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
 
@@ -347,6 +347,34 @@ export async function addCcefodRecord(
     };
   }
 }
+
+export async function updateCcefodRecord(
+    recordId: string,
+    recordData: CcefodFormValues
+  ): Promise<{ success: boolean; data?: CcefodRecord; error?: string }> {
+    try {
+      const recordRef = doc(db, 'ccefodRecords', recordId);
+      const docSnap = await getDoc(recordRef);
+      if (!docSnap.exists()) {
+        throw new Error("Record not found");
+      }
+      
+      const existingData = docSnap.data() as CcefodRecord;
+      const updatedData = { ...existingData, ...recordData };
+  
+      await setDoc(recordRef, updatedData);
+      revalidatePath('/ccefod');
+      
+      return { success: true, data: updatedData };
+    } catch (error) {
+      console.error('Update CCEFOD Record Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return {
+        success: false,
+        error: `Failed to update CCEFOD record: ${message}`,
+      };
+    }
+  }
 
 export async function deleteCcefodRecord(
     recordId: string

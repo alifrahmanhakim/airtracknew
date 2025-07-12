@@ -38,10 +38,13 @@ import {
 } from './ui/tooltip';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { EditCcefodRecordDialog } from './edit-ccefod-record-dialog';
+
 
 type CcefodRecordsTableProps = {
   records: CcefodRecord[];
   onDelete: (record: CcefodRecord) => void;
+  onUpdate: (updatedRecord: CcefodRecord) => void;
 };
 
 type SortDescriptor = {
@@ -49,7 +52,7 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProps) {
+export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecordsTableProps) {
   const [filter, setFilter] = useState('');
   const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
@@ -136,6 +139,8 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
     { key: 'remarks', header: 'Remarks'},
   ];
 
+  const visibleColumns = columnDefs.filter(c => columnVisibility[c.key]);
+
   if (records.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
@@ -201,19 +206,22 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
           <Table className="min-w-full">
             <TableHeader>
               <TableRow>
-                {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                    <TableHead key={col.key} className="cursor-pointer whitespace-nowrap" onClick={() => handleSort(col.key as keyof CcefodRecord)}>
+                {visibleColumns.map((col, index) => (
+                    <TableHead 
+                        key={col.key} 
+                        className={cn("cursor-pointer whitespace-nowrap", index < visibleColumns.length -1 ? "border-r" : "")} 
+                        onClick={() => handleSort(col.key as keyof CcefodRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right sticky right-0 bg-background/95">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95 z-10">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
-                <TableRow key={record.id}>
-                  {columnDefs.filter(c => columnVisibility[c.key]).map(col => (
-                     <TableCell key={col.key} className="whitespace-nowrap">
+                <TableRow key={record.id} className="border-b">
+                  {visibleColumns.map((col, index) => (
+                     <TableCell key={col.key} className={cn("whitespace-nowrap", index < visibleColumns.length - 1 ? "border-r" : "")}>
                         {(() => {
                             const value = record[col.key as keyof CcefodRecord] as string | undefined;
                              const isLongText = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key);
@@ -221,8 +229,11 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                                 <>
                                 {col.key === 'status' && value ? (
                                     <Badge
-                                    variant={value === 'Final' ? 'default' : value === 'Draft' ? 'secondary' : 'outline'}
-                                    className={cn({'bg-emerald-500/80 text-white': value === 'Final'})}
+                                    className={cn({
+                                        'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
+                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
+                                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                    })}
                                     >
                                     {value}
                                     </Badge>
@@ -248,16 +259,9 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
                         })()}
                     </TableCell>
                   ))}
-                  <TableCell className="text-right sticky right-0 bg-background/95">
+                  <TableCell className="text-right sticky right-0 bg-background/95 z-10">
                     <div className="flex justify-end gap-2">
-                       <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" disabled>
-                                    <Pencil className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Edit Record (coming soon)</p></TooltipContent>
-                       </Tooltip>
+                       <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
                        <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
@@ -282,5 +286,3 @@ export function CcefodRecordsTable({ records, onDelete }: CcefodRecordsTableProp
     </TooltipProvider>
   );
 }
-
-    

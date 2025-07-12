@@ -63,6 +63,10 @@ export default function CcefodPage() {
   const handleDeleteRequest = (record: CcefodRecord) => {
     setRecordToDelete(record);
   };
+
+  const handleRecordUpdate = (updatedRecord: CcefodRecord) => {
+    setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+  };
   
   const confirmDelete = async () => {
     if (!recordToDelete) return;
@@ -137,7 +141,7 @@ export default function CcefodPage() {
                 </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <CcefodRecordsTable records={records} onDelete={handleDeleteRequest} />
+                    <CcefodRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
                 </CardContent>
             </Card>
             </TabsContent>
