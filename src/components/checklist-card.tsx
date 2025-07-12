@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -141,7 +142,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
               ))
             ) : (
               <p className="text-sm text-center text-muted-foreground py-4">
-                No checklist items yet. Add one above to get started.
+                Kindly add this to a new checklist item to be included in this project's checklist
               </p>
             )}
           </div>
