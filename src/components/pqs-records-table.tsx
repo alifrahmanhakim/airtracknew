@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -14,7 +13,7 @@ import type { PqRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown, AlertTriangle } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -242,27 +241,22 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                         {(() => {
                             const value = record[col.key as keyof PqRecord] as string | undefined;
                             
-                            const content = (
-                                <>
-                                {col.key === 'status' && value ? (
-                                    <Badge
-                                    className={cn({
-                                        'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
-                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
-                                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                    })}
-                                    >
-                                    {value}
-                                    </Badge>
-                                ) : col.key === 'createdAt' && value ? (
-                                    format(parseISO(value), 'PPP')
-                                ) : (
-                                    value || 'N/A'
-                                )}
-                                </>
-                             );
-
-                             return <p>{content}</p>;
+                            if (col.key === 'status' && value) {
+                                return (<Badge
+                                className={cn({
+                                    'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
+                                    'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
+                                    'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                })}
+                                >
+                                {value}
+                                </Badge>);
+                            }
+                            if (col.key === 'createdAt' && value) {
+                                return format(parseISO(value), 'PPP');
+                            }
+                            
+                            return value || 'N/A';
                         })()}
                     </TableCell>
                   ))}

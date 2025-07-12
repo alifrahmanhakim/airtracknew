@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -14,7 +13,7 @@ import type { CcefodRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown, AlertTriangle } from 'lucide-react';
 import {
   Select,
   SelectContent,
