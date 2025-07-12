@@ -53,9 +53,15 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
+const implementationLevelOptions = [
+    "No difference","More exacting or exceeds","Different in character or other means of compliance","Less protective or patially implemented or not implemented","Not applicable","No  Information  Provided","Insufficient  Information  Provided"
+];
+
 export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecordsTableProps) {
   const [filter, setFilter] = useState('');
   const [annexFilter, setAnnexFilter] = useState<string>('all');
+  const [implementationLevelFilter, setImplementationLevelFilter] = useState<string>('all');
+  const [adaPerubahanFilter, setAdaPerubahanFilter] = useState<string>('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
   const [recordToView, setRecordToView] = useState<CcefodRecord | null>(null);
 
@@ -88,6 +94,14 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
         filteredData = filteredData.filter(record => record.annex === annexFilter);
     }
     
+    if (implementationLevelFilter !== 'all') {
+        filteredData = filteredData.filter(record => record.implementationLevel === implementationLevelFilter);
+    }
+
+    if (adaPerubahanFilter !== 'all') {
+        filteredData = filteredData.filter(record => record.adaPerubahan === adaPerubahanFilter);
+    }
+    
     if (filter) {
         const lowercasedFilter = filter.toLowerCase();
         filteredData = filteredData.filter(record => 
@@ -109,7 +123,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
     }
 
     return filteredData;
-  }, [records, filter, annexFilter, sort]);
+  }, [records, filter, annexFilter, implementationLevelFilter, adaPerubahanFilter, sort]);
 
   const handleSort = (column: keyof CcefodRecord) => {
     setSort(prevSort => {
@@ -164,31 +178,48 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Filter records..."
-                    value={filter}
-                    onChange={e => setFilter(e.target.value)}
-                    className="pl-9"
-                />
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Filter records..."
+                        value={filter}
+                        onChange={e => setFilter(e.target.value)}
+                        className="pl-9 w-full"
+                    />
+                </div>
+                <Select value={annexFilter} onValueChange={setAnnexFilter}>
+                    <SelectTrigger><SelectValue placeholder="Filter by Annex..." /></SelectTrigger>
+                    <SelectContent>
+                        {annexOptions.map(annex => (
+                            <SelectItem key={annex} value={annex}>
+                                {annex === 'all' ? 'All Annexes' : annex}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <Select value={implementationLevelFilter} onValueChange={setImplementationLevelFilter}>
+                    <SelectTrigger><SelectValue placeholder="Filter by Level..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Implementation Levels</SelectItem>
+                        {implementationLevelOptions.map(option => (
+                            <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <Select value={adaPerubahanFilter} onValueChange={setAdaPerubahanFilter}>
+                    <SelectTrigger><SelectValue placeholder="Filter by Change..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Change Statuses</SelectItem>
+                        <SelectItem value="YA">YA</SelectItem>
+                        <SelectItem value="TIDAK">TIDAK</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
-            <Select value={annexFilter} onValueChange={setAnnexFilter}>
-                <SelectTrigger className="w-full sm:w-[280px]">
-                    <SelectValue placeholder="Filter by Annex..." />
-                </SelectTrigger>
-                <SelectContent>
-                    {annexOptions.map(annex => (
-                        <SelectItem key={annex} value={annex}>
-                            {annex === 'all' ? 'All Annexes' : annex}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="ml-auto">
+                    <Button variant="outline" className="sm:ml-auto w-full sm:w-auto">
                     Kolom <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
