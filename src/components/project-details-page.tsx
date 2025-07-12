@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import type { Project, Task, User, SubProject, Document as ProjectDocument, ComplianceDataRow } from '@/lib/types';
-import { findUserById, aggregateComplianceData } from '@/lib/data';
+import { findUserById, aggregateComplianceData, taskOptions as standardTaskOptions } from '@/lib/data';
 import {
   Card,
   CardContent,
@@ -49,6 +49,9 @@ import {
   ListTree,
   BarChart2,
   Info,
+  ArrowRight,
+  CheckCircle,
+  Flag,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -229,6 +232,12 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const aggregatedData = aggregateComplianceData(complianceData);
   
   const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
+
+  // Logic for the To-Do card
+  const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
+  const currentTaskIndex = standardTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
+  const currentTask = currentTaskIndex !== -1 ? standardTaskOptions[currentTaskIndex] : null;
+  const nextTask = currentTaskIndex !== -1 && currentTaskIndex < standardTaskOptions.length - 1 ? standardTaskOptions[currentTaskIndex + 1] : null;
 
 
   return (
@@ -441,6 +450,36 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
+          {project.projectType === 'Rulemaking' && (
+             <Card>
+                <CardHeader>
+                    <CardTitle>What's Next?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {currentTask ? (
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm font-semibold text-muted-foreground">CURRENT TASK</p>
+                                <p className="font-bold text-lg text-primary">{currentTask.label}</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-semibold text-muted-foreground">NEXT TASK</p>
+                                    <p className="font-bold text-lg">{nextTask ? nextTask.label : 'Project Finalization'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3 text-green-600">
+                                <Flag className="h-5 w-5" />
+                                <p className="font-semibold text-lg">All standard tasks completed!</p>
+                        </div>
+                    )}
+                </CardContent>
+             </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Project Summary</CardTitle>
