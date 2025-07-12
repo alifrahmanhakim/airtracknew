@@ -15,6 +15,12 @@ export type Document = {
   url: string;
 };
 
+export type Attachment = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 export type Task = {
   id: string;
   title: string;
@@ -22,6 +28,7 @@ export type Task = {
   startDate: string;
   dueDate: string;
   status: 'Done' | 'In Progress' | 'To Do' | 'Blocked';
+  attachments?: Attachment[];
 };
 
 export type SubProject = {

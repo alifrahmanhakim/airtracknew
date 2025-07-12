@@ -66,6 +66,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 import { AdoptionLevelDashboard } from './adoption-level-dashboard';
 import { ComplianceDataEditor } from './compliance-data-editor';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 type ProjectDetailsPageProps = {
   project: Project;
@@ -179,10 +180,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   };
 
   const statusStyles: { [key in Task['status']]: string } = {
-    'Done': 'border-transparent bg-green-500 text-white',
-    'In Progress': 'border-transparent bg-blue-500 text-white',
-    'To Do': 'border-transparent bg-gray-400 text-white',
-    'Blocked': 'border-transparent bg-red-500 text-white',
+    'Done': 'border-transparent bg-green-100 text-green-800',
+    'In Progress': 'border-transparent bg-blue-100 text-blue-800',
+    'To Do': 'border-transparent bg-gray-100 text-gray-800',
+    'Blocked': 'border-transparent bg-red-100 text-red-800',
   };
   
   const subProjectStatusStyles: { [key in SubProject['status']]: string } = {
@@ -207,6 +208,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
 
 
   return (
+    <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="flex items-center justify-between">
         <div>
@@ -285,10 +287,26 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
                 <TableBody>
                   {tasks.length > 0 ? tasks.map((task) => {
                     const assignee = findUserById(task.assigneeId, users);
+                    const attachmentCount = task.attachments?.length || 0;
                     return (
                       <TableRow key={task.id}>
                         <TableCell className="font-medium">
-                          {task.title}
+                          <div className='flex items-center gap-2'>
+                            <span>{task.title}</span>
+                             {attachmentCount > 0 && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Paperclip className="h-3 w-3" />
+                                      <span className="text-xs">{attachmentCount}</span>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{attachmentCount} attachment(s)</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -402,18 +420,18 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
             <CardContent className="space-y-4">
               <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                      <span className="font-medium">Progress</span>
-                      <span className="text-muted-foreground">{Math.round(progress)}%</span>
+                      <span className="font-medium text-muted-foreground">Progress</span>
+                      <span className="font-semibold">{Math.round(progress)}%</span>
                   </div>
                   <Progress value={progress} />
               </div>
                <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Status</span>
                 <Badge variant="outline" className={cn("text-xs font-semibold", {
-                    'border-transparent bg-blue-500 text-white': project.status === 'On Track',
-                    'border-transparent bg-yellow-500 text-white': project.status === 'At Risk',
-                    'border-transparent bg-red-500 text-white': project.status === 'Off Track',
-                    'border-transparent bg-green-500 text-white': project.status === 'Completed',
+                    'border-transparent bg-green-100 text-green-800': project.status === 'Completed',
+                    'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track',
+                    'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk',
+                    'border-transparent bg-red-100 text-red-800': project.status === 'Off Track',
                 })}>{project.status}</Badge>
               </div>
               <div className="flex justify-between text-sm">
@@ -492,5 +510,6 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
       </AlertDialog>
 
     </main>
+    </TooltipProvider>
   );
 }

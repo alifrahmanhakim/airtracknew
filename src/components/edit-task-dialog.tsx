@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -32,13 +32,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { Task, User } from '@/lib/types';
-import { CalendarIcon, Loader2, Pencil } from 'lucide-react';
+import type { Task, User, Attachment } from '@/lib/types';
+import { CalendarIcon, Loader2, Pencil, Plus, Trash2, Link as LinkIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { updateTask } from '@/lib/actions';
+import { Separator } from './ui/separator';
+
+const attachmentSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'Name is required.'),
+  url: z.string().url('Must be a valid URL.'),
+});
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
@@ -46,6 +53,7 @@ const taskSchema = z.object({
   startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
   status: z.enum(['Done', 'In Progress', 'To Do', 'Blocked']),
+  attachments: z.array(attachmentSchema).optional(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
   path: ["dueDate"],
@@ -70,11 +78,16 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
     defaultValues: {
       title: task.title,
       assigneeId: task.assigneeId,
-      // Fallback for startDate to prevent crash on older data
       startDate: parseISO(task.startDate || task.dueDate),
       dueDate: parseISO(task.dueDate),
       status: task.status,
+      attachments: task.attachments || [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'attachments',
   });
 
   const onSubmit = async (data: TaskFormValues) => {
@@ -84,6 +97,7 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
       ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+      attachments: data.attachments,
     };
     
     const result = await updateTask(projectId, updatedTask);
@@ -258,7 +272,59 @@ export function EditTaskDialog({ projectId, task, onTaskUpdate, teamMembers }: E
                 </FormItem>
               )}
             />
-            <DialogFooter>
+
+            <Separator />
+
+            <div>
+              <FormLabel>Attachments (e.g., Google Drive, OneDrive links)</FormLabel>
+              <div className="space-y-3 mt-2">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="flex items-center gap-2 p-2 border rounded-md">
+                     <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                     <div className='flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                        <FormField
+                            control={form.control}
+                            name={`attachments.${index}.name`}
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormControl>
+                                    <Input placeholder="Attachment Name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name={`attachments.${index}.url`}
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormControl>
+                                    <Input placeholder="https://..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                     </div>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className='text-destructive hover:text-destructive'>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                 <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => append({ id: `att-${Date.now()}`, name: '', url: '' })}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Attachment
+                </Button>
+              </div>
+            </div>
+
+            <DialogFooter className='pt-4'>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
