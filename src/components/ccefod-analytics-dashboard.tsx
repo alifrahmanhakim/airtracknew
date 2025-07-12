@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CcefodFormValues } from './ccefod-form';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Info, PieChartIcon, BarChartIcon, Edit } from 'lucide-react';
 
 type CcefodAnalyticsDashboardProps = {
