@@ -117,6 +117,7 @@ export async function addTimKerjaProject(
   projectData: Pick<Project, 'name' | 'description' | 'ownerId' | 'startDate' | 'endDate' | 'status' | 'team' | 'tags'>
 ): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
   try {
+    // Explicitly construct the object to ensure no undefined fields are passed
     const preparedProjectData = {
       name: projectData.name,
       description: projectData.description,
@@ -131,12 +132,17 @@ export async function addTimKerjaProject(
         avatarUrl: member.avatarUrl,
       })),
       tags: projectData.tags || [],
+      // --- Default values for all other fields required by the Project type ---
+      projectType: 'Tim Kerja' as const,
       tasks: [],
       subProjects: [],
       documents: [],
       notes: '',
       checklist: [],
-      projectType: 'Tim Kerja' as const,
+      complianceData: [], // Not used in Tim Kerja, but needs a default value
+      adoptionData: [],   // Not used in Tim Kerja, but needs a default value
+      annex: '',          // Not used in Tim Kerja, but needs a default value
+      casr: '',           // Not used in Tim Kerja, but needs a default value
     };
     
     const docRef = await addDoc(collection(db, 'timKerjaProjects'), preparedProjectData);
@@ -169,6 +175,8 @@ export async function addRulemakingProject(
         avatarUrl: member.avatarUrl,
       })),
       tags: projectData.tags || [],
+      // --- Default values for all other fields required by the Project type ---
+      projectType: 'Rulemaking' as const,
       tasks: [],
       subProjects: [],
       documents: [],
@@ -176,7 +184,6 @@ export async function addRulemakingProject(
       complianceData: [],
       adoptionData: [],
       checklist: [],
-      projectType: 'Rulemaking' as const,
     };
     
     const docRef = await addDoc(collection(db, 'rulemakingProjects'), preparedProjectData);
@@ -613,3 +620,5 @@ export async function importPqRecords(records: PqFormValues[]): Promise<{ succes
     return { success: false, count: 0, error: `Failed to import records: ${message}` };
   }
 }
+
+    
