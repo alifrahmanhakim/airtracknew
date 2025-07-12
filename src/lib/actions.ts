@@ -15,7 +15,7 @@ import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord,
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
 import { db } from './firebase';
-import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
 // This is the new wrapper function for the AI flow.
@@ -245,6 +245,30 @@ export async function deleteProject(
         const message = error instanceof Error ? error.message : 'An unknown error occurred';
         return { success: false, error: `Failed to delete project: ${message}` };
     }
+}
+
+export async function deleteAllTimKerjaProjects(): Promise<{ success: boolean, count: number, error?: string }> {
+  try {
+    const projectsCollection = collection(db, 'timKerjaProjects');
+    const projectsSnapshot = await getDocs(projectsCollection);
+
+    if (projectsSnapshot.empty) {
+      return { success: true, count: 0 };
+    }
+
+    const batch = writeBatch(db);
+    projectsSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    revalidatePath('/dashboard');
+    return { success: true, count: projectsSnapshot.size };
+  } catch (error) {
+    console.error('Delete All Tim Kerja Projects Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, count: 0, error: `Failed to delete projects: ${message}` };
+  }
 }
 
 

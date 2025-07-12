@@ -5,7 +5,7 @@ import { getProjectsForUser } from '@/lib/data';
 import { DashboardPage } from '@/components/dashboard-page';
 import { useEffect, useState } from 'react';
 import type { Project, User } from '@/lib/types';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -25,7 +26,13 @@ export default function Dashboard() {
       setIsLoading(true);
       if (userId) {
         try {
-          // Fetch users
+          // Fetch current user
+          const userDoc = await getDoc(doc(db, 'users', userId));
+          if (userDoc.exists()) {
+            setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
+          }
+
+          // Fetch all users
           const usersQuerySnapshot = await getDocs(collection(db, "users"));
           const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
           setAllUsers(usersFromDb);
@@ -85,5 +92,5 @@ export default function Dashboard() {
     );
   }
 
-  return <DashboardPage projects={userProjects} users={allUsers} />;
+  return <DashboardPage projects={userProjects} users={allUsers} currentUser={currentUser} />;
 }
