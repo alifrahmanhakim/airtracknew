@@ -67,7 +67,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
     isiUsulan: false,
     annex: true,
     annexReference: true,
-    standardPractice: false,
+    standardPractice: true,
     legislationReference: false,
     implementationLevel: true,
     differenceText: false,
@@ -142,6 +142,14 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
   ];
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key]);
+
+  const stripHtml = (html: string) => {
+    if (typeof document === 'undefined') {
+        return html.replace(/<[^>]+>/g, '');
+    }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+  }
 
   if (records.length === 0) {
     return (
@@ -226,7 +234,13 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                      <TableCell key={col.key} className={cn("whitespace-nowrap", index < visibleColumns.length - 1 ? "border-r" : "")}>
                         {(() => {
                             const value = record[col.key as keyof CcefodRecord] as string | undefined;
-                             const isLongText = ['annex', 'standardPractice', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key);
+                             const isRichText = col.key === 'standardPractice';
+                             
+                             let displayValue = value || 'N/A';
+                             if (isRichText && value) {
+                                displayValue = stripHtml(value);
+                             }
+
                              const content = (
                                 <>
                                 {col.key === 'status' && value ? (
@@ -242,18 +256,18 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                                 ) : col.key === 'createdAt' && value ? (
                                     format(parseISO(value), 'PPP')
                                 ) : (
-                                    value || 'N/A'
+                                    displayValue
                                 )}
                                 </>
                              );
 
-                             if (isLongText && value && value.length > 50) {
+                             if ((isRichText || ['annex', 'legislationReference', 'isiUsulan', 'differenceText', 'differenceReason', 'remarks'].includes(col.key)) && displayValue.length > 50) {
                                 return (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <p className="truncate max-w-xs">{value}</p>
+                                        <p className="truncate max-w-xs">{displayValue}</p>
                                     </TooltipTrigger>
-                                    <TooltipContent className="max-w-md"><p>{value}</p></TooltipContent>
+                                    <TooltipContent className="max-w-md"><p>{displayValue}</p></TooltipContent>
                                 </Tooltip>
                                 );
                              }
