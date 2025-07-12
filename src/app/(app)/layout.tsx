@@ -14,7 +14,7 @@ import {
   LogOut,
   Landmark,
   ClipboardCheck,
-  ClipboardQuestion,
+  CircleHelp,
 } from 'lucide-react';
 
 import {
@@ -49,7 +49,7 @@ const navItems = {
       { href: '/team', label: 'Team', icon: Users },
       { href: '/reports', label: 'Reports', icon: LineChart },
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
-      { href: '/pqs', label: 'Protocol Questions', icon: ClipboardQuestion },
+      { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
     ]
 }
 
