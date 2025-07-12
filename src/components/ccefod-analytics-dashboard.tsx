@@ -164,7 +164,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                         <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" width={250} interval={0} tick={{ fontSize: 12 }} />
+                            <YAxis dataKey="name" type="category" width={180} interval={0} tick={{ fontSize: 12 }} />
                              <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
                                 content={({ active, payload }) => {
@@ -196,9 +196,9 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             <CardTitle>Level of Implementation Distribution</CardTitle>
             <CardDescription>Shows the count for each unique implementation level across all records.</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2 h-[400px]">
+            <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={400}>
                         <BarChart data={analyticsData.implementationLevelData} layout="horizontal" margin={{ right: 30, top: 20, bottom: 120 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                              <XAxis 
