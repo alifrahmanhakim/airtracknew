@@ -61,7 +61,7 @@ import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
-import { deleteDocument, deleteTask } from '@/lib/actions';
+import { deleteDocument, deleteTask, deleteProject } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 import { AdoptionLevelDashboard } from './adoption-level-dashboard';
@@ -77,6 +77,8 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const [project, setProject] = useState<Project>(initialProject);
   const [isDeletingDoc, setIsDeletingDoc] = useState<string | null>(null);
   const [isDeletingTask, setIsDeletingTask] = useState<string | null>(null);
+  const [isDeletingProject, setIsDeletingProject] = useState<boolean>(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [docToDelete, setDocToDelete] = useState<ProjectDocument | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const router = useRouter();
@@ -164,6 +166,28 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
     setTaskToDelete(null);
   }
 
+  const handleDeleteProject = async () => {
+    setIsDeletingProject(true);
+    const result = await deleteProject(project.id);
+    setIsDeletingProject(false);
+
+    if (result.success) {
+      toast({
+        title: "Project Deleted",
+        description: `"${project.name}" has been permanently deleted.`,
+      });
+      router.push('/dashboard');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error Deleting Project',
+        description: result.error || 'An unexpected error occurred.',
+      });
+      setShowDeleteConfirm(false);
+    }
+  };
+
+
   const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
       case 'PDF':
@@ -218,6 +242,10 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
         <div className="flex gap-2">
             {project.projectType === 'Rulemaking' && <ComplianceDataEditor project={project} />}
             <EditProjectDialog project={project} allUsers={users} />
+            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Project
+            </Button>
         </div>
       </div>
 
@@ -504,6 +532,28 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteTask} className={buttonVariants({ variant: 'destructive' })}>
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the project <span className="font-semibold">"{project.name}"</span> and all of its associated data, including tasks, documents, and sub-projects.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingProject}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeletingProject}
+              onClick={handleDeleteProject}
+              className={buttonVariants({ variant: 'destructive' })}
+            >
+              {isDeletingProject && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete Project
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

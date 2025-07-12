@@ -166,6 +166,23 @@ export async function updateProject(
     }
 }
 
+export async function deleteProject(
+    projectId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        await deleteDoc(projectRef);
+        revalidatePath('/dashboard');
+        revalidatePath('/rulemaking');
+        revalidatePath('/projects');
+        return { success: true };
+    } catch (error) {
+        console.error('Delete Project Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to delete project: ${message}` };
+    }
+}
+
 
 export async function addTask(
     projectId: string,
