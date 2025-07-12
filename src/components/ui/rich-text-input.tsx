@@ -143,7 +143,7 @@ export function RichTextInput({ name }: RichTextInputProps) {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: typeof window !== 'undefined' ? DOMPurify.sanitize(initialContent) : initialContent,
+    content: '', // Start empty, content is set via useEffect
     editorProps: {
       attributes: {
         class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none px-3 py-2',
@@ -161,14 +161,43 @@ export function RichTextInput({ name }: RichTextInputProps) {
   });
 
   React.useEffect(() => {
-    if (editor && !editor.isDestroyed && typeof window !== 'undefined') {
+    if (isSubmitting) {
+        editor?.setEditable(false);
+    } else {
+        editor?.setEditable(true);
+    }
+  }, [isSubmitting, editor]);
+
+  React.useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+        const sanitizedInitialContent = typeof window !== 'undefined' ? DOMPurify.sanitize(initialContent) : initialContent;
         const currentEditorContent = editor.getHTML();
-        const currentFormValue = DOMPurify.sanitize(watch(name) || '');
-        if (currentEditorContent !== currentFormValue) {
-            editor.commands.setContent(currentFormValue, false);
+
+        if (currentEditorContent !== sanitizedInitialContent) {
+            // Use a timeout to ensure the editor is ready for content update
+            setTimeout(() => {
+                editor.commands.setContent(sanitizedInitialContent, false);
+            }, 0);
         }
     }
-  }, [watch(name), editor]);
+    // Only run this when the component mounts or the editor instance changes
+  }, [editor]); 
+  
+  // Watch for external changes to the form value and update the editor
+  React.useEffect(() => {
+    const subscription = watch((value, { name: fieldName }) => {
+        if (fieldName === name && editor && !editor.isDestroyed) {
+             const formValue = value[name] || '';
+             const editorValue = editor.getHTML();
+             if (formValue !== editorValue) {
+                const sanitizedFormValue = typeof window !== 'undefined' ? DOMPurify.sanitize(formValue) : formValue;
+                editor.commands.setContent(sanitizedFormValue, false);
+             }
+        }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, editor, name]);
+
 
   return (
     <div className={cn('rounded-md border border-input focus-within:ring-2 focus-within:ring-ring', isSubmitting ? 'bg-muted' : '')}>
