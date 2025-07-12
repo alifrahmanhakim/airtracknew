@@ -1,5 +1,6 @@
 
 import type { User, Project, ComplianceDataRow, AdoptionDataPoint } from './types';
+import type { ComboboxOption } from '@/components/ui/combobox';
 
 export const users: User[] = [
   { id: '8aOs7OSaL8XFXLq7DxzbnuXN5eC3', name: 'Chewy Sihusky', email: 'chewysihusky@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
@@ -7,6 +8,22 @@ export const users: User[] = [
   { id: 'user-2', name: 'Maria Garcia', email: 'maria.garcia@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC' },
   { id: 'user-3', name: 'James Smith', email: 'james.smith@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC Assistant' },
   { id: 'user-4', name: 'Patricia Williams', email: 'patricia.williams@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
+];
+
+export const taskOptions: ComboboxOption[] = [
+    { value: 'Gap Analysis', label: 'Gap Analysis' },
+    { value: 'Penyusunan Draft', label: 'Penyusunan Draft' },
+    { value: 'Diskusi dengan SME', label: 'Diskusi dengan SME' },
+    { value: 'Diskusi dengan Stakeholder', label: 'Diskusi dengan Stakeholder' },
+    { value: 'Penyusunan KP/PM', label: 'Penyusunan KP/PM' },
+    { value: 'Persetujuan Manajemen', label: 'Persetujuan Manajemen' },
+    { value: 'Evaluasi Bagkum', label: 'Evaluasi Bagkum' },
+    { value: 'Revisi oleh Direktorat hasil koreksi Bagkum record keeping dan sinkronisasi', label: 'Revisi oleh Direktorat hasil koreksi Bagkum record keeping dan sinkronisasi' },
+    { value: 'Finalisasi oleh Bagkum', label: 'Finalisasi oleh Bagkum' },
+    { value: 'Evaluasi oleh Biro Hukum', label: 'Evaluasi oleh Biro Hukum' },
+    { value: 'Evaluasi oleh Kumham', label: 'Evaluasi oleh Kumham' },
+    { value: 'Setneg dan Pengesahan', label: 'Setneg dan Pengesahan' },
+    { value: 'Sosialisasi oleh Direktorat', label: 'Sosialisasi oleh Direktorat' },
 ];
 
 // This data can be used to seed your Firestore database.

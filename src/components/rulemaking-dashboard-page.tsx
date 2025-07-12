@@ -4,7 +4,7 @@
 import type { Project, User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle } from 'lucide-react';
+import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -16,6 +16,7 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { AddProjectDialog } from './add-project-dialog';
+import { taskOptions } from '@/lib/data';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -186,6 +187,11 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                        const lastDoneTask = project.tasks
                          ?.filter(t => t.status === 'Done')
                          .sort((a, b) => new Date(b.doneDate || b.dueDate).getTime() - new Date(a.doneDate || a.dueDate).getTime())[0];
+
+                       const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
+                       const currentTaskIndex = taskOptions.findIndex(option => !doneTaskTitles.has(option.value));
+                       const currentTask = currentTaskIndex !== -1 ? taskOptions[currentTaskIndex] : null;
+                       const nextTask = currentTaskIndex !== -1 && currentTaskIndex < taskOptions.length - 1 ? taskOptions[currentTaskIndex + 1] : null;
                        
                        return (
                         <Card key={project.id} className="flex flex-col hover:shadow-lg transition-shadow duration-300">
@@ -229,18 +235,42 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                         <span>{format(parseISO(project.endDate), 'dd-MM-yyyy')}</span>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-2 text-sm pt-2 border-t mt-4">
-                                  <CheckCircle className="h-4 w-4 mt-0.5 shrink-0 text-green-500" />
-                                  <div className="flex-1">
-                                    <p className="font-semibold text-foreground">Last Update</p>
-                                    {lastDoneTask ? (
-                                        <p className="text-muted-foreground">
-                                          {lastDoneTask.title} on {format(parseISO(lastDoneTask.doneDate || lastDoneTask.dueDate), 'dd MMM yyyy')}
-                                        </p>
-                                      ) : (
-                                        <p className="text-muted-foreground">No tasks completed yet</p>
-                                      )}
-                                  </div>
+                                <div className="space-y-3 pt-3 border-t mt-4">
+                                    <div className="flex items-start gap-2 text-sm">
+                                      <CheckCircle className="h-4 w-4 mt-0.5 shrink-0 text-green-500" />
+                                      <div className="flex-1">
+                                        <p className="font-semibold text-foreground">Last Update</p>
+                                        {lastDoneTask ? (
+                                            <p className="text-muted-foreground">
+                                              {lastDoneTask.title} on {format(parseISO(lastDoneTask.doneDate || lastDoneTask.dueDate), 'dd MMM yyyy')}
+                                            </p>
+                                          ) : (
+                                            <p className="text-muted-foreground">No tasks completed yet</p>
+                                          )}
+                                      </div>
+                                    </div>
+                                    <div className="p-3 rounded-md bg-muted/50">
+                                        {currentTask ? (
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <p className="text-xs font-semibold text-muted-foreground">CURRENT TASK</p>
+                                                    <p className="font-semibold text-primary">{currentTask.label}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-muted-foreground">NEXT</p>
+                                                        <p className="font-semibold text-foreground">{nextTask ? nextTask.label : 'Project Finalization'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                 <Flag className="h-4 w-4 text-green-600" />
+                                                 <p className="font-semibold text-green-600">All tasks completed!</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </CardContent>
                              <CardFooter className="pt-4 flex flex-wrap gap-2 border-t mt-auto">

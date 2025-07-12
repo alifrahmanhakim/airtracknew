@@ -39,6 +39,7 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { addTask } from '@/lib/actions';
 import { Combobox } from './ui/combobox';
+import { taskOptions as defaultTaskOptions } from '@/lib/data';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
@@ -58,21 +59,7 @@ type AddTaskDialogProps = {
   teamMembers: User[];
 };
 
-const taskOptions = [
-  { value: 'Gap Analysis', label: 'Gap Analysis' },
-  { value: 'Penyusunan Draft', label: 'Penyusunan Draft' },
-  { value: 'Diskusi dengan SME', label: 'Diskusi dengan SME' },
-  { value: 'Diskusi dengan Stakeholder', label: 'Diskusi dengan Stakeholder' },
-  { value: 'Penyusunan KP/PM', label: 'Penyusunan KP/PM' },
-  { value: 'Persetujuan Manajemen', label: 'Persetujuan Manajemen' },
-  { value: 'Evaluasi Bagkum', label: 'Evaluasi Bagkum' },
-  { value: 'Revisi oleh Direktorat hasil koreksi Bagkum record keeping dan sinkronisasi', label: 'Revisi oleh Direktorat hasil koreksi Bagkum record keeping dan sinkronisasi' },
-  { value: 'Finalisasi oleh Bagkum', label: 'Finalisasi oleh Bagkum' },
-  { value: 'Evaluasi oleh Biro Hukum', label: 'Evaluasi oleh Biro Hukum' },
-  { value: 'Evaluasi oleh Kumham', label: 'Evaluasi oleh Kumham' },
-  { value: 'Setneg dan Pengesahan', label: 'Setneg dan Pengesahan' },
-  { value: 'Sosialisasi oleh Direktorat', label: 'Sosialisasi oleh Direktorat' },
-];
+const taskOptions = defaultTaskOptions;
 
 export function AddTaskDialog({ projectId, onTaskAdd, teamMembers }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false);
