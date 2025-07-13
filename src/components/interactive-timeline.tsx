@@ -76,18 +76,19 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
         return dateA - dateB;
     });
 
-    let tStart, tEnd;
+    // Default to a 1-year view around today
+    const now = new Date();
+    let tStart = startOfISOWeek(addMonths(now, -6));
+    let tEnd = endOfISOWeek(addMonths(now, 6));
 
+    // If there are tasks, adjust the timeline to fit them
     if (validTasks.length > 0) {
       const allDates = validTasks.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
       const earliestDate = min(allDates);
       const latestDate = max(allDates);
-      tStart = startOfISOWeek(addMonths(earliestDate, -1));
-      tEnd = endOfISOWeek(addMonths(latestDate, 1));
-    } else {
-      const now = new Date();
-      tStart = startOfISOWeek(addMonths(now, -6));
-      tEnd = endOfISOWeek(addMonths(now, 6));
+      // Use the wider of the two ranges: the tasks' range or the default 1-year range
+      tStart = min([startOfISOWeek(addMonths(earliestDate, -1)), tStart]);
+      tEnd = max([endOfISOWeek(addMonths(latestDate, 1)), tEnd]);
     }
     
     const monthInterval = eachMonthOfInterval({ start: tStart, end: tEnd });
