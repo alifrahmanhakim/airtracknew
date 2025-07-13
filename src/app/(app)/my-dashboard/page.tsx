@@ -14,6 +14,7 @@ import { format, parseISO, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { ProjectCard } from '@/components/project-card';
+import { InteractiveTimeline } from '@/components/interactive-timeline';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -145,6 +146,7 @@ export default function MyDashboardPage() {
       <div className="p-4 md:p-8">
         <Skeleton className="h-9 w-72 mb-2" />
         <Skeleton className="h-5 w-96 mb-8" />
+        <Skeleton className="h-64 w-full mb-8" />
         <div className="space-y-4">
             <Skeleton className="h-10 w-64" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -164,6 +166,10 @@ export default function MyDashboardPage() {
         <p className="text-muted-foreground">
           Welcome back, {currentUser?.name || 'User'}. Here are your assigned projects and tasks.
         </p>
+      </div>
+
+      <div className="mb-8">
+        <InteractiveTimeline tasks={assignedTasks} />
       </div>
       
       <Tabs defaultValue="projects" className="w-full">

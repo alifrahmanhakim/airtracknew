@@ -60,6 +60,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
   const allUsers = React.useMemo(() => {
+    // This should ideally come from a context or props if needed for avatars
     return [];
   }, []);
 
@@ -80,8 +81,9 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     if (validTasks.length > 0) {
       const allDates = validTasks.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
       const earliestDate = min(allDates);
-      tStart = startOfISOWeek(earliestDate);
-      tEnd = endOfISOWeek(addYears(earliestDate, 1));
+      const latestDate = max(allDates);
+      tStart = startOfISOWeek(addMonths(earliestDate, -1));
+      tEnd = endOfISOWeek(addMonths(latestDate, 1));
     } else {
       const now = new Date();
       tStart = startOfISOWeek(addMonths(now, -6));
@@ -93,7 +95,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     const weekInterval = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
     
     const diffDays = differenceInDays(tEnd, tStart) + 1;
-    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tEnd) + 1;
+    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tStart) + 1;
 
     return { 
         sortedTasks: sorted, 
@@ -118,16 +120,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
         });
     }
    }, [viewMode, days, weeks]);
-
-  if (tasks.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center text-center py-10 text-muted-foreground">
-        <ListTodo className="h-12 w-12 mb-4" />
-        <p className="font-semibold">No Tasks Yet</p>
-        <p className="text-sm">Add tasks to any project to see them on the timeline.</p>
-      </div>
-    );
-  }
   
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
@@ -142,11 +134,10 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
 
   return (
     <TooltipProvider>
-       <div className="p-4 md:p-8">
         <Card>
             <CardHeader>
-                <CardTitle>Interactive Project Timeline</CardTitle>
-                <CardDescription>A centralized timeline of all tasks across all projects.</CardDescription>
+                <CardTitle>My Timeline</CardTitle>
+                <CardDescription>A centralized timeline of all your assigned tasks across all projects.</CardDescription>
             </CardHeader>
              <CardContent>
                 <div className="p-4 border-t flex justify-between items-center">
@@ -174,7 +165,14 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         ))}
                     </div>
                 </div>
-                <div className="w-full border rounded-lg overflow-hidden">
+                {tasks.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center text-center py-10 text-muted-foreground border-t">
+                        <ListTodo className="h-12 w-12 mb-4" />
+                        <p className="font-semibold">No Tasks Yet</p>
+                        <p className="text-sm">You have no assigned tasks with a due date.</p>
+                    </div>
+                ) : (
+                <div className="w-full border-t rounded-lg overflow-hidden">
                     <div className="w-full overflow-x-auto" ref={timelineContainerRef}>
                         <div className="flex relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px` }}>
                             {/* Task List - Sticky Left */}
@@ -356,9 +354,9 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         </div>
                     </div>
                 </div>
+                )}
              </CardContent>
         </Card>
-      </div>
     </TooltipProvider>
   );
 }
