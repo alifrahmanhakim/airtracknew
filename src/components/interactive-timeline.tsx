@@ -140,8 +140,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                 <CardTitle>My Timeline</CardTitle>
                 <CardDescription>A centralized timeline of all your assigned tasks across all projects.</CardDescription>
             </CardHeader>
-             <CardContent>
-                <div className="p-4 border-t flex justify-between items-center">
+             <CardContent className="overflow-x-auto">
+                <div className="p-4 border-t flex justify-between items-center min-w-max">
                     <RadioGroup defaultValue={viewMode} onValueChange={(value: ViewMode) => setViewMode(value)} className="flex items-center gap-4">
                     <div>
                         <RadioGroupItem value="week" id="r-month" className="peer sr-only" />
@@ -174,8 +174,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                     </div>
                 ) : (
                 <div className="w-full border-t rounded-lg overflow-hidden">
-                    <div className="w-full overflow-x-auto" ref={timelineContainerRef}>
-                        <div className="flex relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px` }}>
+                    <div className="w-full" ref={timelineContainerRef}>
+                        <div className="flex relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${totalHeight}px` }}>
                             {/* Task List - Sticky Left */}
                             <div className="sticky left-0 z-20 bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                                 <div className="h-16 flex items-center px-4 font-semibold border-b border-r">
