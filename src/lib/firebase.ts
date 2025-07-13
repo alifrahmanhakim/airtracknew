@@ -9,7 +9,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyCVT1PDkGdczXUP_LatsS6Q4K1h0xvXeT0",
-    authDomain: "aoc-insight.firebaseapp.com",
+    authDomain: "", // Let Firebase SDK auto-detect the domain
     projectId: "aoc-insight",
     storageBucket: "aoc-insight.appspot.com",
     messagingSenderId: "795850632942",
