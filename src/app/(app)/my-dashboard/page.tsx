@@ -13,6 +13,7 @@ import { Clock, Folder, Flag } from 'lucide-react';
 import { format, parseISO, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { ProjectCard } from '@/components/project-card';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -56,6 +57,7 @@ function TaskCard({ task }: { task: AssignedTask }) {
 
 export default function MyDashboardPage() {
   const [assignedTasks, setAssignedTasks] = React.useState<AssignedTask[]>([]);
+  const [myProjects, setMyProjects] = React.useState<Project[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [userId, setUserId] = React.useState<string | null>(null);
@@ -92,7 +94,10 @@ export default function MyDashboardPage() {
         ];
         
         const tasksForUser: AssignedTask[] = [];
+        const projectsForUser: Project[] = [];
+
         allProjects.forEach(project => {
+          // Check for assigned tasks
           (project.tasks || []).forEach(task => {
             if (task.assigneeId === userId) {
               tasksForUser.push({
@@ -104,13 +109,21 @@ export default function MyDashboardPage() {
               });
             }
           });
+
+          // Check for project membership
+          if (project.team.some(member => member.id === userId)) {
+            projectsForUser.push(project);
+          }
         });
         
         tasksForUser.sort((a, b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime());
+        projectsForUser.sort((a,b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
+        
         setAssignedTasks(tasksForUser);
+        setMyProjects(projectsForUser);
 
       } catch (error) {
-        console.error("Failed to fetch assigned tasks:", error);
+        console.error("Failed to fetch assigned data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -149,42 +162,61 @@ export default function MyDashboardPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">My Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {currentUser?.name || 'User'}. Here are your assigned tasks across all projects.
+          Welcome back, {currentUser?.name || 'User'}. Here are your assigned projects and tasks.
         </p>
       </div>
       
-      <Tabs defaultValue="todo" className="w-full">
+      <Tabs defaultValue="projects" className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="todo">To Do ({tasksByStatus.todo.length})</TabsTrigger>
-          <TabsTrigger value="inProgress">In Progress ({tasksByStatus.inProgress.length})</TabsTrigger>
-          <TabsTrigger value="done">Completed ({tasksByStatus.done.length})</TabsTrigger>
+          <TabsTrigger value="projects">My Projects ({myProjects.length})</TabsTrigger>
+          <TabsTrigger value="tasks">My Tasks ({assignedTasks.length})</TabsTrigger>
         </TabsList>
-        <TabsContent value="todo">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tasksByStatus.todo.length > 0 ? (
-                    tasksByStatus.todo.map(task => <TaskCard key={task.id} task={task} />)
+
+        <TabsContent value="projects">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                 {myProjects.length > 0 ? (
+                    myProjects.map(project => <ProjectCard key={project.id} project={project} />)
                 ) : (
-                    <p className="col-span-full text-center text-muted-foreground py-10">You have no tasks to do. Great job!</p>
+                    <p className="col-span-full text-center text-muted-foreground py-10">You are not a member of any projects yet.</p>
                 )}
             </div>
         </TabsContent>
-        <TabsContent value="inProgress">
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tasksByStatus.inProgress.length > 0 ? (
-                    tasksByStatus.inProgress.map(task => <TaskCard key={task.id} task={task} />)
-                ) : (
-                    <p className="col-span-full text-center text-muted-foreground py-10">No tasks are currently in progress.</p>
-                )}
-            </div>
-        </TabsContent>
-        <TabsContent value="done">
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tasksByStatus.done.length > 0 ? (
-                    tasksByStatus.done.map(task => <TaskCard key={task.id} task={task} />)
-                ) : (
-                    <p className="col-span-full text-center text-muted-foreground py-10">You have not completed any tasks yet.</p>
-                )}
-            </div>
+        
+        <TabsContent value="tasks">
+          <Tabs defaultValue="todo" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="todo">To Do ({tasksByStatus.todo.length})</TabsTrigger>
+              <TabsTrigger value="inProgress">In Progress ({tasksByStatus.inProgress.length})</TabsTrigger>
+              <TabsTrigger value="done">Completed ({tasksByStatus.done.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="todo">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tasksByStatus.todo.length > 0 ? (
+                        tasksByStatus.todo.map(task => <TaskCard key={task.id} task={task} />)
+                    ) : (
+                        <p className="col-span-full text-center text-muted-foreground py-10">You have no tasks to do. Great job!</p>
+                    )}
+                </div>
+            </TabsContent>
+            <TabsContent value="inProgress">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tasksByStatus.inProgress.length > 0 ? (
+                        tasksByStatus.inProgress.map(task => <TaskCard key={task.id} task={task} />)
+                    ) : (
+                        <p className="col-span-full text-center text-muted-foreground py-10">No tasks are currently in progress.</p>
+                    )}
+                </div>
+            </TabsContent>
+            <TabsContent value="done">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tasksByStatus.done.length > 0 ? (
+                        tasksByStatus.done.map(task => <TaskCard key={task.id} task={task} />)
+                    ) : (
+                        <p className="col-span-full text-center text-muted-foreground py-10">You have not completed any tasks yet.</p>
+                    )}
+                </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </main>
