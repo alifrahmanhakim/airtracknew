@@ -227,11 +227,11 @@ export default function LoginPage() {
                   </CardFooter>
               </div>
           </div>
+          <p className="px-6 pb-4 text-center text-xs text-white/60">
+              Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
+              TnC AI can make mistakes, so double-check it
+          </p>
         </Card>
-        <p className="mt-4 text-center text-xs text-white/60">
-            Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
-            TnC AI can make mistakes, so double-check it
-        </p>
       </div>
     </main>
   );
