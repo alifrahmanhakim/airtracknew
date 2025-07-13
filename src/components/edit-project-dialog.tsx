@@ -52,7 +52,7 @@ const projectSchema = z.object({
   endDate: z.date(),
   notes: z.string().optional(),
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  ownerId: z.string(),
+  ownerId: z.string().min(1, 'Project Manager is required.'),
   annex: z.string().optional(),
   casr: z.string().optional(),
   tags: z.string().optional(),
@@ -325,6 +325,31 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
                       <SelectItem value="At Risk">At Risk</SelectItem>
                       <SelectItem value="Off Track">Off Track</SelectItem>
                       <SelectItem value="Completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="ownerId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Manager</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a project manager" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {allUsers.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
