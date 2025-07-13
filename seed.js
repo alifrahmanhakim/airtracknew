@@ -9,7 +9,7 @@ const { getFirestore, collection, doc, setDoc } = require('firebase/firestore');
 // IMPORTANT: This configuration is now aligned with your actual Firebase config from src/lib/firebase.ts
 const firebaseConfig = {
     apiKey: "AIzaSyCVT1PDkGdczXUP_LatsS6Q4K1h0xvXeT0",
-    authDomain: "", // Let Firebase SDK auto-detect the domain
+    authDomain: "aoc-insight.firebaseapp.com",
     projectId: "aoc-insight",
     storageBucket: "aoc-insight.appspot.com",
     messagingSenderId: "795850632942",
