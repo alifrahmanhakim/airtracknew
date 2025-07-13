@@ -100,7 +100,15 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
-    const updatedTeam = data.team.map(userId => allUsers.find(u => u.id === userId)).filter(Boolean) as User[];
+    const updatedTeam = data.team.map(userId => {
+        const user = allUsers.find(u => u.id === userId);
+        return {
+            id: userId,
+            name: user?.name || 'Unnamed User',
+            role: user?.role || 'Functional',
+            avatarUrl: user?.avatarUrl || `https://placehold.co/100x100.png`
+        };
+    });
     
     const existingTags = data.tags ? data.tags.split(',').map(tag => tag.trim()) : [];
     let finalTags = existingTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());

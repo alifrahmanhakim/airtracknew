@@ -209,9 +209,9 @@ export async function updateProject(
         if (projectData.team) {
             updateData.team = projectData.team.map(member => ({
                 id: member.id,
-                name: member.name,
-                role: member.role,
-                avatarUrl: member.avatarUrl,
+                name: member.name || 'Unnamed User',
+                role: member.role || 'Functional',
+                avatarUrl: member.avatarUrl || `https://placehold.co/100x100.png`,
             }));
         }
         
