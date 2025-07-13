@@ -40,6 +40,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const navItems = {
     dashboards: [
@@ -197,7 +198,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className="bg-background/20 backdrop-blur-lg">
         <div className="p-2 absolute top-0 left-0">
           <SidebarTrigger />
         </div>
