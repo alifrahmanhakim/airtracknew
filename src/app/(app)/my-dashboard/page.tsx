@@ -8,11 +8,6 @@ import type { Project, Task, User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Clock, Folder, Flag } from 'lucide-react';
-import { format, parseISO, isPast } from 'date-fns';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import { ProjectCard } from '@/components/project-card';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
 
@@ -84,8 +79,8 @@ export default function MyDashboardPage() {
           }
         });
         
-        tasksForUser.sort((a, b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime());
-        projectsForUser.sort((a,b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
+        tasksForUser.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        projectsForUser.sort((a,b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
         
         setAssignedTasks(tasksForUser);
         setMyProjects(projectsForUser);
@@ -119,18 +114,19 @@ export default function MyDashboardPage() {
   }
 
   return (
-    <main className="p-4 md:p-8">
-      <div className="mb-8">
+    <main className="p-4 md:p-8 space-y-8">
+      <div>
         <h1 className="text-3xl font-bold">My Dashboard</h1>
         <p className="text-muted-foreground">
           Welcome back, {currentUser?.name || 'User'}. Here are your assigned projects and tasks.
         </p>
       </div>
+
+      <InteractiveTimeline tasks={assignedTasks} />
       
       <Tabs defaultValue="projects" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="projects">My Projects ({myProjects.length})</TabsTrigger>
-          <TabsTrigger value="tasks">My Timeline ({assignedTasks.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects">
@@ -141,10 +137,6 @@ export default function MyDashboardPage() {
                     <p className="col-span-full text-center text-muted-foreground py-10">You are not a member of any projects yet.</p>
                 )}
             </div>
-        </TabsContent>
-        
-        <TabsContent value="tasks">
-          <InteractiveTimeline tasks={assignedTasks} />
         </TabsContent>
       </Tabs>
     </main>

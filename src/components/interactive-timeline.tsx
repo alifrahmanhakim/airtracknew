@@ -41,7 +41,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-type TimelineTask = Task & { projectName: string };
+type TimelineTask = Task & { projectName?: string };
 
 type InteractiveTimelineProps = {
   tasks: TimelineTask[];
