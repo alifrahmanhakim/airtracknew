@@ -8,13 +8,13 @@ const { getFirestore, collection, doc, setDoc } = require('firebase/firestore');
 
 // IMPORTANT: This configuration is now aligned with your actual Firebase config from src/lib/firebase.ts
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY", // Replace with your actual config
+    apiKey: "AIzaSyCVT1PDkGdczXUP_LatsS6Q4K1h0xvXeT0",
     authDomain: "aoc-insight.firebaseapp.com",
     projectId: "aoc-insight",
     storageBucket: "aoc-insight.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your actual config
-    appId: "YOUR_APP_ID", // Replace with your actual config
-    measurementId: "YOUR_MEASUREMENT_ID" // Replace with your actual config
+    messagingSenderId: "795850632942",
+    appId: "1:795850632942:web:e780d8191316b17c8651a8",
+    measurementId: "G-CNFZC766E2"
 };
 
 
