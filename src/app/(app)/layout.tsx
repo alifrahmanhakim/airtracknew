@@ -15,6 +15,7 @@ import {
   Landmark,
   ClipboardCheck,
   CircleHelp,
+  UserSquare,
 } from 'lucide-react';
 
 import {
@@ -42,6 +43,7 @@ import { format } from 'date-fns';
 
 const navItems = {
     dashboards: [
+      { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare },
       { href: '/dashboard', label: 'Tim Kerja', icon: Home },
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark },
     ],
