@@ -58,15 +58,21 @@ export default function MyDashboardPage() {
   const [assignedTasks, setAssignedTasks] = React.useState<AssignedTask[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [userId, setUserId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    const id = localStorage.getItem('loggedInUserId');
+    setUserId(id);
+  }, []);
+
+  React.useEffect(() => {
+    if (!userId) {
+      setIsLoading(false); // If no user ID, stop loading
+      return;
+    };
+
     const fetchUserData = async () => {
       setIsLoading(true);
-      const userId = localStorage.getItem('loggedInUserId');
-      if (!userId) {
-        setIsLoading(false);
-        return;
-      }
       
       const userRef = doc(db, 'users', userId);
       const userSnap = await getDoc(userRef);
@@ -111,7 +117,7 @@ export default function MyDashboardPage() {
     };
 
     fetchUserData();
-  }, []);
+  }, [userId]);
   
   const tasksByStatus = React.useMemo(() => {
     return {
