@@ -27,7 +27,7 @@ import {
   ChartLegendContent,
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AddTimKerjaProjectDialog } from './add-tim-kerja-project-dialog';
 import { Button } from './ui/button';
 import {
@@ -43,27 +43,77 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllTimKerjaProjects } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { getProjectsForUser } from '@/lib/data';
 
-type DashboardPageProps = {
-  projects: Project[];
-  users: User[];
-  currentUser: User | null;
-};
+// Note: This component is now dynamically imported by `dashboard-wrapper.tsx`
+// with SSR turned off. This is the key to fixing the build error.
 
-export function DashboardPage({ projects, users, currentUser }: DashboardPageProps) {
+export function DashboardPage() {
+  const [userProjects, setUserProjects] = useState<Project[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
-  const totalProjects = projects.length;
-  const completedTasks = projects.flatMap(p => p.tasks).filter(t => t.status === 'Done').length;
-  const totalTasks = projects.flatMap(p => p.tasks).length;
-  const atRiskProjects = projects.filter(p => p.status === 'At Risk').length;
-  const offTrackProjects = projects.filter(p => p.status === 'Off Track').length;
+  useEffect(() => {
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    setUserId(loggedInUserId);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      if (userId) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', userId));
+          if (userDoc.exists()) {
+            setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
+          }
+
+          const usersQuerySnapshot = await getDocs(collection(db, "users"));
+          const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+          setAllUsers(usersFromDb);
+
+          const projectsQuerySnapshot = await getDocs(collection(db, "timKerjaProjects"));
+          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
+          
+          const projectsWithDefaults = projectsFromDb.map(p => ({
+            ...p,
+            subProjects: p.subProjects || [],
+            documents: p.documents || [],
+          }));
+
+          const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
+          setUserProjects(userVisibleProjects);
+        } catch (error) {
+          console.error("Error fetching data from Firestore:", error);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    if (userId) {
+        fetchData();
+    } else {
+        setIsLoading(false);
+    }
+  }, [userId]);
+
+
+  const totalProjects = userProjects.length;
+  const completedTasks = userProjects.flatMap(p => p.tasks).filter(t => t.status === 'Done').length;
+  const totalTasks = userProjects.flatMap(p => p.tasks).length;
+  const atRiskProjects = userProjects.filter(p => p.status === 'At Risk').length;
+  const offTrackProjects = userProjects.filter(p => p.status === 'Off Track').length;
 
   const projectStatusData = useMemo(() => {
-    const statusCounts = projects.reduce((acc, project) => {
+    const statusCounts = userProjects.reduce((acc, project) => {
       acc[project.status] = (acc[project.status] || 0) + 1;
       return acc;
     }, {} as Record<Project['status'], number>);
@@ -74,7 +124,7 @@ export function DashboardPage({ projects, users, currentUser }: DashboardPagePro
       { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--color-Off Track)' },
       { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-Completed)' },
     ];
-  }, [projects]);
+  }, [userProjects]);
   
   const chartConfig = {
     count: { label: 'Projects' },
@@ -99,6 +149,7 @@ export function DashboardPage({ projects, users, currentUser }: DashboardPagePro
       });
       // Force a reload to reflect the empty state
       router.refresh();
+      setUserProjects([]); // Also clear local state immediately
     } else {
       toast({
         variant: 'destructive',
@@ -118,12 +169,12 @@ export function DashboardPage({ projects, users, currentUser }: DashboardPagePro
               </div>
               <div className="flex items-center gap-2">
                 {isAdmin && (
-                  <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={projects.length === 0}>
+                  <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={userProjects.length === 0}>
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete All Projects
                   </Button>
                 )}
-                <AddTimKerjaProjectDialog allUsers={users} />
+                <AddTimKerjaProjectDialog allUsers={allUsers} />
               </div>
           </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -198,7 +249,7 @@ export function DashboardPage({ projects, users, currentUser }: DashboardPagePro
         <div>
           <h2 className="text-2xl font-bold tracking-tight mb-4">Active Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.filter(p => p.status !== 'Completed').map((project) => (
+            {userProjects.filter(p => p.status !== 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
@@ -207,7 +258,7 @@ export function DashboardPage({ projects, users, currentUser }: DashboardPagePro
         <div>
           <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">Completed Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.filter(p => p.status === 'Completed').map((project) => (
+            {userProjects.filter(p => p.status === 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
@@ -223,7 +274,7 @@ export function DashboardPage({ projects, users, currentUser }: DashboardPagePro
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete all
-              <span className="font-semibold"> {projects.length} Tim Kerja projects</span> and all of their associated data.
+              <span className="font-semibold"> {userProjects.length} Tim Kerja projects</span> and all of their associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
