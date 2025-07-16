@@ -1,13 +1,13 @@
 
 "use client";
 
-import { StateLetterAnalyticsDashboard } from "src/components/state-letter-analytics-dashboard";
-import { StateLetterRecordsTable } from "src/components/state-letter-records-table";
-import { db } from "src/lib/firebase";
+import { StateLetterAnalyticsDashboard } from "@/components/state-letter-analytics-dashboard";
+import { StateLetterRecordsTable } from "@/components/state-letter-records-table";
+import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { StateLetterRecord } from "src/lib/types";
-import { useToast } from "src/hooks/use-toast";
+import { StateLetterRecord } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 

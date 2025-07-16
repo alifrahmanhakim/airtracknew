@@ -4,7 +4,7 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import type { StateLetterRecord } from "src/lib/types";
+import type { StateLetterRecord } from "@/lib/types";
 
 export function StateLetterAnalyticsDashboard({
   records,

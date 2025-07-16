@@ -21,26 +21,26 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "src/components/ui/table";
-import { Button } from "src/components/ui/button";
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "src/components/ui/dropdown-menu";
-import { Input } from "src/components/ui/input";
-import { StateLetterRecord } from "src/lib/types";
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { StateLetterRecord } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "src/components/ui/dialog";
-import { StateLetterForm } from "src/components/state-letter-form";
+} from "@/components/ui/dialog";
+import { StateLetterForm } from "@/components/state-letter-form";
 import { ChevronDown, Plus, Search } from "lucide-react";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export function StateLetterRecordsTable({
