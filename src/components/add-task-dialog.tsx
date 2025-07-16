@@ -23,13 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Task, User } from '@/lib/types';
 import { CalendarIcon, Loader2, Plus } from 'lucide-react';
@@ -40,10 +33,11 @@ import { cn } from '@/lib/utils';
 import { addTask } from '@/lib/actions';
 import { Combobox } from './ui/combobox';
 import { rulemakingTaskOptions, timKerjaTaskOptions } from '@/lib/data';
+import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
-  assigneeId: z.string().min(1, 'Assignee is required.'),
+  assigneeIds: z.array(z.string()).min(1, 'At least one assignee is required.'),
   startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
 }).refine(data => data.dueDate >= data.startDate, {
@@ -65,11 +59,16 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  const userOptions: MultiSelectOption[] = teamMembers.map(user => ({
+    value: user.id,
+    label: user.name,
+  }));
+
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: '',
-      assigneeId: '',
+      assigneeIds: [],
     },
   });
 
@@ -78,7 +77,7 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
     const newTask: Task = {
       id: `task-${Date.now()}`,
       title: data.title,
-      assigneeId: data.assigneeId,
+      assigneeIds: data.assigneeIds,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
       status: 'To Do',
@@ -219,22 +218,16 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
             </div>
              <FormField
                 control={form.control}
-                name="assigneeId"
+                name="assigneeIds"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Assignee</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a team member" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {teamMembers.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Assignees</FormLabel>
+                    <MultiSelect
+                      options={userOptions}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      placeholder="Select team members..."
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -251,5 +244,3 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
     </Dialog>
   );
 }
-
-    

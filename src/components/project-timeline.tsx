@@ -274,7 +274,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                 {/* Task Bars */}
                 <div className="relative w-full z-10" style={{ height: `${sortedTasks.length * ROW_HEIGHT}px`}}>
                 {sortedTasks.map((task, index) => {
-                    const assignee = findUserById(task.assigneeId);
+                    const assignees = task.assigneeIds.map(id => findUserById(id, teamMembers)).filter(Boolean);
                     const taskStart = parseISO(task.startDate);
                     const taskEnd = parseISO(task.dueDate);
 
@@ -324,12 +324,16 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                             <p className="font-bold">{task.title}</p>
                             <p className="text-sm"><span className="font-semibold">Duration:</span> {format(taskStart, 'PPP')} - {format(taskEnd, 'PPP')}</p>
                             <div className="flex items-center gap-2 mt-2">
-                                {assignee && <Avatar className="h-6 w-6">
-                                    <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
-                                    <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
-                                </Avatar>}
+                                <div className="flex items-center -space-x-2">
+                                    {assignees.map(assignee => (
+                                         <Avatar key={assignee.id} className="h-6 w-6 border-2 border-tooltip">
+                                            <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
+                                            <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                    ))}
+                                </div>
                                 <div>
-                                    <p className="font-semibold">{assignee?.name || 'Unassigned'}</p>
+                                    <p className="font-semibold">{assignees.map(a => a.name).join(', ')}</p>
                                     <p className="text-sm"><span className="font-semibold">Status:</span> {task.status}</p>
                                 </div>
                             </div>

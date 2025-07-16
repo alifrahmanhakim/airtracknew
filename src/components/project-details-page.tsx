@@ -443,7 +443,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                 </TableHeader>
                 <TableBody>
                   {tasks.length > 0 ? tasks.map((task) => {
-                    const assignee = findUserById(task.assigneeId, users);
+                    const assignees = task.assigneeIds.map(id => findUserById(id, users)).filter(u => u);
                     const attachmentCount = task.attachments?.length || 0;
                     return (
                       <TableRow key={task.id}>
@@ -451,14 +451,23 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                           {task.title}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={assignee?.avatarUrl} data-ai-hint="person portrait" />
-                              <AvatarFallback>
-                                {assignee?.name?.charAt(0) || assignee?.email?.charAt(0) || '?'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{assignee?.name || 'Unassigned'}</span>
+                          <div className="flex items-center -space-x-2">
+                            {assignees.map((assignee) => (
+                              assignee && (
+                                <Tooltip key={assignee.id}>
+                                  <TooltipTrigger asChild>
+                                    <Avatar className="h-6 w-6 border-2 border-background">
+                                      <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
+                                      <AvatarFallback>
+                                        {assignee.name?.charAt(0) || assignee.email?.charAt(0) || '?'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{assignee.name}</TooltipContent>
+                                </Tooltip>
+                              )
+                            ))}
+                            {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
                           </div>
                         </TableCell>
                         <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>

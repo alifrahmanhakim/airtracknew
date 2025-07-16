@@ -26,7 +26,7 @@ export type Attachment = {
 export type Task = {
   id: string;
   title: string;
-  assigneeId: string;
+  assigneeIds: string[];
   startDate: string;
   dueDate: string;
   doneDate?: string; // Add optional completion date

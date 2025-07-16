@@ -40,6 +40,7 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { updateTask } from '@/lib/actions';
 import { Separator } from './ui/separator';
+import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 
 const attachmentSchema = z.object({
   id: z.string(),
@@ -49,7 +50,7 @@ const attachmentSchema = z.object({
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
-  assigneeId: z.string().min(1, 'Assignee is required.'),
+  assigneeIds: z.array(z.string()).min(1, 'At least one assignee is required.'),
   startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
   status: z.enum(['Done', 'In Progress', 'To Do', 'Blocked']),
@@ -75,11 +76,16 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  const userOptions: MultiSelectOption[] = teamMembers.map(user => ({
+    value: user.id,
+    label: user.name,
+  }));
+
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: task.title,
-      assigneeId: task.assigneeId,
+      assigneeIds: task.assigneeIds,
       startDate: parseISO(task.startDate || task.dueDate),
       dueDate: parseISO(task.dueDate),
       status: task.status,
@@ -243,22 +249,16 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
             </div>
              <FormField
                 control={form.control}
-                name="assigneeId"
+                name="assigneeIds"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Assignee</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a team member" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {teamMembers.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Assignees</FormLabel>
+                     <MultiSelect
+                      options={userOptions}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      placeholder="Select team members..."
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -392,5 +392,3 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
     </Dialog>
   );
 }
-
-    

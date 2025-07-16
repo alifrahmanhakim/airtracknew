@@ -75,7 +75,7 @@ export default function MyDashboardPage() {
         allProjects.forEach(project => {
           // Check for assigned tasks
           (project.tasks || []).forEach(task => {
-            if (task.assigneeId === userId) {
+            if (task.assigneeIds.includes(userId)) {
               tasksForUser.push({
                 ...task,
                 projectId: project.id,
