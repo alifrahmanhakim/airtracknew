@@ -680,7 +680,7 @@ export async function addStateLetterRecord(
 
 // GAP Analysis Actions
 export async function addGapAnalysisRecord(
-  recordData: GapAnalysisFormValues
+  recordData: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate: string }
 ): Promise<{ success: boolean; data?: GapAnalysisRecord; error?: string }> {
   try {
     const newRecordData = {

@@ -13,9 +13,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from './ui/button';
-import { Plus, Trash2 } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Calendar } from './ui/calendar';
 
 export const formSchema = z.object({
   slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
@@ -26,7 +30,7 @@ export const formSchema = z.object({
   actionRequired: z.string().min(1, 'Action Required is required'),
   effectiveDate: z.string().min(1, 'Effective Date is required'),
   applicabilityDate: z.string().min(1, 'Applicability Date is required'),
-  embeddedApplicabilityDate: z.string().min(1, 'Embedded Applicability Date is required'),
+  embeddedApplicabilityDate: z.date({ required_error: 'Embedded applicability date is required.' }),
   evaluations: z.array(z.object({
     id: z.string(),
     icaoSarp: z.string().min(1, 'ICAO SARP is required'),
@@ -82,7 +86,44 @@ export function GapAnalysisSharedFormFields({ form }: GapAnalysisSharedFormField
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
                 <FormField control={form.control} name="effectiveDate" render={({ field }) => ( <FormItem> <FormLabel>Effective Date</FormLabel> <FormControl><Input type="date" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                 <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( <FormItem> <FormLabel>Applicability Date</FormLabel> <FormControl><Input type="date" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                <FormField control={form.control} name="embeddedApplicabilityDate" render={({ field }) => ( <FormItem> <FormLabel>Embedded applicability date(s)</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                <FormField
+                  control={form.control}
+                  name="embeddedApplicabilityDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Embedded applicability date(s)</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
             </div>
           </fieldset>
         </CardContent>

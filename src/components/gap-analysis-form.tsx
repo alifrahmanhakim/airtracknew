@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { addGapAnalysisRecord } from '@/lib/actions';
 import type { GapAnalysisRecord } from '@/lib/types';
 import { GapAnalysisSharedFormFields, formSchema, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
+import { format } from 'date-fns';
 
 type GapAnalysisFormProps = {
   onFormSubmit: (data: GapAnalysisRecord) => void;
@@ -20,7 +21,7 @@ export function GapAnalysisForm({ onFormSubmit }: GapAnalysisFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const defaultFormValues: GapAnalysisFormValues = {
+  const defaultFormValues: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate?: Date } = {
     slReferenceNumber: '',
     annex: '',
     typeOfStateLetter: '',
@@ -29,7 +30,7 @@ export function GapAnalysisForm({ onFormSubmit }: GapAnalysisFormProps) {
     actionRequired: '',
     effectiveDate: '',
     applicabilityDate: '',
-    embeddedApplicabilityDate: 'N/A',
+    embeddedApplicabilityDate: undefined,
     evaluations: [
       { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences' }
     ],
@@ -45,8 +46,13 @@ export function GapAnalysisForm({ onFormSubmit }: GapAnalysisFormProps) {
 
   const onSubmit = async (data: GapAnalysisFormValues) => {
     setIsLoading(true);
+
+    const dataToSubmit = {
+      ...data,
+      embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
+    };
     
-    const result = await addGapAnalysisRecord(data);
+    const result = await addGapAnalysisRecord(dataToSubmit as any);
 
     setIsLoading(false);
 
