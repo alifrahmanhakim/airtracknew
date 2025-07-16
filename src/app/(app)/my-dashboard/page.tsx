@@ -10,6 +10,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectCard } from '@/components/project-card';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { format, parseISO } from 'date-fns';
+import { Folder } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -79,7 +92,7 @@ export default function MyDashboardPage() {
           }
         });
         
-        tasksForUser.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        tasksForUser.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
         projectsForUser.sort((a,b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
         
         setAssignedTasks(tasksForUser);
@@ -95,6 +108,13 @@ export default function MyDashboardPage() {
     fetchUserData();
   }, [userId]);
   
+  const statusStyles: { [key in Task['status']]: string } = {
+    'Done': 'border-transparent bg-green-100 text-green-800',
+    'In Progress': 'border-transparent bg-blue-100 text-blue-800',
+    'To Do': 'border-transparent bg-gray-100 text-gray-800',
+    'Blocked': 'border-transparent bg-red-100 text-red-800',
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 md:p-8">
@@ -127,6 +147,7 @@ export default function MyDashboardPage() {
       <Tabs defaultValue="projects" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="projects">My Projects ({myProjects.length})</TabsTrigger>
+          <TabsTrigger value="tasks">My Tasks ({assignedTasks.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects">
@@ -137,6 +158,53 @@ export default function MyDashboardPage() {
                     <p className="col-span-full text-center text-muted-foreground py-10">You are not a member of any projects yet.</p>
                 )}
             </div>
+        </TabsContent>
+        <TabsContent value="tasks">
+          <Card>
+            <CardHeader>
+              <CardTitle>My Assigned Tasks</CardTitle>
+              <CardDescription>All tasks assigned to you across all projects, sorted by due date.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Project</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {assignedTasks.length > 0 ? (
+                    assignedTasks.map(task => (
+                      <TableRow key={task.id}>
+                        <TableCell className="font-medium">{task.title}</TableCell>
+                        <TableCell>
+                          <Link href={`/projects/${task.projectId}?type=${task.projectType === 'Rulemaking' ? 'rulemaking' : 'timkerja'}`} className="flex items-center gap-2 hover:underline text-muted-foreground hover:text-primary">
+                            <Folder className="h-4 w-4" />
+                            {task.projectName}
+                          </Link>
+                        </TableCell>
+                        <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
+                        <TableCell>
+                           <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
+                            {task.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center">
+                        You have no assigned tasks.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </main>
