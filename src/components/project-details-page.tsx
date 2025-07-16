@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -70,15 +69,24 @@ import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
-import { deleteDocument, deleteTask, deleteProject } from '@/lib/actions';
+import { deleteDocument, deleteTask, deleteProject, deleteGapAnalysisRecord } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { ChecklistCard } from './checklist-card';
 import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
 import { RulemakingAnalytics } from './rulemaking-analytics';
+import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
 
-function AssociatedGapAnalysisCard({ records }: { records: GapAnalysisRecord[] }) {
+function AssociatedGapAnalysisCard({ 
+    records, 
+    onDelete,
+    onUpdate
+}: { 
+    records: GapAnalysisRecord[],
+    onDelete: (record: GapAnalysisRecord) => void,
+    onUpdate: (record: GapAnalysisRecord) => void
+}) {
     const [recordToView, setRecordToView] = useState<GapAnalysisRecord | null>(null);
 
     if (records.length === 0) {
@@ -106,7 +114,7 @@ function AssociatedGapAnalysisCard({ records }: { records: GapAnalysisRecord[] }
                   <TableHead>Type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Evaluation Date</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -130,6 +138,15 @@ function AssociatedGapAnalysisCard({ records }: { records: GapAnalysisRecord[] }
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent><p>View Details</p></TooltipContent>
+                       </Tooltip>
+                       <EditGapAnalysisRecordDialog record={record} onRecordUpdate={onUpdate} />
+                       <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Delete Record</p></TooltipContent>
                        </Tooltip>
                     </TableCell>
                   </TableRow>
@@ -156,14 +173,20 @@ type ProjectDetailsPageProps = {
   allGapAnalysisRecords: GapAnalysisRecord[];
 };
 
-export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords }: ProjectDetailsPageProps) {
+export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords: initialGapRecords }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
+  const [allGapAnalysisRecords, setAllGapAnalysisRecords] = useState<GapAnalysisRecord[]>(initialGapRecords);
+
   const [isDeletingDoc, setIsDeletingDoc] = useState<string | null>(null);
   const [isDeletingTask, setIsDeletingTask] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState<boolean>(false);
+  const [isDeletingGapRecord, setIsDeletingGapRecord] = useState(false);
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [docToDelete, setDocToDelete] = useState<ProjectDocument | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [gapRecordToDelete, setGapRecordToDelete] = useState<GapAnalysisRecord | null>(null);
+
   const router = useRouter();
   const { toast } = useToast();
 
@@ -273,6 +296,30 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       });
       setShowDeleteConfirm(false);
     }
+  };
+
+  const handleDeleteGapRecordRequest = (record: GapAnalysisRecord) => {
+    setGapRecordToDelete(record);
+  };
+
+  const handleGapRecordUpdate = (updatedRecord: GapAnalysisRecord) => {
+    setAllGapAnalysisRecords(prev => prev.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+  };
+
+  const confirmDeleteGapRecord = async () => {
+    if (!gapRecordToDelete) return;
+
+    setIsDeletingGapRecord(true);
+    const result = await deleteGapAnalysisRecord(gapRecordToDelete.id);
+    setIsDeletingGapRecord(false);
+
+    if (result.success) {
+      setAllGapAnalysisRecords(prev => prev.filter(r => r.id !== gapRecordToDelete.id));
+      toast({ title: "GAP Analysis Record Deleted", description: `Record ${gapRecordToDelete.slReferenceNumber} has been removed.` });
+    } else {
+      toast({ variant: 'destructive', title: 'Error', description: result.error });
+    }
+    setGapRecordToDelete(null);
   };
 
 
@@ -462,7 +509,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             </CardContent>
           </Card>
           
-          {project.projectType === 'Rulemaking' && <AssociatedGapAnalysisCard records={associatedGapRecords} />}
+          {project.projectType === 'Rulemaking' && <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />}
 
           <Card>
              <CardHeader className="flex flex-row items-center justify-between">
@@ -695,6 +742,27 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!gapRecordToDelete} onOpenChange={(open) => !open && setGapRecordToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader className="text-center items-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the record with SL Reference <span className="font-semibold">{gapRecordToDelete?.slReferenceNumber}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeletingGapRecord}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDeleteGapRecord} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeletingGapRecord}>
+                    {isDeletingGapRecord ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 
     </main>
     </TooltipProvider>
