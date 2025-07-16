@@ -53,6 +53,7 @@ import {
   CheckCircle,
   Flag,
   AlertTriangle,
+  Pencil,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -250,7 +251,6 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <p className="text-muted-foreground">{project.description}</p>
         </div>
         <div className="flex gap-2">
-            {project.projectType === 'Rulemaking' && <ComplianceDataEditor project={project} />}
             <EditProjectDialog project={project} allUsers={users} />
             <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject}>
               <Trash2 className="mr-2 h-4 w-4" />
@@ -277,37 +277,41 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           </CardContent>
         </Card>
 
+        {project.projectType === 'Rulemaking' && (
+            <Card className="lg:col-span-3">
+              <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                        <CardTitle className="flex items-center gap-2">
+                            <BarChart2 /> Compliance Resume
+                        </CardTitle>
+                        <CardDescription>
+                          Resume of State Letter Annex {project.annex} to CASR {project.casr}
+                        </CardDescription>
+                    </div>
+                    <ComplianceDataEditor project={project} />
+                  </div>
+              </CardHeader>
+              <CardContent>
+                {aggregatedComplianceData && aggregatedComplianceData.length > 0 ? (
+                    <div className="space-y-4">
+                        {aggregatedComplianceData.map((data, index) => (
+                            <ComplianceAnalytics key={index} data={data} />
+                        ))}
+                    </div>
+                ) : (
+                  <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
+                    <Info className="mx-auto h-8 w-8 mb-2" />
+                    <p className="font-semibold">No Compliance Data Available</p>
+                    <p className="text-sm">Click 'Edit Compliance Data' to add the first record.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
-
-        {project.projectType === 'Rulemaking' && (
-          <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <BarChart2 /> Compliance Resume
-                </CardTitle>
-                <CardDescription>
-                  Resume of State Letter Annex {project.annex} to CASR {project.casr}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {aggregatedComplianceData && aggregatedComplianceData.length > 0 ? (
-                  <div className="space-y-4">
-                      {aggregatedComplianceData.map((data, index) => (
-                          <ComplianceAnalytics key={index} data={data} />
-                      ))}
-                  </div>
-              ) : (
-                <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
-                  <Info className="mx-auto h-8 w-8 mb-2" />
-                  <p className="font-semibold">No Compliance Data Available</p>
-                  <p className="text-sm">Click 'Edit Compliance Data' to add the first record.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">

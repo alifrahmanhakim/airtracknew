@@ -321,7 +321,3 @@ export function ComplianceDataEditor({ project }: ComplianceDataEditorProps) {
     </Dialog>
   );
 }
-
-    
-
-    
