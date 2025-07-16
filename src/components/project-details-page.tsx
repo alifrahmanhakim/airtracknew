@@ -71,6 +71,7 @@ import { ProjectTimeline } from './project-timeline';
 import { ComplianceDataEditor } from './compliance-data-editor';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { ChecklistCard } from './checklist-card';
+import { ComplianceAnalytics } from './compliance-analytics';
 
 
 type ProjectDetailsPageProps = {
@@ -291,7 +292,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
             </CardHeader>
             <CardContent>
               {complianceData && complianceData.length > 0 ? (
-                  <div>TODO: Re-implement analytics dashboard here</div>
+                  <ComplianceAnalytics data={complianceData} />
               ) : (
                 <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
                   <Info className="mx-auto h-8 w-8 mb-2" />
