@@ -4,84 +4,56 @@
 import * as React from 'react';
 import type { ComplianceDataRow } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Info, CheckCircle, HelpCircle, XCircle, FileText, FilePlus, FileQuestion, FileClock } from 'lucide-react';
+import { Progress } from './ui/progress';
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Info } from 'lucide-react';
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+  } from '@/components/ui/tooltip';
 
 interface ComplianceAnalyticsProps {
   data: ComplianceDataRow[];
 }
 
-const CHART_COLORS = {
-  // Evaluation Status
-  Evaluated: 'hsl(var(--chart-1))',
-  'Not Evaluated': 'hsl(var(--chart-2))',
-  'Not Finish Yet': 'hsl(var(--chart-3))',
-  // Subject Status
-  Standard: 'hsl(var(--chart-1))',
-  Recommendation: 'hsl(var(--chart-2))',
-  'Not Applicable': 'hsl(var(--chart-4))',
-  // Gap Status
-  'Existing in CASR': 'hsl(var(--chart-1))',
-  'Draft in CASR': 'hsl(var(--chart-2))',
-  'Belum Diadop': 'hsl(var(--chart-3))',
-  'Tidak Diadop': 'hsl(var(--chart-5))',
-  'Management Decision': 'hsl(var(--chart-4))',
-};
-
-const PieChartCard = ({ title, data, dataKey, nameKey }: { title: string, data: any[], dataKey: string, nameKey: string }) => {
-    
-    const chartData = React.useMemo(() => {
-        const counts = data.reduce((acc, item) => {
-            const key = item[nameKey] as string;
-            acc[key] = (acc[key] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
-        return Object.entries(counts).map(([name, value]) => ({ name, value }));
-    }, [data, nameKey]);
-
-    const chartConfig = {
-      value: { label: 'Count' },
-      ...chartData.reduce((acc, item) => {
-          acc[item.name] = { 
-            label: item.name, 
-            color: CHART_COLORS[item.name as keyof typeof CHART_COLORS] || 'hsl(var(--muted))'
-          };
-          return acc;
-      }, {} as any)
-    };
-
+const ProgressBarCard = ({ title, value, total, colorClass }: { title: string, value: number, total: number, colorClass: string }) => {
+    const percentage = total > 0 ? (value / total) * 100 : 0;
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px]">
-                     <PieChart>
-                        <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
-                        <Pie data={chartData} dataKey={dataKey} nameKey={nameKey} innerRadius={60} strokeWidth={5}>
-                            {chartData.map((entry) => (
-                                <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[entry.name as keyof typeof CHART_COLORS] || 'hsl(var(--muted))'} />
-                            ))}
-                        </Pie>
-                         <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
-                    </PieChart>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+        <div>
+            <div className="flex justify-between items-center mb-1">
+                <p className="text-sm font-medium text-muted-foreground">{title}</p>
+                <p className="text-sm font-semibold">{value} / {total}</p>
+            </div>
+            <Progress value={percentage} indicatorClassName={colorClass} />
+        </div>
     )
 }
 
+
 export function ComplianceAnalytics({ data }: ComplianceAnalyticsProps) {
-  if (!data || data.length === 0) {
+  const stats = React.useMemo(() => {
+    if (!data || data.length === 0) {
+      return null;
+    }
+    const total = data.length;
+    const evaluated = data.filter(d => d.evaluationStatus === 'Evaluated').length;
+    const notEvaluated = data.filter(d => d.evaluationStatus === 'Not Evaluated').length;
+    const notFinishYet = data.filter(d => d.evaluationStatus === 'Not Finish Yet').length;
+
+    const standard = data.filter(d => d.subjectStatus === 'Standard').length;
+    const recommendation = data.filter(d => d.subjectStatus === 'Recommendation').length;
+
+    const existingInCasr = data.filter(d => d.gapStatus === 'Existing in CASR').length;
+    const draftInCasr = data.filter(d => d.gapStatus === 'Draft in CASR').length;
+    const belumDiadop = data.filter(d => d.gapStatus === 'Belum Diadop').length;
+    const tidakDiadop = data.filter(d => d.gapStatus === 'Tidak Diadop').length;
+    const managementDecision = data.filter(d => d.gapStatus === 'Management Decision').length;
+
+    return { total, evaluated, notEvaluated, notFinishYet, standard, recommendation, existingInCasr, draftInCasr, belumDiadop, tidakDiadop, managementDecision };
+  }, [data]);
+
+  if (!stats) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
@@ -92,10 +64,74 @@ export function ComplianceAnalytics({ data }: ComplianceAnalyticsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <PieChartCard title="Evaluation Status" data={data} dataKey="value" nameKey="evaluationStatus" />
-        <PieChartCard title="Subject Status" data={data} dataKey="value" nameKey="subjectStatus" />
-        <PieChartCard title="Gap Status" data={data} dataKey="value" nameKey="gapStatus" />
-    </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <div>
+            <p className="text-base font-semibold mb-2">Evaluation Status</p>
+            <ProgressBarCard title="Evaluated" value={stats.evaluated} total={stats.total} colorClass="bg-green-500" />
+        </div>
+        
+        <div>
+            <p className="text-base font-semibold mb-3">Gap Status</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-blue-500" />
+                    <div>
+                        <p className="font-bold">{stats.existingInCasr}</p>
+                        <p className="text-xs text-muted-foreground">Existing in CASR</p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-3">
+                    <FileClock className="h-5 w-5 text-blue-400" />
+                    <div>
+                        <p className="font-bold">{stats.draftInCasr}</p>
+                        <p className="text-xs text-muted-foreground">Draft in CASR</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <FilePlus className="h-5 w-5 text-yellow-500" />
+                    <div>
+                        <p className="font-bold">{stats.belumDiadop}</p>
+                        <p className="text-xs text-muted-foreground">Belum Diadop</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <FileQuestion className="h-5 w-5 text-orange-500" />
+                    <div>
+                        <p className="font-bold">{stats.managementDecision}</p>
+                        <p className="text-xs text-muted-foreground">Management Decision</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <XCircle className="h-5 w-5 text-red-500" />
+                    <div>
+                        <p className="font-bold">{stats.tidakDiadop}</p>
+                        <p className="text-xs text-muted-foreground">Tidak Diadop</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <p className="text-base font-semibold mb-3">Subject Status</p>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                 <div className="flex items-center gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <div>
+                        <p className="font-bold">{stats.standard}</p>
+                        <p className="text-xs text-muted-foreground">Standard</p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-3">
+                    <HelpCircle className="h-5 w-5 text-gray-500" />
+                    <div>
+                        <p className="font-bold">{stats.recommendation}</p>
+                        <p className="text-xs text-muted-foreground">Recommendation</p>
+                    </div>
+                </div>
+             </div>
+        </div>
+      </div>
+    </TooltipProvider>
   );
 }
