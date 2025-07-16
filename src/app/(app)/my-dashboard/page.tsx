@@ -87,7 +87,7 @@ export default function MyDashboardPage() {
           });
 
           // Check for project membership
-          if (project.team.some(member => member.id === userId)) {
+          if (project.team && project.team.some(member => member.id === userId)) {
             projectsForUser.push(project);
           }
         });
