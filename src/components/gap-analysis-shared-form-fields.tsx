@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from './ui/button';
-import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -22,6 +22,10 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { Combobox, ComboboxOption } from './ui/combobox';
+import { useState } from 'react';
+import { SignaturePadDialog } from './signature-pad';
+import Image from 'next/image';
+
 
 const inspectorSchema = z.object({
   id: z.string(),
@@ -78,7 +82,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
     name: 'evaluations',
   });
 
-  const { fields: inspectorFields, append: appendInspector, remove: removeInspector } = useFieldArray({
+  const { fields: inspectorFields, append: appendInspector, remove: removeInspector, update: updateInspector } = useFieldArray({
       control: form.control,
       name: "inspectors",
   });
@@ -213,41 +217,56 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
             <div>
               <FormLabel>Inspector Names & Signatures</FormLabel>
               <div className="space-y-3 mt-2">
-                {inspectorFields.map((field, index) => (
-                  <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md">
-                     <div className='flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2'>
-                        <FormField
-                            control={form.control}
-                            name={`inspectors.${index}.name`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel className="text-xs">Inspector Name {index + 1}</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Full Name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name={`inspectors.${index}.signature`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel className="text-xs">Digital Signature</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Type name or paste signature URL" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                     </div>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeInspector(index)} className='text-destructive hover:text-destructive'>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                {inspectorFields.map((field, index) => {
+                  const signature = form.watch(`inspectors.${index}.signature`);
+                  return (
+                    <div key={field.id} className="flex items-start gap-4 p-4 border rounded-md">
+                        <div className='flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                          <FormField
+                              control={form.control}
+                              name={`inspectors.${index}.name`}
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel className="text-xs">Inspector Name {index + 1}</FormLabel>
+                                  <FormControl>
+                                      <Input placeholder="Full Name" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          <div className='space-y-2'>
+                              <FormLabel className="text-xs">Digital Signature</FormLabel>
+                              {signature ? (
+                                  <div className='relative group'>
+                                      <div className="bg-white p-2 border rounded-md aspect-video max-w-[200px]">
+                                          <Image src={signature} alt="Signature" width={200} height={100} className='w-full h-auto' />
+                                      </div>
+                                      <SignaturePadDialog
+                                        onSave={(newSignature) => updateInspector(index, { ...field, signature: newSignature })}
+                                        trigger={
+                                            <Button size="icon" variant="outline" className='absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity'>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        }
+                                      />
+                                  </div>
+                              ) : (
+                                <SignaturePadDialog
+                                    onSave={(newSignature) => updateInspector(index, { ...field, signature: newSignature })}
+                                    trigger={
+                                        <Button type="button" variant="outline">Add Signature</Button>
+                                    }
+                                />
+                              )}
+                          </div>
+                        </div>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeInspector(index)} className='text-destructive hover:text-destructive'>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
                  <Button
                   type="button"
                   variant="outline"

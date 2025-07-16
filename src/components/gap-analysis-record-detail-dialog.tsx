@@ -16,6 +16,7 @@ import { format, parseISO } from 'date-fns';
 import { Separator } from './ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { User } from 'lucide-react';
+import Image from 'next/image';
 
 type DetailRowProps = {
   label: string;
@@ -101,11 +102,20 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 
                 <div className="py-3 border-b">
                     <dt className="font-semibold text-muted-foreground mb-2 flex items-center gap-2"><User className="h-4 w-4" /> Inspectors</dt>
-                    <dd className="space-y-2">
+                    <dd className="space-y-4">
                         {record.inspectors?.map((inspector) => (
-                        <div key={inspector.id} className="text-sm grid grid-cols-2 gap-4">
+                        <div key={inspector.id} className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-4 border p-3 rounded-md">
                             <p><span className="font-medium">Name:</span> {inspector.name}</p>
-                            <p><span className="font-medium">Signature:</span> {inspector.signature || 'N/A'}</p>
+                            <div>
+                                <p className="font-medium mb-1">Signature:</p>
+                                {inspector.signature ? (
+                                    <div className="bg-white p-2 border rounded-md max-w-[200px]">
+                                        <Image src={inspector.signature} alt={`Signature of ${inspector.name}`} width={200} height={100} className="w-full h-auto" />
+                                    </div>
+                                ) : (
+                                    <span>N/A</span>
+                                )}
+                            </div>
                         </div>
                         ))}
                     </dd>
