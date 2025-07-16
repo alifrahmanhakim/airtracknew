@@ -56,6 +56,7 @@ import {
   AlertTriangle,
   Pencil,
   GitCompareArrows,
+  Eye,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -75,49 +76,77 @@ import { ComplianceDataEditor } from './compliance-data-editor';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { ChecklistCard } from './checklist-card';
 import { ComplianceAnalytics } from './compliance-analytics';
+import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
 
 function AssociatedGapAnalysisCard({ records }: { records: GapAnalysisRecord[] }) {
+    const [recordToView, setRecordToView] = useState<GapAnalysisRecord | null>(null);
+
     if (records.length === 0) {
       return null;
     }
   
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GitCompareArrows /> Associated GAP Analysis
-          </CardTitle>
-          <CardDescription>
-            These GAP analysis records are linked to this CASR.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>SL Ref. Number</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Evaluation Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {records.map((record) => (
-                <TableRow key={record.id}>
-                  <TableCell className="font-semibold">{record.slReferenceNumber}</TableCell>
-                  <TableCell>{record.subject}</TableCell>
-                  <TableCell>
-                    <Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>
-                      {record.statusItem}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{format(parseISO(record.dateOfEvaluation), 'PPP')}</TableCell>
+      <>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GitCompareArrows /> Associated GAP Analysis
+            </CardTitle>
+            <CardDescription>
+              These GAP analysis records are linked to this CASR.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>SL Ref. Number</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Annex</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Evaluation Date</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {records.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell className="font-semibold">{record.slReferenceNumber}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{record.subject}</TableCell>
+                    <TableCell>{record.annex}</TableCell>
+                    <TableCell>{record.typeOfStateLetter}</TableCell>
+                    <TableCell>
+                      <Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>
+                        {record.statusItem}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{format(parseISO(record.dateOfEvaluation), 'PPP')}</TableCell>
+                    <TableCell className="text-right">
+                       <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => setRecordToView(record)}>
+                                    <Eye className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>View Details</p></TooltipContent>
+                       </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {recordToView && (
+            <GapAnalysisRecordDetailDialog
+                record={recordToView}
+                open={!!recordToView}
+                onOpenChange={(open) => { if(!open) setRecordToView(null) }}
+            />
+        )}
+      </>
     );
   }
 

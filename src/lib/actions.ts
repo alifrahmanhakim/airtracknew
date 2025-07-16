@@ -730,6 +730,35 @@ export async function addGapAnalysisRecord(
   }
 }
 
+export async function updateGapAnalysisRecord(
+  recordId: string,
+  recordData: GapAnalysisFormValues
+): Promise<{ success: boolean; data?: GapAnalysisRecord; error?: string }> {
+  try {
+    const recordRef = doc(db, 'gapAnalysisRecords', recordId);
+    const docSnap = await getDoc(recordRef);
+    if (!docSnap.exists()) {
+      throw new Error("Record not found");
+    }
+    
+    const existingData = docSnap.data() as GapAnalysisRecord;
+    const updatedData = { ...existingData, ...recordData };
+
+    await setDoc(recordRef, updatedData);
+    revalidatePath('/gap-analysis');
+    
+    return { success: true, data: updatedData };
+  } catch (error) {
+    console.error('Update GAP Analysis Record Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return {
+      success: false,
+      error: `Failed to update GAP Analysis record: ${message}`,
+    };
+  }
+}
+
+
 export async function deleteGapAnalysisRecord(
   recordId: string
 ): Promise<{ success: boolean; error?: string }> {

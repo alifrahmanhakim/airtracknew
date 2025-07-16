@@ -80,6 +80,10 @@ export default function GapAnalysisPage() {
     setRecordToDelete(record);
   };
   
+  const handleRecordUpdate = (updatedRecord: GapAnalysisRecord) => {
+    setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+  };
+
   const confirmDelete = async () => {
     if (!recordToDelete) return;
 
@@ -145,7 +149,7 @@ export default function GapAnalysisPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <GapAnalysisRecordsTable records={records} onDelete={handleDeleteRequest} />
+                        <GapAnalysisRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
                     </CardContent>
                 </Card>
             </TabsContent>
