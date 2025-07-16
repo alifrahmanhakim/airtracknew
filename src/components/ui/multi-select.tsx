@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -69,9 +70,13 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
     const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
 
-    React.useEffect(() => {
-      setSelectedValues(defaultValue);
-    }, [defaultValue]);
+    // This useEffect was causing an infinite render loop.
+    // The defaultValue is an array, and it was being created new on each render of the parent component,
+    // causing this effect to run every time and call setSelectedValues, which triggers another render.
+    // By removing it, the state is initialized once and then managed internally.
+    // React.useEffect(() => {
+    //   setSelectedValues(defaultValue);
+    // }, [defaultValue]);
 
     const handleSelect = (value: string) => {
       const newSelectedValues = selectedValues.includes(value)
