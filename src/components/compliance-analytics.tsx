@@ -40,6 +40,15 @@ export function ComplianceAnalytics({ data }: ComplianceAnalyticsProps) {
 
     const totalGaps = gapStatusData.reduce((acc, curr) => acc + curr.value, 0);
 
+    const chartConfig = {
+        value: { label: 'Total' },
+        'Existing in CASR': { label: 'Existing in CASR', color: 'hsl(var(--chart-1))' },
+        'Draft in CASR': { label: 'Draft in CASR', color: 'hsl(var(--chart-2))' },
+        'Belum Diadop': { label: 'Belum Diadop', color: 'hsl(var(--chart-3))' },
+        'Management Decision': { label: 'Management Decision', color: 'hsl(var(--chart-4))' },
+        'Tidak Diadop': { label: 'Tidak Diadop', color: 'hsl(var(--chart-5))' },
+    };
+
     return (
         <Card className="bg-muted/30">
             <CardHeader>
@@ -64,28 +73,30 @@ export function ComplianceAnalytics({ data }: ComplianceAnalyticsProps) {
                     <div>
                         <p className="font-semibold mb-3">Gap Status</p>
                         <div className="w-full h-[200px]">
-                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={gapStatusData} layout="vertical" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                                    <XAxis type="number" hide />
-                                    <YAxis 
-                                        dataKey="name" 
-                                        type="category" 
-                                        axisLine={false} 
-                                        tickLine={false} 
-                                        width={110}
-                                        tick={{ fontSize: 12 }}
-                                    />
-                                    <Tooltip 
-                                        cursor={{ fill: 'hsl(var(--muted))' }}
-                                        content={<ChartTooltipContent />}
-                                    />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={20}>
-                                        {gapStatusData.map((entry) => (
-                                            <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                             </ResponsiveContainer>
+                            <ChartContainer config={chartConfig} className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={gapStatusData} layout="vertical" margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+                                        <XAxis type="number" hide />
+                                        <YAxis 
+                                            dataKey="name" 
+                                            type="category" 
+                                            axisLine={false} 
+                                            tickLine={false} 
+                                            width={110}
+                                            tick={{ fontSize: 12 }}
+                                        />
+                                        <ChartTooltip 
+                                            cursor={{ fill: 'hsl(var(--muted))' }}
+                                            content={<ChartTooltipContent />}
+                                        />
+                                        <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={20}>
+                                            {gapStatusData.map((entry) => (
+                                                <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
                         </div>
                         <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                             {gapStatusData.map(item => {
