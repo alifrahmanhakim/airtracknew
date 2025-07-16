@@ -695,12 +695,18 @@ export async function updateGapAnalysisRecord(
     }
     
     const existingData = docSnap.data() as GapAnalysisRecord;
-    const updatedData = { ...existingData, ...recordData };
+    // Format date object back to string before saving
+    const dataToSave = {
+      ...recordData,
+      embeddedApplicabilityDate: recordData.embeddedApplicabilityDate.toISOString().split('T')[0],
+    };
+    const updatedData = { ...existingData, ...dataToSave };
 
     await setDoc(recordRef, updatedData);
     revalidatePath('/gap-analysis');
     
-    return { success: true, data: updatedData };
+    // The returned data should match the type expected by the frontend state
+    return { success: true, data: { ...updatedData, id: recordId } };
   } catch (error) {
     console.error('Update GAP Analysis Record Error:', error);
     const message = error instanceof Error ? error.message : 'An unknown error occurred';

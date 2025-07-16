@@ -43,6 +43,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
       dateOfEvaluation: record.dateOfEvaluation,
       effectiveDate: record.effectiveDate,
       applicabilityDate: record.applicabilityDate,
+      inspectors: record.inspectors || [],
     },
   });
 

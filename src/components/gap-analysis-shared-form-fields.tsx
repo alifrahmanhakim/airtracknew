@@ -23,6 +23,12 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { Combobox, ComboboxOption } from './ui/combobox';
 
+const inspectorSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'Inspector name is required'),
+  signature: z.string().optional(),
+});
+
 export const formSchema = z.object({
   slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
   annex: z.string().min(1, 'Annex is required'),
@@ -48,7 +54,7 @@ export const formSchema = z.object({
   })).min(1, 'At least one evaluation item is required'),
   statusItem: z.enum(['OPEN', 'CLOSED']),
   summary: z.string().optional(),
-  inspectorNames: z.array(z.string()).optional(),
+  inspectors: z.array(inspectorSchema).optional(),
 });
 
 export type GapAnalysisFormValues = z.infer<typeof formSchema>;
@@ -70,6 +76,11 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'evaluations',
+  });
+
+  const { fields: inspectorFields, append: appendInspector, remove: removeInspector } = useFieldArray({
+      control: form.control,
+      name: "inspectors",
   });
 
   return (
@@ -198,21 +209,57 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 </FormItem>
             )}/>
             <FormField control={form.control} name="summary" render={({ field }) => ( <FormItem> <FormLabel>SUMMARY</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <Controller
-                control={form.control}
-                name="inspectorNames"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>INSPECTOR NAME</FormLabel>
-                        <FormControl>
-                            <div>
-                                <Input value={field.value?.[0] || ''} onChange={e => form.setValue('inspectorNames', [e.target.value, field.value?.[1] || ''])} placeholder="1." />
-                                <Input value={field.value?.[1] || ''} onChange={e => form.setValue('inspectorNames', [field.value?.[0] || '', e.target.value])} placeholder="2." className="mt-2" />
-                            </div>
-                        </FormControl>
-                    </FormItem>
-                )}
-            />
+            
+            <div>
+              <FormLabel>Inspector Names & Signatures</FormLabel>
+              <div className="space-y-3 mt-2">
+                {inspectorFields.map((field, index) => (
+                  <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md">
+                     <div className='flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                        <FormField
+                            control={form.control}
+                            name={`inspectors.${index}.name`}
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="text-xs">Inspector Name {index + 1}</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Full Name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name={`inspectors.${index}.signature`}
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="text-xs">Digital Signature</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Type name or paste signature URL" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                     </div>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeInspector(index)} className='text-destructive hover:text-destructive'>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                 <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => appendInspector({ id: `inspector-${Date.now()}`, name: '', signature: '' })}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Inspector
+                </Button>
+              </div>
+            </div>
+
         </CardContent>
       </Card>
     </>

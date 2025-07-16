@@ -112,6 +112,12 @@ export type EvaluationItem = {
   casrAffected: string;
 };
 
+export type Inspector = {
+  id: string;
+  name: string;
+  signature?: string;
+};
+
 export type GapAnalysisRecord = {
   id: string;
   createdAt: string;
@@ -127,5 +133,5 @@ export type GapAnalysisRecord = {
   evaluations: EvaluationItem[];
   statusItem: 'OPEN' | 'CLOSED';
   summary: string;
-  inspectorNames: string[];
+  inspectors: Inspector[];
 };

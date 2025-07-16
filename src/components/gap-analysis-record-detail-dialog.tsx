@@ -99,12 +99,15 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 <DetailRow label="Status Item" value={<Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>{record.statusItem}</Badge>} />
                 <DetailRow label="Summary" value={record.summary} isLongText />
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-4 py-3 border-b">
-                    <dt className="font-semibold text-muted-foreground flex items-center gap-2"><User className="h-4 w-4" /> Inspector Names</dt>
-                    <dd className="sm:col-span-2 text-sm">
-                        <ul className="list-disc list-inside">
-                            {record.inspectorNames.map((name, index) => <li key={index}>{name}</li>)}
-                        </ul>
+                <div className="py-3 border-b">
+                    <dt className="font-semibold text-muted-foreground mb-2 flex items-center gap-2"><User className="h-4 w-4" /> Inspectors</dt>
+                    <dd className="space-y-2">
+                        {record.inspectors?.map((inspector) => (
+                        <div key={inspector.id} className="text-sm grid grid-cols-2 gap-4">
+                            <p><span className="font-medium">Name:</span> {inspector.name}</p>
+                            <p><span className="font-medium">Signature:</span> {inspector.signature || 'N/A'}</p>
+                        </div>
+                        ))}
                     </dd>
                 </div>
                 
