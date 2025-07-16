@@ -56,7 +56,6 @@ const navItems = {
       { href: '/reports', label: 'Reports', icon: LineChart },
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
-      { href: '/state-letter', label: 'State Letter', icon: FileBadge },
       { href: '/gap-analysis', label: 'GAP Analysis', icon: GitCompareArrows },
     ]
 }
