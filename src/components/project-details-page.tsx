@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Project, Task, User, SubProject, Document as ProjectDocument, ComplianceDataRow } from '@/lib/types';
+import type { Project, Task, User, SubProject, Document as ProjectDocument, ComplianceDataRow, GapAnalysisRecord } from '@/lib/types';
 import { findUserById, aggregateComplianceData, rulemakingTaskOptions } from '@/lib/data';
 import {
   Card,
@@ -54,6 +54,7 @@ import {
   Flag,
   AlertTriangle,
   Pencil,
+  GitCompareArrows,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -74,13 +75,58 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { ChecklistCard } from './checklist-card';
 import { ComplianceAnalytics } from './compliance-analytics';
 
+function AssociatedGapAnalysisCard({ records }: { records: GapAnalysisRecord[] }) {
+    if (records.length === 0) {
+      return null;
+    }
+  
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GitCompareArrows /> Associated GAP Analysis
+          </CardTitle>
+          <CardDescription>
+            These GAP analysis records are linked to this CASR.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>SL Ref. Number</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Evaluation Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {records.map((record) => (
+                <TableRow key={record.id}>
+                  <TableCell className="font-semibold">{record.slReferenceNumber}</TableCell>
+                  <TableCell>{record.subject}</TableCell>
+                  <TableCell>
+                    <Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>
+                      {record.statusItem}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{format(parseISO(record.dateOfEvaluation), 'PPP')}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    );
+  }
 
 type ProjectDetailsPageProps = {
   project: Project;
   users: User[];
+  allGapAnalysisRecords: GapAnalysisRecord[];
 };
 
-export function ProjectDetailsPage({ project: initialProject, users }: ProjectDetailsPageProps) {
+export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
   const [isDeletingDoc, setIsDeletingDoc] = useState<string | null>(null);
   const [isDeletingTask, setIsDeletingTask] = useState<string | null>(null);
@@ -90,6 +136,11 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  const associatedGapRecords = React.useMemo(() => {
+    if (project.projectType !== 'Rulemaking' || !project.casr) return [];
+    return allGapAnalysisRecords.filter(record => record.casrAffected === project.casr);
+  }, [allGapAnalysisRecords, project.casr, project.projectType]);
 
   if (!project) {
     return <div>Loading project details...</div>;
@@ -400,6 +451,8 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
               </Table>
             </CardContent>
           </Card>
+          
+          {project.projectType === 'Rulemaking' && <AssociatedGapAnalysisCard records={associatedGapRecords} />}
 
           <Card>
              <CardHeader className="flex flex-row items-center justify-between">
