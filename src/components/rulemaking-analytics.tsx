@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
+import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { Info } from 'lucide-react';
 import type { GapAnalysisRecord, EvaluationItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -147,4 +147,3 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
         </div>
     );
 }
-
