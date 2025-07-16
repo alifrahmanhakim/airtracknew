@@ -143,7 +143,7 @@ export function ComplianceDataEditor({ project }: ComplianceDataEditorProps) {
   const onSubmit = async (data: ComplianceDataFormValues) => {
     setIsSubmitting(true);
     
-    const result = await updateProject(project.id, { complianceData: data.complianceData });
+    const result = await updateProject(project.id, project.projectType, { complianceData: data.complianceData });
 
     setIsSubmitting(false);
 
