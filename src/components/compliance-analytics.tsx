@@ -2,136 +2,72 @@
 'use client';
 
 import * as React from 'react';
-import type { ComplianceDataRow } from '@/lib/types';
+import type { AdoptionDataPoint } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Info, CheckCircle, HelpCircle, XCircle, FileText, FilePlus, FileQuestion, FileClock } from 'lucide-react';
+import { Info, CheckCircle, HelpCircle, XCircle, FileText, FileClock, FilePlus, FileQuestion } from 'lucide-react';
 import { Progress } from './ui/progress';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-  } from '@/components/ui/tooltip';
 
 interface ComplianceAnalyticsProps {
-  data: ComplianceDataRow[];
+  data: AdoptionDataPoint;
 }
 
-const ProgressBarCard = ({ title, value, total, colorClass }: { title: string, value: number, total: number, colorClass: string }) => {
-    const percentage = total > 0 ? (value / total) * 100 : 0;
-    return (
-        <div>
-            <div className="flex justify-between items-center mb-1">
-                <p className="text-sm font-medium text-muted-foreground">{title}</p>
-                <p className="text-sm font-semibold">{value} / {total}</p>
-            </div>
-            <Progress value={percentage} indicatorClassName={colorClass} />
+const StatItem = ({ icon: Icon, label, value, color }: { icon: React.ElementType, label: string, value: number, color?: string }) => (
+    <div className="flex items-center gap-3 text-sm">
+        <Icon className={`h-5 w-5 ${color || 'text-muted-foreground'}`} />
+        <div className="flex justify-between w-full">
+            <span className="text-muted-foreground">{label}</span>
+            <span className="font-semibold">{value}</span>
         </div>
-    )
-}
-
+    </div>
+);
 
 export function ComplianceAnalytics({ data }: ComplianceAnalyticsProps) {
-  const stats = React.useMemo(() => {
-    if (!data || data.length === 0) {
-      return null;
-    }
-    const total = data.length;
-    const evaluated = data.filter(d => d.evaluationStatus === 'Evaluated').length;
-    const notEvaluated = data.filter(d => d.evaluationStatus === 'Not Evaluated').length;
-    const notFinishYet = data.filter(d => d.evaluationStatus === 'Not Finish Yet').length;
+    if (!data) return null;
 
-    const standard = data.filter(d => d.subjectStatus === 'Standard').length;
-    const recommendation = data.filter(d => d.subjectStatus === 'Recommendation').length;
-
-    const existingInCasr = data.filter(d => d.gapStatus === 'Existing in CASR').length;
-    const draftInCasr = data.filter(d => d.gapStatus === 'Draft in CASR').length;
-    const belumDiadop = data.filter(d => d.gapStatus === 'Belum Diadop').length;
-    const tidakDiadop = data.filter(d => d.gapStatus === 'Tidak Diadop').length;
-    const managementDecision = data.filter(d => d.gapStatus === 'Management Decision').length;
-
-    return { total, evaluated, notEvaluated, notFinishYet, standard, recommendation, existingInCasr, draftInCasr, belumDiadop, tidakDiadop, managementDecision };
-  }, [data]);
-
-  if (!stats) {
+    const totalEvaluated = data.evaluated + data.notFinishYet + data.notEvaluated;
+    const adoptionPercentage = totalEvaluated > 0 ? Math.round((data.evaluated / totalEvaluated) * 100) : 0;
+    
     return (
-      <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
-        <Info className="mx-auto h-8 w-8 mb-2" />
-        <p className="font-semibold">No Compliance Data Available</p>
-        <p className="text-sm">Add data via the editor to see analytics.</p>
-      </div>
+        <Card className="bg-muted/30">
+            <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                    <span>State Letter: {data.sl}</span>
+                    <span className="text-2xl font-bold text-primary">{adoptionPercentage}% Evaluated</span>
+                </CardTitle>
+                <CardDescription>
+                    Progress of evaluation for all subjects under this State Letter.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div>
+                    <div className="flex justify-between items-center mb-1 text-sm">
+                        <span className="font-medium text-muted-foreground">Evaluation Progress</span>
+                        <span className="font-semibold">{data.evaluated} / {totalEvaluated}</span>
+                    </div>
+                    <Progress value={adoptionPercentage} />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                        <p className="font-semibold mb-3">Gap Status</p>
+                        <div className="space-y-3">
+                            <StatItem icon={FileText} label="Existing in CASR" value={data.existingInCasr} color="text-blue-500" />
+                            <StatItem icon={FileClock} label="Draft in CASR" value={data.draftInCasr} color="text-blue-400" />
+                            <StatItem icon={FilePlus} label="Belum Diadop" value={data.belumDiAdop} color="text-yellow-500" />
+                            <StatItem icon={FileQuestion} label="Management Decision" value={data.managementDecision} color="text-orange-500" />
+                            <StatItem icon={XCircle} label="Tidak Diadop" value={data.tidakDiAdop} color="text-red-500" />
+                        </div>
+                    </div>
+                     <div>
+                        <p className="font-semibold mb-3">Subject Status</p>
+                        <div className="space-y-3">
+                           <StatItem icon={CheckCircle} label="Standard" value={data.standard} color="text-green-500" />
+                           <StatItem icon={HelpCircle} label="Recommendation" value={data.recommendation} />
+                        </div>
+                    </div>
+                </div>
+
+            </CardContent>
+        </Card>
     );
-  }
-
-  return (
-    <TooltipProvider>
-      <div className="space-y-6">
-        <div>
-            <p className="text-base font-semibold mb-2">Evaluation Status</p>
-            <ProgressBarCard title="Evaluated" value={stats.evaluated} total={stats.total} colorClass="bg-green-500" />
-        </div>
-        
-        <div>
-            <p className="text-base font-semibold mb-3">Gap Status</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-blue-500" />
-                    <div>
-                        <p className="font-bold">{stats.existingInCasr}</p>
-                        <p className="text-xs text-muted-foreground">Existing in CASR</p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-3">
-                    <FileClock className="h-5 w-5 text-blue-400" />
-                    <div>
-                        <p className="font-bold">{stats.draftInCasr}</p>
-                        <p className="text-xs text-muted-foreground">Draft in CASR</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <FilePlus className="h-5 w-5 text-yellow-500" />
-                    <div>
-                        <p className="font-bold">{stats.belumDiadop}</p>
-                        <p className="text-xs text-muted-foreground">Belum Diadop</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <FileQuestion className="h-5 w-5 text-orange-500" />
-                    <div>
-                        <p className="font-bold">{stats.managementDecision}</p>
-                        <p className="text-xs text-muted-foreground">Management Decision</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <XCircle className="h-5 w-5 text-red-500" />
-                    <div>
-                        <p className="font-bold">{stats.tidakDiadop}</p>
-                        <p className="text-xs text-muted-foreground">Tidak Diadop</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <p className="text-base font-semibold mb-3">Subject Status</p>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                 <div className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <div>
-                        <p className="font-bold">{stats.standard}</p>
-                        <p className="text-xs text-muted-foreground">Standard</p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-3">
-                    <HelpCircle className="h-5 w-5 text-gray-500" />
-                    <div>
-                        <p className="font-bold">{stats.recommendation}</p>
-                        <p className="text-xs text-muted-foreground">Recommendation</p>
-                    </div>
-                </div>
-             </div>
-        </div>
-      </div>
-    </TooltipProvider>
-  );
 }

@@ -232,7 +232,7 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const complianceData = project.complianceData || [];
-  const aggregatedData = aggregateComplianceData(complianceData);
+  const aggregatedComplianceData = aggregateComplianceData(complianceData);
   
   const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
 
@@ -284,15 +284,19 @@ export function ProjectDetailsPage({ project: initialProject, users }: ProjectDe
           <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <BarChart2 /> Compliance Resume: State Letter to Annex
+                    <BarChart2 /> Compliance Resume
                 </CardTitle>
                 <CardDescription>
                   Resume of State Letter Annex {project.annex} to CASR {project.casr}
                 </CardDescription>
             </CardHeader>
             <CardContent>
-              {complianceData && complianceData.length > 0 ? (
-                  <ComplianceAnalytics data={complianceData} />
+              {aggregatedComplianceData && aggregatedComplianceData.length > 0 ? (
+                  <div className="space-y-4">
+                      {aggregatedComplianceData.map((data, index) => (
+                          <ComplianceAnalytics key={index} data={data} />
+                      ))}
+                  </div>
               ) : (
                 <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
                   <Info className="mx-auto h-8 w-8 mb-2" />
