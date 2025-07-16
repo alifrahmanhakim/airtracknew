@@ -1,5 +1,6 @@
 
-import type { User, Project, ComplianceDataRow, AdoptionDataPoint } from './types';
+
+import type { User, Project } from './types';
 import type { ComboboxOption } from '@/components/ui/combobox';
 
 // Updated user data to be consistent with seed.js
@@ -89,13 +90,6 @@ export const projects: Project[] = [
     notes: 'Engine compatibility tests are showing unexpected wear, causing delays. Regulatory submission is blocked pending results from these tests. This puts the project timeline at risk.',
     team: [users[1], users[0], users[4], users[2]],
     subProjects: [],
-    complianceData: [
-        { id: 'row-1', sl: 'SL 172', subject: 'Subject A', evaluationStatus: 'Evaluated', subjectStatus: 'Standard', gapStatus: 'Existing in CASR', implementationLevel: 'No Difference' },
-        { id: 'row-2', sl: 'SL 172', subject: 'Subject B', evaluationStatus: 'Evaluated', subjectStatus: 'Standard', gapStatus: 'Existing in CASR', implementationLevel: 'No Difference' },
-        { id: 'row-3', sl: 'SL 172', subject: 'Subject C', evaluationStatus: 'Not Evaluated', subjectStatus: 'Not Applicable', gapStatus: 'Belum Diadop', implementationLevel: 'Not Applicable' },
-        { id: 'row-4', sl: 'SL 174', subject: 'Subject D', evaluationStatus: 'Evaluated', subjectStatus: 'Recommendation', gapStatus: 'Draft in CASR', implementationLevel: 'Different in Character' },
-        { id: 'row-5', sl: 'SL 174', subject: 'Subject E', evaluationStatus: 'Not Finish Yet', subjectStatus: 'Standard', gapStatus: 'Tidak Diadop', implementationLevel: 'Less Protective' },
-    ]
   },
   {
     id: 'proj-3',
@@ -142,46 +136,6 @@ export const projects: Project[] = [
     subProjects: [],
   },
 ];
-
-export function aggregateComplianceData(rawData: ComplianceDataRow[]): AdoptionDataPoint[] {
-  if (!rawData || rawData.length === 0) return [];
-
-  const groupedBySL = rawData.reduce((acc, row) => {
-    if (!acc[row.sl]) {
-      acc[row.sl] = [];
-    }
-    acc[row.sl].push(row);
-    return acc;
-  }, {} as Record<string, ComplianceDataRow[]>);
-
-  return Object.entries(groupedBySL).map(([sl, rows]) => {
-    const point: AdoptionDataPoint = {
-      sl: sl,
-      // Total Evaluation Status
-      evaluated: rows.filter(r => r.evaluationStatus === 'Evaluated').length,
-      notEvaluated: rows.filter(r => r.evaluationStatus === 'Not Evaluated').length,
-      notFinishYet: rows.filter(r => r.evaluationStatus === 'Not Finish Yet').length,
-      // Total Subject & Status
-      totalSubject: rows.filter(r => r.subjectStatus !== 'Not Applicable').length,
-      standard: rows.filter(r => r.subjectStatus === 'Standard').length,
-      recommendation: rows.filter(r => r.subjectStatus === 'Recommendation').length,
-      // Gap Status
-      existingInCasr: rows.filter(r => r.gapStatus === 'Existing in CASR').length,
-      draftInCasr: rows.filter(r => r.gapStatus === 'Draft in CASR').length,
-      belumDiAdop: rows.filter(r => r.gapStatus === 'Belum Diadop').length,
-      tidakDiAdop: rows.filter(r => r.gapStatus === 'Tidak Diadop').length,
-      managementDecision: rows.filter(r => r.gapStatus === 'Management Decision').length,
-      // Level of Implementation
-      noDifference: rows.filter(r => r.implementationLevel === 'No Difference').length,
-      moreExactingOrExceeds: rows.filter(r => r.implementationLevel === 'More Exacting or Exceeds').length,
-      differentInCharacter: rows.filter(r => r.implementationLevel === 'Different in Character').length,
-      lessProtective: rows.filter(r => r.implementationLevel === 'Less Protective').length,
-      significantDifference: rows.filter(r => r.implementationLevel === 'Significant Difference').length,
-      notApplicable: rows.filter(r => r.implementationLevel === 'Not Applicable').length,
-    };
-    return point;
-  });
-}
 
 
 export const getProjectsForUser = (userId: string, allProjects: Project[], allUsers: User[]) => {

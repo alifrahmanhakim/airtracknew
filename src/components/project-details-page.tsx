@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
-import type { Project, Task, User, SubProject, Document as ProjectDocument, ComplianceDataRow, GapAnalysisRecord } from '@/lib/types';
-import { findUserById, aggregateComplianceData, rulemakingTaskOptions } from '@/lib/data';
+import type { Project, Task, User, SubProject, Document as ProjectDocument, GapAnalysisRecord } from '@/lib/types';
+import { findUserById, rulemakingTaskOptions } from '@/lib/data';
 import {
   Card,
   CardContent,
@@ -72,11 +73,10 @@ import { AddDocumentLinkDialog } from './add-document-link-dialog';
 import { deleteDocument, deleteTask, deleteProject } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
-import { ComplianceDataEditor } from './compliance-data-editor';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { ChecklistCard } from './checklist-card';
-import { ComplianceAnalytics } from './compliance-analytics';
 import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
+import { RulemakingAnalytics } from './rulemaking-analytics';
 
 function AssociatedGapAnalysisCard({ records }: { records: GapAnalysisRecord[] }) {
     const [recordToView, setRecordToView] = useState<GapAnalysisRecord | null>(null);
@@ -313,9 +313,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
-  const complianceData = project.complianceData || [];
-  const aggregatedComplianceData = aggregateComplianceData(complianceData);
-  
   const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
 
   const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
@@ -361,32 +358,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         {project.projectType === 'Rulemaking' && (
             <Card className="lg:col-span-3">
               <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                        <CardTitle className="flex items-center gap-2">
-                            <BarChart2 /> Compliance Resume
-                        </CardTitle>
-                        <CardDescription>
-                          Resume of State Letter Annex {project.annex} to CASR {project.casr}
-                        </CardDescription>
-                    </div>
-                    <ComplianceDataEditor project={project} />
-                  </div>
+                <CardTitle className="flex items-center gap-2">
+                    <BarChart2 /> Compliance Resume
+                </CardTitle>
+                <CardDescription>
+                  Live analytics derived from associated GAP Analysis records for CASR {project.casr}.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {aggregatedComplianceData && aggregatedComplianceData.length > 0 ? (
-                    <div className="space-y-4">
-                        {aggregatedComplianceData.map((data, index) => (
-                            <ComplianceAnalytics key={index} data={data} />
-                        ))}
-                    </div>
-                ) : (
-                  <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
-                    <Info className="mx-auto h-8 w-8 mb-2" />
-                    <p className="font-semibold">No Compliance Data Available</p>
-                    <p className="text-sm">Click 'Edit Compliance Data' to add the first record.</p>
-                  </div>
-                )}
+                <RulemakingAnalytics records={associatedGapRecords} />
               </CardContent>
             </Card>
           )}

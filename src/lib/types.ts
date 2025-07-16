@@ -41,40 +41,43 @@ export type SubProject = {
   status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
 }
 
-export type ComplianceDataRow = {
+export type ChecklistItem = {
   id: string;
-  sl: string;
-  subject: string;
-  evaluationStatus: 'Evaluated' | 'Not Evaluated' | 'Not Finish Yet';
-  subjectStatus: 'Standard' | 'Recommendation' | 'Not Applicable';
-  gapStatus: 'Existing in CASR' | 'Draft in CASR' | 'Belum Diadop' | 'Tidak Diadop' | 'Management Decision' | 'Not Applicable';
-  implementationLevel: 'No Difference' | 'More Exacting or Exceeds' | 'Different in Character' | 'Less Protective' | 'Significant Difference' | 'Not Applicable';
+  text: string;
+  completed: boolean;
 };
 
-// This is the aggregated data structure, which will be computed from ComplianceDataRow[]
-export type AdoptionDataPoint = {
-  sl: string;
-  // Total Evaluation Status
-  evaluated: number;
-  notEvaluated: number;
-  notFinishYet: number;
-  // Total Subject & Status
-  totalSubject: number;
-  standard: number;
-  recommendation: number;
-  // Gap Status
-  existingInCasr: number;
-  draftInCasr: number;
-  belumDiAdop: number;
-  tidakDiAdop: number;
-  managementDecision: number;
-  // Level of Implementation
-  noDifference: number;
-  moreExactingOrExceeds: number;
-  differentInCharacter: number;
-  lessProtective: number;
-  significantDifference: number;
-  notApplicable: number;
+
+export type Project = {
+  id: string;
+  name: string;
+  ownerId: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
+  tasks: Task[];
+  documents: Document[];
+  notes: string;
+  team: User[];
+  subProjects: SubProject[];
+  projectType: 'Rulemaking' | 'Tim Kerja';
+  annex?: string;
+  casr?: string;
+  tags?: string[];
+  checklist?: ChecklistItem[];
+};
+
+export type StateLetterRecord = {
+    id: string;
+    no: string;
+    subject: string;
+    reference: string;
+    casr: string;
+    description: string;
+    status: "Open" | "Closed" | "In Progress";
+    assignedTo: string;
+    dueDate: string;
 };
 
 export type CcefodRecord = {
@@ -112,47 +115,6 @@ export type PqRecord = {
   sspComponent?: string;
   status: 'Existing' | 'Draft' | 'Final';
 }
-
-export type ChecklistItem = {
-  id: string;
-  text: string;
-  completed: boolean;
-};
-
-
-export type Project = {
-  id: string;
-  name: string;
-  ownerId: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  status: 'On Track' | 'At Risk' | 'Off Track' | 'Completed';
-  tasks: Task[];
-  documents: Document[];
-  notes: string;
-  team: User[];
-  subProjects: SubProject[];
-  projectType: 'Rulemaking' | 'Tim Kerja';
-  annex?: string;
-  casr?: string;
-  tags?: string[];
-  complianceData?: ComplianceDataRow[]; // Raw data
-  adoptionData?: AdoptionDataPoint[]; // Aggregated data (can be deprecated or computed)
-  checklist?: ChecklistItem[];
-};
-
-export type StateLetterRecord = {
-    id: string;
-    no: string;
-    subject: string;
-    reference: string;
-    casr: string;
-    description: string;
-    status: "Open" | "Closed" | "In Progress";
-    assignedTo: string;
-    dueDate: string;
-};
 
 export type EvaluationItem = {
   id: string;
