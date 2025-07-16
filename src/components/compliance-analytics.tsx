@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Info, CheckCircle, HelpCircle, XCircle, FileText, FileClock, FilePlus, FileQuestion } from 'lucide-react';
 import { Progress } from './ui/progress';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import { cn } from '@/lib/utils';
 
 interface ComplianceAnalyticsProps {
