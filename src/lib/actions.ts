@@ -11,12 +11,14 @@ import {
     type GenerateChecklistInput,
     type GenerateChecklistOutput
 } from '@/ai/flows/generate-checklist';
-import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem } from './types';
+import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem, StateLetterRecord } from './types';
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
+import { stateLetterFormSchema } from '@/components/state-letter-form';
 import { db } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 // This is the new wrapper function for the AI flow.
 export async function generateChecklist(
@@ -659,3 +661,18 @@ export async function importPqRecords(records: PqFormValues[]): Promise<{ succes
     return { success: false, count: 0, error: `Failed to import records: ${message}` };
   }
 }
+
+// State Letter Actions
+export async function addStateLetterRecord(
+    values: z.infer<typeof stateLetterFormSchema>
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      await addDoc(collection(db, "stateLetterRecords"), values);
+      revalidatePath("/state-letter");
+      return { success: true };
+    } catch (error) {
+      console.error("Add State Letter Record Error:", error);
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return { success: false, error: `Failed to add record: ${message}` };
+    }
+  }

@@ -141,3 +141,15 @@ export type Project = {
   adoptionData?: AdoptionDataPoint[]; // Aggregated data (can be deprecated or computed)
   checklist?: ChecklistItem[];
 };
+
+export type StateLetterRecord = {
+    id: string;
+    no: string;
+    subject: string;
+    reference: string;
+    casr: string;
+    description: string;
+    status: "Open" | "Closed" | "In Progress";
+    assignedTo: string;
+    dueDate: string;
+};
