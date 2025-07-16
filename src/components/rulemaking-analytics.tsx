@@ -34,21 +34,6 @@ const FOLLOW_UP_STATUS_ORDER: { status: GapAnalysisRecord['statusItem']; color: 
     { status: 'OPEN', color: CHART_COLORS.red },
 ];
 
-const CustomYAxisTick = ({ y, payload, totalValue }: { y: number; payload: { value: string }; totalValue: number }) => {
-    const { name, value, percentage } = payload.value as any;
-    return (
-        <g transform={`translate(0,${y})`}>
-            <text x={0} y={0} dy={4} textAnchor="start" fill="hsl(var(--foreground))" className="text-xs">
-                {name}
-            </text>
-            <text x={240} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs font-mono">
-                {`${value} (${percentage.toFixed(1)}%)`}
-            </text>
-        </g>
-    );
-};
-
-
 export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
     const analyticsData = React.useMemo(() => {
         if (!records || records.length === 0) {
@@ -98,6 +83,23 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
         };
     }, [records]);
 
+    const CustomYAxisTick = ({ y, payload }: { y: number; payload: { value: string }}) => {
+        const dataPoint = analyticsData?.complianceStatusData.find(d => d.name === payload.value);
+        if (!dataPoint) return null;
+    
+        const { name, value, percentage } = dataPoint;
+        return (
+            <g transform={`translate(0,${y})`}>
+                <text x={0} y={0} dy={4} textAnchor="start" fill="hsl(var(--foreground))" className="text-xs">
+                    {name}
+                </text>
+                <text x={240} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs font-mono">
+                    {`${value} (${percentage.toFixed(1)}%)`}
+                </text>
+            </g>
+        );
+    };
+
     if (!analyticsData) {
         return (
             <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
@@ -136,9 +138,10 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
             <Card>
                 <CardHeader>
                     <CardTitle>Follow Up Status</CardTitle>
+                    <CardDescription>GAP Analysis Follow Up Status</CardDescription>
                 </CardHeader>
-                <CardContent className="flex justify-center items-center">
-                    <ChartContainer config={followUpChartConfig} className="mx-auto aspect-square h-24">
+                <CardContent className="flex justify-center items-center h-[120px]">
+                    <ChartContainer config={followUpChartConfig} className="mx-auto aspect-square h-full">
                         <PieChart>
                             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                             <Pie data={analyticsData.statusItemData} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={5}>
@@ -182,7 +185,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                                     width={250}
                                     tickLine={false}
                                     axisLine={false}
-                                    tick={(props) => <CustomYAxisTick {...props} totalValue={analyticsData.totalEvaluations} />}
+                                    tick={(props) => <CustomYAxisTick {...props} />}
                                     interval={0}
                                 />
                                 <ChartTooltip
