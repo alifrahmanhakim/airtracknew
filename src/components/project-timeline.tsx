@@ -81,7 +81,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
     const weekInterval = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
     
     const diffDays = differenceInDays(tEnd, tStart) + 1;
-    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tStart) + 1;
+    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tEnd) + 1;
 
     return { 
         sortedTasks: sorted, 
@@ -274,7 +274,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                 {/* Task Bars */}
                 <div className="relative w-full z-10" style={{ height: `${sortedTasks.length * ROW_HEIGHT}px`}}>
                 {sortedTasks.map((task, index) => {
-                    const assignees = task.assigneeIds.map(id => findUserById(id, teamMembers)).filter(Boolean);
+                    const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean);
                     const taskStart = parseISO(task.startDate);
                     const taskEnd = parseISO(task.dueDate);
 
