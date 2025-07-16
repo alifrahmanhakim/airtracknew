@@ -146,7 +146,7 @@ export default function PqsPage() {
                   </TabsList>
                 </div>
             </div>
-            <div className={cn(activeTab !== 'form' ? 'print:hidden' : '')}>
+            <div className={cn(activeTab === 'form' ? '' : 'hidden', 'max-w-7xl mx-auto w-full')}>
                 <TabsContent value="form">
                     <Card className="max-w-4xl mx-auto">
                         <CardHeader>
@@ -161,7 +161,7 @@ export default function PqsPage() {
                     </Card>
                 </TabsContent>
             </div>
-            <div className={cn(activeTab !== 'records' ? 'print:hidden' : '')}>
+             <div className={cn(activeTab === 'records' ? '' : 'hidden')}>
                 <TabsContent value="records">
                     <Card>
                         <CardHeader>
@@ -186,7 +186,7 @@ export default function PqsPage() {
                     </Card>
                 </TabsContent>
             </div>
-            <div className={cn(activeTab !== 'analytics' ? 'print:hidden' : '')}>
+             <div className={cn(activeTab === 'analytics' ? '' : 'hidden', 'max-w-7xl mx-auto w-full')}>
                 <TabsContent value="analytics">
                     <Card>
                         <CardHeader>
