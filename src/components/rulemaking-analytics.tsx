@@ -3,11 +3,10 @@
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
-import { GitCompareArrows, Info, Target, Percent } from 'lucide-react';
+import { GitCompareArrows, Info, Target } from 'lucide-react';
 import type { GapAnalysisRecord, EvaluationItem } from '@/lib/types';
-import { cn } from '@/lib/utils';
 
 type RulemakingAnalyticsProps = {
     records: GapAnalysisRecord[];
@@ -35,6 +34,21 @@ const FOLLOW_UP_STATUS_ORDER: { status: GapAnalysisRecord['statusItem']; color: 
     { status: 'OPEN', color: CHART_COLORS.red },
 ];
 
+const CustomYAxisTick = ({ y, payload, totalValue }: { y: number; payload: { value: string }; totalValue: number }) => {
+    const { name, value, percentage } = payload.value as any;
+    return (
+        <g transform={`translate(0,${y})`}>
+            <text x={0} y={0} dy={4} textAnchor="start" fill="hsl(var(--foreground))" className="text-xs">
+                {name}
+            </text>
+            <text x={240} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" className="text-xs font-mono">
+                {`${value} (${percentage.toFixed(1)}%)`}
+            </text>
+        </g>
+    );
+};
+
+
 export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
     const analyticsData = React.useMemo(() => {
         if (!records || records.length === 0) {
@@ -52,6 +66,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
         const complianceStatusData = COMPLIANCE_STATUS_ORDER.map(({ status, color }) => ({
             name: status,
             value: complianceStatusCounts[status] || 0,
+            percentage: totalEvaluations > 0 ? (complianceStatusCounts[status] || 0) / totalEvaluations * 100 : 0,
             fill: color
         })).filter(d => d.value > 0);
 
@@ -78,7 +93,8 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
             complianceStatusData, 
             statusItemData,
             closedPercentage,
-            noDifferencesPercentage
+            noDifferencesPercentage,
+            totalEvaluations,
         };
     }, [records]);
 
@@ -105,28 +121,27 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="lg:col-span-2">
-                 <CardHeader>
-                    <CardTitle>Total GAP Analysis Records</CardTitle>
-                 </CardHeader>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Total GAP Analysis</CardTitle>
+                    <CardDescription>Total records linked to this CASR</CardDescription>
+                </CardHeader>
                  <CardContent>
                     <div className="flex items-baseline gap-4">
                         <GitCompareArrows className="h-10 w-10 text-muted-foreground" />
                         <p className="text-5xl font-bold">{analyticsData.totalRecords}</p>
-                        <p className="text-muted-foreground">records linked</p>
                     </div>
                  </CardContent>
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Tindak Lanjut</CardTitle>
-                    <CardDescription>Persentase item yang ditutup.</CardDescription>
+                    <CardTitle>Follow Up Status</CardTitle>
                 </CardHeader>
                 <CardContent className="flex justify-center items-center">
-                    <ChartContainer config={followUpChartConfig} className="mx-auto aspect-square h-32">
+                    <ChartContainer config={followUpChartConfig} className="mx-auto aspect-square h-24">
                         <PieChart>
                             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                            <Pie data={analyticsData.statusItemData} dataKey="value" nameKey="name" innerRadius={35} strokeWidth={5} startAngle={90} endAngle={450}>
+                            <Pie data={analyticsData.statusItemData} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={5}>
                                 {analyticsData.statusItemData.map((entry) => (
                                     <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                                 ))}
@@ -135,14 +150,14 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                     </ChartContainer>
                      <div className="text-center">
                         <p className="text-4xl font-bold">{analyticsData.closedPercentage.toFixed(0)}%</p>
-                        <p className="text-sm text-muted-foreground">CLOSED</p>
+                        <p className="text-sm text-muted-foreground">Closed</p>
                     </div>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className='md:col-span-2'>
                  <CardHeader>
                     <CardTitle>Compliance Rate</CardTitle>
-                    <CardDescription>Persentase evaluasi "No Differences".</CardDescription>
+                    <CardDescription>Percentage of compliance with "No Differences".</CardDescription>
                  </CardHeader>
                  <CardContent>
                     <div className="flex items-baseline gap-4">
@@ -167,8 +182,8 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                                     width={250}
                                     tickLine={false}
                                     axisLine={false}
-                                    tick={{ fontSize: 12, fill: 'hsl(var(--foreground))', width: 240 }}
-                                    className="truncate"
+                                    tick={(props) => <CustomYAxisTick {...props} totalValue={analyticsData.totalEvaluations} />}
+                                    interval={0}
                                 />
                                 <ChartTooltip
                                     cursor={{ fill: 'hsl(var(--muted))' }}
