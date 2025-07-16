@@ -153,3 +153,28 @@ export type StateLetterRecord = {
     assignedTo: string;
     dueDate: string;
 };
+
+export type EvaluationItem = {
+  id: string;
+  icaoSarp: string;
+  review: string;
+  complianceStatus: 'No Differences' | 'More Exacting or Exceeds' | 'Different in character or other means of compliance' | 'Less protective or partially implemented or not implemented' | 'Not Applicable';
+};
+
+export type GapAnalysisRecord = {
+  id: string;
+  createdAt: string;
+  slReferenceNumber: string;
+  annex: string;
+  typeOfStateLetter: string;
+  dateOfEvaluation: string;
+  subject: string;
+  actionRequired: string;
+  effectiveDate: string;
+  applicabilityDate: string;
+  embeddedApplicabilityDate: string;
+  evaluations: EvaluationItem[];
+  statusItem: 'OPEN' | 'CLOSED';
+  summary: string;
+  inspectorNames: string[];
+};

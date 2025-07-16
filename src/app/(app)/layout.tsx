@@ -17,6 +17,7 @@ import {
   CircleHelp,
   UserSquare,
   FileBadge,
+  GitCompareArrows,
 } from 'lucide-react';
 
 import {
@@ -56,6 +57,7 @@ const navItems = {
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
       { href: '/state-letter', label: 'State Letter', icon: FileBadge },
+      { href: '/gap-analysis', label: 'GAP Analysis', icon: GitCompareArrows },
     ]
 }
 

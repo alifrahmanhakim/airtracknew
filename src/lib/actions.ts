@@ -11,9 +11,10 @@ import {
     type GenerateChecklistInput,
     type GenerateChecklistOutput
 } from '@/ai/flows/generate-checklist';
-import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem, StateLetterRecord } from './types';
+import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem, StateLetterRecord, GapAnalysisRecord } from './types';
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
+import { formSchema as gapAnalysisSchema, type GapAnalysisFormValues } from '@/components/gap-analysis-shared-form-fields';
 import { stateLetterFormSchema } from '@/components/state-letter-form';
 import { db } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
@@ -676,3 +677,39 @@ export async function addStateLetterRecord(
       return { success: false, error: `Failed to add record: ${message}` };
     }
   }
+
+// GAP Analysis Actions
+export async function addGapAnalysisRecord(
+  recordData: GapAnalysisFormValues
+): Promise<{ success: boolean; data?: GapAnalysisRecord; error?: string }> {
+  try {
+    const newRecordData = {
+        ...recordData,
+        createdAt: new Date().toISOString(),
+    };
+    const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), newRecordData);
+    revalidatePath('/gap-analysis');
+    
+    const newRecord: GapAnalysisRecord = { id: docRef.id, ...newRecordData };
+    return { success: true, data: newRecord };
+  } catch (error) {
+    console.error('Add GAP Analysis Record Error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, error: `Failed to add GAP Analysis record: ${message}` };
+  }
+}
+
+export async function deleteGapAnalysisRecord(
+  recordId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+      const recordRef = doc(db, 'gapAnalysisRecords', recordId);
+      await deleteDoc(recordRef);
+      revalidatePath('/gap-analysis');
+      return { success: true };
+  } catch (error) {
+      console.error('Delete GAP Analysis Record Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: `Failed to delete GAP Analysis record: ${message}` };
+  }
+}
