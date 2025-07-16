@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
+import { Combobox, ComboboxOption } from './ui/combobox';
 
 export const formSchema = z.object({
   slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
@@ -46,6 +47,7 @@ export const formSchema = z.object({
   statusItem: z.enum(['OPEN', 'CLOSED']),
   summary: z.string().optional(),
   inspectorNames: z.array(z.string()).optional(),
+  casrAffected: z.string().min(1, 'CASR to be affected is required'),
 });
 
 export type GapAnalysisFormValues = z.infer<typeof formSchema>;
@@ -60,9 +62,10 @@ const complianceStatusOptions: GapAnalysisFormValues['evaluations'][0]['complian
 
 type GapAnalysisSharedFormFieldsProps = {
   form: ReturnType<typeof useFormContext<GapAnalysisFormValues>>;
+  casrOptions: ComboboxOption[];
 }
 
-export function GapAnalysisSharedFormFields({ form }: GapAnalysisSharedFormFieldsProps) {
+export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSharedFormFieldsProps) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'evaluations',
@@ -79,6 +82,22 @@ export function GapAnalysisSharedFormFields({ form }: GapAnalysisSharedFormField
             <FormField control={form.control} name="typeOfStateLetter" render={({ field }) => ( <FormItem> <FormLabel>Type of State Letter</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="dateOfEvaluation" render={({ field }) => ( <FormItem> <FormLabel>Date of Evaluation</FormLabel> <FormControl><Input type="date" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           </div>
+          <FormField
+            control={form.control}
+            name="casrAffected"
+            render={({ field }) => (
+                <FormItem className="flex flex-col">
+                <FormLabel>CASR to be affected</FormLabel>
+                <Combobox 
+                    options={casrOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select or type a CASR..."
+                />
+                <FormMessage />
+                </FormItem>
+            )}
+            />
           <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <FormField control={form.control} name="actionRequired" render={({ field }) => ( <FormItem> <FormLabel>Action required</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <fieldset className="border p-4 rounded-md">

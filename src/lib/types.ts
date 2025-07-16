@@ -177,4 +177,5 @@ export type GapAnalysisRecord = {
   statusItem: 'OPEN' | 'CLOSED';
   summary: string;
   inspectorNames: string[];
+  casrAffected: string;
 };

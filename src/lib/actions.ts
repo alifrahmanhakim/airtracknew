@@ -11,13 +11,13 @@ import {
     type GenerateChecklistInput,
     type GenerateChecklistOutput
 } from '@/ai/flows/generate-checklist';
-import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem, StateLetterRecord, GapAnalysisRecord } from './types';
+import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem, StateLetterRecord, GapAnalysisRecord, ComplianceDataRow } from './types';
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
 import { formSchema as gapAnalysisSchema, type GapAnalysisFormValues } from '@/components/gap-analysis-shared-form-fields';
 import { stateLetterFormSchema } from '@/components/state-letter-form';
 import { db } from './firebase';
-import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch, getDocs, query, where } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
@@ -683,14 +683,45 @@ export async function addGapAnalysisRecord(
   recordData: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate: string }
 ): Promise<{ success: boolean; data?: GapAnalysisRecord; error?: string }> {
   try {
+    // 1. Save the GAP analysis record
     const newRecordData = {
         ...recordData,
         createdAt: new Date().toISOString(),
     };
-    const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), newRecordData);
+    const gapAnalysisCollection = collection(db, 'gapAnalysisRecords');
+    const docRef = await addDoc(gapAnalysisCollection, newRecordData);
     revalidatePath('/gap-analysis');
     
     const newRecord: GapAnalysisRecord = { id: docRef.id, ...newRecordData };
+
+    // 2. Find and update the corresponding rulemaking project
+    const rulemakingProjectsRef = collection(db, 'rulemakingProjects');
+    const q = query(rulemakingProjectsRef, where("casr", "==", recordData.casrAffected));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        const projectDoc = querySnapshot.docs[0];
+        
+        // 3. Create compliance data rows from the evaluation
+        const complianceDataItems: ComplianceDataRow[] = recordData.evaluations.map(evaluation => ({
+            id: `comp-${evaluation.id}`,
+            sl: recordData.slReferenceNumber,
+            subject: recordData.subject,
+            evaluationStatus: 'Evaluated', // Assuming it's evaluated upon creation
+            subjectStatus: 'Standard', // Default, might need adjustment
+            gapStatus: evaluation.complianceStatus === 'No Differences' ? 'Existing in CASR' : 'Belum Diadop', // Simplified mapping
+            implementationLevel: evaluation.complianceStatus === 'No Differences' ? 'No Difference' : 'Significant Difference' // Simplified mapping
+        }));
+        
+        await updateDoc(projectDoc.ref, {
+            complianceData: arrayUnion(...complianceDataItems)
+        });
+        revalidatePath(`/projects/${projectDoc.id}`);
+        revalidatePath('/rulemaking');
+    } else {
+        console.warn(`No rulemaking project found for CASR: ${recordData.casrAffected}`);
+    }
+
     return { success: true, data: newRecord };
   } catch (error) {
     console.error('Add GAP Analysis Record Error:', error);

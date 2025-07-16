@@ -9,17 +9,25 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { addGapAnalysisRecord } from '@/lib/actions';
-import type { GapAnalysisRecord } from '@/lib/types';
+import type { GapAnalysisRecord, Project } from '@/lib/types';
 import { GapAnalysisSharedFormFields, formSchema, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { format } from 'date-fns';
+import { ComboboxOption } from './ui/combobox';
 
 type GapAnalysisFormProps = {
   onFormSubmit: (data: GapAnalysisRecord) => void;
+  rulemakingProjects: Project[];
 };
 
-export function GapAnalysisForm({ onFormSubmit }: GapAnalysisFormProps) {
+export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysisFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const casrOptions: ComboboxOption[] = rulemakingProjects.map(p => ({
+    value: p.casr || '',
+    label: `CASR ${p.casr} - ${p.name}`,
+  })).filter(p => p.value);
+
 
   const defaultFormValues: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate?: Date } = {
     slReferenceNumber: '',
@@ -37,6 +45,7 @@ export function GapAnalysisForm({ onFormSubmit }: GapAnalysisFormProps) {
     statusItem: 'OPEN',
     summary: '',
     inspectorNames: ['', ''],
+    casrAffected: '',
   };
 
   const form = useForm<GapAnalysisFormValues>({
@@ -75,7 +84,7 @@ export function GapAnalysisForm({ onFormSubmit }: GapAnalysisFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <GapAnalysisSharedFormFields form={form} />
+        <GapAnalysisSharedFormFields form={form} casrOptions={casrOptions} />
         <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={() => form.reset(defaultFormValues)} disabled={isLoading}>
                 Reset

@@ -4,8 +4,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { GapAnalysisRecord } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import type { GapAnalysisRecord, Project } from '@/lib/types';
+import { collection, onSnapshot, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +28,7 @@ import { GapAnalysisAnalyticsDashboard } from '@/components/gap-analysis-analyti
 
 export default function GapAnalysisPage() {
   const [records, setRecords] = useState<GapAnalysisRecord[]>([]);
+  const [rulemakingProjects, setRulemakingProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('form');
   const { toast } = useToast();
@@ -36,6 +37,21 @@ export default function GapAnalysisPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
+    const fetchRulemakingProjects = async () => {
+        try {
+            const projectsQuerySnapshot = await getDocs(collection(db, "rulemakingProjects"));
+            const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+            setRulemakingProjects(projectsFromDb);
+        } catch (error) {
+            console.error("Error fetching rulemaking projects: ", error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Failed to fetch Rulemaking projects for selection.',
+            });
+        }
+    }
+
     const q = query(collection(db, "gapAnalysisRecords"), orderBy("createdAt", "desc"));
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -54,6 +70,8 @@ export default function GapAnalysisPage() {
       });
       setIsLoading(false);
     });
+
+    fetchRulemakingProjects();
 
     return () => unsubscribe();
   }, [toast]);
@@ -113,7 +131,7 @@ export default function GapAnalysisPage() {
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <GapAnalysisForm onFormSubmit={() => {}} />
+                      <GapAnalysisForm onFormSubmit={() => {}} rulemakingProjects={rulemakingProjects} />
                     </CardContent>
                 </Card>
             </TabsContent>
