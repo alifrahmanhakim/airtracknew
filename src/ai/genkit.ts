@@ -1,9 +1,10 @@
 import {genkit} from 'genkit';
-import {vertexAI} from '@genkit-ai/googleai';
+import {googleAI} from '@genkit-ai/googleai';
 
 export const ai = genkit({
   plugins: [
-    vertexAI({
+    googleAI({
+      // Konfigurasi untuk menggunakan Vertex AI
       // Lokasi bisa disesuaikan jika diperlukan, misalnya 'us-central1'
       location: 'us-central1',
     }),
