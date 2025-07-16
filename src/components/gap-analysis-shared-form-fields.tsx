@@ -185,10 +185,10 @@ export function GapAnalysisSharedFormFields({ form }: GapAnalysisSharedFormField
                     <FormItem>
                         <FormLabel>INSPECTOR NAME</FormLabel>
                         <FormControl>
-                            <>
+                            <div>
                                 <Input value={field.value?.[0] || ''} onChange={e => form.setValue('inspectorNames', [e.target.value, field.value?.[1] || ''])} placeholder="1." />
                                 <Input value={field.value?.[1] || ''} onChange={e => form.setValue('inspectorNames', [field.value?.[0] || '', e.target.value])} placeholder="2." className="mt-2" />
-                            </>
+                            </div>
                         </FormControl>
                     </FormItem>
                 )}
