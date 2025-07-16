@@ -22,7 +22,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 // This is the new wrapper function for the AI flow.
-export async function generateChecklist(
+export async function generateAiChecklist(
   input: GenerateChecklistInput
 ): Promise<GenerateChecklistOutput> {
   return await generateChecklistFlow(input);

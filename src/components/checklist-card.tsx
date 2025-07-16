@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { updateProjectChecklist, generateChecklist } from '@/lib/actions';
+import { updateProjectChecklist, generateAiChecklist } from '@/lib/actions';
 import type { Project, ChecklistItem } from '@/lib/types';
 import { Loader2, Plus, Trash2, ListChecks, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -76,7 +76,7 @@ export function ChecklistCard({ project }: ChecklistCardProps) {
   const handleGenerateChecklist = async () => {
     setIsGenerating(true);
     try {
-        const result = await generateChecklist({
+        const result = await generateAiChecklist({
             projectName: project.name,
             projectDescription: project.description
         });
