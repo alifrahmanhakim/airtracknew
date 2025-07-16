@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import { useState } from 'react';
 import type { Project, Task, User, SubProject, Document as ProjectDocument, ComplianceDataRow, GapAnalysisRecord } from '@/lib/types';
 import { findUserById, aggregateComplianceData, rulemakingTaskOptions } from '@/lib/data';
