@@ -443,7 +443,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                 </TableHeader>
                 <TableBody>
                   {tasks.length > 0 ? tasks.map((task) => {
-                    const assignees = task.assigneeIds.map(id => findUserById(id, users)).filter(u => u);
+                    const assignees = (task.assigneeIds || []).map(id => findUserById(id, users)).filter(u => u);
                     const attachmentCount = task.attachments?.length || 0;
                     return (
                       <TableRow key={task.id}>
