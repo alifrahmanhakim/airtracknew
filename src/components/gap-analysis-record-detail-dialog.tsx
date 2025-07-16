@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -47,6 +48,10 @@ const EvaluationCard = ({ evaluation }: { evaluation: EvaluationItem }) => (
                 <h4 className="font-semibold text-sm mb-1">Compliance Status</h4>
                 <p className="text-sm text-muted-foreground">{evaluation.complianceStatus}</p>
             </div>
+             <div>
+                <h4 className="font-semibold text-sm mb-1">CASR Affected</h4>
+                <p className="text-sm text-muted-foreground">{evaluation.casrAffected}</p>
+            </div>
         </CardContent>
     </Card>
 )
@@ -80,7 +85,6 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 <DetailRow label="Effective Date" value={format(parseISO(record.effectiveDate), 'PPP')} />
                 <DetailRow label="Applicability Date" value={format(parseISO(record.applicabilityDate), 'PPP')} />
                 <DetailRow label="Embedded Applicability Date" value={format(parseISO(record.embeddedApplicabilityDate), 'PPP')} />
-                <DetailRow label="CASR Affected" value={record.casrAffected} />
                 
                 <Separator className="my-4" />
                 

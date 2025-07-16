@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
@@ -43,11 +44,11 @@ export const formSchema = z.object({
       'Less protective or partially implemented or not implemented',
       'Not Applicable',
     ]),
+    casrAffected: z.string().min(1, 'CASR to be affected is required'),
   })).min(1, 'At least one evaluation item is required'),
   statusItem: z.enum(['OPEN', 'CLOSED']),
   summary: z.string().optional(),
   inspectorNames: z.array(z.string()).optional(),
-  casrAffected: z.string().min(1, 'CASR to be affected is required'),
 });
 
 export type GapAnalysisFormValues = z.infer<typeof formSchema>;
@@ -82,22 +83,6 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
             <FormField control={form.control} name="typeOfStateLetter" render={({ field }) => ( <FormItem> <FormLabel>Type of State Letter</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="dateOfEvaluation" render={({ field }) => ( <FormItem> <FormLabel>Date of Evaluation</FormLabel> <FormControl><Input type="date" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           </div>
-          <FormField
-            control={form.control}
-            name="casrAffected"
-            render={({ field }) => (
-                <FormItem className="flex flex-col">
-                <FormLabel>CASR to be affected</FormLabel>
-                <Combobox 
-                    options={casrOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Select or type a CASR..."
-                />
-                <FormMessage />
-                </FormItem>
-            )}
-            />
           <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <FormField control={form.control} name="actionRequired" render={({ field }) => ( <FormItem> <FormLabel>Action required</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <fieldset className="border p-4 rounded-md">
@@ -151,7 +136,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>EVALUATION</CardTitle>
-            <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences' })}>
+            <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
             </Button>
         </CardHeader>
@@ -162,6 +147,22 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
                     <FormField control={form.control} name={`evaluations.${index}.icaoSarp`} render={({ field }) => ( <FormItem> <FormLabel>ICAO SARP</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={form.control} name={`evaluations.${index}.review`} render={({ field }) => ( <FormItem> <FormLabel>REVIEW</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField
+                        control={form.control}
+                        name={`evaluations.${index}.casrAffected`}
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                            <FormLabel>CASR to be affected</FormLabel>
+                            <Combobox 
+                                options={casrOptions}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type a CASR..."
+                            />
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <FormField control={form.control} name={`evaluations.${index}.complianceStatus`} render={({ field }) => (
                         <FormItem>
                             <FormLabel>DGCA Compliance/Differences Status</FormLabel>

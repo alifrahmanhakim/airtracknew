@@ -76,7 +76,6 @@ export function GapAnalysisRecordsTable({ records, onDelete, onUpdate }: GapAnal
     statusItem: true,
     summary: false,
     inspectorNames: false,
-    casrAffected: true,
   });
   
   const typeOfStateLetterOptions = useMemo(() => {
@@ -139,7 +138,6 @@ export function GapAnalysisRecordsTable({ records, onDelete, onUpdate }: GapAnal
     { key: 'typeOfStateLetter', header: 'Type' },
     { key: 'statusItem', header: 'Status' },
     { key: 'dateOfEvaluation', header: 'Evaluation Date' },
-    { key: 'casrAffected', header: 'CASR Affected' },
     { key: 'annex', header: 'Annex' },
   ];
   

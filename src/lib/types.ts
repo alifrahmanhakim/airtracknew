@@ -109,6 +109,7 @@ export type EvaluationItem = {
   icaoSarp: string;
   review: string;
   complianceStatus: 'No Differences' | 'More Exacting or Exceeds' | 'Different in character or other means of compliance' | 'Less protective or partially implemented or not implemented' | 'Not Applicable';
+  casrAffected: string;
 };
 
 export type GapAnalysisRecord = {
@@ -127,5 +128,4 @@ export type GapAnalysisRecord = {
   statusItem: 'OPEN' | 'CLOSED';
   summary: string;
   inspectorNames: string[];
-  casrAffected: string;
 };

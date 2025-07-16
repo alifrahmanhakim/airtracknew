@@ -40,12 +40,11 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     applicabilityDate: '',
     embeddedApplicabilityDate: undefined,
     evaluations: [
-      { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences' }
+      { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' }
     ],
     statusItem: 'OPEN',
     summary: '',
     inspectorNames: ['', ''],
-    casrAffected: '',
   };
 
   const form = useForm<GapAnalysisFormValues>({
