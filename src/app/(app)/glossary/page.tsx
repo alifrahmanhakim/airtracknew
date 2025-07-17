@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
@@ -99,9 +100,9 @@ export default function GlossaryPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                 <div>
-                    <h1 className="text-3xl font-bold">Aviation Glossary</h1>
+                    <h1 className="text-3xl font-bold">Translation Analysis</h1>
                     <p className="text-muted-foreground">
-                        A centralized dictionary of aviation terms and definitions.
+                        A centralized tool for analyzing and storing translation data.
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>
@@ -116,9 +117,9 @@ export default function GlossaryPage() {
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
                 <Card className="max-w-4xl mx-auto">
                     <CardHeader>
-                    <CardTitle>Add New Glossary Term</CardTitle>
+                    <CardTitle>Add New Translation Analysis</CardTitle>
                     <CardDescription>
-                        Fill out the form below to add a new term to the glossary.
+                        Fill out the form below to add a new analysis entry.
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -130,9 +131,9 @@ export default function GlossaryPage() {
             <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Glossary Records</CardTitle>
+                        <CardTitle>Translation Records</CardTitle>
                         <CardDescription>
-                            Browse and manage the list of all aviation terms.
+                            Browse and manage the list of all translation analyses.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -144,9 +145,9 @@ export default function GlossaryPage() {
             <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Glossary Analytics</CardTitle>
+                        <CardTitle>Analysis Analytics</CardTitle>
                         <CardDescription>
-                           Insights into the glossary data.
+                           Insights into the translation analysis data.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

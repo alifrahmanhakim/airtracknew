@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -21,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
+import { cn } from '@/lib/utils';
 
 type GlossaryRecordsTableProps = {
   records: GlossaryRecord[];
@@ -35,7 +37,7 @@ type SortDescriptor = {
 
 export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRecordsTableProps) {
   const [filter, setFilter] = useState('');
-  const [sort, setSort] = useState<SortDescriptor>({ column: 'term', direction: 'asc' });
+  const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
 
   const processedRecords = useMemo(() => {
     let filteredData = [...records];
@@ -81,8 +83,8 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
-        <p className="font-semibold">No terms found.</p>
-        <p className="text-sm">Submit the form to add a new term to the glossary.</p>
+        <p className="font-semibold">No records found.</p>
+        <p className="text-sm">Submit the form to add a new analysis record.</p>
       </div>
     );
   }
@@ -93,7 +95,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
         <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-                placeholder="Filter by term, definition, source, or tag..."
+                placeholder="Filter by any field..."
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
                 className="pl-9 w-full max-w-sm"
@@ -103,29 +105,34 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('term')}>
-                    <div className="flex items-center">Term {renderSortIcon('term')}</div>
+                <TableHead className="cursor-pointer" onClick={() => handleSort('tsu')}>
+                    <div className="flex items-center">TSU {renderSortIcon('tsu')}</div>
                 </TableHead>
-                <TableHead>Definition</TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('source')}>
-                     <div className="flex items-center">Source {renderSortIcon('source')}</div>
+                <TableHead>TSA</TableHead>
+                <TableHead>Editing</TableHead>
+                <TableHead>Makna</TableHead>
+                <TableHead>Keterangan</TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
+                     <div className="flex items-center">Status {renderSortIcon('status')}</div>
                 </TableHead>
-                <TableHead>Tags</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedRecords.map((record) => (
                 <TableRow key={record.id}>
-                    <TableCell className="font-semibold">{record.term}</TableCell>
-                    <TableCell className="max-w-md">{record.definition}</TableCell>
-                    <TableCell>{record.source}</TableCell>
+                    <TableCell className="font-semibold max-w-xs truncate">{record.tsu}</TableCell>
+                    <TableCell className="max-w-xs truncate">{record.tsa}</TableCell>
+                    <TableCell className="max-w-xs truncate">{record.editing}</TableCell>
+                    <TableCell className="max-w-xs truncate">{record.makna}</TableCell>
+                    <TableCell className="max-w-xs truncate">{record.keterangan}</TableCell>
                     <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                            {record.tags?.split(',').map(tag => tag.trim()).filter(Boolean).map(tag => (
-                                <Badge key={tag} variant="secondary">{tag}</Badge>
-                            ))}
-                        </div>
+                        <Badge
+                            variant={record.status === 'Final' ? 'default' : 'secondary'}
+                            className={cn(record.status === 'Final' ? 'bg-green-100 text-green-800' : '')}
+                        >
+                            {record.status}
+                        </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                         <div className="flex justify-end gap-2">

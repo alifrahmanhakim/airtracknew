@@ -139,8 +139,10 @@ export type GapAnalysisRecord = {
 export type GlossaryRecord = {
   id: string;
   createdAt: string;
-  term: string;
-  definition: string;
-  source: string;
-  tags?: string;
+  tsu: string;
+  tsa: string;
+  editing: string;
+  makna: string;
+  keterangan: string;
+  status: 'Draft' | 'Final';
 }

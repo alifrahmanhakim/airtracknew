@@ -21,10 +21,12 @@ export function GlossaryForm({ onFormSubmit }: GlossaryFormProps) {
   const { toast } = useToast();
 
   const defaultFormValues: GlossaryFormValues = {
-    term: '',
-    definition: '',
-    source: '',
-    tags: '',
+    tsu: '',
+    tsa: '',
+    editing: '',
+    makna: '',
+    keterangan: '',
+    status: 'Draft',
   };
 
   const form = useForm<GlossaryFormValues>({
@@ -42,8 +44,8 @@ export function GlossaryForm({ onFormSubmit }: GlossaryFormProps) {
     if (result.success && result.data) {
         onFormSubmit(result.data);
         toast({
-            title: 'Term Added Successfully!',
-            description: 'The new glossary term has been saved.',
+            title: 'Record Added Successfully!',
+            description: 'The new translation analysis has been saved.',
         });
         form.reset(defaultFormValues);
     } else {
