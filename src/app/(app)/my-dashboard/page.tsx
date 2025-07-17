@@ -20,10 +20,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays } from 'date-fns';
-import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell } from 'lucide-react';
+import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
+import { Button } from '@/components/ui/button';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -32,12 +33,25 @@ type AssignedTask = Task & {
   projectTags?: string[];
 };
 
+type WorkspaceAnalytics = {
+  ccefod: number;
+  pqs: number;
+  gapAnalysis: number;
+  glossary: number;
+}
+
 export default function MyDashboardPage() {
   const [assignedTasks, setAssignedTasks] = React.useState<AssignedTask[]>([]);
   const [myProjects, setMyProjects] = React.useState<Project[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [userId, setUserId] = React.useState<string | null>(null);
+  const [workspaceAnalytics, setWorkspaceAnalytics] = React.useState<WorkspaceAnalytics>({
+      ccefod: 0,
+      pqs: 0,
+      gapAnalysis: 0,
+      glossary: 0,
+  });
 
   React.useEffect(() => {
     const id = localStorage.getItem('loggedInUserId');
@@ -62,8 +76,34 @@ export default function MyDashboardPage() {
       try {
         const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
         const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
+        const ccefodPromise = getDocs(collection(db, 'ccefodRecords'));
+        const pqsPromise = getDocs(collection(db, 'pqsRecords'));
+        const gapAnalysisPromise = getDocs(collection(db, 'gapAnalysisRecords'));
+        const glossaryPromise = getDocs(collection(db, 'glossaryRecords'));
 
-        const [timKerjaSnapshot, rulemakingSnapshot] = await Promise.all([timKerjaPromise, rulemakingPromise]);
+
+        const [
+            timKerjaSnapshot, 
+            rulemakingSnapshot,
+            ccefodSnapshot,
+            pqsSnapshot,
+            gapAnalysisSnapshot,
+            glossarySnapshot,
+        ] = await Promise.all([
+            timKerjaPromise, 
+            rulemakingPromise,
+            ccefodPromise,
+            pqsPromise,
+            gapAnalysisPromise,
+            glossaryPromise
+        ]);
+        
+        setWorkspaceAnalytics({
+            ccefod: ccefodSnapshot.size,
+            pqs: pqsSnapshot.size,
+            gapAnalysis: gapAnalysisSnapshot.size,
+            glossary: glossarySnapshot.size,
+        });
 
         const allProjects: Project[] = [
           ...timKerjaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project)),
@@ -118,6 +158,13 @@ export default function MyDashboardPage() {
   const upcomingTasks = assignedTasks
     .filter(t => t.status !== 'Done' && new Date(t.dueDate) >= new Date())
     .slice(0, 3);
+    
+  const workspaceCards = [
+    { title: "CC/EFOD", value: workspaceAnalytics.ccefod, icon: ClipboardCheck, href: "/ccefod", color: "text-blue-500" },
+    { title: "PQs", value: workspaceAnalytics.pqs, icon: CircleHelp, href: "/pqs", color: "text-green-500" },
+    { title: "GAP Analysis", value: workspaceAnalytics.gapAnalysis, icon: GitCompareArrows, href: "/gap-analysis", color: "text-yellow-500" },
+    { title: "Glossary", value: workspaceAnalytics.glossary, icon: BookText, href: "/glossary", color: "text-purple-500" },
+  ]
 
   if (isLoading) {
     return (
@@ -282,6 +329,23 @@ export default function MyDashboardPage() {
                             No upcoming tasks. You're all caught up!
                         </div>
                     )}
+                </CardContent>
+             </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Workspace Overview</CardTitle>
+                    <CardDescription>At-a-glance view of key modules.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                    {workspaceCards.map(item => (
+                        <Link href={item.href} key={item.title}>
+                            <div className="p-3 rounded-lg border bg-background hover:bg-muted/80 hover:shadow-sm transition-all text-center">
+                                <item.icon className={cn("h-8 w-8 mx-auto mb-2", item.color)} />
+                                <p className="font-bold text-lg">{item.value}</p>
+                                <p className="text-xs font-medium text-muted-foreground">{item.title}</p>
+                            </div>
+                        </Link>
+                    ))}
                 </CardContent>
              </Card>
         </aside>
