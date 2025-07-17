@@ -40,7 +40,6 @@ export async function addCcefodRecord(data: z.infer<typeof ccefodFormSchema>) {
 }
 
 export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
-    // Schema yang lebih longgar khusus untuk impor, mengizinkan string kosong untuk field yang wajib.
     const importSchema = ccefodFormSchema.extend({
         annex: z.string(),
         annexReference: z.string(),
@@ -52,13 +51,18 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
     let count = 0;
 
     for (const recordData of records) {
+        let implementationLevel = recordData.implementationLevel ?? 'No difference';
+        if (typeof implementationLevel === 'string' && implementationLevel.toLowerCase() === 'no difference') {
+            implementationLevel = 'No difference';
+        }
+
         const dataToValidate = {
             ...recordData,
             annex: recordData.annex ?? '',
             annexReference: recordData.annexReference ?? '',
             standardPractice: recordData.standardPractice ?? '',
             legislationReference: recordData.legislationReference ?? '',
-            implementationLevel: recordData.implementationLevel ?? 'No difference',
+            implementationLevel: implementationLevel,
             status: recordData.status ?? 'Draft',
             adaPerubahan: recordData.adaPerubahan ?? 'TIDAK',
             usulanPerubahan: recordData.usulanPerubahan ?? '',
@@ -80,12 +84,13 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
             });
             count++;
         } else {
-            const firstErrorField = Object.keys(parsed.error.flatten().fieldErrors)[0];
-            const firstErrorMessage = parsed.error.flatten().fieldErrors[firstErrorField as keyof z.infer<typeof importSchema>]?.[0];
-            // Mengembalikan pesan error yang jelas jika terjadi kesalahan tak terduga
+            const firstError = parsed.error.issues[0];
+            const fieldPath = firstError.path.join('.');
+            const receivedValue = recordData[fieldPath as keyof typeof recordData];
+            
             return {
                 success: false,
-                error: `Error on row ${count + 1}. Field: "${firstErrorField}", Message: "${firstErrorMessage}". Please check your CSV.`
+                error: `Error on row ${count + 1}. Field: "${fieldPath}", Message: "${firstError.message}". Received: "${receivedValue}". Please check your CSV.`
             };
         }
     }
