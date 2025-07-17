@@ -63,14 +63,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <p className="text-sm text-muted-foreground truncate">{displayDescription}</p>
         </CardHeader>
         <CardContent className="flex-grow space-y-4 pt-2">
-          <div>
             <div className="flex items-center justify-between mb-1">
                <span className="text-sm font-medium text-muted-foreground">Progress</span>
                <span className="text-sm font-bold">{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} />
-          </div>
-          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                   <Avatar className="h-6 w-6">
                       <AvatarImage src={team[0]?.avatarUrl} alt={team[0]?.name} data-ai-hint="person portrait" />
