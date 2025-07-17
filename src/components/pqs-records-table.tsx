@@ -60,7 +60,7 @@ const RECORDS_PER_PAGE = 10;
 
 export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTableProps) {
   const [filter, setFilter] = useState('');
-  const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
+  const [sort, setSort] = useState<SortDescriptor>({ column: 'pqNumber', direction: 'asc' });
   const [recordToView, setRecordToView] = useState<PqRecord | null>(null);
   const [criticalElementFilter, setCriticalElementFilter] = useState<string>('all');
   const [icaoStatusFilter, setIcaoStatusFilter] = useState<string>('all');
