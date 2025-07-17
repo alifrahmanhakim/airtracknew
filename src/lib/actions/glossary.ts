@@ -98,7 +98,7 @@ export async function importGlossaryRecords(records: Record<string, any>[]) {
         // If a required field was originally empty, fill it with a placeholder
         for (const field of requiredFields) {
             if (!dataToValidate[field as keyof typeof dataToValidate]) {
-                dataToValidate[field as keyof typeof dataToValidate] = '[Data from CSV was empty]';
+                dataToValidate[field as keyof typeof dataToValidate] = '-';
             }
         }
 
