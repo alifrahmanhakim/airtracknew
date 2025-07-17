@@ -1,4 +1,6 @@
 
+'use client';
+
 import Link from 'next/link';
 import {
   Card,
@@ -6,6 +8,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -14,7 +17,9 @@ import type { Project } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { ListTodo, CheckCircle, Clock } from 'lucide-react';
+import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
+
 
 type ProjectCardProps = {
   project: Project;
@@ -29,8 +34,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const statusConfig = {
     'Completed': { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },
     'On Track': { icon: Clock, color: 'text-blue-500', label: 'On Track' },
-    'At Risk': { icon: Clock, color: 'text-yellow-500', label: 'At Risk' },
-    'Off Track': { icon: Clock, color: 'text-red-500', label: 'Off Track' },
+    'At Risk': { icon: AlertTriangle, color: 'text-yellow-500', label: 'At Risk' },
+    'Off Track': { icon: AlertTriangle, color: 'text-red-500', label: 'Off Track' },
   };
 
   const currentStatus = statusConfig[status] || statusConfig['On Track'];
@@ -48,54 +53,105 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const projectLink = projectType === 'Rulemaking' ? `/projects/${project.id}?type=rulemaking` : `/projects/${project.id}?type=timkerja`;
 
   return (
-    <Link href={projectLink} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
-      <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300 h-full">
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-start">
-            <CardTitle className="text-lg font-bold leading-snug">
-              {displayName}
-            </CardTitle>
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <currentStatus.icon className={cn("h-4 w-4", currentStatus.color)} />
-              <span className={currentStatus.color}>{currentStatus.label}</span>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground truncate">{displayDescription}</p>
-        </CardHeader>
-        <CardContent className="flex-grow space-y-4 pt-2">
-            <div className="flex items-center justify-between mb-1">
-               <span className="text-sm font-medium text-muted-foreground">Progress</span>
-               <span className="text-sm font-bold">{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} />
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                  <Avatar className="h-6 w-6">
-                      <AvatarImage src={team[0]?.avatarUrl} alt={team[0]?.name} data-ai-hint="person portrait" />
-                      <AvatarFallback>{team[0]?.name?.charAt(0) || team[0]?.email?.charAt(0) || '?'}</AvatarFallback>
-                  </Avatar>
-                  <span>{team[0]?.name}</span>
+    <TooltipProvider>
+      <Link href={projectLink} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+        <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300 h-full">
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-start gap-2">
+              <CardTitle className="text-lg font-bold leading-snug">
+                {displayName}
+              </CardTitle>
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <currentStatus.icon className={cn("h-4 w-4", currentStatus.color)} />
+                <span className={currentStatus.color}>{currentStatus.label}</span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                   <Clock className="h-4 w-4" />
-                   <span>{format(parseISO(endDate), 'yyyy-MM-dd')}</span>
+            </div>
+            <CardDescription className="text-sm text-muted-foreground truncate h-10">{displayDescription}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow space-y-4 pt-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col justify-center items-center space-y-1">
+                    <div className="relative h-20 w-20">
+                        <svg className="h-full w-full" viewBox="0 0 36 36">
+                            <path
+                                d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                                className="text-muted/50"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                            />
+                            <path
+                                d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                                className="text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeDasharray={`${progress}, 100`}
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-2xl font-bold">{Math.round(progress)}%</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-sm">
+                        <ListTodo className="h-5 w-5 text-muted-foreground"/>
+                        <div>
+                            <p className="font-bold">{completedTasks}/{totalTasks}</p>
+                            <p className="text-xs text-muted-foreground">Tasks Done</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-3 text-sm">
+                        <Users className="h-5 w-5 text-muted-foreground"/>
+                        <div className="flex items-center -space-x-2">
+                            {team.slice(0, 3).map(member => (
+                                <Tooltip key={member.id}>
+                                    <TooltipTrigger asChild>
+                                        <Avatar className="h-7 w-7 border-2 border-background">
+                                            <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
+                                            <AvatarFallback>{member.name?.charAt(0) || '?'}</AvatarFallback>
+                                        </Avatar>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>{member.name}</p></TooltipContent>
+                                </Tooltip>
+                            ))}
+                            {team.length > 3 && (
+                                <Avatar className="h-7 w-7 border-2 border-background">
+                                    <AvatarFallback>+{team.length - 3}</AvatarFallback>
+                                </Avatar>
+                            )}
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-3 text-sm">
+                        <Calendar className="h-5 w-5 text-muted-foreground"/>
+                        <div>
+                            <p className="font-bold">{format(parseISO(endDate), 'dd MMM yyyy')}</p>
+                            <p className="text-xs text-muted-foreground">Due Date</p>
+                        </div>
+                    </div>
+                </div>
               </div>
-          </div>
-        </CardContent>
-        <CardFooter className="pt-2 flex-wrap gap-2 mt-auto">
-          {tags?.map(tag => (
-              <Badge key={tag} variant="outline" className={cn("font-medium", getTagColor(tag))}>
-                  {tag}
-              </Badge>
-          ))}
-           <div className="ml-auto" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
-               <AiSummaryDialog
-                  taskCompletion={progress.toFixed(0)}
-                  notes={notes || ''}
-               />
-          </div>
-        </CardFooter>
-      </Card>
-    </Link>
+          </CardContent>
+          <CardFooter className="pt-2 flex-wrap gap-2 mt-auto">
+            {tags?.map(tag => (
+                <Badge key={tag} variant="outline" className={cn("font-medium", getTagColor(tag))}>
+                    {tag}
+                </Badge>
+            ))}
+            <div className="ml-auto" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                <AiSummaryDialog
+                    taskCompletion={progress.toFixed(0)}
+                    notes={notes || ''}
+                />
+            </div>
+          </CardFooter>
+        </Card>
+      </Link>
+    </TooltipProvider>
   );
 }
