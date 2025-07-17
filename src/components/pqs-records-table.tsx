@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -15,7 +14,7 @@ import type { PqRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown, AlertTriangle } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -37,7 +36,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditPqRecordDialog } from './edit-pq-record-dialog';
 import { PqRecordDetailDialog } from './pq-record-detail-dialog';
@@ -123,12 +121,12 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
         }
         return { column, direction: 'asc' };
     });
-  }
+  };
 
   const renderSortIcon = (column: keyof PqRecord) => {
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
-  }
+  };
   
   const columnDefs: { key: keyof PqRecord; header: string; width?: string }[] = [
     { key: 'pqNumber', header: 'PQ Number' },
@@ -149,14 +147,6 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
   ];
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key as keyof PqRecord]);
-
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const rowVirtualizer = useVirtualizer({
-      count: processedRecords.length,
-      getScrollElement: () => tableContainerRef.current,
-      estimateSize: () => 65, // Estimate row height
-      overscan: 5,
-  });
 
   if (records.length === 0) {
     return (
@@ -223,43 +213,31 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div ref={tableContainerRef} className="border rounded-md overflow-auto" style={{ maxHeight: '70vh' }}>
-          <Table className="min-w-full relative">
-            <TableHeader className="sticky top-0 bg-background/95 z-20">
-              <TableRow className='border-b'>
-                {visibleColumns.map((col, index) => (
+        <div className="border rounded-md overflow-auto max-h-[70vh]">
+          <Table className="min-w-full">
+            <TableHeader className="sticky top-0 bg-background/95 z-10">
+              <TableRow>
+                {visibleColumns.map((col) => (
                     <TableHead 
                         key={col.key} 
-                        className={cn(
-                            "cursor-pointer whitespace-nowrap border-r last:border-r-0",
-                            col.key === 'protocolQuestion' && 'w-1/3'
-                        )} 
-                        onClick={() => handleSort(col.key as keyof PqRecord)}>
+                        className={cn("cursor-pointer whitespace-nowrap align-middle", col.key === 'protocolQuestion' && 'w-1/3')} 
+                        onClick={() => handleSort(col.key as keyof PqRecord)}
+                    >
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof PqRecord)}</div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px]">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px] align-middle">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const record = processedRecords[virtualRow.index];
-                return (
-                    <TableRow 
-                        key={record.id} 
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: `${virtualRow.size}px`,
-                            transform: `translateY(${virtualRow.start}px)`,
-                        }}
-                        className="border-b cursor-pointer" 
-                        onClick={() => setRecordToView(record)}
-                    >
+            <TableBody>
+              {processedRecords.map((record) => (
+                <TableRow 
+                    key={record.id} 
+                    className="cursor-pointer" 
+                    onClick={() => setRecordToView(record)}
+                >
                     {visibleColumns.map((col) => (
-                        <TableCell key={col.key} className="align-top whitespace-normal border-r last:border-r-0 h-full">
+                        <TableCell key={col.key} className="align-middle whitespace-normal">
                             {(() => {
                                 const value = record[col.key as keyof PqRecord] as string | undefined;
                                 
@@ -274,40 +252,35 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                                     {value}
                                     </Badge>);
                                 }
-                                if (col.key === 'createdAt' && value) {
-                                    return format(parseISO(value), 'PPP');
+
+                                if (value === null || value === undefined || value === '') {
+                                    return <span className='text-muted-foreground'>—</span>;
                                 }
                                 
-                                return <div className="truncate-multiline">{value || 'N/A'}</div>;
+                                return <div className="truncate-multiline">{value}</div>;
                             })()}
                         </TableCell>
                     ))}
-                    <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-top h-full">
-                        <div className="flex justify-end gap-2 h-full items-center" onClick={(e) => e.stopPropagation()}>
-                        <EditPqRecordDialog record={record} onRecordUpdate={onUpdate} />
-                        <Tooltip>
+                    <TableCell className="text-right sticky right-0 bg-background/95 align-middle">
+                        <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+                            <EditPqRecordDialog record={record} onRecordUpdate={onUpdate} />
+                            <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent><p>Delete Record</p></TooltipContent>
-                        </Tooltip>
+                            </Tooltip>
                         </div>
                     </TableCell>
-                    </TableRow>
-                );
-              })}
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
-          {processedRecords.length === 0 && !filter && (
+          {processedRecords.length === 0 && (
             <div className="text-center p-6 text-muted-foreground">
-                <p>No records found.</p>
-            </div>
-          )}
-          {processedRecords.length === 0 && filter && (
-            <div className="text-center p-6 text-muted-foreground">
-                <p>No matching records found for your filter.</p>
+                <p>No matching records found.</p>
             </div>
           )}
         </div>

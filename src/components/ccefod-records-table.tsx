@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -15,7 +14,7 @@ import type { CcefodRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown, AlertTriangle } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -37,7 +36,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditCcefodRecordDialog } from './edit-ccefod-record-dialog';
 import { CcefodRecordDetailDialog } from './ccefod-record-detail-dialog';
@@ -133,12 +131,12 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
         }
         return { column, direction: 'asc' };
     });
-  }
+  };
 
   const renderSortIcon = (column: keyof CcefodRecord) => {
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
-  }
+  };
   
   const columnDefs: { key: keyof CcefodRecord; header: string; width?: string }[] = [
     { key: 'annex', header: 'Annex' },
@@ -156,15 +154,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
   ];
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key]);
-
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-  const rowVirtualizer = useVirtualizer({
-      count: processedRecords.length,
-      getScrollElement: () => tableContainerRef.current,
-      estimateSize: () => 150, // Increased estimate for potentially taller rows
-      overscan: 5,
-  });
-
 
   if (records.length === 0) {
     return (
@@ -244,17 +233,14 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div ref={tableContainerRef} className="border rounded-md overflow-auto" style={{ maxHeight: '70vh' }}>
-          <Table className="min-w-[1600px] relative">
-            <TableHeader className="sticky top-0 bg-background/95 z-20">
+        <div className="border rounded-md overflow-auto max-h-[70vh]">
+          <Table className="min-w-[1600px]">
+            <TableHeader className="sticky top-0 bg-background/95 z-10">
               <TableRow>
                 {visibleColumns.map((col) => (
                     <TableHead 
                         key={col.key} 
-                        className={cn(
-                          "cursor-pointer align-middle", 
-                          col.key === 'standardPractice' && 'w-[600px]'
-                        )} 
+                        className={cn("cursor-pointer align-middle", col.key === 'standardPractice' && 'w-[600px]')} 
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
                     </TableHead>
@@ -262,77 +248,56 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                 <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px] align-middle">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const record = processedRecords[virtualRow.index];
-                return (
-                    <TableRow 
-                        key={record.id} 
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: `${virtualRow.size}px`,
-                            transform: `translateY(${virtualRow.start}px)`,
-                        }}
-                        className="border-b cursor-pointer" 
-                        onClick={() => setRecordToView(record)}
-                    >
+            <TableBody>
+              {processedRecords.map((record) => (
+                <TableRow 
+                    key={record.id} 
+                    className="cursor-pointer" 
+                    onClick={() => setRecordToView(record)}
+                >
                     {visibleColumns.map((col) => {
                         const isRichText = col.key === 'standardPractice';
                         return (
-                            <TableCell 
-                                key={col.key} 
-                                className="align-top whitespace-normal h-full"
-                            >
+                            <TableCell key={col.key} className="align-middle">
                                 {(() => {
                                     const value = record[col.key as keyof CcefodRecord] as string | undefined;
                                     
                                     if (isRichText && value) {
-                                        return (
-                                            <div 
-                                                className="prose dark:prose-invert max-w-none"
-                                                dangerouslySetInnerHTML={{ __html: value }}
-                                            />
-                                        );
+                                        return <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: value }} />;
                                     }
                                     
-                                    let displayValue: React.ReactNode = value || 'N/A';
+                                    if (value === null || value === undefined || value === '') {
+                                        return <span className='text-muted-foreground'>—</span>;
+                                    }
 
-                                    if (col.key === 'status' && value) {
-                                        displayValue = <Badge
-                                        className={cn({
+                                    if (col.key === 'status') {
+                                        return <Badge className={cn({
                                             'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
                                             'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
                                             'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                        })}
-                                        >
-                                        {value}
-                                        </Badge>
+                                        })}>{value}</Badge>;
                                     }
 
-                                    return <div>{displayValue}</div>;
+                                    return <div>{value}</div>;
                                 })()}
                             </TableCell>
                         )
                     })}
-                    <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-top h-full">
-                        <div className="flex justify-end gap-2 h-full items-center" onClick={(e) => e.stopPropagation()}>
-                        <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
-                        <Tooltip>
+                    <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-middle">
+                        <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+                            <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
+                            <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent><p>Delete Record</p></TooltipContent>
-                        </Tooltip>
+                            </Tooltip>
                         </div>
                     </TableCell>
-                    </TableRow>
-                );
-              })}
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           {processedRecords.length === 0 && (
