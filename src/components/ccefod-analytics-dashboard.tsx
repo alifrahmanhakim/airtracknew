@@ -132,7 +132,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {implementationPercentages.map(item => (
             <div key={item.name} className="flex justify-between items-baseline gap-2">
-                <span className="truncate" title={item.name}>{item.name}</span>
+                <span title={item.name}>{item.name}</span>
                 <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
             </div>
           ))}
@@ -151,7 +151,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {annexPercentages.map(item => (
           <div key={item.name} className="flex justify-between items-baseline gap-2">
-            <span className="truncate" title={item.name}>{item.name}</span>
+            <span title={item.name}>{item.name}</span>
             <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
           </div>
         ))}
