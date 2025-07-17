@@ -128,6 +128,8 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
   const totalHeight = HEADER_HEIGHT + sortedTasks.length * ROW_HEIGHT;
+  
+  const timelineMaxHeight = HEADER_HEIGHT + (Math.min(sortedTasks.length, 6) * ROW_HEIGHT);
 
   return (
     <TooltipProvider>
@@ -156,11 +158,15 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
             ))}
         </div>
       </div>
-      <div className="w-full border-t overflow-x-auto" ref={timelineContainerRef}>
-        <div className="flex relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px` }}>
+      <div 
+        className="w-full border-t overflow-auto" 
+        ref={timelineContainerRef}
+        style={{ maxHeight: `${timelineMaxHeight}px` }}
+      >
+        <div className="flex relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${totalHeight}px` }}>
             {/* Task List - Sticky Left */}
             <div className="sticky left-0 z-20 bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
-                <div className="h-16 flex items-center px-4 font-semibold border-b border-r">
+                <div className="sticky top-0 z-10 h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
                     Tasks
                 </div>
                 {sortedTasks.map((task) => (
@@ -298,7 +304,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                         <div
                             className="absolute group flex items-center"
                             style={{
-                                top: `${index * ROW_HEIGHT + 6}px`,
+                                top: `${HEADER_HEIGHT + index * ROW_HEIGHT + 6}px`,
                                 left: `${left}px`,
                                 height: `${ROW_HEIGHT - 12}px`,
                                 width: `${width}px`,
