@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, writeBatch, getDocs } from 'firebase/firestore';
 import DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
 import type { CcefodRecord } from '../types';
@@ -50,6 +50,8 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
             adaPerubahan: recordData.adaPerubahan || 'TIDAK',
             usulanPerubahan: recordData.usulanPerubahan || '',
             isiUsulan: recordData.isiUsulan || '',
+            standardPractice: recordData.standardPractice || '',
+            legislationReference: recordData.legislationReference || '',
             differenceText: recordData.differenceText || '',
             differenceReason: recordData.differenceReason || '',
             remarks: recordData.remarks || '',
@@ -68,12 +70,11 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
             count++;
         } else {
             console.warn("Skipping invalid record during import:", parsed.error.flatten().fieldErrors);
-            // Optionally, return a more specific error to the user
             const firstErrorField = Object.keys(parsed.error.flatten().fieldErrors)[0];
             const firstErrorMessage = parsed.error.flatten().fieldErrors[firstErrorField]?.[0];
             return {
                 success: false,
-                error: `Invalid data found. Field: "${firstErrorField}", Error: "${firstErrorMessage}". Please check your CSV.`
+                error: `Invalid data in row ${count + 1}. Field: "${firstErrorField}", Error: "${firstErrorMessage}". Please check your CSV.`
             }
         }
     }
@@ -117,6 +118,22 @@ export async function deleteCcefodRecord(id: string) {
     try {
         await deleteDoc(doc(db, 'ccefodRecords', id));
         return { success: true };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
+export async function deleteAllCcefodRecords() {
+    try {
+        const querySnapshot = await getDocs(collection(db, 'ccefodRecords'));
+        const batch = writeBatch(db);
+        let count = 0;
+        querySnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+            count++;
+        });
+        await batch.commit();
+        return { success: true, count };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
