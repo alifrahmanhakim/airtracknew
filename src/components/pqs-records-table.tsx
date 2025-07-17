@@ -70,7 +70,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     id: false,
     pqNumber: true,
     protocolQuestion: true,
-    guidance: false,
+    guidance: true,
     icaoReferences: true,
     ppq: true,
     criticalElement: true,
