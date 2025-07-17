@@ -4,7 +4,7 @@
 import type { Project, User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo } from 'lucide-react';
+import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown } from 'lucide-react';
 import { useMemo, useState, useRef } from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -60,16 +60,6 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
             p.tags?.some(tag => tag.toLowerCase().includes(lowercasedFilter))
         );
     }, [projects, searchTerm]);
-
-    const getTagColor = (tag: string) => {
-        const lowerTag = tag.toLowerCase();
-        if (lowerTag.includes('priority')) return 'bg-red-100 text-red-800 border-red-200';
-        if (lowerTag.includes('review')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-        if (lowerTag.includes('core') || lowerTag.includes('process') || lowerTag.includes('operations')) return 'bg-blue-100 text-blue-800 border-blue-200';
-        if (lowerTag.includes('finalized') || lowerTag.includes('certification')) return 'bg-green-100 text-green-800 border-green-200';
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    };
-
 
     return (
         <TooltipProvider>
@@ -166,9 +156,9 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                         <CardContent className="space-y-3">
                            {stats.highPriority.length > 0 ? stats.highPriority.map(p => (
                                <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`}>
-                                <div className='p-3 rounded-md bg-red-50 border border-red-200 hover:bg-red-100 cursor-pointer'>
-                                    <p className='font-bold text-red-800'>CASR {p.casr}</p>
-                                    <p className='text-sm text-red-700 truncate'>{p.name}</p>
+                                <div className='p-3 rounded-md bg-red-50 border border-red-200 hover:bg-red-100 cursor-pointer dark:bg-red-900/20 dark:border-red-500/30 dark:hover:bg-red-900/30'>
+                                    <p className='font-bold text-red-800 dark:text-red-300'>CASR {p.casr}</p>
+                                    <p className='text-sm text-red-700 dark:text-red-400 truncate'>{p.name}</p>
                                 </div>
                                </Link>
                            )) : (
@@ -180,7 +170,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                 
                 {/* Main Content */}
                  <main className="md:col-span-3">
-                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
                         {filteredProjects.map(project => {
                            const totalTasks = project.tasks?.length || 0;
                            const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
@@ -194,12 +184,12 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                            return (
                                 <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg h-full block">
                                     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
-                                        <CardHeader className="pb-2">
+                                        <CardHeader className="pb-4">
                                           <div className="flex justify-between items-start">
-                                            <CardTitle className="text-lg font-bold">CASR {project.casr}</CardTitle>
+                                            <CardTitle className="text-base font-bold">CASR {project.casr}</CardTitle>
                                              <div className="flex items-center gap-2">
                                                 {project.tags?.includes('High Priority') && (
-                                                    <Badge variant="outline" className="font-medium bg-red-100 text-red-800 border-red-200">
+                                                    <Badge variant="destructive" className="font-medium">
                                                         High Priority
                                                     </Badge>
                                                 )}
@@ -209,55 +199,47 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                 </div>
                                             </div>
                                           </div>
-                                          <CardDescription className="text-sm h-10 line-clamp-2">{project.name}</CardDescription>
+                                          <CardDescription className="text-xs h-8 line-clamp-2">{project.name}</CardDescription>
                                         </CardHeader>
-                                        <CardContent className="flex-grow space-y-4 pt-2">
-                                          <div>
-                                              <div className="flex items-center justify-between mb-1">
-                                                <span className="text-sm font-medium text-muted-foreground">Progress</span>
-                                                <span className="text-sm font-bold">{Math.round(progress)}%</span>
-                                              </div>
-                                              <Progress value={progress} />
-                                          </div>
-                                          <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <ListTodo className="h-4 w-4" />
-                                                <span>{completedTasks}/{totalTasks} Tasks</span>
-                                            </div>
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <CalendarCheck2 className="h-4 w-4" />
-                                                <span>{format(parseISO(project.endDate), 'dd MMM yyyy')}</span>
-                                            </div>
-                                          </div>
-                                          <div className="text-sm text-muted-foreground pt-2 border-t">
-                                              <p className="text-xs font-semibold uppercase text-muted-foreground/80 mb-2">Next Steps</p>
-                                               {currentTask ? (
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                                                            <ArrowRight className="h-3 w-3 text-blue-600" />
-                                                        </div>
-                                                        <span className="font-semibold text-foreground text-xs">{currentTask.label}</span>
-                                                    </div>
-                                                    {nextTask && (
-                                                        <>
-                                                            <div className="pl-2 h-3 border-l-2 border-dashed border-border ml-2.5"></div>
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-                                                                    <ArrowRight className="h-3 w-3 text-gray-500" />
-                                                                </div>
-                                                                <span className="font-semibold text-muted-foreground text-xs">{nextTask.label}</span>
-                                                            </div>
-                                                        </>
-                                                    )}
+                                        <CardContent className="flex-grow space-y-4 pt-0">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="font-medium text-muted-foreground">Progress</span>
+                                                    <span className="font-bold">{Math.round(progress)}%</span>
                                                 </div>
+                                                <Progress value={progress} className="h-1.5" />
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <span>{completedTasks}/{totalTasks} Tasks</span>
+                                                    <span>Due: {format(parseISO(project.endDate), 'dd MMM yyyy')}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="text-xs text-muted-foreground pt-2 border-t">
+                                                {currentTask ? (
+                                                    <div className="space-y-1">
+                                                        <div>
+                                                            <p className="text-xs font-semibold uppercase text-muted-foreground/80">Current Step</p>
+                                                            <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
+                                                        </div>
+                                                        {nextTask && (
+                                                            <>
+                                                                <div className="flex justify-center">
+                                                                    <ArrowDown className="h-3 w-3 text-border"/>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-xs font-semibold uppercase text-muted-foreground/80">Next Step</p>
+                                                                    <p className="font-semibold text-muted-foreground truncate">{nextTask.label}</p>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     <div className="flex items-center gap-2">
                                                         <Flag className="h-4 w-4 text-green-600" />
-                                                        <span className="font-semibold text-foreground text-xs">Finalization</span>
+                                                        <span className="font-semibold text-foreground">Finalization</span>
                                                     </div>
                                                 )}
-                                          </div>
+                                            </div>
                                         </CardContent>
                                         <CardFooter className="pt-2 flex justify-between items-center mt-auto">
                                            <div className="flex items-center -space-x-2">
@@ -278,13 +260,6 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                   </div>
                                                 )}
                                             </div>
-                                           <div className='flex flex-wrap gap-1 justify-end'>
-                                                {project.tags?.filter(tag => tag !== 'High Priority').map(tag => (
-                                                    <Badge key={tag} variant="outline" className={cn("font-normal text-xs", getTagColor(tag))}>
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                           </div>
                                         </CardFooter>
                                     </Card>
                                 </Link>
