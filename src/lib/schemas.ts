@@ -106,18 +106,3 @@ export const timKerjaProjectSchema = z.object({
   tags: z.array(z.string()).optional(),
   isHighPriority: z.boolean().default(false),
 });
-
-export const editProjectSchema = z.object({
-  name: z.string().min(1, 'Project name is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  status: z.enum(['On Track', 'At Risk', 'Off Track', 'Completed']),
-  startDate: z.date(),
-  endDate: z.date(),
-  notes: z.string().optional(),
-  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  ownerId: z.string().min(1, 'Project Manager is required.'),
-  annex: z.string().optional(),
-  casr: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  isHighPriority: z.boolean().default(false),
-});

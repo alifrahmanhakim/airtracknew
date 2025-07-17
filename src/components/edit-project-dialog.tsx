@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -43,8 +44,22 @@ import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { Checkbox } from './ui/checkbox';
 import { updateProject } from '@/lib/actions';
-import { editProjectSchema } from '@/lib/schemas';
-import type { z } from 'zod';
+
+const editProjectSchema = z.object({
+  name: z.string().min(1, 'Project name is required.'),
+  description: z.string().min(1, 'Description is required.'),
+  status: z.enum(['On Track', 'At Risk', 'Off Track', 'Completed']),
+  startDate: z.date(),
+  endDate: z.date(),
+  notes: z.string().optional(),
+  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
+  ownerId: z.string().min(1, 'Project Manager is required.'),
+  annex: z.string().optional(),
+  casr: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  isHighPriority: z.boolean().default(false),
+});
+
 
 type ProjectFormValues = z.infer<typeof editProjectSchema>;
 
