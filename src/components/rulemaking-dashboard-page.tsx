@@ -170,7 +170,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                 
                 {/* Main Content */}
                  <main className="md:col-span-3">
-                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
                         {filteredProjects.map(project => {
                            const totalTasks = project.tasks?.length || 0;
                            const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
@@ -213,32 +213,33 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                     <span>Due: {format(parseISO(project.endDate), 'dd MMM yyyy')}</span>
                                                 </div>
                                             </div>
-
+                                            
                                             <div className="text-xs text-muted-foreground pt-2 border-t">
-                                                {currentTask ? (
-                                                    <div className="space-y-1">
-                                                        <div>
-                                                            <p className="text-xs font-semibold uppercase text-muted-foreground/80">Current Step</p>
-                                                            <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
-                                                        </div>
-                                                        {nextTask && (
-                                                            <>
-                                                                <div className="flex justify-center">
-                                                                    <ArrowDown className="h-3 w-3 text-border"/>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-xs font-semibold uppercase text-muted-foreground/80">Next Step</p>
-                                                                    <p className="font-semibold text-muted-foreground truncate">{nextTask.label}</p>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        <Flag className="h-4 w-4 text-green-600" />
-                                                        <span className="font-semibold text-foreground">Finalization</span>
-                                                    </div>
-                                                )}
+                                              {currentTask ? (
+                                                  <div className="grid grid-cols-2 items-start gap-2">
+                                                      <div className="flex items-start gap-2">
+                                                          <ArrowRight className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                                          <div>
+                                                              <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
+                                                              <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
+                                                          </div>
+                                                      </div>
+                                                      {nextTask && (
+                                                          <div className="flex items-start gap-2 pl-2 border-l">
+                                                              <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                                              <div>
+                                                                  <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
+                                                                  <p className="font-semibold text-muted-foreground truncate">{nextTask.label}</p>
+                                                              </div>
+                                                          </div>
+                                                      )}
+                                                  </div>
+                                              ) : (
+                                                  <div className="flex items-center gap-2">
+                                                      <Flag className="h-4 w-4 text-green-600" />
+                                                      <span className="font-semibold text-foreground">Finalization</span>
+                                                  </div>
+                                              )}
                                             </div>
                                         </CardContent>
                                         <CardFooter className="pt-2 flex justify-between items-center mt-auto">
