@@ -57,50 +57,26 @@ export async function deleteGlossaryRecord(id: string) {
     }
 }
 
-export async function importGlossaryRecords(records: z.infer<typeof glossaryFormSchema>[]) {
-    // Define a more lenient schema for CSV import that allows for empty/nullish values
-    const importSchema = z.array(z.object({
-        tsu: z.string().nullable().optional(),
-        tsa: z.string().nullable().optional(),
-        editing: z.string().nullable().optional(),
-        makna: z.string().nullable().optional(),
-        keterangan: z.string().nullable().optional(),
-        referensi: z.string().nullable().optional(),
-        status: z.enum(['Draft', 'Final']).nullable().optional(),
-    }));
-
-    const parsedRecords = importSchema.safeParse(records);
-
-    if (!parsedRecords.success) {
-        return {
-            success: false,
-            error: "The CSV file structure is incorrect. Please check the headers and data types.",
-        };
-    }
-
+export async function importGlossaryRecords(records: Record<string, any>[]) {
     const batch = writeBatch(db);
     let count = 0;
-    
-    // Filter out rows where all values are empty or null
-    const nonEmptyRecords = parsedRecords.data.filter(record => 
+
+    const nonEmptyRecords = records.filter(record => 
         Object.values(record).some(value => value !== null && value !== '' && value !== undefined)
     );
 
     for (const [index, recordData] of nonEmptyRecords.entries()) {
-        
-        // Now, transform the lenient data into the strict schema format for the database
-        const dataToStore = {
-            tsu: recordData.tsu ?? '',
-            tsa: recordData.tsa ?? '',
-            editing: recordData.editing ?? '',
-            makna: recordData.makna ?? '',
-            keterangan: recordData.keterangan ?? '',
-            referensi: recordData.referensi ?? '',
-            status: recordData.status ?? 'Draft',
+        const dataToValidate = {
+            tsu: recordData.tsu || '',
+            tsa: recordData.tsa || '',
+            editing: recordData.editing || '',
+            makna: recordData.makna || '',
+            keterangan: recordData.keterangan || '',
+            referensi: recordData.referensi || '',
+            status: (recordData.status === 'Final' || recordData.status === 'Draft') ? recordData.status : 'Draft',
         };
 
-        // Final validation with the strict schema before writing to DB
-        const finalParsed = glossaryFormSchema.safeParse(dataToStore);
+        const finalParsed = glossaryFormSchema.safeParse(dataToValidate);
 
         if (finalParsed.success) {
             const docRef = doc(collection(db, 'glossaryRecords'));
@@ -111,13 +87,13 @@ export async function importGlossaryRecords(records: z.infer<typeof glossaryForm
             const fieldPath = firstError.path.join('.');
             return {
                 success: false,
-                error: `Error on row ${index + 2} in CSV. Field: "${fieldPath}", Message: "${firstError.message}". Please check your file.`
+                error: `Error on CSV row ${index + 2}. Field: "${fieldPath}", Message: "${firstError.message}". Please check your file.`
             };
         }
     }
 
     if (count === 0) {
-        return { success: false, error: "No valid records found to import." };
+        return { success: false, error: "No valid records found to import. Please check your CSV file structure and data." };
     }
 
     try {
