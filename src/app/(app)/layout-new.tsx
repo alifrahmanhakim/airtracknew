@@ -54,7 +54,7 @@ const navItems = {
     ],
     workspace: [
       { href: '/documents', label: 'Documents', icon: FileText },
-      { href: '/team', label: 'Team', icon: Users },
+      { href: '/team', label: 'Team', icon: Users, requiredRole: 'Sub-Directorate Head' },
       { href: '/reports', label: 'Reports', icon: LineChart },
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
@@ -124,6 +124,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+  
+  const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com';
 
   return (
     <SidebarProvider>
@@ -163,19 +165,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
              <SidebarGroup>
                 <SidebarGroupLabel>Workspace</SidebarGroupLabel>
                 <SidebarMenu>
-                    {navItems.workspace.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith(item.href)}
-                        >
-                        <Link href={item.href}>
-                            <item.icon />
-                            <span>{item.label}</span>
-                        </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    ))}
+                    {navItems.workspace.map((item) => {
+                      if (item.requiredRole && !isAdmin) {
+                        return null;
+                      }
+                      return (
+                        <SidebarMenuItem key={item.href}>
+                            <SidebarMenuButton
+                            asChild
+                            isActive={pathname.startsWith(item.href)}
+                            >
+                            <Link href={item.href}>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )
+                    })}
                 </SidebarMenu>
             </SidebarGroup>
         </SidebarContent>
