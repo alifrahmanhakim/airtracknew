@@ -40,11 +40,18 @@ export async function addCcefodRecord(data: z.infer<typeof ccefodFormSchema>) {
 }
 
 export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
+    // Schema yang lebih longgar khusus untuk impor, mengizinkan string kosong untuk field yang wajib.
+    const importSchema = ccefodFormSchema.extend({
+        annex: z.string(),
+        annexReference: z.string(),
+        standardPractice: z.any(),
+        legislationReference: z.string(),
+    });
+
     const batch = writeBatch(db);
     let count = 0;
 
     for (const recordData of records) {
-        // Explicitly handle null/undefined for required string fields by converting them to empty strings.
         const dataToValidate = {
             ...recordData,
             annex: recordData.annex ?? '',
@@ -61,7 +68,8 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
             remarks: recordData.remarks ?? '',
         };
 
-        const parsed = ccefodFormSchema.safeParse(dataToValidate);
+        const parsed = importSchema.safeParse(dataToValidate);
+
         if (parsed.success) {
             const sanitizedStandardPractice = purify.sanitize(parsed.data.standardPractice);
             const docRef = doc(collection(db, 'ccefodRecords'));
@@ -72,13 +80,13 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
             });
             count++;
         } else {
-            console.warn("Skipping invalid record during import:", parsed.error.flatten().fieldErrors);
             const firstErrorField = Object.keys(parsed.error.flatten().fieldErrors)[0];
-            const firstErrorMessage = parsed.error.flatten().fieldErrors[firstErrorField]?.[0];
+            const firstErrorMessage = parsed.error.flatten().fieldErrors[firstErrorField as keyof z.infer<typeof importSchema>]?.[0];
+            // Mengembalikan pesan error yang jelas jika terjadi kesalahan tak terduga
             return {
                 success: false,
-                error: `Invalid data in row ${count + 1}. Field: "${firstErrorField}", Error: "${firstErrorMessage}". Please check your CSV.`
-            }
+                error: `Error on row ${count + 1}. Field: "${firstErrorField}", Message: "${firstErrorMessage}". Please check your CSV.`
+            };
         }
     }
 
