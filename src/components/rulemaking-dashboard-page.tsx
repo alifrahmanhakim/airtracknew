@@ -199,6 +199,11 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                            const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
                            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                            const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
+
+                           const doneTaskTitles = new Set((project.tasks || []).filter(t => t.status === 'Done').map(t => t.title));
+                           const currentTaskIndex = rulemakingTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
+                           const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
+                           const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
                        
                            return (
                             <div
@@ -276,6 +281,21 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                     </div>
                                                     <p className="font-bold text-lg">{completedTasks} / {totalTasks}</p>
                                                 </div>
+                                            </div>
+                                            <div className="text-xs space-y-2 pt-2 text-muted-foreground border-t">
+                                                <p className="font-semibold text-foreground uppercase tracking-wider">NEXT PROGRESS</p>
+                                                {currentTask ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-bold text-primary">{currentTask.label}</p>
+                                                        <ArrowRight className="h-3 w-3" />
+                                                        <p>{nextTask ? nextTask.label : 'Finalization'}</p>
+                                                    </div>
+                                                ) : (
+                                                     <div className="flex items-center gap-2 text-green-600 font-semibold">
+                                                        <CheckCircle className="h-4 w-4" />
+                                                        <span>All standard tasks completed!</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </CardContent>
                                         <CardFooter className="pt-4 flex flex-col items-start gap-2 border-t mt-auto">
