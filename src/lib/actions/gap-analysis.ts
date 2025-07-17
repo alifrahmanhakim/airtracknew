@@ -16,6 +16,9 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
     try {
         const dataToSubmit = {
           ...parsed.data,
+          dateOfEvaluation: parsed.data.dateOfEvaluation ? format(parsed.data.dateOfEvaluation, 'yyyy-MM-dd') : null,
+          effectiveDate: parsed.data.effectiveDate ? format(parsed.data.effectiveDate, 'yyyy-MM-dd') : null,
+          applicabilityDate: parsed.data.applicabilityDate ? format(parsed.data.applicabilityDate, 'yyyy-MM-dd') : null,
           embeddedApplicabilityDate: format(parsed.data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
         };
 
@@ -26,7 +29,7 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
 
         const newRecord: GapAnalysisRecord = {
             id: docRef.id,
-            ...dataToSubmit,
+            ...parsed.data, // use parsed data to keep Date objects for client
             createdAt: new Date().toISOString(),
         };
         return { success: true, data: newRecord };
@@ -45,6 +48,9 @@ export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof g
         
         const dataToSubmit = {
           ...parsed.data,
+          dateOfEvaluation: parsed.data.dateOfEvaluation ? format(parsed.data.dateOfEvaluation, 'yyyy-MM-dd') : null,
+          effectiveDate: parsed.data.effectiveDate ? format(parsed.data.effectiveDate, 'yyyy-MM-dd') : null,
+          applicabilityDate: parsed.data.applicabilityDate ? format(parsed.data.applicabilityDate, 'yyyy-MM-dd') : null,
           embeddedApplicabilityDate: format(parsed.data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
         };
 
@@ -52,8 +58,8 @@ export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof g
 
         const updatedRecord: GapAnalysisRecord = {
             id,
-            ...dataToSubmit,
-            createdAt: new Date().toISOString() // This is not ideal, but necessary for the type
+            ...parsed.data, // use parsed data to keep Date objects for client
+            createdAt: new Date().toISOString()
         };
         return { success: true, data: updatedRecord };
     } catch (error) {
@@ -69,5 +75,3 @@ export async function deleteGapAnalysisRecord(id: string) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
-
-    

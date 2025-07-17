@@ -25,43 +25,10 @@ import { Combobox, ComboboxOption } from './ui/combobox';
 import { useState } from 'react';
 import { SignaturePadDialog } from './signature-pad';
 import Image from 'next/image';
+import { gapAnalysisFormSchema } from '@/lib/schemas';
 
 
-const inspectorSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, 'Inspector name is required'),
-  signature: z.string().optional(),
-});
-
-export const formSchema = z.object({
-  slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
-  annex: z.string().min(1, 'Annex is required'),
-  typeOfStateLetter: z.string().min(1, 'Type of State Letter is required'),
-  dateOfEvaluation: z.string().min(1, 'Date of Evaluation is required'),
-  subject: z.string().min(1, 'Subject is required'),
-  actionRequired: z.string().min(1, 'Action Required is required'),
-  effectiveDate: z.string().min(1, 'Effective Date is required'),
-  applicabilityDate: z.string().min(1, 'Applicability Date is required'),
-  embeddedApplicabilityDate: z.date({ required_error: 'Embedded applicability date is required.' }),
-  evaluations: z.array(z.object({
-    id: z.string(),
-    icaoSarp: z.string().min(1, 'ICAO SARP is required'),
-    review: z.string().min(1, 'Review is required'),
-    complianceStatus: z.enum([
-      'No Differences',
-      'More Exacting or Exceeds',
-      'Different in character or other means of compliance',
-      'Less protective or partially implemented or not implemented',
-      'Not Applicable',
-    ]),
-    casrAffected: z.string().min(1, 'CASR to be affected is required'),
-  })).min(1, 'At least one evaluation item is required'),
-  statusItem: z.enum(['OPEN', 'CLOSED']),
-  summary: z.string().optional(),
-  inspectors: z.array(inspectorSchema).optional(),
-});
-
-export type GapAnalysisFormValues = z.infer<typeof formSchema>;
+export type GapAnalysisFormValues = z.infer<typeof gapAnalysisFormSchema>;
 
 const complianceStatusOptions: GapAnalysisFormValues['evaluations'][0]['complianceStatus'][] = [
     'No Differences',
@@ -96,15 +63,83 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
             <FormField control={form.control} name="slReferenceNumber" render={({ field }) => ( <FormItem> <FormLabel>SL Reference Number</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="annex" render={({ field }) => ( <FormItem> <FormLabel>ANNEX</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="typeOfStateLetter" render={({ field }) => ( <FormItem> <FormLabel>Type of State Letter</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <FormField control={form.control} name="dateOfEvaluation" render={({ field }) => ( <FormItem> <FormLabel>Date of Evaluation</FormLabel> <FormControl><Input type="date" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField
+              control={form.control}
+              name="dateOfEvaluation"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Date of Evaluation</FormLabel>
+                   <Popover modal={false}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                      </PopoverContent>
+                    </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <FormField control={form.control} name="actionRequired" render={({ field }) => ( <FormItem> <FormLabel>Action required</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium px-1">Standardization Process</legend>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                <FormField control={form.control} name="effectiveDate" render={({ field }) => ( <FormItem> <FormLabel>Effective Date</FormLabel> <FormControl><Input type="date" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( <FormItem> <FormLabel>Applicability Date</FormLabel> <FormControl><Input type="date" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                <FormField control={form.control} name="effectiveDate" render={({ field }) => ( 
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Effective Date</FormLabel>
+                     <Popover modal={false}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                        </PopoverContent>
+                      </Popover>
+                    <FormMessage />
+                  </FormItem> 
+                )}/>
+                <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( 
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Applicability Date</FormLabel>
+                     <Popover modal={false}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                        </PopoverContent>
+                      </Popover>
+                    <FormMessage />
+                  </FormItem> 
+                )}/>
                 <FormField
                   control={form.control}
                   name="embeddedApplicabilityDate"
