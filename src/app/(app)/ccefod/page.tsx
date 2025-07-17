@@ -79,7 +79,6 @@ export default function CcefodPage() {
       const recordsFromDb: CcefodRecord[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        // Convert Firestore Timestamp to ISO string if it exists
         if (data.createdAt && data.createdAt instanceof Timestamp) {
             data.createdAt = data.createdAt.toDate().toISOString();
         }
@@ -145,8 +144,20 @@ export default function CcefodPage() {
 
 
   const annexOptions = useMemo(() => {
-    const annexes = new Set(records.map(r => r.annex).filter(Boolean));
-    return ['all', ...Array.from(annexes)];
+    const annexes = Array.from(new Set(records.map(r => r.annex).filter(Boolean)));
+    
+    annexes.sort((a, b) => {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+
+        if (!isNaN(numA) && !isNaN(numB)) {
+            if (numA !== numB) return numA - numB;
+        }
+
+        return a.localeCompare(b);
+    });
+    
+    return ['all', ...annexes];
   }, [records]);
 
   const filteredAnalyticsRecords = useMemo(() => {
