@@ -41,13 +41,13 @@ const truncateText = (text: string, length: number) => {
 
 const CustomizedAxisTick = (props: any) => {
   const { x, y, payload } = props;
-  const maxChars = 20; // Adjust this value as needed
+  const maxChars = 45; 
 
   return (
     <g transform={`translate(${x},${y})`}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <text x={0} y={0} dy={16} textAnchor="end" fill="#666" transform="rotate(-45)">
+          <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
             {truncateText(payload.value, maxChars)}
           </text>
         </TooltipTrigger>
@@ -76,7 +76,18 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     const implementationLevelData = Object.entries(countBy('implementationLevel')).map(([name, value]) => ({ name, value }));
     const statusData = Object.entries(countBy('status')).map(([name, value]) => ({ name, value }));
     const adaPerubahanData = Object.entries(countBy('adaPerubahan')).map(([name, value]) => ({ name, value }));
-    const annexData = Object.entries(countBy('annex')).map(([name, value]) => ({ name: truncateText(name, 35), value, fullName: name })).sort((a,b) => b.value - a.value);
+    
+    const annexCounts = countBy('annex');
+    const annexData = Object.entries(annexCounts)
+      .map(([name, value]) => ({ name, value, fullName: name }))
+      .sort((a, b) => {
+          const numA = parseInt(a.name, 10);
+          const numB = parseInt(b.name, 10);
+          if (!isNaN(numA) && !isNaN(numB)) {
+              if (numA !== numB) return numA - numB;
+          }
+          return a.name.localeCompare(b.name);
+      });
     
     const statusTotal = statusData.reduce((acc, curr) => acc + curr.value, 0);
     const finalStatusCount = statusData.find(s => s.name === 'Final')?.value || 0;
@@ -110,24 +121,25 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         name: item.fullName,
         value: item.value,
         percentage: annexTotal > 0 ? (item.value / annexTotal) * 100 : 0,
-      }))
-      .sort((a, b) => b.percentage - a.percentage);
+      }));
 
     const topAnnexDescription = annexPercentages.length > 0 ? (
-        <div>
-          {annexPercentages.slice(0, 3).map(item => (
-            <p key={item.name} className="text-sm text-muted-foreground">
-              <span className="font-bold">{item.percentage.toFixed(0)}%</span> {truncateText(item.name, 40)} ({item.value} records)
-            </p>
-          ))}
-        </div>
-      ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-muted-foreground">
+        {annexPercentages.map(item => (
+          <div key={item.name} className="flex justify-between items-baseline gap-2">
+            <span className="truncate" title={item.name}>{truncateText(item.name, 35)}</span>
+            <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
 
     return {
       implementationLevelData,
       statusData,
       adaPerubahanData,
       annexData,
+      annexTotal,
       finalStatusPercentage,
       yaAdaPerubahanPercentage,
       topImplementationDescription: topImplementationDescription,
@@ -219,25 +231,30 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle>Distribution by Annex</CardTitle>
-                {analyticsData.topAnnexDescription}
+                <CardDescription>Detailed percentage breakdown of all Annexes in the current selection.</CardDescription>
+                <div className="pt-2">
+                    {analyticsData.topAnnexDescription}
+                </div>
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.annexData)}>
-                    <ResponsiveContainer width="100%" height={400}>
+                    <ResponsiveContainer width="100%" height={Math.max(400, analyticsData.annexData.length * 25)}>
                         <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" width={180} interval={0} tick={{ fontSize: 12 }} />
+                            <YAxis dataKey="name" type="category" width={350} interval={0} tick={<CustomizedAxisTick />} />
                              <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
                                 wrapperStyle={{ zIndex: 1000 }}
                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                         const data = payload[0].payload;
+                                        const percentage = (data.value / analyticsData.annexTotal) * 100;
                                         return (
                                             <div className="p-2 bg-background border rounded-lg shadow-lg text-xs">
                                                 <p className="font-bold">{data.fullName}</p>
                                                 <p><span className="font-semibold">Count:</span> {data.value}</p>
+                                                <p><span className="font-semibold">Percentage:</span> {percentage.toFixed(2)}%</p>
                                             </div>
                                         );
                                     }
@@ -294,5 +311,3 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     </TooltipProvider>
   );
 }
-
-    
