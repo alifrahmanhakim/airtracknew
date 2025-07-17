@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
@@ -35,6 +35,12 @@ export default function GapAnalysisPage() {
   
   const [recordToDelete, setRecordToDelete] = useState<GapAnalysisRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [annexFilter, setAnnexFilter] = useState('all');
+  const [casrFilter, setCasrFilter] = useState('all');
+  const [textFilter, setTextFilter] = useState('');
 
   useEffect(() => {
     const fetchRulemakingProjects = async () => {
@@ -75,6 +81,23 @@ export default function GapAnalysisPage() {
 
     return () => unsubscribe();
   }, [toast]);
+
+  const annexOptions = useMemo(() => ['all', ...Array.from(new Set(records.map(r => r.annex)))], [records]);
+  const casrOptions = useMemo(() => ['all', ...Array.from(new Set(records.flatMap(r => r.evaluations.map(e => e.casrAffected))))], [records]);
+  
+  const filteredRecords = useMemo(() => {
+    return records.filter(record => {
+      const statusMatch = statusFilter === 'all' || record.statusItem === statusFilter;
+      const annexMatch = annexFilter === 'all' || record.annex === annexFilter;
+      const casrMatch = casrFilter === 'all' || record.evaluations.some(e => e.casrAffected === casrFilter);
+      
+      const textMatch = textFilter === '' || Object.values(record).some(value =>
+        String(value).toLowerCase().includes(textFilter.toLowerCase())
+      );
+
+      return statusMatch && annexMatch && casrMatch && textMatch;
+    });
+  }, [records, statusFilter, annexFilter, casrFilter, textFilter]);
   
   const handleDeleteRequest = (record: GapAnalysisRecord) => {
     setRecordToDelete(record);
@@ -149,23 +172,20 @@ export default function GapAnalysisPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <GapAnalysisRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
+                        <GapAnalysisRecordsTable 
+                            records={filteredRecords} 
+                            onDelete={handleDeleteRequest} 
+                            onUpdate={handleRecordUpdate}
+                            filters={{ statusFilter, annexFilter, casrFilter, textFilter }}
+                            setFilters={{ setStatusFilter, setAnnexFilter, setCasrFilter, setTextFilter }}
+                            filterOptions={{ annexOptions, casrOptions }}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
             
             <TabsContent value="analytics" className={cn(activeTab !== 'analytics' ? 'hidden' : '')}>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>GAP Analysis Analytics Dashboard</CardTitle>
-                        <CardDescription>
-                            Visualizations of the GAP Analysis data.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <GapAnalysisAnalyticsDashboard records={records} />
-                    </CardContent>
-                </Card>
+                <GapAnalysisAnalyticsDashboard records={records} />
             </TabsContent>
         </Tabs>
     );

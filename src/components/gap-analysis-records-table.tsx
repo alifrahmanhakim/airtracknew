@@ -45,6 +45,22 @@ type GapAnalysisRecordsTableProps = {
   records: GapAnalysisRecord[];
   onDelete: (record: GapAnalysisRecord) => void;
   onUpdate: (updatedRecord: GapAnalysisRecord) => void;
+  filters: {
+    statusFilter: string;
+    annexFilter: string;
+    casrFilter: string;
+    textFilter: string;
+  };
+  setFilters: {
+    setStatusFilter: (value: string) => void;
+    setAnnexFilter: (value: string) => void;
+    setCasrFilter: (value: string) => void;
+    setTextFilter: (value: string) => void;
+  };
+  filterOptions: {
+    annexOptions: string[];
+    casrOptions: string[];
+  };
 };
 
 type SortDescriptor = {
@@ -52,60 +68,31 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-export function GapAnalysisRecordsTable({ records, onDelete, onUpdate }: GapAnalysisRecordsTableProps) {
-  const [filter, setFilter] = useState('');
+export function GapAnalysisRecordsTable({ 
+    records, 
+    onDelete, 
+    onUpdate,
+    filters,
+    setFilters,
+    filterOptions
+}: GapAnalysisRecordsTableProps) {
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
   const [recordToView, setRecordToView] = useState<GapAnalysisRecord | null>(null);
-  
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
-    id: false,
-    createdAt: false,
     slReferenceNumber: true,
-    annex: true,
-    typeOfStateLetter: true,
-    dateOfEvaluation: true,
     subject: true,
-    actionRequired: false,
-    effectiveDate: false,
-    applicabilityDate: false,
-    embeddedApplicabilityDate: false,
-    evaluations: false,
+    typeOfStateLetter: true,
     statusItem: true,
-    summary: false,
-    inspectorNames: false,
+    dateOfEvaluation: true,
+    annex: true,
   });
   
-  const typeOfStateLetterOptions = useMemo(() => {
-    const types = new Set(records.map(r => r.typeOfStateLetter));
-    return ['all', ...Array.from(types)];
-  }, [records]);
-
-
   const processedRecords = useMemo(() => {
-    let filteredData = [...records];
-    
-    if (statusFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.statusItem === statusFilter);
-    }
-    
-    if (typeFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.typeOfStateLetter === typeFilter);
-    }
-
-    if (filter) {
-        const lowercasedFilter = filter.toLowerCase();
-        filteredData = filteredData.filter(record => 
-            Object.values(record).some(value => 
-                String(value).toLowerCase().includes(lowercasedFilter)
-            )
-        );
-    }
+    let sortedData = [...records];
 
     if (sort) {
-        filteredData.sort((a, b) => {
+        sortedData.sort((a, b) => {
             const aVal = a[sort.column as keyof GapAnalysisRecord] ?? '';
             const bVal = b[sort.column as keyof GapAnalysisRecord] ?? '';
             
@@ -115,8 +102,8 @@ export function GapAnalysisRecordsTable({ records, onDelete, onUpdate }: GapAnal
         });
     }
 
-    return filteredData;
-  }, [records, filter, sort, statusFilter, typeFilter]);
+    return sortedData;
+  }, [records, sort]);
 
   const handleSort = (column: keyof GapAnalysisRecord) => {
     setSort(prevSort => {
@@ -143,7 +130,7 @@ export function GapAnalysisRecordsTable({ records, onDelete, onUpdate }: GapAnal
   
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key as keyof GapAnalysisRecord]);
 
-  if (records.length === 0) {
+  if (records.length === 0 && filters.textFilter === '' && filters.annexFilter === 'all' && filters.casrFilter === 'all' && filters.statusFilter === 'all') {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
@@ -162,12 +149,12 @@ export function GapAnalysisRecordsTable({ records, onDelete, onUpdate }: GapAnal
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                         placeholder="Filter records..."
-                        value={filter}
-                        onChange={e => setFilter(e.target.value)}
+                        value={filters.textFilter}
+                        onChange={e => setFilters.setTextFilter(e.target.value)}
                         className="pl-9 w-full"
                     />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                 <Select value={filters.statusFilter} onValueChange={setFilters.setStatusFilter}>
                     <SelectTrigger><SelectValue placeholder="Filter by status..." /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Statuses</SelectItem>
@@ -175,12 +162,22 @@ export function GapAnalysisRecordsTable({ records, onDelete, onUpdate }: GapAnal
                         <SelectItem value="CLOSED">CLOSED</SelectItem>
                     </SelectContent>
                 </Select>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger><SelectValue placeholder="Filter by type..." /></SelectTrigger>
+                 <Select value={filters.annexFilter} onValueChange={setFilters.setAnnexFilter}>
+                    <SelectTrigger><SelectValue placeholder="Filter by annex..." /></SelectTrigger>
                     <SelectContent>
-                        {typeOfStateLetterOptions.map(option => (
+                        {filterOptions.annexOptions.map(option => (
                             <SelectItem key={option} value={option}>
-                                {option === 'all' ? 'All Types' : option}
+                                {option === 'all' ? 'All Annexes' : option}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <Select value={filters.casrFilter} onValueChange={setFilters.setCasrFilter}>
+                    <SelectTrigger><SelectValue placeholder="Filter by CASR..." /></SelectTrigger>
+                    <SelectContent>
+                        {filterOptions.casrOptions.map(option => (
+                            <SelectItem key={option} value={option}>
+                                {option === 'all' ? 'All CASRs' : option}
                             </SelectItem>
                         ))}
                     </SelectContent>
