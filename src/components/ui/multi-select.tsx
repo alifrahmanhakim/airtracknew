@@ -50,7 +50,6 @@ interface MultiSelectProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   defaultValue: string[];
   placeholder?: string;
   maxCount?: number;
-  className?: string;
 }
 
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -70,13 +69,12 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
     const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
 
-    // This useEffect was causing an infinite render loop.
-    // The defaultValue is an array, and it was being created new on each render of the parent component,
-    // causing this effect to run every time and call setSelectedValues, which triggers another render.
-    // By removing it, the state is initialized once and then managed internally.
-    // React.useEffect(() => {
-    //   setSelectedValues(defaultValue);
-    // }, [defaultValue]);
+    React.useEffect(() => {
+        // To ensure external changes to defaultValue are reflected
+        if (JSON.stringify(defaultValue) !== JSON.stringify(selectedValues)) {
+            setSelectedValues(defaultValue);
+        }
+    }, [defaultValue, selectedValues]);
 
     const handleSelect = (value: string) => {
       const newSelectedValues = selectedValues.includes(value)
@@ -101,7 +99,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 ref={ref}
                 {...props}
                 onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                className="w-full justify-between"
+                className={cn("w-full justify-between", className)}
                 variant="outline"
             >
                 <div className="flex flex-wrap items-center gap-1">
