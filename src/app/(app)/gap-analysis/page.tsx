@@ -185,7 +185,13 @@ export default function GapAnalysisPage() {
             </TabsContent>
             
             <TabsContent value="analytics" className={cn(activeTab !== 'analytics' ? 'hidden' : '')}>
-                <GapAnalysisAnalyticsDashboard records={records} />
+                <GapAnalysisAnalyticsDashboard 
+                    allRecords={records}
+                    filteredRecords={filteredRecords}
+                    filters={{ statusFilter, annexFilter, casrFilter, textFilter }}
+                    setFilters={{ setStatusFilter, setAnnexFilter, setCasrFilter, setTextFilter }}
+                    filterOptions={{ annexOptions, casrOptions }}
+                />
             </TabsContent>
         </Tabs>
     );
@@ -218,5 +224,3 @@ export default function GapAnalysisPage() {
     </div>
   );
 }
-
-    

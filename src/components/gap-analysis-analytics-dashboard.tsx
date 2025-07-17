@@ -11,7 +11,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Label } from './ui/label';
 
 type GapAnalysisAnalyticsDashboardProps = {
-  records: GapAnalysisRecord[];
+  allRecords: GapAnalysisRecord[];
+  filteredRecords: GapAnalysisRecord[];
+  filters: {
+    statusFilter: string;
+    annexFilter: string;
+    casrFilter: string;
+    textFilter: string;
+  };
+  setFilters: {
+    setStatusFilter: (value: string) => void;
+    setAnnexFilter: (value: string) => void;
+    setCasrFilter: (value: string) => void;
+    setTextFilter: (value: string) => void;
+  };
+  filterOptions: {
+    annexOptions: string[];
+    casrOptions: string[];
+  };
 };
 
 const CHART_COLORS = [
@@ -23,20 +40,13 @@ const CHART_COLORS = [
     'hsl(var(--muted))',
 ];
 
-export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsDashboardProps) {
-    const [annexFilter, setAnnexFilter] = useState('all');
-
-    const annexOptions = useMemo(() => {
-        const annexes = new Set(records.map(r => r.annex));
-        return ['all', ...Array.from(annexes)];
-    }, [records]);
-
-    const filteredRecords = useMemo(() => {
-        if (annexFilter === 'all') {
-            return records;
-        }
-        return records.filter(record => record.annex === annexFilter);
-    }, [records, annexFilter]);
+export function GapAnalysisAnalyticsDashboard({ 
+    allRecords, 
+    filteredRecords, 
+    filters,
+    setFilters,
+    filterOptions
+}: GapAnalysisAnalyticsDashboardProps) {
 
   const analyticsData = useMemo(() => {
     if (filteredRecords.length === 0) {
@@ -66,8 +76,11 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
     
     const statusItemData = Object.entries(statusItemCounts).map(([name, value]) => ({ name, value }));
     
-    const annexData = Object.entries(countBy('annex')).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
-    const casrData = Object.entries(countBy('casrAffected')).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+    const allCasrInFilter = filteredRecords.flatMap(r => r.evaluations.map(e => e.casrAffected));
+    const casrData = Object.entries(allCasrInFilter.reduce((acc, casr) => {
+        acc[casr] = (acc[casr] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>)).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
 
     const totalRecords = filteredRecords.length;
     const openItems = statusItemCounts['OPEN'] || 0;
@@ -79,12 +92,11 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
       openPercentage,
       complianceStatusData,
       statusItemData,
-      annexData,
       casrData
     };
   }, [filteredRecords]);
 
-  if (records.length === 0) {
+  if (allRecords.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
@@ -105,46 +117,63 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
   return (
     <div className="space-y-6">
         <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <CardTitle>GAP Analysis Analytics Dashboard</CardTitle>
                     <CardDescription>
-                        Visualizations of the GAP Analysis data.
+                        Visualizations of the GAP Analysis data. Use the filters below to refine the results.
                     </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
-                    <Select value={annexFilter} onValueChange={setAnnexFilter}>
-                        <SelectTrigger id="annex-filter" className="w-[280px]">
-                            <SelectValue placeholder="Filter by Annex..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {annexOptions.map(annex => (
-                                <SelectItem key={annex} value={annex}>
-                                    {annex === 'all' ? 'All Annexes' : annex}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+                        <Select value={filters.statusFilter} onValueChange={setFilters.setStatusFilter}>
+                            <SelectTrigger><SelectValue placeholder="Filter by status..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                <SelectItem value="OPEN">OPEN</SelectItem>
+                                <SelectItem value="CLOSED">CLOSED</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={filters.annexFilter} onValueChange={setFilters.setAnnexFilter}>
+                            <SelectTrigger><SelectValue placeholder="Filter by annex..." /></SelectTrigger>
+                            <SelectContent>
+                                {filterOptions.annexOptions.map(option => (
+                                    <SelectItem key={option} value={option}>
+                                        {option === 'all' ? 'All Annexes' : option}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={filters.casrFilter} onValueChange={setFilters.setCasrFilter}>
+                            <SelectTrigger><SelectValue placeholder="Filter by CASR..." /></SelectTrigger>
+                            <SelectContent>
+                                {filterOptions.casrOptions.map(option => (
+                                    <SelectItem key={option} value={option}>
+                                        {option === 'all' ? 'All CASRs' : option}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </CardHeader>
         </Card>
         {!analyticsData ? (
              <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
                 <Info className="mx-auto h-8 w-8 mb-2" />
-                <p className="font-semibold">No data for "{annexFilter}"</p>
-                <p className="text-sm">Select a different filter to see analytics.</p>
+                <p className="font-semibold">No data for the current filters</p>
+                <p className="text-sm">Adjust or clear filters to see analytics.</p>
             </div>
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Records</CardTitle>
+                        <CardTitle className="text-sm font-medium">Filtered Records</CardTitle>
                         <GitCompareArrows className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{analyticsData.totalRecords}</div>
-                        <p className="text-xs text-muted-foreground">Total GAP analysis records</p>
+                        <p className="text-xs text-muted-foreground">Total records matching filters</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -154,14 +183,14 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{analyticsData.openItems}</div>
-                        <p className="text-xs text-muted-foreground">{analyticsData.openPercentage.toFixed(1)}% of items require follow up</p>
+                        <p className="text-xs text-muted-foreground">{analyticsData.openPercentage.toFixed(1)}% of filtered items require follow up</p>
                     </CardContent>
                 </Card>
 
                 <Card className="md:col-span-2">
                     <CardHeader>
                         <CardTitle>Follow Up Status</CardTitle>
-                        <CardDescription>Distribution of OPEN vs CLOSED items.</CardDescription>
+                        <CardDescription>Distribution of OPEN vs CLOSED items in filtered results.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex justify-center items-center h-[120px]">
                         <ChartContainer config={chartConfig(analyticsData.statusItemData)} className="mx-auto aspect-square h-full">
@@ -181,7 +210,7 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Top CASR Affected</CardTitle>
-                        <CardDescription>Distribution of records per CASR affected.</CardDescription>
+                        <CardDescription>Distribution of records per CASR affected in filtered results.</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
                         <ChartContainer config={chartConfig(analyticsData.casrData)} className="h-[300px] w-full">
@@ -204,7 +233,7 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
                 <Card className="lg:col-span-4">
                     <CardHeader>
                         <CardTitle>DGCA Compliance/Differences Status</CardTitle>
-                        <CardDescription>Breakdown of all compliance statuses from evaluations.</CardDescription>
+                        <CardDescription>Breakdown of all compliance statuses from evaluations in filtered results.</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
                         <ChartContainer config={chartConfig(analyticsData.complianceStatusData)} className="h-[300px] w-full">
