@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -110,7 +111,7 @@ export default function GapAnalysisPage() {
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                <div>
+                <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
                     <h1 className="text-3xl font-bold">GAP Analysis</h1>
                     <p className="text-muted-foreground">
                         Manage and monitor GAP Analysis records based on State Letters.

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
@@ -134,7 +135,7 @@ export default function PqsPage() {
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                <div>
+                <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
                     <h1 className="text-3xl font-bold">Protocol Questions (PQs)</h1>
                     <p className="text-muted-foreground">
                         Manage and monitor Protocol Questions records.

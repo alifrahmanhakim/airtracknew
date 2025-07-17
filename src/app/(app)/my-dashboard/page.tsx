@@ -135,7 +135,7 @@ export default function MyDashboardPage() {
 
   return (
     <main className="p-4 md:p-8 space-y-8">
-      <div>
+      <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
         <h1 className="text-3xl font-bold">My Dashboard</h1>
         <p className="text-muted-foreground">
           Welcome back, {currentUser?.name || 'User'}. Here are your assigned projects and tasks.
