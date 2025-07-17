@@ -45,9 +45,23 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
       return acc;
     }, {} as Record<string, number>);
 
-    const statusData = Object.entries(countBy('status')).map(([name, value]) => ({ name, value }));
+    const statusCounts = countBy('status');
+    const totalStatus = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+    const statusData = Object.entries(statusCounts).map(([name, value]) => ({ 
+        name: `${name} (${value}/${totalStatus} - ${((value / totalStatus) * 100).toFixed(1)}%)`,
+        value,
+        originalName: name,
+    }));
+
+    const icaoStatusCounts = countBy('icaoStatus');
+    const totalIcaoStatus = Object.values(icaoStatusCounts).reduce((a, b) => a + b, 0);
+    const icaoStatusData = Object.entries(icaoStatusCounts).map(([name, value]) => ({ 
+        name: `${name} (${value}/${totalIcaoStatus} - ${((value / totalIcaoStatus) * 100).toFixed(1)}%)`,
+        value,
+        originalName: name,
+     }));
+
     const criticalElementData = Object.entries(countBy('criticalElement')).map(([name, value]) => ({ name, value }));
-    const icaoStatusData = Object.entries(countBy('icaoStatus')).map(([name, value]) => ({ name, value }));
     
     const totalCriticalElements = criticalElementData.reduce((acc, curr) => acc + curr.value, 0);
     const criticalElementPercentages = criticalElementData.map(item => ({
@@ -85,10 +99,10 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
     );
   }
 
-  const chartConfig = (data: {name: string, value: number}[]) => ({
+  const chartConfig = (data: {originalName: string, value: number}[]) => ({
       value: { label: 'Count' },
       ...data.reduce((acc, item, index) => {
-          acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
+          acc[item.originalName] = { label: item.originalName, color: CHART_COLORS[index % CHART_COLORS.length]};
           return acc;
       }, {} as any)
   });
@@ -104,13 +118,13 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
                 <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
-                            <Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
-                                {analyticsData.statusData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
+                            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent nameKey="originalName" hideLabel />} />
+                            <Pie data={analyticsData.statusData} dataKey="value" nameKey="originalName" strokeWidth={5}>
+                                {analyticsData.statusData.map((entry) => (
+                                    <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.originalName].color} />
                                 ))}
                             </Pie>
-                            <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                             <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center flex-wrap" />
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartContainer>
@@ -126,13 +140,13 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
                 <ChartContainer config={chartConfig(analyticsData.icaoStatusData)} className="mx-auto aspect-square h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
-                            <Pie data={analyticsData.icaoStatusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
-                                {analyticsData.icaoStatusData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.icaoStatusData)[entry.name].color} />
+                            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent nameKey="originalName" hideLabel />} />
+                            <Pie data={analyticsData.icaoStatusData} dataKey="value" nameKey="originalName" strokeWidth={5}>
+                                {analyticsData.icaoStatusData.map((entry) => (
+                                    <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.icaoStatusData)[entry.originalName].color} />
                                 ))}
                             </Pie>
-                            <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                             <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center flex-wrap" />
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartContainer>
@@ -146,20 +160,22 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
             </CardHeader>
             <CardContent className="space-y-4">
                 {analyticsData.criticalElementDescription}
-                <ChartContainer config={chartConfig(analyticsData.criticalElementData)} className="h-[300px] w-full pt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={analyticsData.criticalElementData} layout="horizontal" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
-                            <XAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} />
-                            <YAxis type="number" allowDecimals={false} />
-                            <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent indicator="dot" />} />
-                            <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
-                                {analyticsData.criticalElementData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
+                <div className="pt-4 h-[300px] w-full">
+                  <ChartContainer config={chartConfig(analyticsData.criticalElementData as any[])}>
+                      <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={analyticsData.criticalElementData} layout="horizontal" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
+                              <XAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} />
+                              <YAxis type="number" allowDecimals={false} />
+                              <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent indicator="dot" />} />
+                              <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
+                                  {analyticsData.criticalElementData.map((entry, index) => (
+                                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                  ))}
+                              </Bar>
+                          </BarChart>
+                      </ResponsiveContainer>
+                  </ChartContainer>
+                </div>
             </CardContent>
         </Card>
     </div>
