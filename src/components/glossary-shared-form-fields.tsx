@@ -90,7 +90,7 @@ export function GlossarySharedFormFields({ form }: GlossarySharedFormFieldsProps
             <FormLabel>Makna</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Jelaskan makna dari teks di sini..."
+                placeholder="Jelaskan makna dari hasil terjemahan di sini..."
                 rows={4}
                 {...field}
               />
