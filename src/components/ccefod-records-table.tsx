@@ -41,19 +41,21 @@ import { EditCcefodRecordDialog } from './edit-ccefod-record-dialog';
 import { CcefodRecordDetailDialog } from './ccefod-record-detail-dialog';
 
 
-type CcefodRecordsTableProps = {
-  records: CcefodRecord[];
-  onDelete: (record: CcefodRecord) => void;
-  onUpdate: (updatedRecord: CcefodRecord) => void;
-};
-
 type SortDescriptor = {
     column: keyof CcefodRecord;
     direction: 'asc' | 'desc';
 } | null;
 
-export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecordsTableProps) {
-  const [sort, setSort] = useState<SortDescriptor>({ column: 'annex', direction: 'asc' });
+type CcefodRecordsTableProps = {
+  records: CcefodRecord[];
+  onDelete: (record: CcefodRecord) => void;
+  onUpdate: (updatedRecord: CcefodRecord) => void;
+  sort: SortDescriptor;
+  setSort: (sort: SortDescriptor) => void;
+};
+
+
+export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort }: CcefodRecordsTableProps) {
   const [recordToView, setRecordToView] = useState<CcefodRecord | null>(null);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
@@ -72,32 +74,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
     remarks: false,
     status: true
   });
-
-  const sortedRecords = useMemo(() => {
-    let sortedData = [...records];
-    if (sort) {
-        sortedData.sort((a, b) => {
-            const aVal = a[sort.column as keyof CcefodRecord] ?? '';
-            const bVal = b[sort.column as keyof CcefodRecord] ?? '';
-
-            if (sort.column === 'annex') {
-                 const numA = parseInt(aVal as string, 10);
-                 const numB = parseInt(bVal as string, 10);
-
-                 if (!isNaN(numA) && !isNaN(numB)) {
-                    if (numA !== numB) {
-                        return sort.direction === 'asc' ? numA - numB : numB - numA;
-                    }
-                 }
-            }
-            
-            if (String(aVal) < String(bVal)) return sort.direction === 'asc' ? -1 : 1;
-            if (String(aVal) > String(bVal)) return sort.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }
-    return sortedData;
-  }, [records, sort]);
 
   const handleSort = (column: keyof CcefodRecord) => {
     setSort(prevSort => {
@@ -186,7 +162,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedRecords.map((record) => (
+              {records.map((record) => (
                 <TableRow 
                     key={record.id} 
                     className="cursor-pointer" 
@@ -237,7 +213,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
               ))}
             </TableBody>
           </Table>
-          {sortedRecords.length === 0 && (
+          {records.length === 0 && (
             <div className="text-center p-6 text-muted-foreground">
                 <p>No matching records found.</p>
             </div>

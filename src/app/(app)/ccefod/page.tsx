@@ -47,6 +47,11 @@ const ImportCcefodCsvDialog = dynamic(() => import('@/components/import-ccefod-c
     ssr: false
 });
 
+type SortDescriptor = {
+    column: keyof CcefodRecord;
+    direction: 'asc' | 'desc';
+} | null;
+
 const implementationLevelOptions = [
     "No difference","More exacting or exceeds","Different in character or other means of compliance","Less protective or patially implemented or not implemented","Not applicable","No  Information  Provided","Insufficient  Information  Provided"
 ];
@@ -65,12 +70,13 @@ export default function CcefodPage() {
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
-  // Filters for the records table
+  // Filters and sorting for the records table
   const [filter, setFilter] = useState('');
   const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [implementationLevelFilter, setImplementationLevelFilter] = useState<string>('all');
   const [adaPerubahanFilter, setAdaPerubahanFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sort, setSort] = useState<SortDescriptor>({ column: 'annex', direction: 'asc' });
 
   useEffect(() => {
     const q = query(collection(db, "ccefodRecords"), orderBy("createdAt", "desc"));
@@ -208,18 +214,16 @@ export default function CcefodPage() {
   const processedRecords = useMemo(() => {
     let filteredData = [...records];
     
+    // Filtering
     if (annexFilter !== 'all') {
         filteredData = filteredData.filter(record => record.annex === annexFilter);
     }
-    
     if (implementationLevelFilter !== 'all') {
         filteredData = filteredData.filter(record => record.implementationLevel === implementationLevelFilter);
     }
-
     if (adaPerubahanFilter !== 'all') {
         filteredData = filteredData.filter(record => record.adaPerubahan === adaPerubahanFilter);
     }
-    
     if (filter) {
         const lowercasedFilter = filter.toLowerCase();
         filteredData = filteredData.filter(record => 
@@ -229,8 +233,31 @@ export default function CcefodPage() {
         );
     }
 
+    // Sorting
+    if (sort) {
+        filteredData.sort((a, b) => {
+            const aVal = a[sort.column as keyof CcefodRecord] ?? '';
+            const bVal = b[sort.column as keyof CcefodRecord] ?? '';
+
+            if (sort.column === 'annex') {
+                 const numA = parseInt(aVal as string, 10);
+                 const numB = parseInt(bVal as string, 10);
+
+                 if (!isNaN(numA) && !isNaN(numB)) {
+                    if (numA !== numB) {
+                        return sort.direction === 'asc' ? numA - numB : numB - numA;
+                    }
+                 }
+            }
+            
+            if (String(aVal) < String(bVal)) return sort.direction === 'asc' ? -1 : 1;
+            if (String(aVal) > String(bVal)) return sort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
     return filteredData;
-  }, [records, filter, annexFilter, implementationLevelFilter, adaPerubahanFilter]);
+  }, [records, filter, annexFilter, implementationLevelFilter, adaPerubahanFilter, sort]);
 
   const totalPages = Math.ceil(processedRecords.length / RECORDS_PER_PAGE);
 
@@ -396,7 +423,13 @@ export default function CcefodPage() {
                                     </Select>
                                 </div>
                             </div>
-                            <CcefodRecordsTable records={paginatedRecords} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
+                            <CcefodRecordsTable 
+                                records={paginatedRecords} 
+                                onDelete={handleDeleteRequest} 
+                                onUpdate={handleRecordUpdate}
+                                sort={sort}
+                                setSort={setSort}
+                            />
                             <Pagination>
                                 <PaginationContent>
                                 <PaginationItem>
