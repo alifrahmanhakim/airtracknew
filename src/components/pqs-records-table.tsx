@@ -39,6 +39,7 @@ import {
 import { cn } from '@/lib/utils';
 import { EditPqRecordDialog } from './edit-pq-record-dialog';
 import { PqRecordDetailDialog } from './pq-record-detail-dialog';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './ui/pagination';
 
 
 type PqsRecordsTableProps = {
@@ -55,6 +56,7 @@ type SortDescriptor = {
 const criticalElementOptions = ["CE - 1", "CE - 2", "CE - 3", "CE - 4", "CE - 5", "CE - 6", "CE - 7", "CE - 8"];
 const icaoStatusOptions = ["Satisfactory", "No Satisfactory"];
 
+const RECORDS_PER_PAGE = 10;
 
 export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTableProps) {
   const [filter, setFilter] = useState('');
@@ -62,6 +64,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
   const [recordToView, setRecordToView] = useState<PqRecord | null>(null);
   const [criticalElementFilter, setCriticalElementFilter] = useState<string>('all');
   const [icaoStatusFilter, setIcaoStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
@@ -113,6 +116,20 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
 
     return filteredData;
   }, [records, filter, sort, criticalElementFilter, icaoStatusFilter]);
+  
+  const totalPages = Math.ceil(processedRecords.length / RECORDS_PER_PAGE);
+
+  const paginatedRecords = useMemo(() => {
+    const startIndex = (currentPage - 1) * RECORDS_PER_PAGE;
+    const endIndex = startIndex + RECORDS_PER_PAGE;
+    return processedRecords.slice(startIndex, endIndex);
+  }, [processedRecords, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+        setCurrentPage(page);
+    }
+  }
 
   const handleSort = (column: keyof PqRecord) => {
     setSort(prevSort => {
@@ -213,7 +230,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div className="border rounded-md overflow-auto max-h-[70vh]">
+        <div className="border rounded-md overflow-x-auto">
           <Table className="min-w-full">
             <TableHeader className="sticky top-0 bg-background/95 z-10">
               <TableRow>
@@ -230,7 +247,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
               </TableRow>
             </TableHeader>
             <TableBody>
-              {processedRecords.map((record) => (
+              {paginatedRecords.map((record) => (
                 <TableRow 
                     key={record.id} 
                     className="cursor-pointer" 
@@ -284,6 +301,23 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
             </div>
           )}
         </div>
+         {totalPages > 1 && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                </PaginationItem>
+                <PaginationItem>
+                    <span className="px-4 py-2 text-sm">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+        )}
       </div>
       {recordToView && (
         <PqRecordDetailDialog 
