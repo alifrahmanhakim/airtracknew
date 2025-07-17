@@ -35,10 +35,8 @@ export function ThemeToggle() {
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       className={cn(
-        isLoginPage && {
-            "dark:bg-background/30 dark:hover:bg-background/50 dark:border-white/20 dark:hover:border-white/40 dark:text-white": true,
-            "light:bg-black/10 light:hover:bg-black/20 light:border-black/20 light:hover:border-black/40 light:text-foreground": true,
-        }
+        isLoginPage && "dark:text-white dark:border-white/20 dark:bg-black/20 hover:dark:bg-black/30",
+        isLoginPage && "text-foreground border-foreground/20 bg-white/20 hover:bg-white/30",
       )}
     >
       <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
