@@ -72,19 +72,52 @@ export async function deleteAllPqRecords() {
     }
 }
 
-export async function importPqRecords(records: z.infer<typeof pqFormSchema>[]) {
+export async function importPqRecords(records: Record<string, any>[]) {
     const batch = writeBatch(db);
     let count = 0;
-    for (const recordData of records) {
-        const parsed = pqFormSchema.safeParse(recordData);
+
+    const nonEmptyRecords = records.filter(record => 
+        Object.values(record).some(value => value !== null && value !== '' && value !== undefined)
+    );
+
+    for (const [index, recordData] of nonEmptyRecords.entries()) {
+        const dataToValidate = {
+            pqNumber: String(recordData.pqNumber ?? ''),
+            protocolQuestion: recordData.protocolQuestion ?? '',
+            guidance: recordData.guidance ?? '',
+            icaoReferences: recordData.icaoReferences ?? '',
+            ppq: (recordData.ppq === 'YES' || recordData.ppq === 'NO') ? recordData.ppq : 'NO',
+            criticalElement: pqFormSchema.shape.criticalElement.options.includes(recordData.criticalElement) ? recordData.criticalElement : 'CE - 1',
+            remarks: recordData.remarks ?? '',
+            evidence: recordData.evidence ?? '',
+            answer: recordData.answer ?? '',
+            poc: recordData.poc ?? '',
+            icaoStatus: (recordData.icaoStatus === 'Satisfactory' || recordData.icaoStatus === 'No Satisfactory') ? recordData.icaoStatus : 'Satisfactory',
+            cap: recordData.cap ?? '',
+            sspComponent: recordData.sspComponent ?? '',
+            status: (recordData.status === 'Existing' || recordData.status === 'Draft' || recordData.status === 'Final') ? recordData.status : 'Draft',
+        };
+
+        const parsed = pqFormSchema.safeParse(dataToValidate);
+
         if (parsed.success) {
             const docRef = doc(collection(db, 'pqsRecords'));
             batch.set(docRef, { ...parsed.data, createdAt: serverTimestamp() });
             count++;
         } else {
-            console.warn("Skipping invalid PQ record during import:", parsed.error.flatten().fieldErrors);
+            console.warn(`Skipping invalid PQ record during import on row ${index + 2}:`, parsed.error.flatten().fieldErrors);
+            const firstError = parsed.error.issues[0];
+            return {
+                success: false,
+                error: `Error on CSV row ${index + 2}. Field: "${firstError.path.join('.')}", Message: "${firstError.message}". Please check your file.`
+            };
         }
     }
+
+    if (count === 0 && nonEmptyRecords.length > 0) {
+        return { success: false, error: "No valid records found to import. Please check your CSV file structure and data types." };
+    }
+
     try {
         await batch.commit();
         return { success: true, count };
