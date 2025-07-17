@@ -82,6 +82,13 @@ export function GapAnalysisAnalyticsDashboard({
         return acc;
     }, {} as Record<string, number>)).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
 
+    const annexCounts = filteredRecords.reduce((acc, record) => {
+        acc[record.annex] = (acc[record.annex] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const annexData = Object.entries(annexCounts).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+
     const totalRecords = filteredRecords.length;
     const openItems = statusItemCounts['OPEN'] || 0;
     const openPercentage = totalRecords > 0 ? (openItems / totalRecords) * 100 : 0;
@@ -92,7 +99,8 @@ export function GapAnalysisAnalyticsDashboard({
       openPercentage,
       complianceStatusData,
       statusItemData,
-      casrData
+      casrData,
+      annexData,
     };
   }, [filteredRecords]);
 
@@ -221,6 +229,29 @@ export function GapAnalysisAnalyticsDashboard({
                                     <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent indicator="dot" />} />
                                     <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
                                         {analyticsData.casrData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Annex Count</CardTitle>
+                        <CardDescription>Distribution of records per Annex in filtered results.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                        <ChartContainer config={chartConfig(analyticsData.annexData)} className="h-[300px] w-full">
+                            <ResponsiveContainer>
+                                <BarChart data={analyticsData.annexData.slice(0, 10)} layout="vertical" margin={{ left: 100, right: 30 }}>
+                                    <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                                    <XAxis type="number" allowDecimals={false} />
+                                    <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent indicator="dot" />} />
+                                    <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
+                                        {analyticsData.annexData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                         ))}
                                     </Bar>
