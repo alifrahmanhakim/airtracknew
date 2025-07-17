@@ -47,23 +47,22 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
         legislationReference: z.string(),
     });
 
-    // Get the valid enum values from the schema for robust checking
     const validImplementationLevels = ccefodFormSchema.shape.implementationLevel.options;
-
     const batch = writeBatch(db);
     let count = 0;
 
     for (const recordData of records) {
-        let implementationLevel = recordData.implementationLevel ?? 'No difference';
-        
-        // Robust case-insensitive normalization for implementationLevel
-        if (typeof implementationLevel === 'string') {
-            const lowercasedLevel = implementationLevel.toLowerCase().trim();
+        let implementationLevelToValidate = recordData.implementationLevel;
+
+        if (implementationLevelToValidate === null || implementationLevelToValidate === undefined) {
+            implementationLevelToValidate = 'No difference';
+        } else if (typeof implementationLevelToValidate === 'string') {
+            const lowercasedLevel = implementationLevelToValidate.toLowerCase().trim();
             const matchingLevel = validImplementationLevels.find(
                 (validLevel) => validLevel.toLowerCase().trim() === lowercasedLevel
             );
             if (matchingLevel) {
-                implementationLevel = matchingLevel;
+                implementationLevelToValidate = matchingLevel;
             }
         }
 
@@ -73,7 +72,7 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
             annexReference: recordData.annexReference ?? '',
             standardPractice: recordData.standardPractice ?? '',
             legislationReference: recordData.legislationReference ?? '',
-            implementationLevel: implementationLevel,
+            implementationLevel: implementationLevelToValidate,
             status: recordData.status ?? 'Draft',
             adaPerubahan: recordData.adaPerubahan ?? 'TIDAK',
             usulanPerubahan: recordData.usulanPerubahan ?? '',
@@ -86,7 +85,7 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
         const parsed = importSchema.safeParse(dataToValidate);
 
         if (parsed.success) {
-            const sanitizedStandardPractice = purify.sanitize(parsed.data.standardPractice);
+            const sanitizedStandardPractice = purify.sanitize(parsed.data.standardPractice || '');
             const docRef = doc(collection(db, 'ccefodRecords'));
             batch.set(docRef, {
                 ...parsed.data,
