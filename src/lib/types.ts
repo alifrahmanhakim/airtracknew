@@ -144,5 +144,6 @@ export type GlossaryRecord = {
   editing: string;
   makna: string;
   keterangan: string;
+  referensi?: string;
   status: 'Draft' | 'Final';
 }

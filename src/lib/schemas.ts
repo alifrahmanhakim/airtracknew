@@ -1,4 +1,5 @@
 
+
 import { z } from 'zod';
 
 export const ccefodFormSchema = z.object({
@@ -83,5 +84,6 @@ export const glossaryFormSchema = z.object({
   editing: z.string().min(1, 'Editing is required'),
   makna: z.string().min(1, 'Makna is required'),
   keterangan: z.string().min(1, 'Keterangan / Pengaplikasian is required'),
+  referensi: z.string().optional(),
   status: z.enum(['Draft', 'Final']),
 });

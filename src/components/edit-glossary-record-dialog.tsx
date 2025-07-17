@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -40,6 +41,7 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate }: EditGlossar
       editing: record.editing,
       makna: record.makna,
       keterangan: record.keterangan,
+      referensi: record.referensi || '',
       status: record.status,
     },
   });

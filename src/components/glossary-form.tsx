@@ -25,6 +25,7 @@ export function GlossaryForm({ onFormSubmit }: GlossaryFormProps) {
     editing: '',
     makna: '',
     keterangan: '',
+    referensi: '',
     status: 'Draft',
   };
 

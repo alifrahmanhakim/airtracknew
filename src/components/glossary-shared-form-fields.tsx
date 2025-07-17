@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
@@ -19,6 +20,7 @@ export const formSchema = z.object({
   editing: z.string().min(1, 'Editing is required'),
   makna: z.string().min(1, 'Makna is required'),
   keterangan: z.string().min(1, 'Keterangan / Pengaplikasian is required'),
+  referensi: z.string().optional(),
   status: z.enum(['Draft', 'Final']),
 });
 
@@ -108,6 +110,23 @@ export function GlossarySharedFormFields({ form }: GlossarySharedFormFieldsProps
             <FormControl>
               <Textarea
                 placeholder="Jelaskan keterangan atau cara pengaplikasian di sini..."
+                rows={4}
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+       <FormField
+        control={form.control}
+        name="referensi"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Referensi / Daftar Pustaka</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Masukkan sumber referensi atau daftar pustaka di sini..."
                 rows={4}
                 {...field}
               />

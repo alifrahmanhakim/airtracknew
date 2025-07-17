@@ -113,6 +113,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
                 <TableHead>Editing</TableHead>
                 <TableHead>Makna</TableHead>
                 <TableHead>Keterangan</TableHead>
+                <TableHead>Referensi</TableHead>
                 <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
                      <div className="flex items-center">Status {renderSortIcon('status')}</div>
                 </TableHead>
@@ -127,6 +128,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
                     <TableCell className="max-w-xs truncate">{record.editing}</TableCell>
                     <TableCell className="max-w-xs truncate">{record.makna}</TableCell>
                     <TableCell className="max-w-xs truncate">{record.keterangan}</TableCell>
+                    <TableCell className="max-w-xs truncate">{record.referensi}</TableCell>
                     <TableCell>
                         <Badge
                             variant={record.status === 'Final' ? 'default' : 'secondary'}
