@@ -1,13 +1,11 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { CcefodForm } from '@/components/ccefod-form';
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CcefodRecordsTable } from '@/components/ccefod-records-table';
 import type { CcefodRecord } from '@/lib/types';
-import { CcefodAnalyticsDashboard } from '@/components/ccefod-analytics-dashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
@@ -26,10 +24,24 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
-import { ImportCcefodCsvDialog } from '@/components/import-ccefod-csv-dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Papa from 'papaparse';
+
+// Dynamically import heavy components
+const CcefodForm = dynamic(() => import('@/components/ccefod-form').then(mod => mod.CcefodForm), { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full" /> 
+});
+const CcefodRecordsTable = dynamic(() => import('@/components/ccefod-records-table').then(mod => mod.CcefodRecordsTable), { 
+    loading: () => <Skeleton className="h-[600px] w-full" /> 
+});
+const CcefodAnalyticsDashboard = dynamic(() => import('@/components/ccefod-analytics-dashboard').then(mod => mod.CcefodAnalyticsDashboard), { 
+    loading: () => <Skeleton className="h-[600px] w-full" /> 
+});
+const ImportCcefodCsvDialog = dynamic(() => import('@/components/import-ccefod-csv-dialog').then(mod => mod.ImportCcefodCsvDialog), {
+    ssr: false
+});
 
 
 export default function CcefodPage() {
@@ -116,7 +128,6 @@ export default function CcefodPage() {
         description: 'Your CSV file is being generated...',
     });
 
-    // Use a small timeout to allow the toast to render before the UI might freeze on large exports
     setTimeout(() => {
         const csv = Papa.unparse(records);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -138,8 +149,11 @@ export default function CcefodPage() {
     if (isLoading) {
       return (
         <div className="space-y-4">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-32 w-full" />
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-12 w-1/3" />
+                <Skeleton className="h-10 w-1/4" />
+            </div>
+            <Skeleton className="h-[600px] w-full" />
         </div>
       );
     }
@@ -153,7 +167,9 @@ export default function CcefodPage() {
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>
-                  <ImportCcefodCsvDialog />
+                  <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                    <ImportCcefodCsvDialog />
+                  </Suspense>
                   <TabsList>
                       <TabsTrigger value="form">Input Form</TabsTrigger>
                       <TabsTrigger value="records">Records</TabsTrigger>
@@ -162,56 +178,54 @@ export default function CcefodPage() {
                 </div>
             </div>
             
-            <div className={cn(activeTab === 'records' ? 'hidden' : 'max-w-7xl mx-auto w-full')}>
-                <TabsContent value="form" className={cn(activeTab !== 'form' ? 'print:hidden' : '')}>
-                    <Card className="max-w-4xl mx-auto">
-                        <CardHeader>
-                        <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
-                        <CardDescription>
-                            Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di Firestore.
-                        </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                        <CcefodForm onFormSubmit={() => {}} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                
-                <TabsContent value="analytics" className={cn(activeTab !== 'analytics' ? 'print:hidden' : '')}>
-                    <Card>
-                        <CardHeader>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <CardTitle>CC/EFOD Analytics Dashboard</CardTitle>
-                                    <CardDescription>
-                                        Visualisasi data dari catatan yang telah dimasukkan.
-                                    </CardDescription>
-                                </div>
-                                <div className="flex items-center gap-2 print:hidden">
-                                    <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
-                                    <Select value={analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
-                                        <SelectTrigger id="annex-filter" className="w-full sm:w-[280px]">
-                                            <SelectValue placeholder="Filter by Annex..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {annexOptions.map(annex => (
-                                                <SelectItem key={annex} value={annex}>
-                                                    {annex === 'all' ? 'All Annexes' : annex}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <CcefodAnalyticsDashboard records={filteredAnalyticsRecords} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </div>
+            <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
+                <Card className="max-w-4xl mx-auto">
+                    <CardHeader>
+                    <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
+                    <CardDescription>
+                        Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di Firestore.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                       <CcefodForm onFormSubmit={() => {}} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
             
-            <TabsContent value="records" className={cn(activeTab !== 'records' ? 'print:hidden' : '')}>
+            <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle>CC/EFOD Analytics Dashboard</CardTitle>
+                                <CardDescription>
+                                    Visualisasi data dari catatan yang telah dimasukkan.
+                                </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2 print:hidden">
+                                <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
+                                <Select value={analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
+                                    <SelectTrigger id="annex-filter" className="w-full sm:w-[280px]">
+                                        <SelectValue placeholder="Filter by Annex..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {annexOptions.map(annex => (
+                                            <SelectItem key={annex} value={annex}>
+                                                {annex === 'all' ? 'All Annexes' : annex}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                       <CcefodAnalyticsDashboard records={filteredAnalyticsRecords} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            
+            <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
                 <Card>
                     <CardHeader>
                         <div className='flex justify-between items-start'>
@@ -234,7 +248,6 @@ export default function CcefodPage() {
                     </CardContent>
                 </Card>
             </TabsContent>
-
         </Tabs>
     );
   }
@@ -270,7 +283,7 @@ export default function CcefodPage() {
                 <AlertDialogTitle>Confirm Export</AlertDialogTitle>
                 <AlertDialogDescription>
                     Are you sure you want to export all {records.length} records as a CSV file?
-                </AlertDialogDescription>
+                </Description>
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>

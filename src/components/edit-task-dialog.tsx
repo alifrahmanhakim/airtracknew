@@ -176,7 +176,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Start Date</FormLabel>
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -214,7 +214,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Due Date</FormLabel>
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -294,7 +294,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                         render={({ field }) => (
                         <FormItem className="flex flex-col">
                             <FormLabel>Completion Date</FormLabel>
-                            <Popover>
+                            <Popover modal={false}>
                             <PopoverTrigger asChild>
                                 <FormControl>
                                 <Button

@@ -18,8 +18,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
   devServer: {
-    allowedDevOrigins: "https://*.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev",
+    allowedDevOrigins: "https.8080.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev",
   }
 };
 

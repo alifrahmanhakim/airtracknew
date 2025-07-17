@@ -145,7 +145,7 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Start Date</FormLabel>
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -183,7 +183,7 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Due Date</FormLabel>
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button

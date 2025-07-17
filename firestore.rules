@@ -1,0 +1,63 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // UPDATED: Checks if the user is a global admin by role OR by a specific email.
+    function isAdmin(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId)).data;
+      let userEmail = request.auth.token.email;
+      
+      return userDoc.role == 'Sub-Directorate Head' || userEmail == 'admin@admin2023.com';
+    }
+
+    function isProjectLead(project) {
+      return project.data.team.filter(member => 
+        member.id == request.auth.uid && (member.role == 'PIC' || member.role == 'Assistant PIC')
+      ).size() > 0;
+    }
+
+    function isTeamMember(project) {
+        return request.auth.uid in project.data.teamMemberIds;
+    }
+
+    // --- Collection Rules ---
+
+    match /projects/{projectId} {
+      allow read: if isAuthenticated() && (isTeamMember(resource) || isAdmin(request.auth.uid));
+      
+      // CREATE: Allow any authenticated user to create a project.
+      allow create: if isAuthenticated();
+
+      // UPDATE: Allow any team member or an admin to update.
+      allow update: if isAuthenticated() && (isTeamMember(resource) || isAdmin(request.auth.uid));
+
+      // DELETE: ONLY allow project leads (PIC/Assistant) or an admin to delete.
+      allow delete: if isAuthenticated() && (isProjectLead(resource) || isAdmin(request.auth.uid));
+    }
+
+    // CCEFOD & PQS Records are kept secure by default.
+    match /ccefodRecords/{recordId} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if false; 
+    }
+
+    match /pqsRecords/{recordId} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // Users can only manage their own profile.
+    match /users/{userId} {
+      allow read, update: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated();
+    }
+  }
+}

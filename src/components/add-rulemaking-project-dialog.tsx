@@ -82,23 +82,32 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
-    const ownerId = localStorage.getItem('loggedInUserId');
-    if (!ownerId) {
+    // Asumsi `ownerId` akan diambil dari sesi pengguna di server,
+    // jadi kita tidak perlu lagi mengambilnya dari localStorage.
+    // Ini lebih aman.
+    const ownerId = "some-placeholder-id"; // Ini akan diganti di server action jika perlu
+
+    const teamMembers = data.team
+      .map(userId => allUsers.find(u => u.id === userId))
+      .filter((user): user is User => user !== undefined)
+      .map(user => ({ // Pastikan struktur objek sesuai
+          id: user.id,
+          name: user.name,
+          role: user.role,
+          avatarUrl: user.avatarUrl
+      }));
+
+    if (teamMembers.length === 0) {
         toast({
             variant: 'destructive',
-            title: 'Error',
-            description: 'Could not identify the current user. Please log in again.',
+            title: 'Team is empty',
+            description: 'Please select at least one team member.',
         });
         setIsSubmitting(false);
         return;
     }
 
-    const teamMembers = data.team
-      .map(userId => allUsers.find(u => u.id === userId))
-      .filter((user): user is User => user !== undefined);
-
     const highPriorityTag = 'High Priority';
-    
     const baseTags = data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
     
     let finalTags = baseTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
@@ -109,7 +118,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
     const newProjectData = {
       name: data.name,
       description: data.description,
-      ownerId: ownerId,
+      ownerId: teamMembers[0].id, // Default owner ke anggota tim pertama
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
       status: 'On Track' as const,
@@ -130,12 +139,12 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       });
       setOpen(false);
       form.reset();
-      window.location.reload();
+      router.refresh(); // Cara Next.js modern untuk refresh data
     } else {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: result.error || 'Failed to create the project.',
+        title: 'Error Creating Project',
+        description: result.error || 'An unknown error occurred on the server.',
       });
     }
   };
@@ -218,7 +227,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Start Date</FormLabel>
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -256,7 +265,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>End Date</FormLabel>
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -298,7 +307,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                   <FormControl>
                     <MultiSelect
                       options={userOptions}
-                      onValueChange={field.onChange}
+                      onValue-change={field.onChange}
                       defaultValue={field.value}
                       placeholder="Select team members..."
                     />

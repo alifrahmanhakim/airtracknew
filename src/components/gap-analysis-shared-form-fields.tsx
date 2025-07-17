@@ -111,7 +111,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>Embedded applicability date(s)</FormLabel>
-                      <Popover>
+                      <Popover modal={false}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button

@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PqRecord } from '@/lib/types';
@@ -23,11 +24,22 @@ import {
 import { Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { PqsForm } from '@/components/pqs-form';
-import { PqsRecordsTable } from '@/components/pqs-records-table';
-import { PqsAnalyticsDashboard } from '@/components/pqs-analytics-dashboard';
-import { ImportPqsCsvDialog } from '@/components/import-pqs-csv-dialog';
 import Papa from 'papaparse';
+
+// Dynamically import heavy components
+const PqsForm = dynamic(() => import('@/components/pqs-form').then(mod => mod.PqsForm), { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full" /> 
+});
+const PqsRecordsTable = dynamic(() => import('@/components/pqs-records-table').then(mod => mod.PqsRecordsTable), { 
+    loading: () => <Skeleton className="h-[600px] w-full" /> 
+});
+const PqsAnalyticsDashboard = dynamic(() => import('@/components/pqs-analytics-dashboard').then(mod => mod.PqsAnalyticsDashboard), { 
+    loading: () => <Skeleton className="h-[600px] w-full" /> 
+});
+const ImportPqsCsvDialog = dynamic(() => import('@/components/import-pqs-csv-dialog').then(mod => mod.ImportPqsCsvDialog), {
+    ssr: false
+});
 
 
 export default function PqsPage() {
@@ -101,7 +113,6 @@ export default function PqsPage() {
         description: 'Your CSV file is being generated...',
     });
 
-    // Use a small timeout to allow the toast to render before the UI might freeze on large exports
     setTimeout(() => {
         const csv = Papa.unparse(records);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -123,8 +134,11 @@ export default function PqsPage() {
     if (isLoading) {
       return (
         <div className="space-y-4">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-32 w-full" />
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-12 w-1/3" />
+                <Skeleton className="h-10 w-1/4" />
+            </div>
+            <Skeleton className="h-[600px] w-full" />
         </div>
       );
     }
@@ -138,7 +152,9 @@ export default function PqsPage() {
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>
-                  <ImportPqsCsvDialog />
+                  <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                    <ImportPqsCsvDialog />
+                  </Suspense>
                   <TabsList>
                       <TabsTrigger value="form">Input Form</TabsTrigger>
                       <TabsTrigger value="records">Records</TabsTrigger>
@@ -146,65 +162,59 @@ export default function PqsPage() {
                   </TabsList>
                 </div>
             </div>
-            <div className={cn(activeTab === 'form' ? '' : 'hidden', 'max-w-7xl mx-auto w-full')}>
-                <TabsContent value="form">
-                    <Card className="max-w-4xl mx-auto">
-                        <CardHeader>
-                        <CardTitle>Protocol Question (PQ) Form</CardTitle>
-                        <CardDescription>
-                            Fill out the form below to add a new PQ record.
-                        </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                        <PqsForm onFormSubmit={() => {}} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </div>
-             <div className={cn(activeTab === 'records' ? '' : 'hidden')}>
-                <TabsContent value="records">
-                    <Card>
-                        <CardHeader>
-                            <div className='flex justify-between items-start'>
-                                <div>
-                                    <CardTitle>PQs Records</CardTitle>
-                                    <CardDescription>
-                                        A list of all Protocol Questions records from Firestore.
-                                    </CardDescription>
-                                </div>
-                                <div className="flex items-center gap-2 print:hidden">
-                                    <Button variant="outline" size="icon" onClick={() => setIsExporting(true)}>
-                                        <FileSpreadsheet className="h-4 w-4" />
-                                        <span className="sr-only">Export as CSV</span>
-                                    </Button>
-                                </div>
+            <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
+                <Card className="max-w-4xl mx-auto">
+                    <CardHeader>
+                    <CardTitle>Protocol Question (PQ) Form</CardTitle>
+                    <CardDescription>
+                        Fill out the form below to add a new PQ record.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                       <PqsForm onFormSubmit={() => {}} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
+                <Card>
+                    <CardHeader>
+                        <div className='flex justify-between items-start'>
+                            <div>
+                                <CardTitle>PQs Records</CardTitle>
+                                <CardDescription>
+                                    A list of all Protocol Questions records from Firestore.
+                                </CardDescription>
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            <PqsRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </div>
-             <div className={cn(activeTab === 'analytics' ? '' : 'hidden', 'max-w-7xl mx-auto w-full')}>
-                <TabsContent value="analytics">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <CardTitle>PQs Analytics Dashboard</CardTitle>
-                                    <CardDescription>
-                                        Visualizations of the Protocol Questions data.
-                                    </CardDescription>
-                                </div>
+                            <div className="flex items-center gap-2 print:hidden">
+                                <Button variant="outline" size="icon" onClick={() => setIsExporting(true)}>
+                                    <FileSpreadsheet className="h-4 w-4" />
+                                    <span className="sr-only">Export as CSV</span>
+                                </Button>
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            <PqsAnalyticsDashboard records={records} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <PqsRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle>PQs Analytics Dashboard</CardTitle>
+                                <CardDescription>
+                                    Visualizations of the Protocol Questions data.
+                                </CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                       <PqsAnalyticsDashboard records={records} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
         </Tabs>
     );
   }
@@ -240,7 +250,7 @@ export default function PqsPage() {
                 <AlertDialogTitle>Confirm Export</AlertDialogTitle>
                 <AlertDialogDescription>
                     Are you sure you want to export all {records.length} records as a CSV file?
-                </AlertDialogDescription>
+                </Description>
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>

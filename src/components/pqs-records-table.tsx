@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Table,
   TableBody,
@@ -149,6 +150,14 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key as keyof PqRecord]);
 
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+      count: processedRecords.length,
+      getScrollElement: () => tableContainerRef.current,
+      estimateSize: () => 65, // Estimate row height
+      overscan: 5,
+  });
+
   if (records.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
@@ -214,9 +223,9 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <div className="border rounded-md overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHeader>
+        <div ref={tableContainerRef} className="border rounded-md overflow-auto" style={{ maxHeight: '70vh' }}>
+          <Table className="min-w-full relative">
+            <TableHeader className="sticky top-0 bg-background/95 z-20">
               <TableRow className='border-b'>
                 {visibleColumns.map((col, index) => (
                     <TableHead 
@@ -232,53 +241,73 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                 <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {processedRecords.map((record) => (
-                <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
-                  {visibleColumns.map((col, index) => (
-                     <TableCell key={col.key} className="align-top whitespace-normal border-r last:border-r-0">
-                        {(() => {
-                            const value = record[col.key as keyof PqRecord] as string | undefined;
-                            
-                            if (col.key === 'status') {
-                                return (<Badge
-                                className={cn({
-                                    'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
-                                    'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
-                                    'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                })}
-                                >
-                                {value}
-                                </Badge>);
-                            }
-                            if (col.key === 'createdAt' && value) {
-                                return format(parseISO(value), 'PPP');
-                            }
-                            
-                            return <div>{value || 'N/A'}</div>;
-                        })()}
+            <TableBody style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const record = processedRecords[virtualRow.index];
+                return (
+                    <TableRow 
+                        key={record.id} 
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: `${virtualRow.size}px`,
+                            transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                        className="border-b cursor-pointer" 
+                        onClick={() => setRecordToView(record)}
+                    >
+                    {visibleColumns.map((col) => (
+                        <TableCell key={col.key} className="align-top whitespace-normal border-r last:border-r-0 h-full">
+                            {(() => {
+                                const value = record[col.key as keyof PqRecord] as string | undefined;
+                                
+                                if (col.key === 'status') {
+                                    return (<Badge
+                                    className={cn({
+                                        'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
+                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
+                                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                    })}
+                                    >
+                                    {value}
+                                    </Badge>);
+                                }
+                                if (col.key === 'createdAt' && value) {
+                                    return format(parseISO(value), 'PPP');
+                                }
+                                
+                                return <div className="truncate-multiline">{value || 'N/A'}</div>;
+                            })()}
+                        </TableCell>
+                    ))}
+                    <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-top h-full">
+                        <div className="flex justify-end gap-2 h-full items-center" onClick={(e) => e.stopPropagation()}>
+                        <EditPqRecordDialog record={record} onRecordUpdate={onUpdate} />
+                        <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>Delete Record</p></TooltipContent>
+                        </Tooltip>
+                        </div>
                     </TableCell>
-                  ))}
-                  <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-top">
-                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                       <EditPqRecordDialog record={record} onRecordUpdate={onUpdate} />
-                       <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Delete Record</p></TooltipContent>
-                       </Tooltip>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
-          {processedRecords.length === 0 && (
+          {processedRecords.length === 0 && !filter && (
             <div className="text-center p-6 text-muted-foreground">
-                <p>No matching records found.</p>
+                <p>No records found.</p>
+            </div>
+          )}
+          {processedRecords.length === 0 && filter && (
+            <div className="text-center p-6 text-muted-foreground">
+                <p>No matching records found for your filter.</p>
             </div>
           )}
         </div>
@@ -293,5 +322,3 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     </TooltipProvider>
   );
 }
-
-    
