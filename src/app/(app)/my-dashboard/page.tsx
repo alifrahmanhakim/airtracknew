@@ -248,9 +248,9 @@ export default function MyDashboardPage() {
                     <CardContent><div className="text-3xl font-bold text-yellow-500">{atRiskProjectsCount}</div></CardContent>
                 </Card>
             </div>
-             <Card>
+             <Card className="border-primary">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5"/> Upcoming Tasks</CardTitle>
+                    <CardTitle className="flex items-center gap-2 text-primary"><Bell className="h-5 w-5"/> Upcoming Tasks</CardTitle>
                     <CardDescription>Your next 3 deadlines.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
