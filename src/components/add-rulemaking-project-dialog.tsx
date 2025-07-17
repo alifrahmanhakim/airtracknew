@@ -307,7 +307,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                   <FormControl>
                     <MultiSelect
                       options={userOptions}
-                      onValue-change={field.onChange}
+                      onValueChange={field.onChange}
                       defaultValue={field.value}
                       placeholder="Select team members..."
                     />
