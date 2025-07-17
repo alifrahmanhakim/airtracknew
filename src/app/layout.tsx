@@ -13,6 +13,9 @@ const fontSans = Inter({
 export const metadata: Metadata = {
   title: 'AirTrack: Aviation Project Tracker',
   description: 'A project tracker for the aviation industry.',
+  icons: {
+    icon: 'https://firebasestorage.googleapis.com/v0/b/aoc-insight.firebasestorage.app/o/icon%2Ffavicon.ico?alt=media&token=c444a435-f3b5-4850-b0b1-eb4a1dd15810',
+  },
 };
 
 export default function RootLayout({
