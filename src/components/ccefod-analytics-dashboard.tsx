@@ -99,16 +99,18 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     const implementationPercentages = implementationLevelData
       .map(item => ({
         name: item.name,
+        value: item.value,
         percentage: implementationLevelTotal > 0 ? (item.value / implementationLevelTotal) * 100 : 0,
       }))
       .sort((a, b) => b.percentage - a.percentage);
 
-    const topImplementationDescription = implementationPercentages.length > 0 ? (
-        <div>
-          {implementationPercentages.slice(0, 3).map(item => (
-            <p key={item.name} className="text-sm text-muted-foreground">
-              <span className="font-bold">{item.percentage.toFixed(0)}%</span> {item.name}
-            </p>
+    const implementationDescription = implementationPercentages.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          {implementationPercentages.map(item => (
+            <div key={item.name} className="flex justify-between items-baseline gap-2">
+                <span className="truncate" title={item.name}>{item.name}</span>
+                <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
+            </div>
           ))}
         </div>
       ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
@@ -140,7 +142,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       annexTotal,
       finalStatusPercentage,
       yaAdaPerubahanPercentage,
-      topImplementationDescription: topImplementationDescription,
+      implementationDescription: implementationDescription,
       topAnnexDescription: topAnnexDescription,
     };
   }, [records]);
@@ -273,7 +275,10 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Level of Implementation Distribution</CardTitle>
-                {analyticsData.topImplementationDescription}
+              <CardDescription>Detailed percentage breakdown of all implementation levels.</CardDescription>
+                <div className="pt-2">
+                    {analyticsData.implementationDescription}
+                </div>
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
