@@ -31,13 +31,11 @@ const CHART_COLORS = [
     'hsl(var(--chart-3))',
     'hsl(var(--chart-4))',
     'hsl(var(--chart-5))',
+    'hsl(var(--chart-6))',
+    'hsl(var(--chart-7))',
+    'hsl(var(--chart-8))',
     'hsl(var(--muted))',
 ];
-
-const truncateText = (text: string, length: number) => {
-    if (text.length <= length) return text;
-    return text.substring(0, length) + '...';
-}
 
 const CustomizedAxisTick = (props: any) => {
   const { x, y, payload } = props;
@@ -48,7 +46,7 @@ const CustomizedAxisTick = (props: any) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
-            {truncateText(payload.value, maxChars)}
+            {payload.value}
           </text>
         </TooltipTrigger>
         <TooltipContent>
@@ -127,7 +125,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {annexPercentages.map(item => (
           <div key={item.name} className="flex justify-between items-baseline gap-2">
-            <span className="truncate" title={item.name}>{truncateText(item.name, 35)}</span>
+            <span className="truncate" title={item.name}>{item.name}</span>
             <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
           </div>
         ))}
@@ -287,9 +285,16 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 type="category"
                                 tickLine={false}
                                 axisLine={false}
-                                tick={<CustomizedAxisTick />}
                                 height={100}
                                 interval={0}
+                                tick={(props) => {
+                                    const { x, y, payload } = props;
+                                    return (
+                                        <g transform={`translate(${x},${y})`}>
+                                            <text x={0} y={0} dy={16} textAnchor="end" fill="#666" transform="rotate(-35)">{payload.value}</text>
+                                        </g>
+                                    );
+                                }}
                             />
                             <YAxis type="number" allowDecimals={false} />
                             <ChartTooltip
