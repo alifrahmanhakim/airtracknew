@@ -60,21 +60,31 @@ export async function deleteGlossaryRecord(id: string) {
 export async function importGlossaryRecords(records: Record<string, any>[]) {
     const batch = writeBatch(db);
     let count = 0;
-
+    
+    // Filter out rows that are completely empty
     const nonEmptyRecords = records.filter(record => 
         Object.values(record).some(value => value !== null && value !== '' && value !== undefined)
     );
 
+    const requiredFields = ['tsu', 'tsa', 'editing', 'makna', 'keterangan'];
+
     for (const [index, recordData] of nonEmptyRecords.entries()) {
         const dataToValidate = {
-            tsu: recordData.tsu || '',
-            tsa: recordData.tsa || '',
-            editing: recordData.editing || '',
-            makna: recordData.makna || '',
-            keterangan: recordData.keterangan || '',
+            tsu: recordData.tsu || '[Data from CSV was empty]',
+            tsa: recordData.tsa || '[Data from CSV was empty]',
+            editing: recordData.editing || '[Data from CSV was empty]',
+            makna: recordData.makna || '[Data from CSV was empty]',
+            keterangan: recordData.keterangan || '[Data from CSV was empty]',
             referensi: recordData.referensi || '',
             status: (recordData.status === 'Final' || recordData.status === 'Draft') ? recordData.status : 'Draft',
         };
+
+        // If a required field was originally empty, fill it with a placeholder
+        for (const field of requiredFields) {
+            if (!recordData[field]) {
+                dataToValidate[field as keyof typeof dataToValidate] = '[Data from CSV was empty]';
+            }
+        }
 
         const finalParsed = glossaryFormSchema.safeParse(dataToValidate);
 
