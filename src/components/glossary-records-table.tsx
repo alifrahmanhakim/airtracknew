@@ -24,6 +24,7 @@ import {
 } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { EditGlossaryRecordDialog } from './edit-glossary-record-dialog';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './ui/pagination';
 
 type GlossaryRecordsTableProps = {
   records: GlossaryRecord[];
@@ -36,9 +37,12 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
+const RECORDS_PER_PAGE = 10;
+
 export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRecordsTableProps) {
   const [filter, setFilter] = useState('');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
+  const [currentPage, setCurrentPage] = useState(1);
 
   const processedRecords = useMemo(() => {
     let filteredData = [...records];
@@ -65,6 +69,21 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
 
     return filteredData;
   }, [records, filter, sort]);
+  
+  const totalPages = Math.ceil(processedRecords.length / RECORDS_PER_PAGE);
+
+  const paginatedRecords = useMemo(() => {
+    const startIndex = (currentPage - 1) * RECORDS_PER_PAGE;
+    const endIndex = startIndex + RECORDS_PER_PAGE;
+    return processedRecords.slice(startIndex, endIndex);
+  }, [processedRecords, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+        setCurrentPage(page);
+    }
+  }
+
 
   const handleSort = (column: keyof GlossaryRecord) => {
     setSort(prevSort => {
@@ -121,7 +140,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
               </TableRow>
             </TableHeader>
             <TableBody>
-              {processedRecords.map((record) => (
+              {paginatedRecords.map((record) => (
                 <TableRow key={record.id}>
                     <TableCell className="font-semibold max-w-xs truncate">{record.tsu}</TableCell>
                     <TableCell className="max-w-xs truncate">{record.tsa}</TableCell>
@@ -160,6 +179,23 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
             </div>
           )}
         </div>
+         {totalPages > 1 && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                </PaginationItem>
+                <PaginationItem>
+                    <span className="px-4 py-2 text-sm">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+        )}
       </div>
     </TooltipProvider>
   );
