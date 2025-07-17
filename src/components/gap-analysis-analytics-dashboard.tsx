@@ -204,21 +204,23 @@ export function GapAnalysisAnalyticsDashboard({
                         <CardTitle>Follow Up Status</CardTitle>
                         <CardDescription>Distribution of OPEN vs CLOSED items in filtered results.</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[200px] relative">
-                        <ChartContainer config={chartConfig(analyticsData.statusItemData)} className="mx-auto aspect-square h-full">
-                            <PieChart>
-                                <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
-                                <Pie data={analyticsData.statusItemData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={70} strokeWidth={5}>
-                                    {analyticsData.statusItemData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusItemData)[entry.name].color} />
-                                    ))}
-                                </Pie>
-                                <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
-                            </PieChart>
-                        </ChartContainer>
-                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%-10px)] text-center pointer-events-none">
-                            <p className="text-3xl font-bold">{analyticsData.closedPercentage.toFixed(0)}%</p>
-                            <p className="text-sm text-muted-foreground">Closed</p>
+                    <CardContent className="h-[200px] flex items-center justify-center">
+                        <div className="relative flex items-center justify-center w-full h-full">
+                            <ChartContainer config={chartConfig(analyticsData.statusItemData)} className="absolute top-0 left-0 w-full h-full">
+                                <PieChart>
+                                    <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={analyticsData.statusItemData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={70} strokeWidth={5}>
+                                        {analyticsData.statusItemData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusItemData)[entry.name].color} />
+                                        ))}
+                                    </Pie>
+                                    <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                                </PieChart>
+                            </ChartContainer>
+                            <div className="text-center pointer-events-none">
+                                <p className="text-3xl font-bold">{analyticsData.closedPercentage.toFixed(0)}%</p>
+                                <p className="text-sm text-muted-foreground">Closed</p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
