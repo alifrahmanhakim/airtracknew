@@ -20,6 +20,7 @@ import type { CcefodRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type CcefodAnalyticsDashboardProps = {
   records: CcefodRecord[];
@@ -131,9 +132,10 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     const implementationDescription = implementationPercentages.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {implementationPercentages.map(item => (
-            <div key={item.name} className="flex justify-between items-baseline gap-2">
-                <span title={item.name}>{item.name}</span>
-                <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
+            <div key={item.name} className="flex items-baseline gap-2">
+                <span title={item.name} className="flex-shrink-0 pr-2">{item.name}</span>
+                <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
+                <span className="font-bold whitespace-nowrap pl-2">{item.percentage.toFixed(1)}%</span>
             </div>
           ))}
         </div>
@@ -150,10 +152,11 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     const topAnnexDescription = annexPercentages.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {annexPercentages.map(item => (
-          <div key={item.name} className="flex justify-between items-baseline gap-2">
-            <span title={item.name}>{item.name}</span>
-            <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
-          </div>
+           <div key={item.name} className="flex items-baseline gap-2">
+              <span title={item.name} className="flex-shrink-0 pr-2">{item.name}</span>
+              <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
+              <span className="font-bold whitespace-nowrap pl-2">{item.percentage.toFixed(1)}%</span>
+           </div>
         ))}
       </div>
     ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
