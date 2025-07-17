@@ -91,12 +91,16 @@ export function GapAnalysisAnalyticsDashboard({
 
     const totalRecords = filteredRecords.length;
     const openItems = statusItemCounts['OPEN'] || 0;
+    const closedItems = statusItemCounts['CLOSED'] || 0;
     const openPercentage = totalRecords > 0 ? (openItems / totalRecords) * 100 : 0;
+    const closedPercentage = totalRecords > 0 ? (closedItems / totalRecords) * 100 : 0;
+
 
     return {
       totalRecords,
       openItems,
       openPercentage,
+      closedPercentage,
       complianceStatusData,
       statusItemData,
       casrData,
@@ -200,11 +204,11 @@ export function GapAnalysisAnalyticsDashboard({
                         <CardTitle>Follow Up Status</CardTitle>
                         <CardDescription>Distribution of OPEN vs CLOSED items in filtered results.</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex justify-center items-center h-[120px]">
+                    <CardContent className="h-[150px] relative">
                         <ChartContainer config={chartConfig(analyticsData.statusItemData)} className="mx-auto aspect-square h-full">
                             <PieChart>
                                 <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
-                                <Pie data={analyticsData.statusItemData} dataKey="value" nameKey="name" innerRadius={35} outerRadius={55} strokeWidth={5}>
+                                <Pie data={analyticsData.statusItemData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} strokeWidth={5}>
                                     {analyticsData.statusItemData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusItemData)[entry.name].color} />
                                     ))}
@@ -212,6 +216,10 @@ export function GapAnalysisAnalyticsDashboard({
                                 <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
                             </PieChart>
                         </ChartContainer>
+                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center pointer-events-none">
+                            <p className="text-3xl font-bold">{analyticsData.closedPercentage.toFixed(0)}%</p>
+                            <p className="text-sm text-muted-foreground">Closed</p>
+                        </div>
                     </CardContent>
                 </Card>
                 
