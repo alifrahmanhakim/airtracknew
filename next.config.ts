@@ -31,9 +31,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  devServer: {
-    allowedDevOrigins: "https.8080.cluster-ubrd2huk7jh6otbgyei4h62ope.cloudworkstations.dev",
-  }
 };
 
 export default nextConfig;

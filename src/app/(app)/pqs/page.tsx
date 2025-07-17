@@ -11,16 +11,6 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { deletePqRecord } from '@/lib/actions';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -130,7 +120,7 @@ export default function PqsPage() {
     }, 500);
   };
 
-  const renderContent = () => {
+  function renderContent() {
     if (isLoading) {
       return (
         <div className="space-y-4">
@@ -222,44 +212,6 @@ export default function PqsPage() {
   return (
     <div className="p-4 md:p-8" id="pqs-page">
        {renderContent()}
-       
-        <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
-            <AlertDialogContent>
-                <AlertDialogHeader className="text-center items-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
-                        <AlertTriangle className="h-6 w-6 text-red-600" />
-                    </div>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the PQ record with number <span className="font-semibold">{recordToDelete?.pqNumber}</span>.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
-                        {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Delete
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-
-        <AlertDialog open={isExporting} onOpenChange={setIsExporting}>
-            <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Export</AlertDialogTitle>
-                <AlertDialogDescription>
-                    Are you sure you want to export all {records.length} records as a CSV file?
-                </Description>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={confirmExport}>
-                    Export
-                </AlertDialogAction>
-            </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
     </div>
   );
 }
