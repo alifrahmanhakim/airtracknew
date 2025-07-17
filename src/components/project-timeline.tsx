@@ -55,6 +55,9 @@ const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 const ROW_HEIGHT = 52;
 const HEADER_HEIGHT = 64;
+const MONTH_HEADER_HEIGHT = 32;
+const DETAIL_HEADER_HEIGHT = 32;
+
 
 export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, onTaskUpdate }: ProjectTimelineProps) {
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
@@ -90,7 +93,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
     const weekInterval = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
     
     const diffDays = differenceInDays(tEnd, tStart) + 1;
-    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tEnd) + 1;
+    const diffWeeks = differenceInCalendarISOWeeks(tEnd, tStart) + 1;
 
     return { 
         sortedTasks: sorted, 
@@ -173,8 +176,8 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
       >
         <div className="flex" style={{ width: 'min-content' }}>
             {/* Task List */}
-            <div style={{ width: `${TASK_LIST_WIDTH}px` }} className="sticky left-0 top-0 z-30 bg-card">
-                <div className="h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
+            <div style={{ width: `${TASK_LIST_WIDTH}px` }} className="z-30 bg-card">
+                <div className="sticky top-0 z-30 flex items-center px-4 font-semibold border-b border-r bg-card" style={{height: `${HEADER_HEIGHT}px`}}>
                     Tasks
                 </div>
                 {sortedTasks.map((task) => (
@@ -191,40 +194,43 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
             {/* Timeline Grid - Scrollable Right */}
             <div className="relative" style={{ width: `${totalGridWidth}px` }}>
                 {/* Headers */}
-                <div className="sticky top-0 z-20 flex h-16 bg-card border-b">
-                {viewMode === 'day' ? (
-                    days.map((day, index) => {
-                        const monthLabel = format(day, 'MMMM yyyy');
-                        const isFirstDayOfMonth = day.getDate() === 1;
-                        return (
-                            <div key={index} className="flex-shrink-0 flex flex-col items-center justify-center border-r relative" style={{ width: `${DAY_WIDTH_DAY_VIEW}px` }}>
-                                {isFirstDayOfMonth && <span className="absolute -top-4 left-1 text-center font-semibold text-xs whitespace-nowrap">{monthLabel}</span>}
-                                <span className={cn("text-xs", {'font-bold text-primary': isToday(day)})}>{format(day, 'd')}</span>
-                                <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
-                            </div>
-                        );
-                    })
-                ) : (
-                    months.map((month) => {
-                        const weeksInMonth = weeks.filter(w => isSameMonth(w, month));
-                        const monthWidth = weeksInMonth.length * WEEK_WIDTH;
-                        if(monthWidth === 0) return null;
-                        return (
-                            <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex flex-col justify-end border-r"
-                                style={{ width: `${monthWidth}px` }}
-                            >
-                                <div className="h-1/2 flex items-center justify-center">{format(month, 'MMMM yyyy')}</div>
-                                <div className="h-1/2 flex border-t">
-                                    {weeksInMonth.map((week, index) => (
-                                        <div key={week.toString()} className="flex-1 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0">
-                                            W{getISOWeek(week)}
-                                        </div>
-                                    ))}
+                <div className="sticky top-0 z-20 bg-card">
+                    {/* Month Header */}
+                    {viewMode === 'week' && (
+                        <div className="flex border-b" style={{ height: `${MONTH_HEADER_HEIGHT}px` }}>
+                            {months.map((month) => {
+                                const weeksInMonth = weeks.filter(w => isSameMonth(w, month));
+                                const monthWidth = weeksInMonth.length * WEEK_WIDTH;
+                                if (monthWidth === 0) return null;
+                                return (
+                                    <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex items-center justify-center border-r" style={{ width: `${monthWidth}px` }}>
+                                        {format(month, 'MMMM yyyy')}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                    {/* Week/Day Header */}
+                    <div className="flex border-b" style={{ height: `${viewMode === 'week' ? DETAIL_HEADER_HEIGHT : HEADER_HEIGHT}px` }}>
+                        {viewMode === 'week' ? (
+                            weeks.map((week) => (
+                                <div key={week.toString()} className="flex-1 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0" style={{ width: `${WEEK_WIDTH}px`}}>
+                                    W{getISOWeek(week)}
                                 </div>
-                            </div>
-                        )
-                    })
-                )}
+                            ))
+                        ) : (
+                            days.map((day) => {
+                                const isMonthStart = day.getDate() === 1;
+                                return (
+                                    <div key={day.toISOString()} className="flex-shrink-0 flex flex-col items-center justify-center border-r relative" style={{ width: `${DAY_WIDTH_DAY_VIEW}px` }}>
+                                        {isMonthStart && <span className="absolute -top-4 left-1 text-center font-semibold text-xs whitespace-nowrap">{format(day, 'MMMM')}</span>}
+                                        <span className={cn("text-xs", { 'font-bold text-primary': isToday(day) })}>{format(day, 'd')}</span>
+                                        <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
                 </div>
                 
                 <div className="relative" style={{ height: `${bodyHeight}px` }}>
