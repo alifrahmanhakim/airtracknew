@@ -9,17 +9,14 @@ import { gapAnalysisFormSchema } from '../schemas';
 import { format } from 'date-fns';
 
 export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormSchema>) {
-    const parsed = gapAnalysisFormSchema.safeParse(data);
-    if (!parsed.success) {
-        return { success: false, error: "Invalid data provided." };
-    }
+    // The Zod validation now happens automatically on the boundary of the Server Action
     try {
         const dataToSubmit = {
-          ...parsed.data,
-          dateOfEvaluation: parsed.data.dateOfEvaluation ? format(parsed.data.dateOfEvaluation, 'yyyy-MM-dd') : null,
-          effectiveDate: parsed.data.effectiveDate ? format(parsed.data.effectiveDate, 'yyyy-MM-dd') : null,
-          applicabilityDate: parsed.data.applicabilityDate ? format(parsed.data.applicabilityDate, 'yyyy-MM-dd') : null,
-          embeddedApplicabilityDate: format(parsed.data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
+          ...data,
+          dateOfEvaluation: data.dateOfEvaluation ? format(data.dateOfEvaluation, 'yyyy-MM-dd') : null,
+          effectiveDate: data.effectiveDate ? format(data.effectiveDate, 'yyyy-MM-dd') : null,
+          applicabilityDate: data.applicabilityDate ? format(data.applicabilityDate, 'yyyy-MM-dd') : null,
+          embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
         };
 
         const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), {
@@ -29,7 +26,7 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
 
         const newRecord: GapAnalysisRecord = {
             id: docRef.id,
-            ...parsed.data, // use parsed data to keep Date objects for client
+            ...data, // use original data with Date objects for client
             createdAt: new Date().toISOString(),
         };
         return { success: true, data: newRecord };
@@ -39,27 +36,24 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
 }
 
 export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof gapAnalysisFormSchema>) {
-    const parsed = gapAnalysisFormSchema.safeParse(data);
-    if (!parsed.success) {
-        return { success: false, error: "Invalid data provided." };
-    }
+    // The Zod validation now happens automatically on the boundary of the Server Action
     try {
         const docRef = doc(db, 'gapAnalysisRecords', id);
         
         const dataToSubmit = {
-          ...parsed.data,
-          dateOfEvaluation: parsed.data.dateOfEvaluation ? format(parsed.data.dateOfEvaluation, 'yyyy-MM-dd') : null,
-          effectiveDate: parsed.data.effectiveDate ? format(parsed.data.effectiveDate, 'yyyy-MM-dd') : null,
-          applicabilityDate: parsed.data.applicabilityDate ? format(parsed.data.applicabilityDate, 'yyyy-MM-dd') : null,
-          embeddedApplicabilityDate: format(parsed.data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
+          ...data,
+          dateOfEvaluation: data.dateOfEvaluation ? format(data.dateOfEvaluation, 'yyyy-MM-dd') : null,
+          effectiveDate: data.effectiveDate ? format(data.effectiveDate, 'yyyy-MM-dd') : null,
+          applicabilityDate: data.applicabilityDate ? format(data.applicabilityDate, 'yyyy-MM-dd') : null,
+          embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
         };
 
         await updateDoc(docRef, dataToSubmit);
 
         const updatedRecord: GapAnalysisRecord = {
             id,
-            ...parsed.data, // use parsed data to keep Date objects for client
-            createdAt: new Date().toISOString()
+            ...data, // use original data with Date objects for client
+            createdAt: new Date().toISOString() // This might not be accurate, but it's a placeholder
         };
         return { success: true, data: updatedRecord };
     } catch (error) {

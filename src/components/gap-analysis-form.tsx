@@ -11,7 +11,6 @@ import { useState, useEffect } from 'react';
 import { addGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
 import { GapAnalysisSharedFormFields, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
-import { format } from 'date-fns';
 import { ComboboxOption } from './ui/combobox';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -70,10 +69,7 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
   const onSubmit = async (data: GapAnalysisFormValues) => {
     setIsLoading(true);
     
-    const result = await addGapAnalysisRecord({
-      ...data,
-      embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
-    });
+    const result = await addGapAnalysisRecord(data);
 
     setIsLoading(false);
 
@@ -110,5 +106,3 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     </Form>
   );
 }
-
-    
