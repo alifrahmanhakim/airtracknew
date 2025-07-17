@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -42,25 +41,12 @@ import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
-import { updateProject } from '@/lib/project-actions';
 import { Checkbox } from './ui/checkbox';
+import { updateProject } from '@/lib/actions';
+import { editProjectSchema } from '@/lib/schemas';
+import type { z } from 'zod';
 
-const projectSchema = z.object({
-  name: z.string().min(1, 'Project name is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  status: z.enum(['On Track', 'At Risk', 'Off Track', 'Completed']),
-  startDate: z.date(),
-  endDate: z.date(),
-  notes: z.string().optional(),
-  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  ownerId: z.string().min(1, 'Project Manager is required.'),
-  annex: z.string().optional(),
-  casr: z.string().optional(),
-  tags: z.string().optional(),
-  isHighPriority: z.boolean().default(false),
-});
-
-type ProjectFormValues = z.infer<typeof projectSchema>;
+type ProjectFormValues = z.infer<typeof editProjectSchema>;
 
 type EditProjectDialogProps = {
   project: Project;
@@ -81,7 +67,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
   const highPriorityTag = 'High Priority';
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
+    resolver: zodResolver(editProjectSchema),
     defaultValues: {
       name: project.name,
       description: project.description,
@@ -93,7 +79,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
       ownerId: project.ownerId,
       annex: project.annex,
       casr: project.casr,
-      tags: project.tags?.filter(t => t.toLowerCase() !== highPriorityTag.toLowerCase()).join(', '),
+      tags: project.tags?.filter(t => t.toLowerCase() !== highPriorityTag.toLowerCase()) || [],
       isHighPriority: project.tags?.some(t => t.toLowerCase() === highPriorityTag.toLowerCase()),
     },
   });
@@ -111,10 +97,13 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
         };
     });
     
-    const existingTags = data.tags ? data.tags.split(',').map(tag => tag.trim()) : [];
-    let finalTags = existingTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
+    let finalTags = data.tags ? [...data.tags] : [];
     if (data.isHighPriority) {
-        finalTags.push(highPriorityTag);
+        if (!finalTags.some(t => t.toLowerCase() === highPriorityTag.toLowerCase())) {
+            finalTags.push(highPriorityTag);
+        }
+    } else {
+        finalTags = finalTags.filter(t => t.toLowerCase() !== highPriorityTag.toLowerCase());
     }
 
     const projectUpdateData: Partial<Omit<Project, 'id'>> = { 
@@ -378,18 +367,28 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
             />
             
             <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Other Tags (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Core, Technical" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Other Tags</FormLabel>
+                    <FormControl>
+                         <MultiSelect
+                            options={[
+                                { value: "Core", label: "Core" },
+                                { value: "Technical", label: "Technical" },
+                                { value: "Operational", label: "Operational" },
+                                { value: "Safety", label: "Safety" }
+                            ]}
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            placeholder="Select tags..."
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
 
             <FormField
               control={form.control}

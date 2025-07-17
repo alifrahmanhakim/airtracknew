@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -10,7 +11,8 @@ import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { addCcefodRecord } from '@/lib/actions';
 import type { CcefodRecord } from '@/lib/types';
-import { CcefodSharedFormFields, formSchema, type CcefodFormValues } from './ccefod-shared-form-fields';
+import { CcefodSharedFormFields, type CcefodFormValues } from './ccefod-shared-form-fields';
+import { ccefodFormSchema } from '@/lib/schemas';
 
 type CcefodFormProps = {
   onFormSubmit: (data: CcefodRecord) => void;
@@ -36,7 +38,7 @@ export function CcefodForm({ onFormSubmit }: CcefodFormProps) {
   };
 
   const form = useForm<CcefodFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(ccefodFormSchema),
     defaultValues: defaultFormValues,
   });
 

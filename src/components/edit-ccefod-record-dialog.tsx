@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -18,9 +19,10 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
 import type { CcefodRecord } from '@/lib/types';
-import { CcefodSharedFormFields, formSchema, type CcefodFormValues } from './ccefod-shared-form-fields';
+import { CcefodSharedFormFields, type CcefodFormValues } from './ccefod-shared-form-fields';
 import { updateCcefodRecord } from '@/lib/actions';
 import { ScrollArea } from './ui/scroll-area';
+import { ccefodFormSchema } from '@/lib/schemas';
 
 type EditCcefodRecordDialogProps = {
   record: CcefodRecord;
@@ -33,7 +35,7 @@ export function EditCcefodRecordDialog({ record, onRecordUpdate }: EditCcefodRec
   const { toast } = useToast();
 
   const form = useForm<CcefodFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(ccefodFormSchema),
     defaultValues: {
         adaPerubahan: record.adaPerubahan,
         usulanPerubahan: record.usulanPerubahan || '',

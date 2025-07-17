@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -34,18 +33,18 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
-import { addTimKerjaProject } from '@/lib/actions';
+import { addRulemakingProject } from '@/lib/actions';
 import { Checkbox } from './ui/checkbox';
-import { timKerjaProjectSchema } from '@/lib/schemas';
+import { projectSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 
-type ProjectFormValues = z.infer<typeof timKerjaProjectSchema>;
+type ProjectFormValues = z.infer<typeof projectSchema>;
 
-type AddTimKerjaProjectDialogProps = {
+type AddRulemakingProjectDialogProps = {
   allUsers: User[];
 };
 
-export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogProps) {
+export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -57,11 +56,13 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
   }));
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(timKerjaProjectSchema),
+    resolver: zodResolver(projectSchema),
     defaultValues: {
       name: '',
       description: '',
       team: [],
+      annex: '',
+      casr: '',
       tags: [],
       isHighPriority: false,
     },
@@ -70,44 +71,25 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
-    const ownerId = localStorage.getItem('loggedInUserId');
-    if (!ownerId) {
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Could not identify the current user. Please log in again.',
-        });
-        setIsSubmitting(false);
-        return;
-    }
-
-    const teamMembers = data.team
-      .map(userId => allUsers.find(u => u.id === userId))
-      .filter((user): user is User => user !== undefined);
-
     const highPriorityTag = 'High Priority';
     
     let finalTags = data.tags ? [...data.tags] : [];
     if (data.isHighPriority) {
-        if (!finalTags.includes(highPriorityTag)) {
+        if (!finalTags.some(tag => tag.toLowerCase() === highPriorityTag.toLowerCase())) {
             finalTags.push(highPriorityTag);
         }
     } else {
-        finalTags = finalTags.filter(tag => tag !== highPriorityTag);
+        finalTags = finalTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
     }
 
     const newProjectData = {
-      name: data.name,
-      description: data.description,
-      ownerId: ownerId,
+      ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-      status: 'On Track' as const,
-      team: teamMembers,
       tags: finalTags,
     };
     
-    const result = await addTimKerjaProject(newProjectData);
+    const result = await addRulemakingProject(newProjectData);
 
     setIsSubmitting(false);
 
@@ -118,12 +100,12 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
       });
       setOpen(false);
       form.reset();
-      window.location.reload();
+      router.refresh(); 
     } else {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: result.error || 'Failed to create the project.',
+        title: 'Error Creating Project',
+        description: result.error || 'An unknown error occurred on the server.',
       });
     }
   };
@@ -133,19 +115,18 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Tim Kerja Project
+          Add Rulemaking Project
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Tim Kerja Project</DialogTitle>
+          <DialogTitle>Add New Rulemaking Project</DialogTitle>
           <DialogDescription>
-            Fill in the details for the new Tim Kerja project.
+            Fill in the details for the new rulemaking project.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 pr-2">
-            
             <FormField
               control={form.control}
               name="name"
@@ -159,7 +140,34 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
                 </FormItem>
               )}
             />
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="annex"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Annex</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., 1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="casr"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>CASR</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., 61" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
             <FormField
               control={form.control}
               name="description"
@@ -173,7 +181,6 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
                 </FormItem>
               )}
             />
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -252,7 +259,6 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
                 )}
               />
             </div>
-            
             <FormField
               control={form.control}
               name="team"
@@ -271,7 +277,6 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
                 </FormItem>
               )}
             />
-
              <FormField
                 control={form.control}
                 name="tags"
@@ -279,7 +284,7 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
                     <FormItem>
                     <FormLabel>Other Tags</FormLabel>
                     <FormControl>
-                         <MultiSelect
+                        <MultiSelect
                             options={[
                                 { value: "Core", label: "Core" },
                                 { value: "Technical", label: "Technical" },
@@ -295,7 +300,6 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
                     </FormItem>
                 )}
                 />
-
             <FormField
               control={form.control}
               name="isHighPriority"
@@ -315,7 +319,6 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
                 </FormItem>
               )}
             />
-
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

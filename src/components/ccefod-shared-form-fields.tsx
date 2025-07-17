@@ -1,8 +1,8 @@
 
+
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
-import { z } from 'zod';
 import {
   FormControl,
   FormField,
@@ -21,33 +21,10 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { RichTextInput } from './ui/rich-text-input';
+import { z } from 'zod';
+import { ccefodFormSchema } from '@/lib/schemas';
 
-export const formSchema = z.object({
-    adaPerubahan: z.enum(['YA', 'TIDAK']),
-    usulanPerubahan: z.string().optional(),
-    isiUsulan: z.string().optional(),
-    annex: z.string().min(1, 'Annex is required'),
-    annexReference: z.string().min(1, 'Annex Reference is required'),
-    standardPractice: z.any().refine(val => typeof val === 'string' && val.trim().length > 0, {
-      message: "Standard or Recommended Practice is required"
-    }),
-    legislationReference: z.string().min(1, 'State Legislation Reference is required'),
-    implementationLevel: z.enum([
-      "No difference",
-      "More exacting or exceeds",
-      "Different in character or other means of compliance",
-      "Less protective or patially implemented or not implemented",
-      "Not applicable",
-      "No  Information  Provided",
-      "Insufficient  Information  Provided"
-    ]),
-    differenceText: z.string().optional(),
-    differenceReason: z.string().optional(),
-    remarks: z.string().optional(),
-    status: z.enum(['Existing', 'Draft', 'Final']),
-  });
-  
-export type CcefodFormValues = z.infer<typeof formSchema>;
+export type CcefodFormValues = z.infer<typeof ccefodFormSchema>;
   
 const annexOptions = [
     "1. PERSONNEL LICENSING","2. RULES OF THE AIR","3. METEOROLOGICAL SERVICE FOR INTERNATIONAL AIR NAVIGATION","4. AERONAUTICAL CHARTS","5. UNITS OF MEASUREMENT TO BE USED IN AIR AND GROUND OPERATIONS","6. OPERATION OF AIRCRAFT, PART I INTERNATIONAL COMMERICIAL AIR TRANSPORT - AEROPLANES","6.  OPERATION OF AIRCRAFT, PART II INTERNATIONAL GENERAL  AVIATION - AEROPLANES","6. OPERATION OF AIRCRAFT, PART III INTERNATIONAL OPERATIONS -HELICOPTERS","6. OPERATION OF AIRCRAFT, PART IV - REMOTELY PILOTED AIRCRAFT SYSTEMS","7. AIRCRAFT NATIONALITY AND REGISTRATION MARKS","8. AIRWORTHINESS OF AIRCRAFT","9. FACILITATION","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME I RADIO NAVIGATION AIDS","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME II COMMUNICATION PROCEDURES","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME III PART I - DIGITAL DATA COMMUNICATION SYSTEM","10. AERONAUTICAL TELECOMMUNICATIONS, VOLUME V AERONAUTICAL RADIO FREQUENCY SPECTRUM UTILIZATION","10. AERONAUTICAL TEL, VOLUME VI  — COMMUNICATION SYSTEMS AND PROCEDURES RELATING TO RPAS","11. AIR TRAFFIC SERVICES","12. SEARCH AND RESCUE","13. AIRCRAFT ACCIDENT AND INCIDENT INVESTIGATION","14. AERODROMES, VOLUME I AERODROME DESIGN AND OPERATIONS","15. AERONAUTICAL INFORMATION SERVICES","16. ENVIRONMENTAL PROTECTION, VOLUME  I","16. ENVIRONMENTAL PROTECTION, VOLUME II AIRCRAFT ENGINE EMISSIONS","16. ENVIRONMENTAL PROTECTION, VOLUME III - AIRCRAFT CO2 EMISSIONS","16. ENVIRONMENTAL PROTECTION, VOLUME IV (CORSIA)","18. THE SAFE TRANSPORT OF DANGEROUS GOODS BY AIR","19. SAFETY MANAGEMENT"

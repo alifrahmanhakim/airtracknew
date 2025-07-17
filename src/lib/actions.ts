@@ -13,10 +13,11 @@ import {
     type GenerateChecklistOutput
 } from '@/ai/flows/generate-checklist';
 import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord, ChecklistItem, GapAnalysisRecord, GlossaryRecord } from './types';
-import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
-import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
-import { formSchema as gapAnalysisSchema, type GapAnalysisFormValues } from '@/components/gap-analysis-shared-form-fields';
-import { formSchema as glossaryFormSchema, type GlossaryFormValues } from '@/components/glossary-shared-form-fields';
+import { ccefodFormSchema, pqFormSchema, gapAnalysisFormSchema, glossaryFormSchema, projectSchema, timKerjaProjectSchema } from './schemas';
+import type { CcefodFormValues } from '@/components/ccefod-shared-form-fields';
+import type { PqFormValues } from '@/components/pqs-shared-form-fields';
+import type { GapAnalysisFormValues } from '@/components/gap-analysis-shared-form-fields';
+import type { GlossaryFormValues } from '@/components/glossary-shared-form-fields';
 
 import { db, auth } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch, getDocs, query, where } from 'firebase/firestore';
@@ -74,7 +75,7 @@ export async function updateProjectChecklist(
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
       return { success: false, error: `Failed to update checklist: ${message}` };
     }
-  }
+}
 
 
 // --- CCEFOD ACTIONS ---
@@ -252,19 +253,6 @@ export async function importPqRecords(records: PqFormValues[]): Promise<{ succes
 }
 
 // --- PROJECT ACTIONS ---
-const projectSchema = z.object({
-  name: z.string().min(1, 'Project name is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  startDate: z.string(),
-  endDate: z.string(),
-  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  annex: z.string().min(1, 'Annex is required.'),
-  casr: z.string().min(1, 'CASR is required.'),
-  tags: z.array(z.string()).optional(),
-  isHighPriority: z.boolean().default(false),
-});
-
-
 export async function addRulemakingProject(projectData: unknown) {
   const result = projectSchema.safeParse(projectData);
 
@@ -335,28 +323,81 @@ export async function addRulemakingProject(projectData: unknown) {
   }
 }
 
-export async function addTimKerjaProject(projectData: Pick<Project, 'name' | 'description' | 'ownerId' | 'startDate' | 'endDate' | 'status' | 'team' | 'tags'>): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
-    try {
-      const preparedProjectData = {
-        ...projectData,
-        projectType: 'Tim Kerja' as const,
-        tasks: [],
-        subProjects: [],
-        documents: [],
-        notes: '',
-        checklist: [],
-        annex: '',
-        casr: '',
-      };
-      
-      const docRef = await addDoc(collection(db, 'timKerjaProjects'), preparedProjectData);
-      revalidatePath('/dashboard');
-      return { success: true, data: { id: docRef.id } };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'An unknown error occurred';
-      return { success: false, error: `Failed to add project: ${message}` };
-    }
+export async function addTimKerjaProject(projectData: unknown): Promise<{ success: boolean; data?: { id: string }; error?: string }> {
+  const result = timKerjaProjectSchema.safeParse(projectData);
+
+  if (!result.success) {
+    return { success: false, error: 'Invalid project data.' };
   }
+
+  try {
+    const preparedProjectData = {
+      ...result.data,
+      projectType: 'Tim Kerja' as const,
+      tasks: [],
+      subProjects: [],
+      documents: [],
+      notes: '',
+      checklist: [],
+      annex: '',
+      casr: '',
+    };
+    
+    const docRef = await addDoc(collection(db, 'timKerjaProjects'), preparedProjectData);
+    revalidatePath('/dashboard');
+    return { success: true, data: { id: docRef.id } };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, error: `Failed to add project: ${message}` };
+  }
+}
+
+export async function updateProject(
+  projectId: string,
+  projectType: Project['projectType'],
+  projectData: Partial<Omit<Project, 'id'>>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const collectionName =
+      projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
+
+    const updateData: { [key: string]: any } = { ...projectData };
+
+    if (projectData.team) {
+      updateData.team = projectData.team.map((member) => ({
+        id: member.id,
+        name: member.name || 'Unnamed User',
+        role: member.role || 'Functional',
+        avatarUrl: member.avatarUrl || `https://placehold.co/100x100.png`,
+      }));
+    }
+
+    await updateDoc(projectRef, updateData);
+    revalidatePath(
+      `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`
+    );
+    revalidatePath('/dashboard');
+    revalidatePath('/rulemaking');
+    return { success: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, error: `Failed to update project: ${message}` };
+  }
+}
+
+export async function deleteProject(projectId: string, projectType: Project['projectType']): Promise<{ success: boolean; error?: string }> {
+    try {
+        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+        await deleteDoc(doc(db, collectionName, projectId));
+        revalidatePath('/dashboard');
+        revalidatePath('/rulemaking');
+        return { success: true };
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to delete project: ${message}` };
+    }
+}
   
 export async function deleteAllTimKerjaProjects(): Promise<{ success: boolean, count: number, error?: string }> {
     try {
@@ -377,7 +418,7 @@ export async function deleteAllTimKerjaProjects(): Promise<{ success: boolean, c
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
       return { success: false, count: 0, error: `Failed to delete projects: ${message}` };
     }
-  }
+}
 
 // --- GAP Analysis Actions ---
 export async function addGapAnalysisRecord(recordData: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate: string }): Promise<{ success: boolean; data?: GapAnalysisRecord; error?: string }> {
@@ -549,19 +590,6 @@ export async function updateSubProject(projectId: string, updatedSubProject: Sub
     return performUpdate<SubProject>(projectId, projectType, 'subProjects', current => current.map(sp => sp.id === updatedSubProject.id ? updatedSubProject : sp));
 }
 
-export async function deleteProject(projectId: string, projectType: Project['projectType']): Promise<{ success: boolean; error?: string }> {
-    try {
-        const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
-        await deleteDoc(doc(db, collectionName, projectId));
-        revalidatePath('/dashboard');
-        revalidatePath('/rulemaking');
-        return { success: true };
-    } catch (error) {
-        const message = error instanceof Error ? error.message : 'An unknown error occurred';
-        return { success: false, error: `Failed to delete project: ${message}` };
-    }
-}
-
 // --- GLOSSARY ACTIONS ---
 export async function addGlossaryRecord(data: GlossaryFormValues) {
     const parsed = glossaryFormSchema.safeParse(data);
@@ -615,5 +643,3 @@ export async function deleteGlossaryRecord(id: string) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
-
-    
