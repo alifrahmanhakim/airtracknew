@@ -29,7 +29,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +44,6 @@ const ROW_HEIGHT = 52;
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
-
 
 export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
@@ -108,7 +106,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
-  const bodyHeight = sortedTasks.length * ROW_HEIGHT;
   const timelineMaxHeight = HEADER_HEIGHT + (Math.min(sortedTasks.length, 6) * ROW_HEIGHT);
 
   return (
@@ -203,7 +200,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                     </div>
                   </div>
                   
-                  <div className="relative" style={{ height: `${bodyHeight}px` }}>
+                  <div className="relative" style={{ height: `${sortedTasks.length * ROW_HEIGHT}px` }}>
                      <div className="absolute top-0 left-0 w-full h-full z-0">
                         {viewMode === 'day' ? (
                             days.map((day, index) => {
