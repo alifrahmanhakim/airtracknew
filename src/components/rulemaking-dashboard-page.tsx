@@ -26,6 +26,11 @@ const statusConfig: { [key in Project['status']]: { icon: React.ElementType, sty
     'Off Track': { icon: AlertCircle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
 };
 
+type RulemakingDashboardPageProps = {
+    projects: Project[];
+    allUsers: User[];
+};
+
 
 export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -211,23 +216,29 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                             </div>
                                             
                                             <div className="text-xs text-muted-foreground pt-2 border-t">
-                                              {currentTask ? (
+                                                {currentTask ? (
                                                 <div className="grid grid-cols-2 items-start gap-2">
-                                                    <div className="flex items-start gap-2">
-                                                        <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
-                                                        <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
+                                                    <div className='flex items-start gap-1.5'>
+                                                        <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0"/>
+                                                        <div>
+                                                            <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
+                                                            <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-start gap-2 pl-2 border-l">
-                                                      <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
-                                                      <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
+                                                    <div className="pl-2 border-l flex items-start gap-1.5">
+                                                        <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0"/>
+                                                        <div>
+                                                            <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
+                                                            <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                              ) : (
-                                                  <div className="flex items-center gap-2">
-                                                      <Flag className="h-4 w-4 text-green-600" />
-                                                      <span className="font-semibold text-foreground">Finalization</span>
-                                                  </div>
-                                              )}
+                                                ) : (
+                                                    <div className="flex items-center gap-2">
+                                                        <Flag className="h-4 w-4 text-green-600" />
+                                                        <span className="font-semibold text-foreground">Finalization</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </CardContent>
                                         <CardFooter className="pt-2 flex justify-between items-center mt-auto">
