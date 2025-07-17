@@ -164,8 +164,8 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         style={{ maxHeight: `${timelineMaxHeight}px` }}
       >
         <div className="flex relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${totalHeight}px` }}>
-            {/* Task List - Sticky Left */}
-            <div className="sticky left-0 z-20 bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
+            {/* Task List */}
+            <div className="z-20 bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                 <div className="sticky top-0 z-10 h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
                     Tasks
                 </div>
