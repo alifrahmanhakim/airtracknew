@@ -121,8 +121,17 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
                 className="pl-9 w-full max-w-sm"
             />
         </div>
-        <div className="border rounded-md overflow-x-auto">
-          <Table>
+        <div className="border rounded-md">
+          <Table className="table-fixed">
+            <colgroup>
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '15%' }} />
+            </colgroup>
             <TableHeader>
               <TableRow>
                 <TableHead className="cursor-pointer" onClick={() => handleSort('tsu')}>
