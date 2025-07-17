@@ -84,25 +84,3 @@ export const glossaryFormSchema = z.object({
   keterangan: z.string().min(1, 'Keterangan / Pengaplikasian is required'),
   status: z.enum(['Draft', 'Final']),
 });
-
-export const projectSchema = z.object({
-  name: z.string().min(1, 'Project name is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  startDate: z.date({ required_error: 'Start date is required.' }),
-  endDate: z.date({ required_error: 'End date is required.' }),
-  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  annex: z.string().min(1, 'Annex is required.'),
-  casr: z.string().min(1, 'CASR is required.'),
-  tags: z.array(z.string()).optional(),
-  isHighPriority: z.boolean().default(false),
-});
-
-export const timKerjaProjectSchema = z.object({
-  name: z.string().min(1, 'Project name is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  startDate: z.date({ required_error: 'Start date is required.' }),
-  endDate: z.date({ required_error: 'End date is required.' }),
-  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  tags: z.array(z.string()).optional(),
-  isHighPriority: z.boolean().default(false),
-});
