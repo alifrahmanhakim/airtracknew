@@ -1,3 +1,4 @@
+
 import DashboardWrapper from '@/components/dashboard-wrapper';
 
 // This page now acts as a pure Server Component.

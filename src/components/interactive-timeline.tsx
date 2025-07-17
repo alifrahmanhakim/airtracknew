@@ -24,7 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
 import { ListTodo } from 'lucide-react';
-import { findUserById } from '@/lib/data';
+import { findUserById } from '@/lib/data-utils';
 import {
   Tooltip,
   TooltipContent,

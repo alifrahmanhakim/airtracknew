@@ -27,7 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
 import { ListTodo, GanttChartSquare } from 'lucide-react';
-import { findUserById } from '@/lib/data';
+import { findUserById } from '@/lib/data-utils';
 import {
   Tooltip,
   TooltipContent,
@@ -313,6 +313,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                             <div className="absolute right-[-35px] top-0 h-full flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <EditTaskDialog
                                     projectId={projectId}
+                                    projectType={project.projectType}
                                     task={task}
                                     teamMembers={teamMembers}
                                     onTaskUpdate={onTaskUpdate}

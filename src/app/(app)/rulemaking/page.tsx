@@ -1,13 +1,26 @@
 
 'use client'
 
-import { getProjectsForUser } from '@/lib/data';
 import { useEffect, useState } from 'react';
 import type { Project, User } from '@/lib/types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RulemakingDashboardPage } from '@/components/rulemaking-dashboard-page';
+import { findUserById } from '@/lib/data-utils';
+
+function getProjectsForUser(userId: string, allProjects: Project[], allUsers: User[]): Project[] {
+    const user = findUserById(userId, allUsers);
+    if (!user) return [];
+
+    if (user.role === 'Sub-Directorate Head' || user.email === 'admin@admin2023.com') {
+        return allProjects;
+    }
+
+    return allProjects.filter(project => 
+        project.team.some(member => member.id === userId)
+    );
+}
 
 export default function RulemakingDashboard() {
   const [rulemakingProjects, setRulemakingProjects] = useState<Project[]>([]);

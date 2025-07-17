@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -44,10 +45,23 @@ import { deleteAllTimKerjaProjects } from '@/lib/actions/project';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { getProjectsForUser } from '@/lib/data';
+import { findUserById } from '@/lib/data-utils';
 
 // Note: This component is now dynamically imported by `dashboard-wrapper.tsx`
 // with SSR turned off. This is the key to fixing the build error.
+
+export function getProjectsForUser(userId: string, allProjects: Project[], allUsers: User[]): Project[] {
+    const user = findUserById(userId, allUsers);
+    if (!user) return [];
+
+    if (user.role === 'Sub-Directorate Head' || user.email === 'admin@admin2023.com') {
+        return allProjects;
+    }
+
+    return allProjects.filter(project => 
+        project.team.some(member => member.id === userId)
+    );
+}
 
 export function DashboardPage() {
   const [userProjects, setUserProjects] = useState<Project[]>([]);

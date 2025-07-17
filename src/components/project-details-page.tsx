@@ -1,9 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
 import type { Project, Task, User, SubProject, Document as ProjectDocument, GapAnalysisRecord } from '@/lib/types';
-import { findUserById, rulemakingTaskOptions } from '@/lib/data';
+import { rulemakingTaskOptions } from '@/lib/data';
+import { findUserById } from '@/lib/data-utils';
 import {
   Card,
   CardContent,
@@ -402,21 +404,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           </CardContent>
         </Card>
 
-        {project.projectType === 'Rulemaking' && (
-            <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <BarChart2 /> Compliance Resume
-                </CardTitle>
-                <CardDescription>
-                  Live analytics derived from associated GAP Analysis records for CASR {project.casr}.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RulemakingAnalytics records={associatedGapRecords} />
-              </CardContent>
-            </Card>
-          )}
+        {project.projectType === 'Rulemaking' && <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />}
 
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
@@ -518,8 +506,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             </CardContent>
           </Card>
           
-          {project.projectType === 'Rulemaking' && <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />}
-
           <Card>
              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -590,8 +576,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
-          <ChecklistCard project={project} />
-
           {project.projectType === 'Rulemaking' && (
             <Card>
               <CardHeader>
@@ -682,6 +666,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               ))}
             </CardContent>
           </Card>
+          
+          <ChecklistCard project={project} />
         </div>
       </div>
 
