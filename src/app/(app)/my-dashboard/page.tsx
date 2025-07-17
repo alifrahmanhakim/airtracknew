@@ -230,19 +230,19 @@ export default function MyDashboardPage() {
         <aside className="lg:col-span-1 xl:col-span-1 space-y-6">
             <div className="grid grid-cols-2 gap-4">
                 <Card>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><FolderKanban className="h-4 w-4" /> My Projects</CardTitle>
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold">{myProjects.length}</div></CardContent>
                 </Card>
                  <Card>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><ListTodo className="h-4 w-4" /> Open Tasks</CardTitle>
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold">{openTasksCount}</div></CardContent>
                 </Card>
                  <Card className="col-span-2">
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-yellow-500" /> Projects at Risk</CardTitle>
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold text-yellow-500">{atRiskProjectsCount}</div></CardContent>
