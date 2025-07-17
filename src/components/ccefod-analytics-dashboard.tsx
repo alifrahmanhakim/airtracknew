@@ -34,27 +34,64 @@ const CHART_COLORS = [
     'hsl(var(--chart-6))',
     'hsl(var(--chart-7))',
     'hsl(var(--chart-8))',
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+    'hsl(var(--chart-6))',
+    'hsl(var(--chart-7))',
+    'hsl(var(--chart-8))',
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
     'hsl(var(--muted))',
 ];
 
 const CustomizedAxisTick = (props: any) => {
-  const { x, y, payload } = props;
-  const maxChars = 45; 
+    const { x, y, payload } = props;
+    const maxCharsPerLine = 45; // Adjust as needed
+    const text = payload.value;
 
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
-            {payload.value}
-          </text>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{payload.value}</p>
-        </TooltipContent>
-      </Tooltip>
-    </g>
-  );
+    // Function to split text into lines
+    const splitTextIntoLines = (text: string, maxChars: number) => {
+        const words = text.split(' ');
+        const lines: string[] = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+            if ((currentLine + word).length > maxChars) {
+                lines.push(currentLine.trim());
+                currentLine = '';
+            }
+            currentLine += word + ' ';
+        });
+        lines.push(currentLine.trim());
+        return lines;
+    };
+
+    const lines = splitTextIntoLines(text, maxCharsPerLine);
+
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
+                            {lines.map((line, index) => (
+                                <tspan key={index} x={0} dy={index === 0 ? 0 : 12}>
+                                    {line}
+                                </tspan>
+                            ))}
+                        </text>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{text}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        </g>
+    );
 };
 
 export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardProps) {
@@ -238,7 +275,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.annexData)}>
-                    <ResponsiveContainer width="100%" height={Math.max(400, analyticsData.annexData.length * 25)}>
+                    <ResponsiveContainer width="100%" height={Math.max(400, analyticsData.annexData.length * 40)}>
                         <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" />
