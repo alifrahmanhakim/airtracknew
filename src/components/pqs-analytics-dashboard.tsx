@@ -56,7 +56,7 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
     })).sort((a, b) => b.value - a.value);
 
     const criticalElementDescription = (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-muted-foreground pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {criticalElementPercentages.map(item => (
             <div key={item.name} className="flex items-baseline gap-2">
                 <span>{item.name}</span>
@@ -144,9 +144,9 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
                 <CardTitle>Distribution by Critical Element</CardTitle>
                 <CardDescription>Shows the count of records for each critical element.</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2">
+            <CardContent className="space-y-4">
                 {analyticsData.criticalElementDescription}
-                <ChartContainer config={chartConfig(analyticsData.criticalElementData)} className="h-[300px] w-full mt-4">
+                <ChartContainer config={chartConfig(analyticsData.criticalElementData)} className="h-[300px] w-full pt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={analyticsData.criticalElementData} layout="horizontal" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <XAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} />
