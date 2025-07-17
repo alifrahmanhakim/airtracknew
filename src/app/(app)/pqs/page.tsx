@@ -10,11 +10,21 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { deletePqRecord } from '@/lib/actions/pqs';
-import { Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
+import { deleteAllPqRecords, deletePqRecord } from '@/lib/actions/pqs';
+import { Loader2, FileSpreadsheet, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Papa from 'papaparse';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Dynamically import heavy components
 const PqsForm = dynamic(() => import('@/components/pqs-form').then(mod => mod.PqsForm), { 
@@ -40,7 +50,8 @@ export default function PqsPage() {
   
   const [recordToDelete, setRecordToDelete] = useState<PqRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "pqsRecords"), orderBy("createdAt", "desc"));
@@ -87,6 +98,26 @@ export default function PqsPage() {
     }
     setRecordToDelete(null);
   };
+  
+  const confirmDeleteAll = async () => {
+    setIsDeletingAll(true);
+    const result = await deleteAllPqRecords();
+    setIsDeletingAll(false);
+    setShowDeleteAllConfirm(false);
+
+    if (result.success) {
+      toast({
+        title: 'All Records Deleted',
+        description: `${result.count} records have been successfully removed.`,
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error Deleting Records',
+        description: result.error || 'An unknown error occurred.',
+      });
+    }
+  };
 
   const confirmExport = () => {
     if (records.length === 0) {
@@ -116,7 +147,6 @@ export default function PqsPage() {
             link.click();
             document.body.removeChild(link);
         }
-        setIsExporting(false);
     }, 500);
   };
 
@@ -176,9 +206,13 @@ export default function PqsPage() {
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
-                                <Button variant="outline" size="icon" onClick={() => setIsExporting(true)}>
+                                <Button variant="outline" size="icon" onClick={confirmExport}>
                                     <FileSpreadsheet className="h-4 w-4" />
                                     <span className="sr-only">Export as CSV</span>
+                                </Button>
+                                <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={records.length === 0}>
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Delete All Records</span>
                                 </Button>
                             </div>
                         </div>
@@ -212,6 +246,27 @@ export default function PqsPage() {
   return (
     <div className="p-4 md:p-8" id="pqs-page">
        {renderContent()}
+
+       <AlertDialog open={showDeleteAllConfirm} onOpenChange={setShowDeleteAllConfirm}>
+            <AlertDialogContent>
+                <AlertDialogHeader className="text-center items-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                        <AlertTriangle className="h-6 w-6 text-red-600" />
+                    </div>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all <strong>{records.length}</strong> PQ records from the database.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeletingAll}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeletingAll}>
+                        {isDeletingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Yes, delete all records
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
   );
 }

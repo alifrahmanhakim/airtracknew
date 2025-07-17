@@ -1,8 +1,9 @@
+
 'use server';
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, writeBatch, getDocs } from 'firebase/firestore';
 import type { PqRecord } from '../types';
 import { pqFormSchema } from '../schemas';
 
@@ -50,6 +51,22 @@ export async function deletePqRecord(id: string) {
     try {
         await deleteDoc(doc(db, 'pqsRecords', id));
         return { success: true };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
+export async function deleteAllPqRecords() {
+    try {
+        const querySnapshot = await getDocs(collection(db, 'pqsRecords'));
+        const batch = writeBatch(db);
+        let count = 0;
+        querySnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+            count++;
+        });
+        await batch.commit();
+        return { success: true, count };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
