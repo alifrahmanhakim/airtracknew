@@ -1,10 +1,8 @@
 
-
-import type { User, Project } from './types';
 import type { ComboboxOption } from '@/components/ui/combobox';
 
 // Updated user data to be consistent with seed.js
-export const users: User[] = [
+export const users = [
     { id: 'admin-00', name: 'Admin User', email: 'admin@admin2023.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head', isApproved: true },
     { id: '8aOs7OSaL8XFXLq7DxzbnuXN5eC3', name: 'Chewy Sihusky', email: 'chewysihusky@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
     { id: 'user-1', name: 'Alex Johnson', email: 'alex.johnson@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
@@ -43,7 +41,7 @@ export const timKerjaTaskOptions: ComboboxOption[] = [
 
 // This data can be used to seed your Firestore database.
 // The app will gradually be updated to read from Firestore instead of this static file.
-export const projects: Project[] = [
+export const projects = [
   {
     id: 'proj-1',
     ownerId: 'user-1',
@@ -138,10 +136,10 @@ export const projects: Project[] = [
 ];
 
 
-export const getProjectsForUser = (userId: string, allProjects: Project[], allUsers: User[]) => {
+export const getProjectsForUser = (userId: string, allProjects: any[], allUsers: any[]) => {
     // For now, return all projects for all users.
     return allProjects;
 }
 
-export const findProjectById = (id: string, allProjects: Project[]) => allProjects.find(p => p.id === id);
-export const findUserById = (id: string, allUsers: User[] = users) => allUsers.find(u => u.id === id);
+export const findProjectById = (id: string, allProjects: any[]) => allProjects.find(p => p.id === id);
+export const findUserById = (id: string, allUsers = users) => allUsers.find(u => u.id === id);
