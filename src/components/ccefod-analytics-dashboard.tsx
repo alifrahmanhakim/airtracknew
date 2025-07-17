@@ -129,9 +129,9 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       .sort((a, b) => b.percentage - a.percentage);
 
     const implementationDescription = implementationPercentages.length > 0 ? (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {implementationPercentages.map(item => (
-            <div key={item.name} className="flex basis-[calc(50%-1rem)] justify-between items-baseline gap-2">
+            <div key={item.name} className="flex justify-between items-baseline gap-2">
                 <span className="truncate" title={item.name}>{item.name}</span>
                 <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
             </div>
@@ -148,9 +148,9 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       }));
 
     const topAnnexDescription = annexPercentages.length > 0 ? (
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {annexPercentages.map(item => (
-          <div key={item.name} className="flex basis-[calc(33.33%-1rem)] justify-between items-baseline gap-2">
+          <div key={item.name} className="flex justify-between items-baseline gap-2">
             <span className="truncate" title={item.name}>{item.name}</span>
             <span className="font-bold whitespace-nowrap">{item.percentage.toFixed(1)}%</span>
           </div>
