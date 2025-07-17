@@ -65,7 +65,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
     return (
         <TooltipProvider>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <div className='mb-4'>
+            <div className='mb-4 p-4 rounded-lg bg-card/80 backdrop-blur-sm'>
                 <h1 className="text-3xl font-bold tracking-tight">Aviation Regulation Management Dashboard</h1>
                 <p className="text-muted-foreground">Central hub for tracking compliance and progress of all CASRs.</p>
             </div>
@@ -226,7 +226,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                         </div>
                                                     </div>
                                                     <div className="pl-2 border-l flex items-start gap-1.5">
-                                                        <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0"/>
+                                                        <ArrowRight className="h-4 w-4 text-muted-foreground/70 mt-0.5 flex-shrink-0"/>
                                                         <div>
                                                             <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
                                                             <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
