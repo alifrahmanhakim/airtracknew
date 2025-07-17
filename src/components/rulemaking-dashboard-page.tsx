@@ -179,16 +179,17 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                 </aside>
                 
                 {/* Main Content */}
-                 <main className="md:col-span-3 overflow-y-auto" style={{ maxHeight: '80vh' }}>
+                 <main className="md:col-span-3">
                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
                         {filteredProjects.map(project => {
                            const totalTasks = project.tasks?.length || 0;
                            const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
                            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                            const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
-                           const doneTaskTitles = new Set(project.tasks.filter(t => t.status === 'Done').map(t => t.title));
+                           const doneTaskTitles = new Set((project.tasks || []).filter(t => t.status === 'Done').map(t => t.title));
                            const currentTaskIndex = rulemakingTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
                            const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
+                           const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
 
                            return (
                                 <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg h-full block">
@@ -196,7 +197,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                         <CardHeader className="pb-2">
                                           <div className="flex justify-between items-start">
                                             <CardTitle className="text-lg font-bold">CASR {project.casr}</CardTitle>
-                                            <div className="flex items-center gap-2">
+                                             <div className="flex items-center gap-2">
                                                 {project.tags?.includes('High Priority') && (
                                                     <Badge variant="outline" className="font-medium bg-red-100 text-red-800 border-red-200">
                                                         High Priority
@@ -219,8 +220,48 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                               <Progress value={progress} />
                                           </div>
                                           <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center -space-x-2">
-                                                {project.team.slice(0, 3).map(member => (
+                                            <div className="flex items-center gap-1 text-muted-foreground">
+                                                <ListTodo className="h-4 w-4" />
+                                                <span>{completedTasks}/{totalTasks} Tasks</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-muted-foreground">
+                                                <CalendarCheck2 className="h-4 w-4" />
+                                                <span>{format(parseISO(project.endDate), 'dd MMM yyyy')}</span>
+                                            </div>
+                                          </div>
+                                          <div className="text-sm text-muted-foreground pt-2 border-t">
+                                              <p className="text-xs font-semibold uppercase text-muted-foreground/80 mb-2">Next Steps</p>
+                                               {currentTask ? (
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                                                            <ArrowRight className="h-3 w-3 text-blue-600" />
+                                                        </div>
+                                                        <span className="font-semibold text-foreground text-xs">{currentTask.label}</span>
+                                                    </div>
+                                                    {nextTask && (
+                                                        <>
+                                                            <div className="pl-2 h-3 border-l-2 border-dashed border-border ml-2.5"></div>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                                                                    <ArrowRight className="h-3 w-3 text-gray-500" />
+                                                                </div>
+                                                                <span className="font-semibold text-muted-foreground text-xs">{nextTask.label}</span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2">
+                                                        <Flag className="h-4 w-4 text-green-600" />
+                                                        <span className="font-semibold text-foreground text-xs">Finalization</span>
+                                                    </div>
+                                                )}
+                                          </div>
+                                        </CardContent>
+                                        <CardFooter className="pt-2 flex justify-between items-center mt-auto">
+                                           <div className="flex items-center -space-x-2">
+                                                {project.team.slice(0, 5).map(member => (
                                                     <Tooltip key={member.id}>
                                                         <TooltipTrigger asChild>
                                                             <Avatar className="h-6 w-6 border-2 border-background">
@@ -231,40 +272,19 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                         <TooltipContent>{member.name}</TooltipContent>
                                                     </Tooltip>
                                                 ))}
-                                                {project.team.length > 3 && (
+                                                {project.team.length > 5 && (
                                                   <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-semibold z-10 border-2 border-background">
-                                                    +{project.team.length - 3}
+                                                    +{project.team.length - 5}
                                                   </div>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <CalendarCheck2 className="h-4 w-4" />
-                                                <span>{format(parseISO(project.endDate), 'dd MMM yyyy')}</span>
-                                            </div>
-                                          </div>
-                                          <div className="text-sm text-muted-foreground pt-2 border-t">
-                                              <p className="text-xs font-semibold uppercase text-muted-foreground/80 mb-1">Current Step</p>
-                                              {currentTask ? (
-                                                  <div className="flex items-center gap-2">
-                                                      <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                                                         <ArrowRight className="h-3 w-3 text-blue-600" />
-                                                      </div>
-                                                      <span className="font-semibold text-foreground">{currentTask.label}</span>
-                                                  </div>
-                                              ) : (
-                                                  <div className="flex items-center gap-2">
-                                                      <Flag className="h-4 w-4 text-green-600" />
-                                                      <span className="font-semibold text-foreground">Finalization</span>
-                                                  </div>
-                                              )}
-                                          </div>
-                                        </CardContent>
-                                        <CardFooter className="pt-2 flex-wrap gap-1 mt-auto">
-                                          {project.tags?.filter(tag => tag !== 'High Priority').map(tag => (
-                                              <Badge key={tag} variant="outline" className={cn("font-normal text-xs", getTagColor(tag))}>
-                                                  {tag}
-                                              </Badge>
-                                          ))}
+                                           <div className='flex flex-wrap gap-1 justify-end'>
+                                                {project.tags?.filter(tag => tag !== 'High Priority').map(tag => (
+                                                    <Badge key={tag} variant="outline" className={cn("font-normal text-xs", getTagColor(tag))}>
+                                                        {tag}
+                                                    </Badge>
+                                                ))}
+                                           </div>
                                         </CardFooter>
                                     </Card>
                                 </Link>
