@@ -181,7 +181,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                     <div className="flex border-b" style={{ height: `${viewMode === 'week' ? DETAIL_HEADER_HEIGHT : HEADER_HEIGHT}px` }}>
                         {viewMode === 'week' ? (
                             weeks.map((week) => (
-                                <div key={week.toString()} className="flex-1 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0" style={{ width: `${WEEK_WIDTH}px`}}>
+                                <div key={week.toString()} className="flex-shrink-0 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0" style={{ width: `${WEEK_WIDTH}px`}}>
                                     W{getISOWeek(week)}
                                 </div>
                             ))
