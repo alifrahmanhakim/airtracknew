@@ -53,7 +53,7 @@ type SortDescriptor = {
 } | null;
 
 export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecordsTableProps) {
-  const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
+  const [sort, setSort] = useState<SortDescriptor>({ column: 'annex', direction: 'asc' });
   const [recordToView, setRecordToView] = useState<CcefodRecord | null>(null);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
@@ -79,6 +79,17 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
         sortedData.sort((a, b) => {
             const aVal = a[sort.column as keyof CcefodRecord] ?? '';
             const bVal = b[sort.column as keyof CcefodRecord] ?? '';
+
+            if (sort.column === 'annex') {
+                 const numA = parseInt(aVal as string, 10);
+                 const numB = parseInt(bVal as string, 10);
+
+                 if (!isNaN(numA) && !isNaN(numB)) {
+                    if (numA !== numB) {
+                        return sort.direction === 'asc' ? numA - numB : numB - numA;
+                    }
+                 }
+            }
             
             if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
             if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
