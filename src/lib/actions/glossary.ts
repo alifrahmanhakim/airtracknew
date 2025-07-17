@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, deleteDoc, writeBatch, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, deleteDoc, writeBatch, updateDoc, getDocs } from 'firebase/firestore';
 import type { GlossaryRecord } from '../types';
 import { glossaryFormSchema } from '../schemas';
 
@@ -57,6 +57,22 @@ export async function deleteGlossaryRecord(id: string) {
     }
 }
 
+export async function deleteAllGlossaryRecords() {
+    try {
+        const querySnapshot = await getDocs(collection(db, 'glossaryRecords'));
+        const batch = writeBatch(db);
+        let count = 0;
+        querySnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+            count++;
+        });
+        await batch.commit();
+        return { success: true, count };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
 export async function importGlossaryRecords(records: Record<string, any>[]) {
     const batch = writeBatch(db);
     let count = 0;
@@ -70,18 +86,18 @@ export async function importGlossaryRecords(records: Record<string, any>[]) {
 
     for (const [index, recordData] of nonEmptyRecords.entries()) {
         const dataToValidate = {
-            tsu: recordData.tsu || '[Data from CSV was empty]',
-            tsa: recordData.tsa || '[Data from CSV was empty]',
-            editing: recordData.editing || '[Data from CSV was empty]',
-            makna: recordData.makna || '[Data from CSV was empty]',
-            keterangan: recordData.keterangan || '[Data from CSV was empty]',
+            tsu: recordData.tsu || '',
+            tsa: recordData.tsa || '',
+            editing: recordData.editing || '',
+            makna: recordData.makna || '',
+            keterangan: recordData.keterangan || '',
             referensi: recordData.referensi || '',
             status: (recordData.status === 'Final' || recordData.status === 'Draft') ? recordData.status : 'Draft',
         };
 
         // If a required field was originally empty, fill it with a placeholder
         for (const field of requiredFields) {
-            if (!recordData[field]) {
+            if (!dataToValidate[field as keyof typeof dataToValidate]) {
                 dataToValidate[field as keyof typeof dataToValidate] = '[Data from CSV was empty]';
             }
         }

@@ -11,8 +11,8 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { deleteGlossaryRecord } from '@/lib/actions/glossary';
-import { Loader2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
+import { deleteAllGlossaryRecords, deleteGlossaryRecord } from '@/lib/actions/glossary';
+import { Loader2, FileSpreadsheet, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Papa from 'papaparse';
@@ -50,6 +50,8 @@ export default function GlossaryPage() {
   
   const [recordToDelete, setRecordToDelete] = useState<GlossaryRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "glossaryRecords"), orderBy("createdAt", "desc"));
@@ -96,6 +98,27 @@ export default function GlossaryPage() {
     }
     setRecordToDelete(null);
   };
+
+  const confirmDeleteAll = async () => {
+    setIsDeletingAll(true);
+    const result = await deleteAllGlossaryRecords();
+    setIsDeletingAll(false);
+    setShowDeleteAllConfirm(false);
+
+    if (result.success) {
+      toast({
+        title: 'All Records Deleted',
+        description: `${result.count} records have been successfully removed.`,
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error Deleting Records',
+        description: result.error || 'An unknown error occurred.',
+      });
+    }
+  };
+
 
   const handleExport = () => {
     if (records.length === 0) {
@@ -170,10 +193,16 @@ export default function GlossaryPage() {
                               Browse and manage the list of all translation analyses.
                           </CardDescription>
                         </div>
-                        <Button variant="outline" onClick={handleExport} disabled={records.length === 0}>
-                            <FileSpreadsheet className="mr-2 h-4 w-4" />
-                            Export CSV
-                        </Button>
+                        <div className='flex items-center gap-2'>
+                          <Button variant="outline" onClick={handleExport} disabled={records.length === 0}>
+                              <FileSpreadsheet className="mr-2 h-4 w-4" />
+                              Export CSV
+                          </Button>
+                           <Button variant="destructive" onClick={() => setShowDeleteAllConfirm(true)} disabled={records.length === 0}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete All
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -222,7 +251,29 @@ export default function GlossaryPage() {
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
-    </AlertDialog>
+       </AlertDialog>
+
+       <AlertDialog open={showDeleteAllConfirm} onOpenChange={setShowDeleteAllConfirm}>
+            <AlertDialogContent>
+                <AlertDialogHeader className="text-center items-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                        <AlertTriangle className="h-6 w-6 text-red-600" />
+                    </div>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete all <strong>{records.length}</strong> glossary records from the database.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeletingAll}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeletingAll}>
+                        {isDeletingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Yes, delete all records
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
     </div>
   );
 }
