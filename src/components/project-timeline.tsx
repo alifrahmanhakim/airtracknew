@@ -74,8 +74,16 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
     });
 
     const now = new Date();
-    const tStart = startOfISOWeek(addMonths(now, -6));
-    const tEnd = endOfISOWeek(addMonths(now, 6));
+    let tStart = startOfISOWeek(addMonths(now, -6));
+    let tEnd = endOfISOWeek(addMonths(now, 6));
+
+    if (validTasks.length > 0) {
+      const allDates = validTasks.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
+      const earliestDate = min(allDates);
+      const latestDate = max(allDates);
+      tStart = min([startOfISOWeek(addMonths(earliestDate, -1)), tStart]);
+      tEnd = max([endOfISOWeek(addMonths(latestDate, 1)), tEnd]);
+    }
     
     const monthInterval = eachMonthOfInterval({ start: tStart, end: tEnd });
     const dayInterval = eachDayOfInterval({ start: tStart, end: tEnd });
@@ -159,14 +167,14 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         </div>
       </div>
       <div 
-        className="w-full border-t overflow-auto" 
+        className="w-full border-t overflow-auto relative" 
         ref={timelineContainerRef}
         style={{ maxHeight: `${timelineMaxHeight}px` }}
       >
         <div className="flex" style={{ width: 'min-content' }}>
             {/* Task List */}
-            <div style={{ width: `${TASK_LIST_WIDTH}px` }}>
-                <div className="sticky top-0 z-10 h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
+            <div style={{ width: `${TASK_LIST_WIDTH}px` }} className="sticky left-0 top-0 z-30 bg-card">
+                <div className="h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
                     Tasks
                 </div>
                 {sortedTasks.map((task) => (
@@ -183,7 +191,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
             {/* Timeline Grid - Scrollable Right */}
             <div className="relative" style={{ width: `${totalGridWidth}px` }}>
                 {/* Headers */}
-                <div className="sticky top-0 z-10 flex h-16 bg-card border-b">
+                <div className="sticky top-0 z-20 flex h-16 bg-card border-b">
                 {viewMode === 'day' ? (
                     days.map((day, index) => {
                         const monthLabel = format(day, 'MMMM yyyy');
@@ -280,7 +288,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                     })()}
 
                     {/* Task Bars */}
-                    <div className="relative w-full h-full z-10">
+                    <div className="absolute top-0 left-0 w-full h-full z-10">
                     {sortedTasks.map((task, index) => {
                         const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean);
                         const taskStart = parseISO(task.startDate);
@@ -335,14 +343,14 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                                 <div className="flex items-center gap-2 mt-2">
                                     <div className="flex items-center -space-x-2">
                                         {assignees.map(assignee => (
-                                            <Avatar key={assignee.id} className="h-6 w-6 border-2 border-tooltip">
+                                            assignee && <Avatar key={assignee.id} className="h-6 w-6 border-2 border-tooltip">
                                                 <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
                                                 <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                         ))}
                                     </div>
                                     <div>
-                                        <p className="font-semibold">{assignees.map(a => a.name).join(', ')}</p>
+                                        <p className="font-semibold">{assignees.map(a => a?.name).join(', ')}</p>
                                         <p className="text-sm"><span className="font-semibold">Status:</span> {task.status}</p>
                                     </div>
                                 </div>
