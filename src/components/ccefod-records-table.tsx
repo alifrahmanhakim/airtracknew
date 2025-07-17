@@ -91,8 +91,8 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate }: CcefodRecord
                  }
             }
             
-            if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
+            if (String(aVal) < String(bVal)) return sort.direction === 'asc' ? -1 : 1;
+            if (String(aVal) > String(bVal)) return sort.direction === 'asc' ? 1 : -1;
             return 0;
         });
     }
