@@ -243,24 +243,31 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                             </div>
                                         </CardContent>
                                         <CardFooter className="pt-2 flex justify-between items-center mt-auto">
-                                           <div className="flex items-center -space-x-2">
-                                                {project.team.slice(0, 5).map(member => (
-                                                    <Tooltip key={member.id}>
-                                                        <TooltipTrigger asChild>
-                                                            <Avatar className="h-6 w-6 border-2 border-background">
-                                                                <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
-                                                                <AvatarFallback>{member.name?.charAt(0) || '?'}</AvatarFallback>
-                                                            </Avatar>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>{member.name}</TooltipContent>
-                                                    </Tooltip>
-                                                ))}
-                                                {project.team.length > 5 && (
-                                                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-semibold z-10 border-2 border-background">
-                                                    +{project.team.length - 5}
-                                                  </div>
+                                           <div className="flex items-center gap-2">
+                                                <div className="flex items-center -space-x-2">
+                                                    {project.team.slice(0, 5).map(member => (
+                                                        <Tooltip key={member.id}>
+                                                            <TooltipTrigger asChild>
+                                                                <Avatar className="h-6 w-6 border-2 border-background">
+                                                                    <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
+                                                                    <AvatarFallback>{member.name?.charAt(0) || '?'}</AvatarFallback>
+                                                                </Avatar>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>{member.name}</TooltipContent>
+                                                        </Tooltip>
+                                                    ))}
+                                                    {project.team.length > 5 && (
+                                                      <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-semibold z-10 border-2 border-background">
+                                                        +{project.team.length - 5}
+                                                      </div>
+                                                    )}
+                                                </div>
+                                                {project.team.length > 0 && (
+                                                    <span className="text-xs text-muted-foreground font-medium truncate max-w-[100px]">
+                                                        {project.team[0].name}
+                                                    </span>
                                                 )}
-                                            </div>
+                                           </div>
                                         </CardFooter>
                                     </Card>
                                 </Link>
