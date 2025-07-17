@@ -53,7 +53,6 @@ export default function CcefodPage() {
   
   const [recordToDelete, setRecordToDelete] = useState<CcefodRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
@@ -153,7 +152,14 @@ export default function CcefodPage() {
     });
 
     setTimeout(() => {
-        const csv = Papa.unparse(records.map(r => ({...r, standardPractice: (r.standardPractice || '').replace(/<[^>]+>/g, '')})));
+        // Remove HTML tags from standardPractice before exporting
+        const dataToExport = records.map(r => {
+            const { standardPractice, ...rest } = r;
+            const cleanStandardPractice = (standardPractice || '').replace(/<[^>]+>/g, '');
+            return { ...rest, standardPractice: cleanStandardPractice };
+        });
+
+        const csv = Papa.unparse(dataToExport);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         if (link.download !== undefined) {
@@ -165,7 +171,6 @@ export default function CcefodPage() {
             link.click();
             document.body.removeChild(link);
         }
-        setIsExporting(false);
     }, 500);
   };
 
@@ -260,7 +265,7 @@ export default function CcefodPage() {
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
-                                <Button variant="outline" size="icon" onClick={() => confirmExport()}>
+                                <Button variant="outline" size="icon" onClick={confirmExport}>
                                     <FileSpreadsheet className="h-4 w-4" />
                                     <span className="sr-only">Export as CSV</span>
                                  </Button>
