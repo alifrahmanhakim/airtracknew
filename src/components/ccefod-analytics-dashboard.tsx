@@ -38,10 +38,9 @@ const CHART_COLORS = [
 
 const CustomizedAxisTick = (props: any) => {
     const { x, y, payload } = props;
-    const maxCharsPerLine = 45; // Adjust as needed
+    const maxCharsPerLine = 45;
     const text = payload.value;
 
-    // Function to split text into lines
     const splitTextIntoLines = (text: string, maxChars: number) => {
         const words = text.split(' ');
         const lines: string[] = [];
@@ -133,7 +132,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {implementationPercentages.map(item => (
             <div key={item.name} className="flex items-baseline gap-2">
-                <span title={item.name}>{item.name}</span>
+                <span>{item.name}</span>
                 <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
                 <span className="font-bold whitespace-nowrap pl-2">{item.percentage.toFixed(1)}%</span>
             </div>
@@ -153,7 +152,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {annexPercentages.map(item => (
            <div key={item.name} className="flex items-baseline gap-2">
-              <span className="flex-shrink-0">{item.name}</span>
+              <span>{item.name}</span>
               <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
               <span className="font-bold whitespace-nowrap text-right">{item.percentage.toFixed(1)}%</span>
            </div>
