@@ -81,8 +81,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
         weeks: eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 }),
         timelineStart: tStart, 
         timelineEnd: tEnd, 
-        totalDays: differenceInDays(tEnd, tStart) + 1,
-        totalWeeks: differenceInCalendarISOWeeks(tEnd, tStart) + 1
+        totalDays: differenceInDays(tEnd, tEnd) + 1,
+        totalWeeks: differenceInCalendarISOWeeks(tEnd, tEnd) + 1
     };
   }, [tasks]);
 
