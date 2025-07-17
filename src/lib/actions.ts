@@ -14,6 +14,19 @@ import { ccefodFormSchema, gapAnalysisFormSchema, glossaryFormSchema, pqFormSche
 const window = new JSDOM('').window;
 const purify = DOMPurify(window as any);
 
+const projectSchema = z.object({
+    name: z.string().min(1, 'Project name is required.'),
+    description: z.string().min(1, 'Description is required.'),
+    ownerId: z.string(),
+    startDate: z.string(),
+    endDate: z.string(),
+    status: z.enum(['On Track', 'Off Track', 'At Risk', 'Completed']),
+    team: z.array(z.any()),
+    annex: z.string().min(1, 'Annex is required.'),
+    casr: z.string().min(1, 'CASR is required.'),
+    tags: z.array(z.string()).optional(),
+});
+
 
 // --- CCEFOD ACTIONS ---
 export async function addCcefodRecord(data: z.infer<typeof ccefodFormSchema>) {
@@ -329,23 +342,36 @@ export async function sendPasswordReset(email: string) {
 
 
 // --- PROJECT ACTIONS ---
-export async function addRulemakingProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist'>) {
-    try {
-        const docRef = await addDoc(collection(db, 'rulemakingProjects'), {
-            ...projectData,
-            projectType: 'Rulemaking',
-            tasks: [],
-            documents: [],
-            subProjects: [],
-            notes: '',
-            checklist: [],
-            createdAt: serverTimestamp(),
-        });
-        return { success: true, id: docRef.id };
-    } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
-    }
+export async function addRulemakingProject(projectData: unknown) {
+  const parsed = projectSchema.safeParse(projectData);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.errors.map(e => e.message).join(', '),
+    };
+  }
+
+  try {
+    const docRef = await addDoc(collection(db, 'rulemakingProjects'), {
+      ...parsed.data,
+      projectType: 'Rulemaking',
+      tasks: [],
+      documents: [],
+      subProjects: [],
+      notes: '',
+      checklist: [],
+      createdAt: serverTimestamp(),
+    });
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unknown error occurred' 
+    };
+  }
 }
+
 
 export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist'>) {
     try {
@@ -586,5 +612,3 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
     return null;
   }
 }
-
-    

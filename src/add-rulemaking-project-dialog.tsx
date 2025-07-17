@@ -82,6 +82,18 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
+    // Get the currently logged-in user's ID
+    const ownerId = localStorage.getItem('loggedInUserId');
+    if (!ownerId) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'You must be logged in to create a project.',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    
     const highPriorityTag = 'High Priority';
     
     let finalTags = data.tags ? [...data.tags] : [];
@@ -95,6 +107,8 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
 
     const newProjectData = {
       ...data,
+      ownerId: ownerId, // Add ownerId to the data object
+      status: 'On Track' as const, // Set a default status
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
       tags: finalTags,
