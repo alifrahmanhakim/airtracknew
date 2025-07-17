@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { GlossaryRecord } from '@/lib/types';
 import { Info, PieChartIcon } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
-import { ChartContainer, ChartTooltipContent, ChartLegend, ChartLegendContent } from './ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from './ui/chart';
 
 type GlossaryAnalyticsDashboardProps = {
   records: GlossaryRecord[];
