@@ -61,8 +61,26 @@ export async function importGlossaryRecords(records: z.infer<typeof glossaryForm
     const batch = writeBatch(db);
     let count = 0;
     
-    for (const [index, recordData] of records.entries()) {
-        const parsed = glossaryFormSchema.safeParse(recordData);
+    // Filter out rows where all values are empty strings, which can happen with CSV parsing
+    const nonEmptyRecords = records.filter(record => 
+        Object.values(record).some(value => value !== null && value !== '' && value !== undefined)
+    );
+
+    for (const [index, recordData] of nonEmptyRecords.entries()) {
+        
+        // Provide default empty strings for required fields that might be missing from CSV
+        const dataToValidate = {
+            tsu: recordData.tsu ?? '',
+            tsa: recordData.tsa ?? '',
+            editing: recordData.editing ?? '',
+            makna: recordData.makna ?? '',
+            keterangan: recordData.keterangan ?? '',
+            referensi: recordData.referensi ?? '',
+            status: recordData.status ?? 'Draft',
+        };
+        
+        const parsed = glossaryFormSchema.safeParse(dataToValidate);
+
         if (parsed.success) {
             const docRef = doc(collection(db, 'glossaryRecords'));
             batch.set(docRef, { ...parsed.data, createdAt: serverTimestamp() });
