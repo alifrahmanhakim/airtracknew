@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { CcefodRecord } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -78,7 +78,12 @@ export default function CcefodPage() {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const recordsFromDb: CcefodRecord[] = [];
       querySnapshot.forEach((doc) => {
-        recordsFromDb.push({ id: doc.id, ...doc.data() } as CcefodRecord);
+        const data = doc.data();
+        // Convert Firestore Timestamp to ISO string if it exists
+        if (data.createdAt && data.createdAt instanceof Timestamp) {
+            data.createdAt = data.createdAt.toDate().toISOString();
+        }
+        recordsFromDb.push({ id: doc.id, ...data } as CcefodRecord);
       });
       setRecords(recordsFromDb);
       setIsLoading(false);
@@ -141,7 +146,7 @@ export default function CcefodPage() {
 
   const annexOptions = useMemo(() => {
     const annexes = new Set(records.map(r => r.annex).filter(Boolean));
-    return [...Array.from(annexes)];
+    return ['all', ...Array.from(annexes)];
   }, [records]);
 
   const filteredAnalyticsRecords = useMemo(() => {
@@ -294,10 +299,9 @@ export default function CcefodPage() {
                                         <SelectValue placeholder="Filter by Annex..." />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Annexes</SelectItem>
                                         {annexOptions.map(annex => (
                                             <SelectItem key={annex} value={annex}>
-                                                {annex}
+                                                {annex === 'all' ? 'All Annexes' : annex}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -355,10 +359,9 @@ export default function CcefodPage() {
                                     <Select value={annexFilter} onValueChange={setAnnexFilter}>
                                         <SelectTrigger><SelectValue placeholder="Filter by Annex..." /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">All Annexes</SelectItem>
                                             {annexOptions.map(annex => (
                                                 <SelectItem key={annex} value={annex}>
-                                                    {annex}
+                                                    {annex === 'all' ? 'All Annexes' : annex}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
