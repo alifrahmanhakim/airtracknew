@@ -7,7 +7,6 @@ import {
   parseISO,
   eachMonthOfInterval,
   differenceInDays,
-  addDays,
   isToday,
   startOfISOWeek,
   endOfISOWeek,
@@ -22,9 +21,8 @@ import {
   differenceInCalendarISOWeeks,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Task, User } from '@/lib/types';
+import type { Task } from '@/lib/types';
 import { ListTodo } from 'lucide-react';
-import { findUserById } from '@/lib/data-utils';
 import {
   Tooltip,
   TooltipContent,
@@ -45,16 +43,26 @@ const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 const ROW_HEIGHT = 52;
 const HEADER_HEIGHT = 64;
+const MONTH_HEADER_HEIGHT = 32;
+const DETAIL_HEADER_HEIGHT = 32;
+
 
 export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
-  const allUsers = React.useMemo(() => [], []);
-
+  
   const { sortedTasks, months, days, weeks, timelineStart, timelineEnd, totalDays, totalWeeks } = React.useMemo(() => {
     const validTasks = tasks?.filter(t => t.startDate && t.dueDate) || [];
-    const sorted = [...validTasks].sort((a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime());
+    
+    const sorted = [...validTasks].sort((a, b) => {
+        const dateA = parseISO(a.startDate).getTime();
+        const dateB = parseISO(b.startDate).getTime();
+        if (dateA === dateB) {
+            return (a.title || '').localeCompare(b.title || '');
+        }
+        return dateA - dateB;
+    });
 
     const now = new Date();
     let tStart = startOfISOWeek(addMonths(now, -1));
@@ -89,7 +97,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
         behavior: 'smooth',
       });
     }
-  }, [viewMode, weeks, days]); // Rerun when viewMode or date ranges change
+  }, [viewMode, weeks, days]);
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
@@ -101,6 +109,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
   const bodyHeight = sortedTasks.length * ROW_HEIGHT;
+  const timelineMaxHeight = HEADER_HEIGHT + (Math.min(sortedTasks.length, 6) * ROW_HEIGHT);
 
   return (
     <TooltipProvider>
@@ -113,12 +122,12 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
           <div className="p-4 border-y flex justify-between items-center">
             <RadioGroup defaultValue={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="flex items-center gap-4">
               <div>
-                <RadioGroupItem value="week" id="r-week" className="peer sr-only" />
-                <Label htmlFor="r-week" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">Week View</Label>
+                <RadioGroupItem value="week" id="r-week-my" className="peer sr-only" />
+                <Label htmlFor="r-week-my" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">Week View</Label>
               </div>
               <div>
-                <RadioGroupItem value="day" id="r-day" className="peer sr-only" />
-                <Label htmlFor="r-day" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">Day View</Label>
+                <RadioGroupItem value="day" id="r-day-my" className="peer sr-only" />
+                <Label htmlFor="r-day-my" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">Day View</Label>
               </div>
             </RadioGroup>
             <div className="flex flex-wrap gap-x-4 gap-y-2 items-center text-xs">
@@ -138,82 +147,137 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
               <p className="text-sm">You have no assigned tasks with a due date.</p>
             </div>
           ) : (
-            <div ref={timelineContainerRef} className="overflow-auto relative" style={{ maxHeight: '70vh' }}>
-              <div className="flex relative" style={{ width: 'min-content' }}>
-                {/* --- 1. Task List Column (Sticky) --- */}
-                <div className="sticky left-0 z-20 bg-card">
-                  <div className="sticky top-0 z-10 h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
+            <div 
+              ref={timelineContainerRef} 
+              className="w-full border-t overflow-auto relative"
+              style={{ maxHeight: `${timelineMaxHeight}px` }}
+            >
+              <div className="flex" style={{ width: 'min-content' }}>
+                <div className="sticky left-0 z-40 bg-card">
+                  <div className="flex items-center px-4 font-semibold border-b border-r bg-card" style={{height: `${HEADER_HEIGHT}px`}}>
                     Tasks / Project
                   </div>
-                  <div className="border-r">
-                    {sortedTasks.map((task) => (
-                      <div key={task.id} className="flex flex-col justify-center px-2 border-b" style={{ height: `${ROW_HEIGHT}px` }}>
-                        <p className="text-xs font-semibold truncate">{task.title}</p>
-                        <p className="text-xs truncate text-muted-foreground">{task.projectName}</p>
-                      </div>
-                    ))}
-                  </div>
+                  {sortedTasks.map((task) => (
+                    <div key={task.id} className="flex flex-col justify-center px-2 border-b border-r" style={{ height: `${ROW_HEIGHT}px` }}>
+                      <p className="text-xs font-semibold truncate">{task.title}</p>
+                      <p className="text-xs truncate text-muted-foreground">{task.projectName}</p>
+                    </div>
+                  ))}
                 </div>
 
-                {/* --- 2. Timeline Grid (Scrollable) --- */}
-                <div className="flex-grow">
-                  <div className="sticky top-0 z-10 flex h-16 bg-card border-b">
-                    {viewMode === 'day' ? days.map((day) => (
-                      <div key={day.toISOString()} className="flex-shrink-0 flex flex-col items-center justify-center border-r" style={{ width: `${DAY_WIDTH_DAY_VIEW}px` }}>
-                        <span className={cn("text-xs", { 'font-bold text-primary': isToday(day) })}>{format(day, 'd')}</span>
-                        <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
+                <div className="relative" style={{ width: `${totalGridWidth}px` }}>
+                  <div className="sticky top-0 z-30 bg-card">
+                    {viewMode === 'week' && (
+                      <div className="flex border-b" style={{ height: `${MONTH_HEADER_HEIGHT}px` }}>
+                          {months.map((month) => {
+                              const weeksInMonth = weeks.filter(w => isSameMonth(w, month));
+                              const monthWidth = weeksInMonth.length * WEEK_WIDTH;
+                              if (monthWidth === 0) return null;
+                              return (
+                                  <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex items-center justify-center border-r" style={{ width: `${monthWidth}px` }}>
+                                      {format(month, 'MMMM yyyy')}
+                                  </div>
+                              );
+                          })}
                       </div>
-                    )) : months.map((month) => {
-                      const weeksInMonth = weeks.filter(w => isSameMonth(w, month));
-                      const monthWidth = weeksInMonth.length * WEEK_WIDTH;
-                      if (monthWidth === 0) return null;
-                      return (
-                        <div key={month.toISOString()} className="flex-shrink-0 text-center font-semibold text-sm flex flex-col justify-end border-r" style={{ width: `${monthWidth}px` }}>
-                          <div className="h-1/2 flex items-center justify-center">{format(month, 'MMMM yyyy')}</div>
-                          <div className="h-1/2 flex border-t">
-                            {weeksInMonth.map((week) => (
-                              <div key={week.toISOString()} className="flex-1 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0">
-                                W{getISOWeek(week)}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    )}
+                    <div className="flex border-b" style={{ height: `${viewMode === 'week' ? DETAIL_HEADER_HEIGHT : HEADER_HEIGHT}px` }}>
+                        {viewMode === 'week' ? (
+                            weeks.map((week) => (
+                                <div key={week.toString()} className="flex-1 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0" style={{ width: `${WEEK_WIDTH}px`}}>
+                                    W{getISOWeek(week)}
+                                </div>
+                            ))
+                        ) : (
+                            days.map((day) => {
+                                const isMonthStart = day.getDate() === 1;
+                                return (
+                                    <div key={day.toISOString()} className="flex-shrink-0 flex flex-col items-center justify-center border-r relative" style={{ width: `${DAY_WIDTH_DAY_VIEW}px` }}>
+                                        {isMonthStart && <span className="absolute -top-4 left-1 text-center font-semibold text-xs whitespace-nowrap">{format(day, 'MMMM')}</span>}
+                                        <span className={cn("text-xs", { 'font-bold text-primary': isToday(day) })}>{format(day, 'd')}</span>
+                                        <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
                   </div>
-                  <div className="relative" style={{ width: `${totalGridWidth}px`, height: `${bodyHeight}px` }}>
-                    {/* Vertical Grid Lines */}
-                    {(viewMode === 'day' ? days : weeks).map((date, index) => (
-                      <div key={date.toISOString()} className="absolute top-0 h-full w-px bg-border/50 border-l border-dashed" style={{ left: `${index * (viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : WEEK_WIDTH)}px` }} />
+                  
+                  <div className="relative" style={{ height: `${bodyHeight}px` }}>
+                     <div className="absolute top-0 left-0 w-full h-full z-0">
+                        {viewMode === 'day' ? (
+                            days.map((day, index) => {
+                                const isMonthStart = day.getDate() === 1;
+                                return (
+                                    <div key={`v-line-${index}`} 
+                                        className={cn(
+                                            "absolute top-0 h-full w-px",
+                                            isMonthStart ? "bg-border" : "bg-transparent border-l border-dashed border-border/80"
+                                        )}
+                                        style={{ left: `${(index * dayWidth) + dayWidth -1}px`}} 
+                                    />
+                                );
+                            })
+                        ) : (
+                            weeks.map((week, index) => {
+                                const isMonthStart = week.getDate() <= 7;
+                                return (
+                                    <div key={`v-line-${index}`} 
+                                        className={cn(
+                                            "absolute top-0 h-full w-px",
+                                            isMonthStart ? "bg-border" : "bg-transparent border-l border-dashed border-border/80"
+                                        )}
+                                        style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} 
+                                    />
+                                );
+                            })
+                        )}
+                    </div>
+
+                    {sortedTasks.map((task, index) => (
+                        <div key={`h-line-${task.id}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${(index * ROW_HEIGHT) + ROW_HEIGHT -1}px`, height: '1px' }} />
                     ))}
-                    {/* Horizontal Grid Lines */}
-                    {sortedTasks.map((_, index) => (
-                      <div key={index} className="absolute w-full border-b" style={{ top: `${(index + 1) * ROW_HEIGHT -1}px` }} />
-                    ))}
-                    {/* Today Marker */}
+                    
                     {(() => {
-                      const today = startOfDay(new Date());
-                      if (today < timelineStart || today > timelineEnd) return null;
-                      let left;
-                      if (viewMode === 'day') {
-                          left = differenceInDays(today, timelineStart) * dayWidth;
-                      } else {
-                          left = differenceInCalendarISOWeeks(today, timelineStart) * WEEK_WIDTH;
-                      }
-                      return <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${left}px` }} />;
+                        const today = startOfDay(new Date());
+                        if(today < timelineStart || today > timelineEnd) return null;
+                        
+                        let todayLeft;
+                        if (viewMode === 'day') {
+                            const todayOffsetDays = differenceInDays(today, timelineStart);
+                            todayLeft = todayOffsetDays * dayWidth;
+                        } else { 
+                            const todayOffsetWeeks = differenceInCalendarISOWeeks(today, timelineStart);
+                            todayLeft = todayOffsetWeeks * WEEK_WIDTH;
+                        }
+
+                        return (
+                            <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
+                                <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
+                                    Today
+                                </div>
+                            </div>
+                        );
                     })()}
-                    {/* Task Bars */}
+                    
+                    <div className="absolute top-0 left-0 w-full h-full z-10">
                     {sortedTasks.map((task, index) => {
                       const taskStart = parseISO(task.startDate);
                       const taskEnd = parseISO(task.dueDate);
+
                       let left, width;
                       if (viewMode === 'day') {
-                        left = differenceInDays(taskStart, timelineStart) * dayWidth;
-                        width = (differenceInDays(taskEnd, taskStart) + 1) * dayWidth - 2;
-                      } else {
-                        left = differenceInCalendarISOWeeks(taskStart, timelineStart) * WEEK_WIDTH;
-                        width = (differenceInCalendarISOWeeks(taskEnd, taskStart) + 1) * WEEK_WIDTH - 4;
+                        const startOffset = differenceInDays(taskStart, timelineStart);
+                        const duration = differenceInDays(taskEnd, taskStart) + 1;
+                        left = startOffset * dayWidth;
+                        width = duration * dayWidth - 2;
+                      } else { 
+                        const startOffset = differenceInCalendarISOWeeks(taskStart, timelineStart);
+                        const duration = differenceInCalendarISOWeeks(taskEnd, taskStart) + 1;
+                        left = startOffset * WEEK_WIDTH;
+                        width = duration * WEEK_WIDTH - 4;
                       }
+                      
                       return (
                         <Tooltip key={task.id}>
                           <TooltipTrigger asChild>
@@ -231,6 +295,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         </Tooltip>
                       );
                     })}
+                    </div>
                   </div>
                 </div>
               </div>
