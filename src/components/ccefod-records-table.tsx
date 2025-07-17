@@ -147,7 +147,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort 
           </DropdownMenu>
         </div>
         <div className="border rounded-md overflow-auto">
-          <Table className="min-w-[1600px]">
+          <Table>
             <TableHeader className="sticky top-0 bg-background/95 z-10">
               <TableRow>
                 {visibleColumns.map((col) => (
