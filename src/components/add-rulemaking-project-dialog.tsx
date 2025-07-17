@@ -82,31 +82,6 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
-    // Asumsi `ownerId` akan diambil dari sesi pengguna di server,
-    // jadi kita tidak perlu lagi mengambilnya dari localStorage.
-    // Ini lebih aman.
-    const ownerId = "some-placeholder-id"; // Ini akan diganti di server action jika perlu
-
-    const teamMembers = data.team
-      .map(userId => allUsers.find(u => u.id === userId))
-      .filter((user): user is User => user !== undefined)
-      .map(user => ({ // Pastikan struktur objek sesuai
-          id: user.id,
-          name: user.name,
-          role: user.role,
-          avatarUrl: user.avatarUrl
-      }));
-
-    if (teamMembers.length === 0) {
-        toast({
-            variant: 'destructive',
-            title: 'Team is empty',
-            description: 'Please select at least one team member.',
-        });
-        setIsSubmitting(false);
-        return;
-    }
-
     const highPriorityTag = 'High Priority';
     const baseTags = data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
     
@@ -116,15 +91,9 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
     }
 
     const newProjectData = {
-      name: data.name,
-      description: data.description,
-      ownerId: teamMembers[0].id, // Default owner ke anggota tim pertama
+      ...data,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-      status: 'On Track' as const,
-      team: teamMembers,
-      annex: data.annex,
-      casr: data.casr,
       tags: finalTags,
     };
     
@@ -139,7 +108,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       });
       setOpen(false);
       form.reset();
-      router.refresh(); // Cara Next.js modern untuk refresh data
+      router.refresh(); 
     } else {
       toast({
         variant: 'destructive',
@@ -227,7 +196,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Start Date</FormLabel>
-                    <Popover modal={true}>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -265,7 +234,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>End Date</FormLabel>
-                    <Popover modal={true}>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -360,3 +329,5 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
     </Dialog>
   );
 }
+
+    
