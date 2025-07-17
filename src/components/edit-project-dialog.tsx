@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState } from 'react';
@@ -43,7 +41,7 @@ import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { Checkbox } from './ui/checkbox';
-import { updateProject } from '@/lib/actions';
+import { updateProject } from '@/lib/actions/project';
 
 const editProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),

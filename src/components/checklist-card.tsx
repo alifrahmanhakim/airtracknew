@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { updateProjectChecklist, generateAiChecklist } from '@/lib/actions';
+import { updateProjectChecklist } from '@/lib/actions/project';
+import { generateAiChecklist } from '@/lib/actions/ai';
 import type { Project, ChecklistItem } from '@/lib/types';
 import { Loader2, Plus, Trash2, ListChecks, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

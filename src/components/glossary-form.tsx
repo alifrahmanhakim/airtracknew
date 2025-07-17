@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -8,7 +7,7 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { addGlossaryRecord } from '@/lib/actions';
+import { addGlossaryRecord } from '@/lib/actions/glossary';
 import type { GlossaryRecord } from '@/lib/types';
 import { GlossarySharedFormFields, formSchema, type GlossaryFormValues } from './glossary-shared-form-fields';
 

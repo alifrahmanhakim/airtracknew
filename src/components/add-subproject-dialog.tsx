@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -28,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus } from 'lucide-react';
 import type { Project, SubProject } from '@/lib/types';
-import { addSubProject } from '@/lib/actions';
+import { addSubProject } from '@/lib/actions/project';
 
 const subProjectSchema = z.object({
   name: z.string().min(1, 'Sub-project name is required.'),

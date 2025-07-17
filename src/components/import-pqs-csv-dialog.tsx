@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -17,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, UploadCloud, FileSpreadsheet } from 'lucide-react';
 import type { PqFormValues } from './pqs-shared-form-fields';
-import { importPqRecords } from '@/lib/actions';
+import { importPqRecords } from '@/lib/actions/pqs';
 import { Label } from './ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ScrollArea } from './ui/scroll-area';

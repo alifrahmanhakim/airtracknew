@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -69,7 +68,8 @@ import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
-import { deleteDocument, deleteTask, deleteProject, deleteGapAnalysisRecord } from '@/lib/actions';
+import { deleteDocument, deleteTask, deleteProject } from '@/lib/actions/project';
+import { deleteGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';

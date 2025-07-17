@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -19,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
 import type { PqRecord } from '@/lib/types';
 import { PqsSharedFormFields, formSchema, type PqFormValues } from './pqs-shared-form-fields';
-import { updatePqRecord } from '@/lib/actions';
+import { updatePqRecord } from '@/lib/actions/pqs';
 import { ScrollArea } from './ui/scroll-area';
 
 type EditPqRecordDialogProps = {

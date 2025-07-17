@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -29,7 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
 import type { Project, SubProject } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { updateSubProject } from '@/lib/actions';
+import { updateSubProject } from '@/lib/actions/project';
 
 const subProjectSchema = z.object({
   name: z.string().min(1, 'Sub-project name is required.'),

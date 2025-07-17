@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -33,7 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Loader2, UserCog } from 'lucide-react';
-import { updateUserRole } from '@/lib/actions';
+import { updateUserRole } from '@/lib/actions/user';
 
 const roleSchema = z.object({
   role: z.enum(['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional']),

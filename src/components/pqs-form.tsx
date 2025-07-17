@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -8,7 +7,7 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { addPqRecord } from '@/lib/actions';
+import { addPqRecord } from '@/lib/actions/pqs';
 import type { PqRecord } from '@/lib/types';
 import { PqsSharedFormFields, formSchema, type PqFormValues } from './pqs-shared-form-fields';
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -38,7 +37,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
-import { updateTask } from '@/lib/actions';
+import { updateTask } from '@/lib/actions/project';
 import { Separator } from './ui/separator';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 

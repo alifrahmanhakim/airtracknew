@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -9,7 +7,7 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { addGapAnalysisRecord } from '@/lib/actions';
+import { addGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
 import { GapAnalysisSharedFormFields, formSchema, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { format } from 'date-fns';

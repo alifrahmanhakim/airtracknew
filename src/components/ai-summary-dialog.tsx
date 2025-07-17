@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -15,7 +14,7 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Loader2, Sparkles } from 'lucide-react';
-import { getAiSummary } from '@/lib/actions';
+import { getAiSummary } from '@/lib/actions/ai';
 import { useToast } from '@/hooks/use-toast';
 import type { SummarizeProjectStatusOutput } from '@/ai/flows/summarize-project-status';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -41,7 +40,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { deleteAllTimKerjaProjects } from '@/lib/actions';
+import { deleteAllTimKerjaProjects } from '@/lib/actions/project';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';

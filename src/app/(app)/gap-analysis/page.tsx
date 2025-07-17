@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,7 +8,7 @@ import { collection, onSnapshot, query, orderBy, getDocs } from 'firebase/firest
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { deleteGapAnalysisRecord } from '@/lib/actions';
+import { deleteGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import {
   AlertDialog,
   AlertDialogAction,

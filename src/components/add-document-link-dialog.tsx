@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -27,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Link as LinkIcon } from 'lucide-react';
 import type { Document as ProjectDocument, Project } from '@/lib/types';
-import { addDocument } from '@/lib/actions';
+import { addDocument } from '@/lib/actions/project';
 
 const documentLinkSchema = z.object({
   name: z.string().min(1, 'Document name is required.'),

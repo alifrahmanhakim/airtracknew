@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState } from 'react';
@@ -20,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
 import { GapAnalysisSharedFormFields, formSchema, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
-import { updateGapAnalysisRecord } from '@/lib/actions';
+import { updateGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { ScrollArea } from './ui/scroll-area';
 import { parseISO } from 'date-fns';
 import { ComboboxOption } from './ui/combobox';

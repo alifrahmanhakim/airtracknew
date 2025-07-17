@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -34,7 +33,7 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
-import { addRulemakingProject } from '@/lib/actions';
+import { addRulemakingProject } from '@/lib/actions/project';
 import { Checkbox } from './ui/checkbox';
 
 const projectSchema = z.object({
@@ -45,7 +44,7 @@ const projectSchema = z.object({
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
   annex: z.string().min(1, 'Annex is required.'),
   casr: z.string().min(1, 'CASR is required.'),
-  tags: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   isHighPriority: z.boolean().default(false),
 });
 
@@ -74,7 +73,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       team: [],
       annex: '',
       casr: '',
-      tags: '',
+      tags: [],
       isHighPriority: false,
     },
   });
@@ -82,16 +81,33 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
-    const highPriorityTag = 'High Priority';
-    const baseTags = data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    // Get the currently logged-in user's ID
+    const ownerId = localStorage.getItem('loggedInUserId');
+    if (!ownerId) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'You must be logged in to create a project.',
+      });
+      setIsSubmitting(false);
+      return;
+    }
     
-    let finalTags = baseTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
+    const highPriorityTag = 'High Priority';
+    
+    let finalTags = data.tags ? [...data.tags] : [];
     if (data.isHighPriority) {
-        finalTags.push(highPriorityTag);
+        if (!finalTags.some(tag => tag.toLowerCase() === highPriorityTag.toLowerCase())) {
+            finalTags.push(highPriorityTag);
+        }
+    } else {
+        finalTags = finalTags.filter(tag => tag.toLowerCase() !== highPriorityTag.toLowerCase());
     }
 
     const newProjectData = {
       ...data,
+      ownerId: ownerId, // Add ownerId to the data object
+      status: 'On Track' as const, // Set a default status
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
       tags: finalTags,
@@ -285,19 +301,29 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Other Tags (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Core, Technical" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Other Tags</FormLabel>
+                    <FormControl>
+                        <MultiSelect
+                            options={[
+                                { value: "Core", label: "Core" },
+                                { value: "Technical", label: "Technical" },
+                                { value: "Operational", label: "Operational" },
+                                { value: "Safety", label: "Safety" }
+                            ]}
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            placeholder="Select tags..."
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             <FormField
               control={form.control}
               name="isHighPriority"
@@ -329,5 +355,3 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
     </Dialog>
   );
 }
-
-    
