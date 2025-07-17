@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -109,7 +110,7 @@ export function ImportCcefodCsvDialog() {
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[90vh]">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Import CCEFOD Records from CSV</DialogTitle>
           <DialogDescription>
@@ -117,7 +118,7 @@ export function ImportCcefodCsvDialog() {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex flex-col h-full gap-4 py-4">
+        <div className="flex-grow flex flex-col gap-4 py-4 min-h-0">
             <div className="grid w-full max-w-sm items-center gap-1.5">
                 <Label htmlFor="csv-file">Select CSV File</Label>
                 <Input id="csv-file" type="file" accept=".csv" onChange={handleFileChange} disabled={isParsing || isSubmitting}/>
@@ -130,10 +131,10 @@ export function ImportCcefodCsvDialog() {
             {parsedData.length > 0 && (
                 <>
                     <p className='text-sm font-medium'>Found {parsedData.length} records in <span className='font-bold'>{fileName}</span>. Please review the data below before importing.</p>
-                    <div className="flex-grow border rounded-md relative">
-                        <ScrollArea className="h-full">
+                    <div className="flex-grow border rounded-md relative min-h-0">
+                        <ScrollArea className="absolute inset-0">
                             <Table>
-                                <TableHeader className='sticky top-0 bg-muted/80 backdrop-blur-sm'>
+                                <TableHeader className='sticky top-0 bg-muted/80 backdrop-blur-sm z-10'>
                                     <TableRow>
                                         <TableHead>Annex</TableHead>
                                         <TableHead>Annex Ref</TableHead>
@@ -166,7 +167,7 @@ export function ImportCcefodCsvDialog() {
             )}
         </div>
         
-        <DialogFooter className="border-t pt-4">
+        <DialogFooter className="border-t pt-4 flex-shrink-0">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Cancel</Button>
             <Button onClick={handleImport} disabled={isSubmitting || parsedData.length === 0 || !!error}>
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
