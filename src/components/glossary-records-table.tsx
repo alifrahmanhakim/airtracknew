@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from './ui/tooltip';
 import { cn } from '@/lib/utils';
+import { EditGlossaryRecordDialog } from './edit-glossary-record-dialog';
 
 type GlossaryRecordsTableProps = {
   records: GlossaryRecord[];
@@ -136,7 +137,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate }: GlossaryRe
                     </TableCell>
                     <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                            {/* <EditGlossaryRecordDialog record={record} onRecordUpdate={onUpdate} /> */}
+                            <EditGlossaryRecordDialog record={record} onRecordUpdate={onUpdate} />
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
