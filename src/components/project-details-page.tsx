@@ -374,7 +374,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
