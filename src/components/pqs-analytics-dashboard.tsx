@@ -143,10 +143,10 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
             <CardHeader>
                 <CardTitle>Distribution by Critical Element</CardTitle>
                 <CardDescription>Shows the count of records for each critical element.</CardDescription>
-                {analyticsData.criticalElementDescription}
             </CardHeader>
             <CardContent className="pl-2">
-                <ChartContainer config={chartConfig(analyticsData.criticalElementData)} className="h-[300px] w-full">
+                {analyticsData.criticalElementDescription}
+                <ChartContainer config={chartConfig(analyticsData.criticalElementData)} className="h-[300px] w-full mt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={analyticsData.criticalElementData} layout="horizontal" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <XAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} />
