@@ -18,13 +18,14 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
-import { GapAnalysisSharedFormFields, formSchema, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
+import { GapAnalysisSharedFormFields, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { updateGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { ScrollArea } from './ui/scroll-area';
 import { parseISO } from 'date-fns';
 import { ComboboxOption } from './ui/combobox';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { gapAnalysisFormSchema as formSchema } from '@/lib/schemas';
 
 type EditGapAnalysisRecordDialogProps = {
   record: GapAnalysisRecord;
@@ -56,10 +57,10 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...record,
-      embeddedApplicabilityDate: parseISO(record.embeddedApplicabilityDate),
-      dateOfEvaluation: record.dateOfEvaluation,
-      effectiveDate: record.effectiveDate,
-      applicabilityDate: record.applicabilityDate,
+      dateOfEvaluation: record.dateOfEvaluation ? parseISO(record.dateOfEvaluation) : undefined,
+      effectiveDate: record.effectiveDate ? parseISO(record.effectiveDate) : undefined,
+      applicabilityDate: record.applicabilityDate ? parseISO(record.applicabilityDate) : undefined,
+      embeddedApplicabilityDate: record.embeddedApplicabilityDate ? parseISO(record.embeddedApplicabilityDate) : new Date(),
       inspectors: record.inspectors || [],
     },
   });
@@ -125,5 +126,3 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     </Dialog>
   );
 }
-
-    

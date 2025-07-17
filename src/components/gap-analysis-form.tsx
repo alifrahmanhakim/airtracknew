@@ -10,11 +10,12 @@ import { Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { addGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
-import { GapAnalysisSharedFormFields, formSchema, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
+import { GapAnalysisSharedFormFields, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { format } from 'date-fns';
 import { ComboboxOption } from './ui/combobox';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { gapAnalysisFormSchema as formSchema } from '@/lib/schemas';
 
 type GapAnalysisFormProps = {
   onFormSubmit: (data: GapAnalysisRecord) => void;
@@ -45,11 +46,11 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     slReferenceNumber: '',
     annex: '',
     typeOfStateLetter: '',
-    dateOfEvaluation: '',
+    dateOfEvaluation: undefined,
     subject: '',
     actionRequired: '',
-    effectiveDate: '',
-    applicabilityDate: '',
+    effectiveDate: undefined,
+    applicabilityDate: undefined,
     embeddedApplicabilityDate: undefined,
     evaluations: [
       { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' }
