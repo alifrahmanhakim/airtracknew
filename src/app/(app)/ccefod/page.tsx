@@ -13,7 +13,7 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllCcefodRecords, deleteCcefodRecord } from '@/lib/actions/ccefod';
-import { Loader2, FileSpreadsheet, AlertTriangle, Trash2 } from 'lucide-react';
+import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, RotateCcw } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -126,7 +126,7 @@ export default function CcefodPage() {
 
   const annexOptions = useMemo(() => {
     const annexes = new Set(records.map(r => r.annex).filter(Boolean));
-    return ['all', ...Array.from(annexes)];
+    return [...Array.from(annexes)];
   }, [records]);
 
   const filteredAnalyticsRecords = useMemo(() => {
@@ -233,18 +233,24 @@ export default function CcefodPage() {
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
                                 <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
-                                <Select value={analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
+                                <Select value={analyticsAnnexFilter === 'all' ? '' : analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
                                     <SelectTrigger id="annex-filter" className="w-full sm:w-[280px]">
                                         <SelectValue placeholder="Filter by Annex..." />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {annexOptions.map(annex => (
                                             <SelectItem key={annex} value={annex}>
-                                                {annex === 'all' ? 'All Annexes' : annex}
+                                                {annex}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                {analyticsAnnexFilter !== 'all' && (
+                                    <Button variant="ghost" size="icon" onClick={() => setAnalyticsAnnexFilter('all')}>
+                                        <RotateCcw className="h-4 w-4" />
+                                        <span className="sr-only">Reset Filter</span>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </CardHeader>
