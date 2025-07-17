@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -41,7 +42,7 @@ import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
-import { updateProject } from '@/lib/actions';
+import { updateProject } from '@/lib/project-actions';
 import { Checkbox } from './ui/checkbox';
 
 const projectSchema = z.object({
