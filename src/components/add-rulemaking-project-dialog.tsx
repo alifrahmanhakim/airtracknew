@@ -227,7 +227,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Start Date</FormLabel>
-                    <Popover modal={false}>
+                    <Popover modal={true}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -265,7 +265,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>End Date</FormLabel>
-                    <Popover modal={false}>
+                    <Popover modal={true}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -307,9 +307,9 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                   <FormControl>
                     <MultiSelect
                       options={userOptions}
-                      placeholder="Select team members..."
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      placeholder="Select team members..."
                     />
                   </FormControl>
                   <FormMessage />
