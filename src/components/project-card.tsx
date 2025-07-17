@@ -32,10 +32,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const statusConfig = {
-    'Completed': { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },
-    'On Track': { icon: Clock, color: 'text-blue-500', label: 'On Track' },
-    'At Risk': { icon: AlertTriangle, color: 'text-yellow-500', label: 'At Risk' },
-    'Off Track': { icon: AlertTriangle, color: 'text-red-500', label: 'Off Track' },
+    'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
+    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'On Track' },
+    'At Risk': { icon: AlertTriangle, style: 'border-transparent bg-yellow-100 text-yellow-800', label: 'At Risk' },
+    'Off Track': { icon: AlertTriangle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
   };
 
   const currentStatus = statusConfig[status] || statusConfig['On Track'];
@@ -61,10 +61,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <CardTitle className="text-lg font-bold leading-snug">
                 {displayName}
               </CardTitle>
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <currentStatus.icon className={cn("h-4 w-4", currentStatus.color)} />
-                <span className={currentStatus.color}>{currentStatus.label}</span>
-              </div>
+               <Badge variant="outline" className={cn("text-xs font-semibold gap-1.5 pl-1.5", currentStatus.style)}>
+                  <currentStatus.icon className="h-3.5 w-3.5" />
+                  {currentStatus.label}
+              </Badge>
             </div>
             <CardDescription className="text-sm text-muted-foreground truncate h-10">{displayDescription}</CardDescription>
           </CardHeader>
