@@ -79,6 +79,7 @@ import { ChecklistCard } from './checklist-card';
 import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
 import { RulemakingAnalytics } from './rulemaking-analytics';
 import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
+import { ScrollArea } from './ui/scroll-area';
 
 function AssociatedGapAnalysisCard({ 
     records, 
@@ -417,93 +418,95 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               <AddTaskDialog projectId={project.id} projectType={project.projectType} onTaskAdd={handleTaskAdd} teamMembers={project.team} />
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Assignee</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Completed On</TableHead>
-                    <TableHead>Attachments</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tasks.length > 0 ? tasks.map((task) => {
-                    const assignees = (task.assigneeIds || []).map(id => findUserById(id, users)).filter(u => u);
-                    const attachmentCount = task.attachments?.length || 0;
-                    return (
-                      <TableRow key={task.id}>
-                        <TableCell className="font-medium">
-                          {task.title}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center -space-x-2">
-                            {assignees.map((assignee) => (
-                              assignee && (
-                                <Tooltip key={assignee.id}>
-                                  <TooltipTrigger asChild>
-                                    <Avatar className="h-6 w-6 border-2 border-background">
-                                      <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
-                                      <AvatarFallback>
-                                        {assignee.name?.charAt(0) || assignee.email?.charAt(0) || '?'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  </TooltipTrigger>
-                                  <TooltipContent>{assignee.name}</TooltipContent>
-                                </Tooltip>
-                              )
-                            ))}
-                            {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
-                          </div>
-                        </TableCell>
-                        <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>
-                        <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
-                        <TableCell>
-                          {task.doneDate ? format(parseISO(task.doneDate), 'PPP') : 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          {attachmentCount > 0 ? (
-                            <div className="flex flex-col gap-1">
-                              {task.attachments?.map((att) => (
-                                <a
-                                  key={att.id}
-                                  href={att.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-primary hover:underline flex items-center gap-1.5"
-                                >
-                                  <LinkIcon className="h-3 w-3" />
-                                  <span className="truncate max-w-[120px]">{att.name}</span>
-                                </a>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">No files</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
-                            {task.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right flex justify-end items-center gap-1">
-                            <EditTaskDialog projectId={project.id} projectType={project.projectType} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isDeletingTask === task.id}>
-                                {isDeletingTask === task.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                            </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  }) : (
+              <ScrollArea className="h-[350px]">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground">No tasks yet.</TableCell>
+                      <TableHead>Task</TableHead>
+                      <TableHead>Assignee</TableHead>
+                      <TableHead>Start Date</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Completed On</TableHead>
+                      <TableHead>Attachments</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {tasks.length > 0 ? tasks.map((task) => {
+                      const assignees = (task.assigneeIds || []).map(id => findUserById(id, users)).filter(u => u);
+                      const attachmentCount = task.attachments?.length || 0;
+                      return (
+                        <TableRow key={task.id}>
+                          <TableCell className="font-medium">
+                            {task.title}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center -space-x-2">
+                              {assignees.map((assignee) => (
+                                assignee && (
+                                  <Tooltip key={assignee.id}>
+                                    <TooltipTrigger asChild>
+                                      <Avatar className="h-6 w-6 border-2 border-background">
+                                        <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
+                                        <AvatarFallback>
+                                          {assignee.name?.charAt(0) || assignee.email?.charAt(0) || '?'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    </TooltipTrigger>
+                                    <TooltipContent>{assignee.name}</TooltipContent>
+                                  </Tooltip>
+                                )
+                              ))}
+                              {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
+                            </div>
+                          </TableCell>
+                          <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>
+                          <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
+                          <TableCell>
+                            {task.doneDate ? format(parseISO(task.doneDate), 'PPP') : 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {attachmentCount > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {task.attachments?.map((att) => (
+                                  <a
+                                    key={att.id}
+                                    href={att.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-primary hover:underline flex items-center gap-1.5"
+                                  >
+                                    <LinkIcon className="h-3 w-3" />
+                                    <span className="truncate max-w-[120px]">{att.name}</span>
+                                  </a>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">No files</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
+                              {task.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right flex justify-end items-center gap-1">
+                              <EditTaskDialog projectId={project.id} projectType={project.projectType} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isDeletingTask === task.id}>
+                                  {isDeletingTask === task.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                              </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }) : (
+                      <TableRow>
+                          <TableCell colSpan={8} className="text-center text-muted-foreground">No tasks yet.</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
             </CardContent>
           </Card>
           
