@@ -43,7 +43,7 @@ export function ImportCcefodCsvDialog() {
     Papa.parse<any>(file, {
       header: true,
       skipEmptyLines: 'greedy',
-      dynamicTyping: true,
+      dynamicTyping: false, // Turn off dynamic typing
       transform: (value) => value === '' ? null : value,
       complete: (results) => {
         if (results.errors.length) {
