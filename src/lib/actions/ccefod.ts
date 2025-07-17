@@ -40,6 +40,7 @@ export async function addCcefodRecord(data: z.infer<typeof ccefodFormSchema>) {
 }
 
 export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
+    // A more relaxed schema for import, allowing empty strings for required fields
     const importSchema = ccefodFormSchema.extend({
         annex: z.string(),
         annexReference: z.string(),
@@ -52,9 +53,16 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
 
     for (const recordData of records) {
         let implementationLevel = recordData.implementationLevel ?? 'No difference';
-        if (typeof implementationLevel === 'string' && implementationLevel.toLowerCase() === 'no difference') {
-            implementationLevel = 'No difference';
+        
+        // Normalize common case-sensitivity issues
+        if (typeof implementationLevel === 'string') {
+            if (implementationLevel.toLowerCase() === 'no difference') {
+                implementationLevel = 'No difference';
+            } else if (implementationLevel.toLowerCase() === 'not applicable') {
+                implementationLevel = 'Not applicable';
+            }
         }
+
 
         const dataToValidate = {
             ...recordData,
