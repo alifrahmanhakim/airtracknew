@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -38,12 +39,24 @@ export async function addCcefodRecord(data: z.infer<typeof ccefodFormSchema>) {
     }
 }
 
-export async function importCcefodRecords(records: z.infer<typeof ccefodFormSchema>[]) {
+export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
     const batch = writeBatch(db);
     let count = 0;
 
     for (const recordData of records) {
-        const parsed = ccefodFormSchema.safeParse(recordData);
+        // Provide default values for fields that might be null/undefined in the CSV
+        const dataToValidate = {
+            ...recordData,
+            adaPerubahan: recordData.adaPerubahan || 'TIDAK',
+            usulanPerubahan: recordData.usulanPerubahan || '',
+            isiUsulan: recordData.isiUsulan || '',
+            differenceText: recordData.differenceText || '',
+            differenceReason: recordData.differenceReason || '',
+            remarks: recordData.remarks || '',
+            status: recordData.status || 'Draft',
+        };
+
+        const parsed = ccefodFormSchema.safeParse(dataToValidate);
         if (parsed.success) {
             const sanitizedStandardPractice = purify.sanitize(parsed.data.standardPractice);
             const docRef = doc(collection(db, 'ccefodRecords'));
@@ -55,6 +68,13 @@ export async function importCcefodRecords(records: z.infer<typeof ccefodFormSche
             count++;
         } else {
             console.warn("Skipping invalid record during import:", parsed.error.flatten().fieldErrors);
+            // Optionally, return a more specific error to the user
+            const firstErrorField = Object.keys(parsed.error.flatten().fieldErrors)[0];
+            const firstErrorMessage = parsed.error.flatten().fieldErrors[firstErrorField]?.[0];
+            return {
+                success: false,
+                error: `Invalid data found. Field: "${firstErrorField}", Error: "${firstErrorMessage}". Please check your CSV.`
+            }
         }
     }
 

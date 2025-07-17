@@ -1,9 +1,10 @@
+
 import { z } from 'zod';
 
 export const ccefodFormSchema = z.object({
     adaPerubahan: z.enum(['YA', 'TIDAK']),
-    usulanPerubahan: z.string().optional(),
-    isiUsulan: z.string().optional(),
+    usulanPerubahan: z.string().nullable().optional(),
+    isiUsulan: z.string().nullable().optional(),
     annex: z.string().min(1, 'Annex is required'),
     annexReference: z.string().min(1, 'Annex Reference is required'),
     standardPractice: z.any().refine(val => typeof val === 'string' && val.trim().length > 0 && val.trim() !== '<p></p>', {
@@ -19,9 +20,9 @@ export const ccefodFormSchema = z.object({
       "No  Information  Provided",
       "Insufficient  Information  Provided"
     ]),
-    differenceText: z.string().optional(),
-    differenceReason: z.string().optional(),
-    remarks: z.string().optional(),
+    differenceText: z.string().nullable().optional(),
+    differenceReason: z.string().nullable().optional(),
+    remarks: z.string().nullable().optional(),
     status: z.enum(['Existing', 'Draft', 'Final']),
 });
   

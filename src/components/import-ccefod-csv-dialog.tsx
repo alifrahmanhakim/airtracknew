@@ -21,14 +21,14 @@ import { Label } from './ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ScrollArea } from './ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import type { CcefodFormValues } from './ccefod-shared-form-fields';
+import type { CcefodRecord } from '@/lib/types';
 
 export function ImportCcefodCsvDialog() {
   const [open, setOpen] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileName, setFileName] = useState('');
-  const [parsedData, setParsedData] = useState<CcefodFormValues[]>([]);
+  const [parsedData, setParsedData] = useState<Partial<CcefodRecord>[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -50,7 +50,18 @@ export function ImportCcefodCsvDialog() {
           setError(`Error parsing CSV on row ${firstError.row}: ${firstError.message}`);
           setParsedData([]);
         } else {
-          setParsedData(results.data as CcefodFormValues[]);
+          // Map to ensure all fields exist, even if null/undefined from CSV
+           const requiredKeys: (keyof CcefodRecord)[] = [
+            'annex', 'annexReference', 'standardPractice', 'legislationReference', 'implementationLevel', 'status', 'adaPerubahan'
+          ];
+          const dataWithAllKeys = results.data.map(row => {
+            const newRow: Partial<CcefodRecord> = {};
+            requiredKeys.forEach(key => {
+                newRow[key] = row[key] === undefined || row[key] === '' ? null : row[key];
+            })
+            return newRow;
+          });
+          setParsedData(dataWithAllKeys as Partial<CcefodRecord>[]);
         }
         setIsParsing(false);
       },
@@ -110,11 +121,11 @@ export function ImportCcefodCsvDialog() {
           Import CSV
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+      <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Import CCEFOD Records from CSV</DialogTitle>
           <DialogDescription>
-            Select a CSV file to import. The parser will match headers from your file to the required fields.
+            Select a CSV file to import. Headers must match schema: annex, annexReference, standardPractice, legislationReference, implementationLevel, status, adaPerubahan, etc.
           </DialogDescription>
         </DialogHeader>
         
@@ -138,6 +149,8 @@ export function ImportCcefodCsvDialog() {
                                     <TableRow>
                                         <TableHead>Annex</TableHead>
                                         <TableHead>Annex Ref</TableHead>
+                                        <TableHead>Standard/Practice</TableHead>
+                                        <TableHead>Legislation Ref</TableHead>
                                         <TableHead>Implementation</TableHead>
                                         <TableHead>Status</TableHead>
                                     </TableRow>
@@ -145,10 +158,12 @@ export function ImportCcefodCsvDialog() {
                                 <TableBody>
                                     {parsedData.map((row, index) => (
                                         <TableRow key={index}>
-                                            <TableCell className="font-medium truncate max-w-xs">{row.annex}</TableCell>
-                                            <TableCell>{row.annexReference}</TableCell>
-                                            <TableCell>{row.implementationLevel}</TableCell>
-                                            <TableCell>{row.status}</TableCell>
+                                            <TableCell className="font-medium truncate max-w-[200px]">{row.annex || 'N/A'}</TableCell>
+                                            <TableCell className="truncate max-w-[150px]">{row.annexReference  || 'N/A'}</TableCell>
+                                            <TableCell className="truncate max-w-[300px]">{row.standardPractice  || 'N/A'}</TableCell>
+                                            <TableCell className="truncate max-w-[200px]">{row.legislationReference  || 'N/A'}</TableCell>
+                                            <TableCell>{row.implementationLevel || 'N/A'}</TableCell>
+                                            <TableCell>{row.status || 'N/A'}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
