@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -160,10 +161,10 @@ export default function MyDashboardPage() {
     .slice(0, 3);
     
   const workspaceCards = [
-    { title: "CC/EFOD", value: workspaceAnalytics.ccefod, icon: ClipboardCheck, href: "/ccefod", color: "text-blue-500" },
-    { title: "PQs", value: workspaceAnalytics.pqs, icon: CircleHelp, href: "/pqs", color: "text-green-500" },
-    { title: "GAP Analysis", value: workspaceAnalytics.gapAnalysis, icon: GitCompareArrows, href: "/gap-analysis", color: "text-yellow-500" },
-    { title: "Glossary", value: workspaceAnalytics.glossary, icon: BookText, href: "/glossary", color: "text-purple-500" },
+    { title: "CC/EFOD", value: workspaceAnalytics.ccefod, icon: ClipboardCheck, href: "/ccefod", color: "text-blue-500", description: "Compliance Checklist / Electronic Filing of Differences" },
+    { title: "PQs", value: workspaceAnalytics.pqs, icon: CircleHelp, href: "/pqs", color: "text-green-500", description: "Protocol Questions Monitoring" },
+    { title: "GAP Analysis", value: workspaceAnalytics.gapAnalysis, icon: GitCompareArrows, href: "/gap-analysis", color: "text-yellow-500", description: "GAP Analysis based on State Letters" },
+    { title: "Glossary", value: workspaceAnalytics.glossary, icon: BookText, href: "/glossary", color: "text-purple-500", description: "Centralized Translation Analysis" },
   ]
 
   if (isLoading) {
@@ -189,6 +190,7 @@ export default function MyDashboardPage() {
   }
 
   return (
+    <TooltipProvider>
     <main className="p-4 md:p-8">
       <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
         <h1 className="text-3xl font-bold">My Dashboard</h1>
@@ -338,18 +340,26 @@ export default function MyDashboardPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
                     {workspaceCards.map(item => (
-                        <Link href={item.href} key={item.title}>
-                            <div className="p-3 rounded-lg border bg-background hover:bg-muted/80 hover:shadow-sm transition-all text-center">
-                                <item.icon className={cn("h-8 w-8 mx-auto mb-2", item.color)} />
-                                <p className="font-bold text-lg">{item.value}</p>
-                                <p className="text-xs font-medium text-muted-foreground">{item.title}</p>
-                            </div>
-                        </Link>
+                        <Tooltip key={item.title}>
+                           <TooltipTrigger asChild>
+                                <Link href={item.href}>
+                                    <div className="p-3 rounded-lg border bg-background hover:bg-muted/80 hover:shadow-sm transition-all text-center">
+                                        <item.icon className={cn("h-8 w-8 mx-auto mb-2", item.color)} />
+                                        <p className="font-bold text-lg">{item.value}</p>
+                                        <p className="text-xs font-medium text-muted-foreground">{item.title}</p>
+                                    </div>
+                                </Link>
+                           </TooltipTrigger>
+                           <TooltipContent>
+                               <p>{item.description}</p>
+                           </TooltipContent>
+                        </Tooltip>
                     ))}
                 </CardContent>
              </Card>
         </aside>
       </div>
     </main>
+    </TooltipProvider>
   );
 }
