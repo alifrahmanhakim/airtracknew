@@ -1,8 +1,9 @@
+
 'use server';
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import type { GlossaryRecord } from '../types';
 import { glossaryFormSchema } from '../schemas';
 
@@ -33,5 +34,34 @@ export async function deleteGlossaryRecord(id: string) {
         return { success: true };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
+export async function importGlossaryRecords(records: z.infer<typeof glossaryFormSchema>[]) {
+    const batch = writeBatch(db);
+    let count = 0;
+    
+    for (const [index, recordData] of records.entries()) {
+        const parsed = glossaryFormSchema.safeParse(recordData);
+        if (parsed.success) {
+            const docRef = doc(collection(db, 'glossaryRecords'));
+            batch.set(docRef, { ...parsed.data, createdAt: serverTimestamp() });
+            count++;
+        } else {
+            console.warn(`Skipping invalid glossary record at row ${index + 1}:`, parsed.error.flatten().fieldErrors);
+            const firstError = parsed.error.issues[0];
+            const fieldPath = firstError.path.join('.');
+            return {
+                success: false,
+                error: `Error on row ${index + 2} in CSV. Field: "${fieldPath}", Message: "${firstError.message}". Please check your file.`
+            };
+        }
+    }
+
+    try {
+        await batch.commit();
+        return { success: true, count };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred during batch import' };
     }
 }

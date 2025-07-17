@@ -27,6 +27,9 @@ const GlossaryRecordsTable = dynamic(() => import('@/components/glossary-records
 const GlossaryAnalyticsDashboard = dynamic(() => import('@/components/glossary-analytics-dashboard').then(mod => mod.GlossaryAnalyticsDashboard), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
+const ImportGlossaryCsvDialog = dynamic(() => import('@/components/import-glossary-csv-dialog').then(mod => mod.ImportGlossaryCsvDialog), {
+    ssr: false
+});
 
 export default function GlossaryPage() {
   const [records, setRecords] = useState<GlossaryRecord[]>([]);
@@ -83,6 +86,22 @@ export default function GlossaryPage() {
     setRecordToDelete(null);
   };
 
+  const handleExport = () => {
+    if (records.length === 0) {
+      toast({ variant: 'destructive', title: 'No Data', description: 'There are no records to export.' });
+      return;
+    }
+    const csv = Papa.unparse(records);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'glossary_export.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({ title: 'Export Started', description: 'Your glossary data is being downloaded.' });
+  }
+
   function renderContent() {
     if (isLoading) {
       return (
@@ -105,6 +124,9 @@ export default function GlossaryPage() {
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>
+                  <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                    <ImportGlossaryCsvDialog />
+                  </Suspense>
                   <TabsList>
                       <TabsTrigger value="form">Input Form</TabsTrigger>
                       <TabsTrigger value="records">Records</TabsTrigger>
@@ -130,10 +152,18 @@ export default function GlossaryPage() {
             <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Translation Records</CardTitle>
-                        <CardDescription>
-                            Browse and manage the list of all translation analyses.
-                        </CardDescription>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle>Translation Records</CardTitle>
+                          <CardDescription>
+                              Browse and manage the list of all translation analyses.
+                          </CardDescription>
+                        </div>
+                        <Button variant="outline" onClick={handleExport} disabled={records.length === 0}>
+                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                            Export CSV
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent>
                         <GlossaryRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
