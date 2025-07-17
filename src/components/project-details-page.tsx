@@ -98,7 +98,7 @@ function AssociatedGapAnalysisCard({
   
     return (
       <>
-        <Card>
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GitCompareArrows /> Associated GAP Analysis
@@ -195,8 +195,11 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
   const associatedGapRecords = React.useMemo(() => {
     if (project.projectType !== 'Rulemaking' || !project.casr) return [];
-    return allGapAnalysisRecords.filter(record => record.casrAffected === project.casr);
+    return allGapAnalysisRecords.filter(record => 
+        record.evaluations.some(e => e.casrAffected === `CASR ${project.casr}`)
+    );
   }, [allGapAnalysisRecords, project.casr, project.projectType]);
+
 
   if (!project) {
     return <div>Loading project details...</div>;
@@ -767,3 +770,5 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </TooltipProvider>
   );
 }
+
+    

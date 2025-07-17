@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -6,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { addGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
 import { GapAnalysisSharedFormFields, formSchema, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { format } from 'date-fns';
 import { ComboboxOption } from './ui/combobox';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type GapAnalysisFormProps = {
   onFormSubmit: (data: GapAnalysisRecord) => void;
@@ -20,13 +23,23 @@ type GapAnalysisFormProps = {
 
 export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysisFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [casrOptions, setCasrOptions] = useState<ComboboxOption[]>([]);
   const { toast } = useToast();
 
-  const casrOptions: ComboboxOption[] = rulemakingProjects.map(p => ({
-    value: p.casr || '',
-    label: `CASR ${p.casr} - ${p.name}`,
-  })).filter(p => p.value);
-
+  useEffect(() => {
+    const fetchProjects = async () => {
+        const projectsSnapshot = await getDocs(collection(db, "rulemakingProjects"));
+        const projectsFromDb = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+        const options = projectsFromDb
+            .filter(p => p.casr)
+            .map(p => ({
+                value: `CASR ${p.casr}`,
+                label: `CASR ${p.casr} - ${p.name}`
+            }));
+        setCasrOptions(options);
+    };
+    fetchProjects();
+  }, []);
 
   const defaultFormValues: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate?: Date } = {
     slReferenceNumber: '',
@@ -55,13 +68,11 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
 
   const onSubmit = async (data: GapAnalysisFormValues) => {
     setIsLoading(true);
-
-    const dataToSubmit = {
+    
+    const result = await addGapAnalysisRecord({
       ...data,
       embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
-    };
-    
-    const result = await addGapAnalysisRecord(dataToSubmit as any);
+    });
 
     setIsLoading(false);
 
@@ -98,3 +109,5 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     </Form>
   );
 }
+
+    

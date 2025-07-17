@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,8 @@ import { updateGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { ScrollArea } from './ui/scroll-area';
 import { parseISO } from 'date-fns';
 import { ComboboxOption } from './ui/combobox';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type EditGapAnalysisRecordDialogProps = {
   record: GapAnalysisRecord;
@@ -31,7 +34,23 @@ type EditGapAnalysisRecordDialogProps = {
 export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapAnalysisRecordDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [casrOptions, setCasrOptions] = useState<ComboboxOption[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+        const projectsSnapshot = await getDocs(collection(db, "rulemakingProjects"));
+        const projectsFromDb = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+        const options = projectsFromDb
+            .filter(p => p.casr)
+            .map(p => ({
+                value: `CASR ${p.casr}`,
+                label: `CASR ${p.casr} - ${p.name}`
+            }));
+        setCasrOptions(options);
+    };
+    fetchProjects();
+  }, []);
 
   const form = useForm<GapAnalysisFormValues>({
     resolver: zodResolver(formSchema),
@@ -48,8 +67,6 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
   const onSubmit = async (data: GapAnalysisFormValues) => {
     setIsLoading(true);
     
-    // The date is already a Date object from the form, so we just need to format it if needed by the backend.
-    // The action already expects a GapAnalysisFormValues, where the date is a Date object.
     const result = await updateGapAnalysisRecord(record.id, data);
 
     setIsLoading(false);
@@ -89,7 +106,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
             
             <div className="flex-grow overflow-y-auto pr-6 my-4">
                 <div className="space-y-8">
-                    <GapAnalysisSharedFormFields form={form} casrOptions={[]} />
+                    <GapAnalysisSharedFormFields form={form} casrOptions={casrOptions} />
                 </div>
             </div>
 
@@ -108,3 +125,5 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     </Dialog>
   );
 }
+
+    

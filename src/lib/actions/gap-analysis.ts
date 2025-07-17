@@ -1,10 +1,12 @@
+
 'use server';
 
 import { z } from 'zod';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import type { GapAnalysisRecord } from '../types';
+import type { GapAnalysisRecord, Project } from '../types';
 import { gapAnalysisFormSchema } from '../schemas';
+import { format } from 'date-fns';
 
 export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormSchema>) {
     const parsed = gapAnalysisFormSchema.safeParse(data);
@@ -12,14 +14,19 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
         return { success: false, error: "Invalid data provided." };
     }
     try {
+        const dataToSubmit = {
+          ...parsed.data,
+          embeddedApplicabilityDate: format(parsed.data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
+        };
+
         const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), {
-            ...parsed.data,
-            createdAt: serverTimestamp(),
+            ...dataToSubmit,
+            createdAt: new Date().toISOString(),
         });
+
         const newRecord: GapAnalysisRecord = {
             id: docRef.id,
-            ...parsed.data,
-            embeddedApplicabilityDate: parsed.data.embeddedApplicabilityDate.toISOString(),
+            ...dataToSubmit,
             createdAt: new Date().toISOString(),
         };
         return { success: true, data: newRecord };
@@ -35,14 +42,17 @@ export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof g
     }
     try {
         const docRef = doc(db, 'gapAnalysisRecords', id);
-        await updateDoc(docRef, {
-            ...parsed.data,
-            embeddedApplicabilityDate: parsed.data.embeddedApplicabilityDate,
-        });
+        
+        const dataToSubmit = {
+          ...parsed.data,
+          embeddedApplicabilityDate: format(parsed.data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
+        };
+
+        await updateDoc(docRef, dataToSubmit);
+
         const updatedRecord: GapAnalysisRecord = {
             id,
-            ...parsed.data,
-            embeddedApplicabilityDate: parsed.data.embeddedApplicabilityDate.toISOString(),
+            ...dataToSubmit,
             createdAt: new Date().toISOString() // This is not ideal, but necessary for the type
         };
         return { success: true, data: updatedRecord };
@@ -59,3 +69,5 @@ export async function deleteGapAnalysisRecord(id: string) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
+
+    
