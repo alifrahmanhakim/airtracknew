@@ -44,18 +44,21 @@ export async function importCcefodRecords(records: Partial<CcefodRecord>[]) {
     let count = 0;
 
     for (const recordData of records) {
-        // Provide default values for fields that might be null/undefined in the CSV
+        // Explicitly handle null/undefined for required string fields by converting them to empty strings.
         const dataToValidate = {
             ...recordData,
-            adaPerubahan: recordData.adaPerubahan || 'TIDAK',
-            usulanPerubahan: recordData.usulanPerubahan || '',
-            isiUsulan: recordData.isiUsulan || '',
-            standardPractice: recordData.standardPractice || '',
-            legislationReference: recordData.legislationReference || '',
-            differenceText: recordData.differenceText || '',
-            differenceReason: recordData.differenceReason || '',
-            remarks: recordData.remarks || '',
-            status: recordData.status || 'Draft',
+            annex: recordData.annex ?? '',
+            annexReference: recordData.annexReference ?? '',
+            standardPractice: recordData.standardPractice ?? '',
+            legislationReference: recordData.legislationReference ?? '',
+            implementationLevel: recordData.implementationLevel ?? 'No difference',
+            status: recordData.status ?? 'Draft',
+            adaPerubahan: recordData.adaPerubahan ?? 'TIDAK',
+            usulanPerubahan: recordData.usulanPerubahan ?? '',
+            isiUsulan: recordData.isiUsulan ?? '',
+            differenceText: recordData.differenceText ?? '',
+            differenceReason: recordData.differenceReason ?? '',
+            remarks: recordData.remarks ?? '',
         };
 
         const parsed = ccefodFormSchema.safeParse(dataToValidate);

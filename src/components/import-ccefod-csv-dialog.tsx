@@ -44,24 +44,14 @@ export function ImportCcefodCsvDialog() {
       header: true,
       skipEmptyLines: 'greedy',
       dynamicTyping: true,
+      transform: (value) => value === '' ? null : value,
       complete: (results) => {
         if (results.errors.length) {
           const firstError = results.errors[0];
           setError(`Error parsing CSV on row ${firstError.row}: ${firstError.message}`);
           setParsedData([]);
         } else {
-          // Map to ensure all fields exist, even if null/undefined from CSV
-           const requiredKeys: (keyof CcefodRecord)[] = [
-            'annex', 'annexReference', 'standardPractice', 'legislationReference', 'implementationLevel', 'status', 'adaPerubahan'
-          ];
-          const dataWithAllKeys = results.data.map(row => {
-            const newRow: Partial<CcefodRecord> = {};
-            requiredKeys.forEach(key => {
-                newRow[key] = row[key] === undefined || row[key] === '' ? null : row[key];
-            })
-            return newRow;
-          });
-          setParsedData(dataWithAllKeys as Partial<CcefodRecord>[]);
+          setParsedData(results.data as Partial<CcefodRecord>[]);
         }
         setIsParsing(false);
       },
@@ -92,6 +82,7 @@ export function ImportCcefodCsvDialog() {
             description: `${result.count} records have been imported.`,
         });
         resetState();
+        window.location.reload();
     } else {
         toast({
             variant: 'destructive',
@@ -158,12 +149,12 @@ export function ImportCcefodCsvDialog() {
                                 <TableBody>
                                     {parsedData.map((row, index) => (
                                         <TableRow key={index}>
-                                            <TableCell className="font-medium truncate max-w-[200px]">{row.annex || 'N/A'}</TableCell>
-                                            <TableCell className="truncate max-w-[150px]">{row.annexReference  || 'N/A'}</TableCell>
-                                            <TableCell className="truncate max-w-[300px]">{row.standardPractice  || 'N/A'}</TableCell>
-                                            <TableCell className="truncate max-w-[200px]">{row.legislationReference  || 'N/A'}</TableCell>
-                                            <TableCell>{row.implementationLevel || 'N/A'}</TableCell>
-                                            <TableCell>{row.status || 'N/A'}</TableCell>
+                                            <TableCell className="font-medium truncate max-w-[200px]">{row.annex || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell className="truncate max-w-[150px]">{row.annexReference  || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell className="truncate max-w-[300px]">{row.standardPractice  || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell className="truncate max-w-[200px]">{row.legislationReference  || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell>{row.implementationLevel || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell>{row.status || <span className="text-muted-foreground">N/A</span>}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
