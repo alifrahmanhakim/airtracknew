@@ -25,7 +25,7 @@ import {
   differenceInCalendarISOWeeks,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Task, User } from '@/lib/types';
+import type { Project, Task, User } from '@/lib/types';
 import { ListTodo, GanttChartSquare } from 'lucide-react';
 import { findUserById } from '@/lib/data-utils';
 import {
@@ -42,6 +42,7 @@ import { Label } from './ui/label';
 
 type ProjectTimelineProps = {
   projectId: string;
+  projectType: Project['projectType'];
   tasks: Task[];
   teamMembers: User[];
   onTaskUpdate: (updatedTask: Task) => void;
@@ -55,7 +56,7 @@ const DAY_WIDTH_DAY_VIEW = 40;
 const ROW_HEIGHT = 52;
 const HEADER_HEIGHT = 64;
 
-export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }: ProjectTimelineProps) {
+export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, onTaskUpdate }: ProjectTimelineProps) {
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
@@ -313,7 +314,7 @@ export function ProjectTimeline({ projectId, tasks, teamMembers, onTaskUpdate }:
                             <div className="absolute right-[-35px] top-0 h-full flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <EditTaskDialog
                                     projectId={projectId}
-                                    projectType={project.projectType}
+                                    projectType={projectType}
                                     task={task}
                                     teamMembers={teamMembers}
                                     onTaskUpdate={onTaskUpdate}

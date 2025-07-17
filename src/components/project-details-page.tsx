@@ -397,6 +397,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           <CardContent className="pl-0 pr-0 pb-0">
               <ProjectTimeline 
                 projectId={project.id}
+                projectType={project.projectType}
                 tasks={tasks}
                 teamMembers={project.team}
                 onTaskUpdate={handleTaskUpdate}
