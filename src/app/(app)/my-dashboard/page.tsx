@@ -227,7 +227,7 @@ export default function MyDashboardPage() {
         </div>
 
         {/* Sidebar */}
-        <aside className="lg:col-span-1 xl:col-span-1 space-y-6">
+        <aside className="lg:col-span-1 xl:col-span-1 space-y-6 mt-14">
             <div className="grid grid-cols-2 gap-4">
                 <Card>
                     <CardHeader className="pb-2 h-16">
