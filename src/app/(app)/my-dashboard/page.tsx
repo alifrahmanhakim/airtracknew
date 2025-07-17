@@ -23,6 +23,7 @@ import { format, parseISO, differenceInDays } from 'date-fns';
 import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { InteractiveTimeline } from '@/components/interactive-timeline';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -156,6 +157,7 @@ export default function MyDashboardPage() {
                 <TabsList className="mb-4">
                 <TabsTrigger value="projects">My Projects ({myProjects.length})</TabsTrigger>
                 <TabsTrigger value="tasks">My Tasks ({assignedTasks.length})</TabsTrigger>
+                <TabsTrigger value="timeline">My Timeline</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="projects">
@@ -217,6 +219,9 @@ export default function MyDashboardPage() {
                     </Table>
                     </CardContent>
                 </Card>
+                </TabsContent>
+                <TabsContent value="timeline">
+                    <InteractiveTimeline tasks={assignedTasks} />
                 </TabsContent>
             </Tabs>
         </div>
