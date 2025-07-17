@@ -152,8 +152,9 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     const topAnnexDescription = annexPercentages.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-sm text-muted-foreground">
         {annexPercentages.map(item => (
-           <div key={item.name} className="grid grid-cols-[1fr_auto] items-baseline gap-x-2">
-              <span>{item.name}</span>
+           <div key={item.name} className="flex items-baseline gap-2">
+              <span className="flex-shrink-0">{item.name}</span>
+              <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
               <span className="font-bold whitespace-nowrap text-right">{item.percentage.toFixed(1)}%</span>
            </div>
         ))}
