@@ -1,25 +1,25 @@
 
-
 'use server';
 
 import { z } from 'zod';
 import { db, auth } from './firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, writeBatch, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc } from 'firebase/firestore';
+import { sendPasswordResetEmail, deleteUser as deleteFirebaseAuthUser } from "firebase/auth";
+
 import DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
 import type { CcefodRecord, Document as ProjectDocument, Project, SubProject, Task, User, PqRecord, GapAnalysisRecord, GlossaryRecord } from './types';
-import { ccefodFormSchema, pqFormSchema, gapAnalysisFormSchema, glossaryFormSchema } from './schemas';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import { ccefodFormSchema, gapAnalysisFormSchema, glossaryFormSchema, pqFormSchema } from './schemas';
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window as any);
 
 
 // --- CCEFOD ACTIONS ---
-export async function addCcefodRecord(data: unknown) {
+export async function addCcefodRecord(data: z.infer<typeof ccefodFormSchema>) {
     const parsed = ccefodFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." };
     }
 
     const sanitizedStandardPractice = purify.sanitize(parsed.data.standardPractice);
@@ -42,53 +42,61 @@ export async function addCcefodRecord(data: unknown) {
     }
 }
 
-export async function importCcefodRecords(data: unknown[]) {
-    const records = z.array(ccefodFormSchema).safeParse(data);
-    if (!records.success) {
-        return { success: false, error: 'Invalid data format.' };
-    }
-
+export async function importCcefodRecords(records: z.infer<typeof ccefodFormSchema>[]) {
     const batch = writeBatch(db);
-    records.data.forEach(record => {
-        const sanitizedStandardPractice = purify.sanitize(record.standardPractice);
-        const docRef = doc(collection(db, 'ccefodRecords'));
-        batch.set(docRef, {
-            ...record,
-            standardPractice: sanitizedStandardPractice,
-            createdAt: serverTimestamp(),
-        });
-    });
+    let count = 0;
+
+    for (const recordData of records) {
+        const parsed = ccefodFormSchema.safeParse(recordData);
+        if (parsed.success) {
+            const sanitizedStandardPractice = purify.sanitize(parsed.data.standardPractice);
+            const docRef = doc(collection(db, 'ccefodRecords'));
+            batch.set(docRef, {
+                ...parsed.data,
+                standardPractice: sanitizedStandardPractice,
+                createdAt: serverTimestamp(),
+            });
+            count++;
+        } else {
+            // Optionally log errors for individual records
+            console.warn("Skipping invalid record during import:", parsed.error.flatten().fieldErrors);
+        }
+    }
 
     try {
         await batch.commit();
-        return { success: true, count: records.data.length };
+        return { success: true, count };
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'Batch import failed.' };
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred during batch import' };
     }
 }
 
 
-export async function updateCcefodRecord(id: string, data: unknown) {
+export async function updateCcefodRecord(id: string, data: z.infer<typeof ccefodFormSchema>) {
     const parsed = ccefodFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." };
     }
     
     const sanitizedStandardPractice = purify.sanitize(parsed.data.standardPractice);
-    const updatedRecordData = {
-        ...parsed.data,
-        standardPractice: sanitizedStandardPractice,
-    };
 
     try {
         const docRef = doc(db, 'ccefodRecords', id);
-        await updateDoc(docRef, updatedRecordData);
-        return { success: true, data: { id, ...updatedRecordData, createdAt: new Date().toISOString() } };
+        await updateDoc(docRef, {
+             ...parsed.data,
+             standardPractice: sanitizedStandardPractice,
+        });
+        const updatedRecord: CcefodRecord = {
+            id,
+            ...parsed.data,
+            standardPractice: sanitizedStandardPractice,
+            createdAt: new Date().toISOString() // This might not be accurate, but it's a placeholder
+        };
+        return { success: true, data: updatedRecord };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
-
 
 export async function deleteCcefodRecord(id: string) {
     try {
@@ -101,12 +109,11 @@ export async function deleteCcefodRecord(id: string) {
 
 
 // --- PQS ACTIONS ---
-export async function addPqRecord(data: unknown) {
+export async function addPqRecord(data: z.infer<typeof pqFormSchema>) {
     const parsed = pqFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." };
     }
-
     try {
         const docRef = await addDoc(collection(db, 'pqsRecords'), {
             ...parsed.data,
@@ -123,17 +130,20 @@ export async function addPqRecord(data: unknown) {
     }
 }
 
-export async function updatePqRecord(id: string, data: unknown) {
+export async function updatePqRecord(id: string, data: z.infer<typeof pqFormSchema>) {
     const parsed = pqFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." };
     }
-
-    const updatedRecordData = { ...parsed.data };
     try {
         const docRef = doc(db, 'pqsRecords', id);
-        await updateDoc(docRef, updatedRecordData);
-        return { success: true, data: { id, ...updatedRecordData, createdAt: new Date().toISOString() } };
+        await updateDoc(docRef, parsed.data);
+        const updatedRecord: PqRecord = {
+            id,
+            ...parsed.data,
+            createdAt: new Date().toISOString()
+        };
+        return { success: true, data: updatedRecord };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
@@ -148,34 +158,33 @@ export async function deletePqRecord(id: string) {
     }
 }
 
-export async function importPqRecords(data: unknown[]) {
-    const records = z.array(pqFormSchema).safeParse(data);
-    if (!records.success) {
-        return { success: false, error: 'Invalid data format.' };
-    }
-
+export async function importPqRecords(records: z.infer<typeof pqFormSchema>[]) {
     const batch = writeBatch(db);
-    records.data.forEach(record => {
-        const docRef = doc(collection(db, 'pqsRecords'));
-        batch.set(docRef, { ...record, createdAt: serverTimestamp() });
-    });
-
+    let count = 0;
+    for (const recordData of records) {
+        const parsed = pqFormSchema.safeParse(recordData);
+        if (parsed.success) {
+            const docRef = doc(collection(db, 'pqsRecords'));
+            batch.set(docRef, { ...parsed.data, createdAt: serverTimestamp() });
+            count++;
+        } else {
+            console.warn("Skipping invalid PQ record during import:", parsed.error.flatten().fieldErrors);
+        }
+    }
     try {
         await batch.commit();
-        return { success: true, count: records.data.length };
+        return { success: true, count };
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'Batch import failed.' };
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred during batch import' };
     }
 }
 
-
 // --- GAP ANALYSIS ACTIONS ---
-export async function addGapAnalysisRecord(data: unknown) {
+export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormSchema>) {
     const parsed = gapAnalysisFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." };
     }
-
     try {
         const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), {
             ...parsed.data,
@@ -184,7 +193,8 @@ export async function addGapAnalysisRecord(data: unknown) {
         const newRecord: GapAnalysisRecord = {
             id: docRef.id,
             ...parsed.data,
-            createdAt: new Date().toISOString()
+            embeddedApplicabilityDate: parsed.data.embeddedApplicabilityDate.toISOString(),
+            createdAt: new Date().toISOString(),
         };
         return { success: true, data: newRecord };
     } catch (error) {
@@ -192,20 +202,29 @@ export async function addGapAnalysisRecord(data: unknown) {
     }
 }
 
-export async function updateGapAnalysisRecord(id: string, data: unknown) {
+export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof gapAnalysisFormSchema>) {
     const parsed = gapAnalysisFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." };
     }
-    const updatedRecordData = { ...parsed.data };
     try {
         const docRef = doc(db, 'gapAnalysisRecords', id);
-        await updateDoc(docRef, updatedRecordData as any);
-        return { success: true, data: { id, ...updatedRecordData, createdAt: new Date().toISOString() } as GapAnalysisRecord };
+        await updateDoc(docRef, {
+            ...parsed.data,
+            embeddedApplicabilityDate: parsed.data.embeddedApplicabilityDate,
+        });
+        const updatedRecord: GapAnalysisRecord = {
+            id,
+            ...parsed.data,
+            embeddedApplicabilityDate: parsed.data.embeddedApplicabilityDate.toISOString(),
+            createdAt: new Date().toISOString() // This is not ideal, but necessary for the type
+        };
+        return { success: true, data: updatedRecord };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
+
 
 export async function deleteGapAnalysisRecord(id: string) {
     try {
@@ -216,13 +235,13 @@ export async function deleteGapAnalysisRecord(id: string) {
     }
 }
 
+
 // --- GLOSSARY ACTIONS ---
-export async function addGlossaryRecord(data: unknown) {
+export async function addGlossaryRecord(data: z.infer<typeof glossaryFormSchema>) {
     const parsed = glossaryFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." };
     }
-
     try {
         const docRef = await addDoc(collection(db, 'glossaryRecords'), {
             ...parsed.data,
@@ -231,7 +250,7 @@ export async function addGlossaryRecord(data: unknown) {
         const newRecord: GlossaryRecord = {
             id: docRef.id,
             ...parsed.data,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
         };
         return { success: true, data: newRecord };
     } catch (error) {
@@ -256,7 +275,7 @@ export async function updateUserRole(userId: string, role: User['role']) {
         await updateDoc(userRef, { role });
         return { success: true };
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+        return { success: false, error: 'Failed to update user role.' };
     }
 }
 
@@ -266,16 +285,17 @@ export async function updateUserApproval(userId: string, isApproved: boolean) {
         await updateDoc(userRef, { isApproved });
         return { success: true };
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'Failed to update approval status.' };
+        return { success: false, error: 'Failed to update user approval status.' };
     }
 }
 
-
 export async function deleteUser(userId: string) {
     try {
-        // This action should be more robust in a real app,
-        // handling cleanup of user-related data, but for now, it just deletes the user doc.
+        // This action should be protected and only callable by an admin.
+        // The Firebase auth user might need to be deleted separately in a more secure environment.
         await deleteDoc(doc(db, 'users', userId));
+        // We cannot delete the Firebase Auth user from a client-side server action easily.
+        // This requires admin privileges. For now, we only delete the Firestore record.
         return { success: true };
     } catch (error) {
         return { success: false, error: 'Failed to delete user.' };
@@ -283,181 +303,105 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserProfile(userId: string, name: string) {
-    try {
-        const userRef = doc(db, 'users', userId);
-        await updateDoc(userRef, { name });
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'Failed to update profile.' };
-    }
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { name });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'Failed to update profile.' };
+  }
 }
 
 export async function sendPasswordReset(email: string) {
-    try {
-        await sendPasswordResetEmail(auth, email);
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'Failed to send password reset email.' };
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error) {
+        // Handle specific auth errors if needed
+        if (error.message.includes('auth/user-not-found')) {
+            return { success: false, error: 'No user found with this email address.' };
+        }
     }
+    return { success: false, error: 'Failed to send password reset email.' };
+  }
 }
 
 
 // --- PROJECT ACTIONS ---
-export async function addRulemakingProject(projectData: unknown) {
-  const projectSchema = z.object({
-      name: z.string().min(1, 'Project name is required.'),
-      description: z.string().min(1, 'Description is required.'),
-      startDate: z.string(),
-      endDate: z.string(),
-      team: z.array(z.string()),
-      annex: z.string().min(1, 'Annex is required.'),
-      casr: z.string().min(1, 'CASR is required.'),
-      tags: z.array(z.string()).optional(),
-  });
-  const parsed = projectSchema.safeParse(projectData);
-
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: parsed.error.errors.map(e => e.message).join(', '),
-    };
-  }
-
-  try {
-    const docRef = await addDoc(collection(db, 'rulemakingProjects'), {
-      ...parsed.data,
-      projectType: 'Rulemaking',
-      status: 'On Track',
-      createdAt: serverTimestamp(),
-    });
-    return { success: true, id: docRef.id };
-  } catch (error) {
-    return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'An unknown error occurred' 
-    };
-  }
-}
-
-export async function addTimKerjaProject(projectData: unknown) {
-    const timKerjaProjectSchema = z.object({
-        name: z.string().min(1, 'Project name is required.'),
-        description: z.string().min(1, 'Description is required.'),
-        ownerId: z.string(),
-        startDate: z.string(),
-        endDate: z.string(),
-        status: z.enum(['On Track', 'Off Track', 'At Risk', 'Completed']),
-        team: z.array(z.any()),
-        tags: z.array(z.string()).optional(),
-    });
-    const parsed = timKerjaProjectSchema.safeParse(projectData);
-  
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: parsed.error.errors.map(e => e.message).join(', '),
-      };
-    }
-  
+export async function addRulemakingProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist'>) {
     try {
-      const docRef = await addDoc(collection(db, 'timKerjaProjects'), {
-        ...parsed.data,
-        projectType: 'Tim Kerja',
-        createdAt: serverTimestamp(),
-      });
-      return { success: true, id: docRef.id };
+        const docRef = await addDoc(collection(db, 'rulemakingProjects'), {
+            ...projectData,
+            projectType: 'Rulemaking',
+            tasks: [],
+            documents: [],
+            subProjects: [],
+            notes: '',
+            checklist: [],
+            createdAt: serverTimestamp(),
+        });
+        return { success: true, id: docRef.id };
     } catch (error) {
-      return { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'An unknown error occurred' 
-      };
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
 
-export async function updateProject(projectId: string, projectType: Project['projectType'], projectData: Partial<Project>) {
+export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist'>) {
+    try {
+        const docRef = await addDoc(collection(db, 'timKerjaProjects'), {
+            ...projectData,
+            projectType: 'Tim Kerja',
+            tasks: [],
+            documents: [],
+            subProjects: [],
+            notes: '',
+            checklist: [],
+            createdAt: serverTimestamp(),
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
+export async function deleteAllTimKerjaProjects() {
+    try {
+        const q = query(collection(db, 'timKerjaProjects'));
+        const querySnapshot = await getDocs(q);
+        const batch = writeBatch(db);
+        let count = 0;
+        querySnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+            count++;
+        });
+        await batch.commit();
+        return { success: true, count };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
+export async function updateProject(projectId: string, projectType: Project['projectType'], projectData: Partial<Omit<Project, 'id'>>) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     try {
         const projectRef = doc(db, collectionName, projectId);
         await updateDoc(projectRef, projectData);
         return { success: true };
     } catch (error) {
-        return { success: false, error: 'Failed to update project.' };
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
 
 export async function deleteProject(projectId: string, projectType: Project['projectType']) {
   const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
   try {
-    await deleteDoc(doc(db, collectionName, projectId));
+    const projectRef = doc(db, collectionName, projectId);
+    await deleteDoc(projectRef);
     return { success: true };
   } catch (error) {
-    return { success: false, error: 'Failed to delete project.' };
+    return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
   }
-}
-
-export async function addTask(projectId: string, task: Task, projectType: Project['projectType']) {
-    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
-    const projectRef = doc(db, collectionName, projectId);
-    try {
-      await updateDoc(projectRef, {
-        tasks: arrayUnion(task)
-      });
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Failed to add task.' };
-    }
-}
-
-export async function updateTask(projectId: string, updatedTask: Task, projectType: Project['projectType']) {
-    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
-    const projectRef = doc(db, collectionName, projectId);
-
-    const batch = writeBatch(db);
-    // Remove the old task first
-    batch.update(projectRef, { tasks: arrayRemove({ id: updatedTask.id }) });
-    // This is a placeholder; in a real scenario you'd query the exact task to remove.
-    // Firestore's arrayRemove is limited, so for a robust solution, one would fetch the project,
-    // modify the tasks array in code, and then update the entire array.
-    // For this app's purpose, we'll assume a simpler (less safe) remove-and-add.
-    // A better way: fetch, filter, add, and then update the whole array.
-    
-    // Then add the updated task
-    batch.update(projectRef, { tasks: arrayUnion(updatedTask) });
-
-    try {
-        // This is a simplified approach. A more robust way would be to fetch the doc,
-        // find and replace the task in the array, then update the whole array.
-        // For now, let's try a direct update with a new array.
-        const { getDoc } = await import('firebase/firestore');
-        const projectSnap = await getDoc(projectRef);
-        if (projectSnap.exists()) {
-            const projectData = projectSnap.data() as Project;
-            const tasks = projectData.tasks || [];
-            const newTasks = tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
-            await updateDoc(projectRef, { tasks: newTasks });
-        }
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: 'Failed to update task.' };
-    }
-}
-
-export async function deleteTask(projectId: string, taskId: string, projectType: Project['projectType']) {
-    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
-    const projectRef = doc(db, collectionName, projectId);
-    try {
-        const { getDoc } = await import('firebase/firestore');
-        const projectSnap = await getDoc(projectRef);
-        if (projectSnap.exists()) {
-            const projectData = projectSnap.data() as Project;
-            const tasks = projectData.tasks || [];
-            const newTasks = tasks.filter(t => t.id !== taskId);
-            await updateDoc(projectRef, { tasks: newTasks });
-        }
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: 'Failed to delete task.' };
-    }
 }
 
 export async function addDocument(projectId: string, documentData: { name: string; url: string; }, projectType: Project['projectType']) {
@@ -508,99 +452,139 @@ export async function addDocument(projectId: string, documentData: { name: strin
 }
 
 export async function deleteDocument(projectId: string, documentId: string, projectType: Project['projectType']) {
-  const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
-  const projectRef = doc(db, collectionName, projectId);
-
-  try {
-    const { getDoc } = await import('firebase/firestore');
-    const projectSnap = await getDoc(projectRef);
-    if (projectSnap.exists()) {
-      const projectData = projectSnap.data() as Project;
-      const documents = projectData.documents || [];
-      const newDocuments = documents.filter(doc => doc.id !== documentId);
-      await updateDoc(projectRef, { documents: newDocuments });
-    }
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: 'Failed to delete document.' };
-  }
-}
-
-export async function addSubProject(projectId: string, subProjectData: SubProject, projectType: Project['projectType']) {
-  const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
-  const projectRef = doc(db, collectionName, projectId);
-  try {
-    await updateDoc(projectRef, {
-      subProjects: arrayUnion(subProjectData)
-    });
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: 'Failed to add sub-project.' };
-  }
-}
-
-export async function updateSubProject(projectId: string, updatedSubProject: SubProject, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
     try {
-        const { getDoc } = await import('firebase/firestore');
         const projectSnap = await getDoc(projectRef);
         if (projectSnap.exists()) {
             const projectData = projectSnap.data() as Project;
-            const subProjects = projectData.subProjects || [];
-            const newSubProjects = subProjects.map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub);
-            await updateDoc(projectRef, { subProjects: newSubProjects });
+            const updatedDocuments = projectData.documents.filter(doc => doc.id !== documentId);
+            await updateDoc(projectRef, { documents: updatedDocuments });
+            return { success: true };
         }
+        return { success: false, error: "Project not found." };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to delete document.' };
+    }
+}
+
+export async function addSubProject(projectId: string, subProjectData: SubProject, projectType: Project['projectType']) {
+    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
+
+    try {
+      await updateDoc(projectRef, {
+        subProjects: arrayUnion(subProjectData)
+      });
+      return { success: true };
+    } catch (error) {
+      return { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Failed to add sub-project.' 
+      };
+    }
+}
+
+
+export async function updateSubProject(projectId: string, subProject: SubProject, projectType: Project['projectType']) {
+    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
+    try {
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists()) {
+            const projectData = projectSnap.data() as Project;
+            const updatedSubProjects = projectData.subProjects.map(sp => sp.id === subProject.id ? subProject : sp);
+            await updateDoc(projectRef, { subProjects: updatedSubProjects });
+            return { success: true };
+        }
+        return { success: false, error: 'Project not found' };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to update sub-project.' };
+    }
+}
+
+export async function addTask(projectId: string, task: Task, projectType: Project['projectType']) {
+    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
+
+    try {
+        await updateDoc(projectRef, {
+            tasks: arrayUnion(task)
+        });
         return { success: true };
     } catch (error) {
-        return { success: false, error: 'Failed to update sub-project.' };
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to add task.' };
     }
 }
 
-export async function updateProjectChecklist(projectId: string, checklist: ChecklistItem[], projectType: Project['projectType']) {
-  const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
-  const projectRef = doc(db, collectionName, projectId);
-  try {
-    await updateDoc(projectRef, { checklist });
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: 'Failed to update checklist.' };
-  }
-}
-
-export async function deleteAllTimKerjaProjects() {
-    const projectsRef = collection(db, 'timKerjaProjects');
+export async function updateTask(projectId: string, task: Task, projectType: Project['projectType']) {
+    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
     try {
-        const querySnapshot = await getDocs(projectsRef);
-        const batch = writeBatch(db);
-        querySnapshot.docs.forEach(doc => {
-            batch.delete(doc.ref);
-        });
-        await batch.commit();
-        return { success: true, count: querySnapshot.size };
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists()) {
+            const projectData = projectSnap.data() as Project;
+            const updatedTasks = projectData.tasks.map(t => t.id === task.id ? task : t);
+            await updateDoc(projectRef, { tasks: updatedTasks });
+            return { success: true };
+        }
+        return { success: false, error: 'Project not found' };
     } catch (error) {
-        return { success: false, error: 'Failed to delete all Tim Kerja projects.' };
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to update task.' };
     }
 }
+
+export async function deleteTask(projectId: string, taskId: string, projectType: Project['projectType']) {
+    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
+    try {
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists()) {
+            const projectData = projectSnap.data() as Project;
+            const updatedTasks = projectData.tasks.filter(t => t.id !== taskId);
+            await updateDoc(projectRef, { tasks: updatedTasks });
+            return { success: true };
+        }
+        return { success: false, error: 'Project not found' };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to delete task.' };
+    }
+}
+
+export async function updateProjectChecklist(projectId: string, checklist: any[], projectType: Project['projectType']) {
+    const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    try {
+        const projectRef = doc(db, collectionName, projectId);
+        await updateDoc(projectRef, { checklist });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to update checklist.' };
+    }
+}
+
 
 // --- AI ACTIONS ---
-import { summarizeProjectStatus } from '@/ai/flows/summarize-project-status';
-import { generateChecklist } from '@/ai/flows/generate-checklist';
+import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/flows/summarize-project-status';
+import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
 
-export async function getAiSummary(input: { taskCompletion: string, notes: string }) {
+
+export async function getAiSummary(input: SummarizeProjectStatusInput) {
   try {
-    const result = await summarizeProjectStatus(input);
-    return { success: true, data: result };
+    const summary = await summarizeProjectStatus(input);
+    return { success: true, data: summary };
   } catch (error) {
-    return { success: false, error: 'Failed to generate AI summary.' };
+    return { success: false, error: error instanceof Error ? error.message : 'An unknown AI error occurred' };
   }
 }
 
-export async function generateAiChecklist(input: { projectName: string, projectDescription: string }) {
+export async function generateAiChecklist(input: GenerateChecklistInput) {
   try {
-    const result = await generateChecklist(input);
-    return { success: true, data: result };
+    const checklist = await generateChecklist(input);
+    return checklist;
   } catch (error) {
-    return { success: false, error: 'Failed to generate AI checklist.' };
+    console.error("AI Checklist generation failed:", error);
+    return null;
   }
 }
+
+    
