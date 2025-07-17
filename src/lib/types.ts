@@ -135,3 +135,12 @@ export type GapAnalysisRecord = {
   summary: string;
   inspectors: Inspector[];
 };
+
+export type GlossaryRecord = {
+  id: string;
+  createdAt: string;
+  term: string;
+  definition: string;
+  source: string;
+  tags?: string;
+}

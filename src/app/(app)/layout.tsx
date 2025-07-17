@@ -19,6 +19,7 @@ import {
   FileBadge,
   GitCompareArrows,
   Settings,
+  BookText,
 } from 'lucide-react';
 
 import {
@@ -58,6 +59,7 @@ const navItems = {
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
       { href: '/gap-analysis', label: 'GAP Analysis', icon: GitCompareArrows },
+      { href: '/glossary', label: 'Glossary', icon: BookText },
     ]
 }
 
