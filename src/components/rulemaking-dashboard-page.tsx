@@ -19,17 +19,13 @@ import { AddRulemakingProjectDialog } from './add-rulemaking-project-dialog';
 import { rulemakingTaskOptions } from '@/lib/data';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
-type RulemakingDashboardPageProps = {
-    projects: Project[];
-    allUsers: User[];
-}
-
-const statusConfig: { [key in Project['status']]: { icon: React.ElementType, color: string, label: string } } = {
-    'Completed': { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },
-    'On Track': { icon: Clock, color: 'text-blue-500', label: 'In Progress' },
-    'At Risk': { icon: AlertTriangle, color: 'text-yellow-500', label: 'At Risk' },
-    'Off Track': { icon: AlertCircle, color: 'text-red-500', label: 'Off Track' },
+const statusConfig: { [key in Project['status']]: { icon: React.ElementType, style: string, label: string } } = {
+    'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
+    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'In Progress' },
+    'At Risk': { icon: AlertTriangle, style: 'border-transparent bg-yellow-100 text-yellow-800', label: 'At Risk' },
+    'Off Track': { icon: AlertCircle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
 };
+
 
 export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -169,8 +165,8 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                 </aside>
                 
                 {/* Main Content */}
-                 <main className="md:col-span-3">
-                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
+                <main className="md:col-span-3">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
                         {filteredProjects.map(project => {
                            const totalTasks = project.tasks?.length || 0;
                            const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
@@ -193,15 +189,15 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                         High Priority
                                                     </Badge>
                                                 )}
-                                                <div className="flex items-center gap-1 text-sm font-semibold">
-                                                  <currentStatus.icon className={cn("h-4 w-4", currentStatus.color)} />
-                                                  <span className={currentStatus.color}>{currentStatus.label}</span>
-                                                </div>
+                                                <Badge variant="outline" className={cn("text-xs font-semibold gap-1.5 pl-1.5", currentStatus.style)}>
+                                                    <currentStatus.icon className="h-3.5 w-3.5" />
+                                                    {currentStatus.label}
+                                                </Badge>
                                             </div>
                                           </div>
                                           <CardDescription className="text-xs h-8 line-clamp-2">{project.name}</CardDescription>
                                         </CardHeader>
-                                        <CardContent className="flex-grow space-y-4 pt-0">
+                                        <CardContent className="flex-grow space-y-4 pt-2">
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between text-xs">
                                                     <span className="font-medium text-muted-foreground">Progress</span>
@@ -216,24 +212,16 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                             
                                             <div className="text-xs text-muted-foreground pt-2 border-t">
                                               {currentTask ? (
-                                                  <div className="grid grid-cols-2 items-start gap-2">
-                                                      <div className="flex items-start gap-2">
-                                                          <ArrowRight className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                                          <div>
-                                                              <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
-                                                              <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
-                                                          </div>
-                                                      </div>
-                                                      {nextTask && (
-                                                          <div className="flex items-start gap-2 pl-2 border-l">
-                                                              <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                                                              <div>
-                                                                  <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
-                                                                  <p className="font-semibold text-muted-foreground truncate">{nextTask.label}</p>
-                                                              </div>
-                                                          </div>
-                                                      )}
-                                                  </div>
+                                                <div className="grid grid-cols-2 items-start gap-2">
+                                                    <div className="flex items-start gap-2">
+                                                        <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
+                                                        <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
+                                                    </div>
+                                                    <div className="flex items-start gap-2 pl-2 border-l">
+                                                      <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
+                                                      <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
+                                                    </div>
+                                                </div>
                                               ) : (
                                                   <div className="flex items-center gap-2">
                                                       <Flag className="h-4 w-4 text-green-600" />
