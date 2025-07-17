@@ -163,10 +163,10 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         ref={timelineContainerRef}
         style={{ maxHeight: `${timelineMaxHeight}px` }}
       >
-        <div className="flex relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${totalHeight}px` }}>
+        <div className="flex" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${totalHeight}px` }}>
             {/* Task List */}
             <div className="z-20 bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
-                <div className="sticky top-0 z-10 h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
+                <div className="h-16 flex items-center px-4 font-semibold border-b border-r bg-card">
                     Tasks
                 </div>
                 {sortedTasks.map((task) => (
@@ -209,7 +209,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                                 <div className="h-1/2 flex border-t">
                                     {weeksInMonth.map((week, index) => (
                                         <div key={week.toString()} className="flex-1 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0">
-                                            W{index + 1}
+                                            W{getISOWeek(week)}
                                         </div>
                                     ))}
                                 </div>
