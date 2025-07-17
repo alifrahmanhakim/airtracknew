@@ -49,10 +49,29 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
     const criticalElementData = Object.entries(countBy('criticalElement')).map(([name, value]) => ({ name, value }));
     const icaoStatusData = Object.entries(countBy('icaoStatus')).map(([name, value]) => ({ name, value }));
     
+    const totalCriticalElements = criticalElementData.reduce((acc, curr) => acc + curr.value, 0);
+    const criticalElementPercentages = criticalElementData.map(item => ({
+        ...item,
+        percentage: totalCriticalElements > 0 ? (item.value / totalCriticalElements) * 100 : 0,
+    })).sort((a, b) => b.value - a.value);
+
+    const criticalElementDescription = (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-muted-foreground pt-2">
+          {criticalElementPercentages.map(item => (
+            <div key={item.name} className="flex items-baseline gap-2">
+                <span>{item.name}</span>
+                <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
+                <span className="font-bold whitespace-nowrap pl-2">{item.value} ({item.percentage.toFixed(1)}%)</span>
+            </div>
+          ))}
+        </div>
+    );
+    
     return {
       statusData,
       criticalElementData,
       icaoStatusData,
+      criticalElementDescription,
     };
   }, [records]);
 
@@ -124,6 +143,7 @@ export function PqsAnalyticsDashboard({ records }: PqsAnalyticsDashboardProps) {
             <CardHeader>
                 <CardTitle>Distribution by Critical Element</CardTitle>
                 <CardDescription>Shows the count of records for each critical element.</CardDescription>
+                {analyticsData.criticalElementDescription}
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.criticalElementData)} className="h-[300px] w-full">
