@@ -16,8 +16,9 @@ import type { Document, Project, SubProject, Task, User, CcefodRecord, PqRecord,
 import { formSchema as ccefodFormSchema, type CcefodFormValues } from '@/components/ccefod-shared-form-fields';
 import { formSchema as pqFormSchema, type PqFormValues } from '@/components/pqs-shared-form-fields';
 import { formSchema as gapAnalysisSchema, type GapAnalysisFormValues } from '@/components/gap-analysis-shared-form-fields';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { doc, updateDoc, arrayUnion, collection, addDoc, getDoc, deleteDoc, setDoc, writeBatch, getDocs, query, where } from 'firebase/firestore';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
@@ -433,6 +434,30 @@ export async function deleteUser(
         console.error('Delete User Error:', error);
         const message = error instanceof Error ? error.message : 'An unknown error occurred';
         return { success: false, error: `Failed to delete user: ${message}` };
+    }
+}
+
+export async function updateUserProfile(userId: string, name: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, { name });
+      revalidatePath('/profile');
+      return { success: true };
+    } catch (error) {
+      console.error('Update User Profile Error:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: `Failed to update profile: ${message}` };
+    }
+}
+  
+export async function sendPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        await sendPasswordResetEmail(auth, email);
+        return { success: true };
+    } catch (error) {
+        console.error('Send Password Reset Error:', error);
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: false, error: `Failed to send password reset email: ${message}` };
     }
 }
 

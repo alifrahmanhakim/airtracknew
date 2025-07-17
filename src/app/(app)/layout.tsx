@@ -18,6 +18,7 @@ import {
   UserSquare,
   FileBadge,
   GitCompareArrows,
+  Settings,
 } from 'lucide-react';
 
 import {
@@ -192,6 +193,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <ThemeToggle />
             </div>
             <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={pathname === '/profile'}>
+                        <Link href="/profile">
+                            <Settings />
+                            <span>Profile</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={handleLogout}>
                         <LogOut />
