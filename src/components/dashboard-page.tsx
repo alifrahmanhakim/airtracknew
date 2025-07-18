@@ -45,26 +45,12 @@ import { deleteAllTimKerjaProjects } from '@/lib/actions/project';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { findUserById } from '@/lib/data-utils';
 
 // Note: This component is now dynamically imported by `dashboard-wrapper.tsx`
 // with SSR turned off. This is the key to fixing the build error.
 
-export function getProjectsForUser(userId: string, allProjects: Project[], allUsers: User[]): Project[] {
-    const user = findUserById(userId, allUsers);
-    if (!user) return [];
-
-    if (user.role === 'Sub-Directorate Head' || user.email === 'admin@admin2023.com') {
-        return allProjects;
-    }
-
-    return allProjects.filter(project => 
-        project.team.some(member => member.id === userId)
-    );
-}
-
 export function DashboardPage() {
-  const [userProjects, setUserProjects] = useState<Project[]>([]);
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -102,8 +88,7 @@ export function DashboardPage() {
             documents: p.documents || [],
           }));
 
-          const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
-          setUserProjects(userVisibleProjects);
+          setAllProjects(projectsWithDefaults);
         } catch (error) {
           console.error("Error fetching data from Firestore:", error);
         }
@@ -119,14 +104,14 @@ export function DashboardPage() {
   }, [userId]);
 
 
-  const totalProjects = userProjects.length;
-  const completedTasks = userProjects.flatMap(p => p.tasks).filter(t => t.status === 'Done').length;
-  const totalTasks = userProjects.flatMap(p => p.tasks).length;
-  const atRiskProjects = userProjects.filter(p => p.status === 'At Risk').length;
-  const offTrackProjects = userProjects.filter(p => p.status === 'Off Track').length;
+  const totalProjects = allProjects.length;
+  const completedTasks = allProjects.flatMap(p => p.tasks).filter(t => t.status === 'Done').length;
+  const totalTasks = allProjects.flatMap(p => p.tasks).length;
+  const atRiskProjects = allProjects.filter(p => p.status === 'At Risk').length;
+  const offTrackProjects = allProjects.filter(p => p.status === 'Off Track').length;
 
   const projectStatusData = useMemo(() => {
-    const statusCounts = userProjects.reduce((acc, project) => {
+    const statusCounts = allProjects.reduce((acc, project) => {
       acc[project.status] = (acc[project.status] || 0) + 1;
       return acc;
     }, {} as Record<Project['status'], number>);
@@ -137,7 +122,7 @@ export function DashboardPage() {
       { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--color-Off Track)' },
       { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-Completed)' },
     ];
-  }, [userProjects]);
+  }, [allProjects]);
   
   const chartConfig = {
     count: { label: 'Projects' },
@@ -162,7 +147,7 @@ export function DashboardPage() {
       });
       // Force a reload to reflect the empty state
       router.refresh();
-      setUserProjects([]); // Also clear local state immediately
+      setAllProjects([]); // Also clear local state immediately
     } else {
       toast({
         variant: 'destructive',
@@ -182,7 +167,7 @@ export function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 {isAdmin && (
-                  <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={userProjects.length === 0}>
+                  <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={allProjects.length === 0}>
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete All Projects
                   </Button>
@@ -262,7 +247,7 @@ export function DashboardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight mb-4">Active Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {userProjects.filter(p => p.status !== 'Completed').map((project) => (
+            {allProjects.filter(p => p.status !== 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
@@ -271,7 +256,7 @@ export function DashboardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">Completed Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {userProjects.filter(p => p.status === 'Completed').map((project) => (
+            {allProjects.filter(p => p.status === 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
@@ -287,7 +272,7 @@ export function DashboardPage() {
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete all
-              <span className="font-semibold"> {userProjects.length} Tim Kerja projects</span> and all of their associated data.
+              <span className="font-semibold"> {allProjects.length} Tim Kerja projects</span> and all of their associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

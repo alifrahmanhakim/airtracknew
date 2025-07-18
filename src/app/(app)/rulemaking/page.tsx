@@ -7,20 +7,6 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RulemakingDashboardPage } from '@/components/rulemaking-dashboard-page';
-import { findUserById } from '@/lib/data-utils';
-
-function getProjectsForUser(userId: string, allProjects: Project[], allUsers: User[]): Project[] {
-    const user = findUserById(userId, allUsers);
-    if (!user) return [];
-
-    if (user.role === 'Sub-Directorate Head' || user.email === 'admin@admin2023.com') {
-        return allProjects;
-    }
-
-    return allProjects.filter(project => 
-        project.team.some(member => member.id === userId)
-    );
-}
 
 export default function RulemakingDashboard() {
   const [rulemakingProjects, setRulemakingProjects] = useState<Project[]>([]);
@@ -36,39 +22,33 @@ export default function RulemakingDashboard() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    if (userId) {
-      try {
-        // Fetch users
-        const usersQuerySnapshot = await getDocs(collection(db, "users"));
-        const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        setAllUsers(usersFromDb);
+    try {
+      // Fetch users
+      const usersQuerySnapshot = await getDocs(collection(db, "users"));
+      const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+      setAllUsers(usersFromDb);
 
-        // Fetch Rulemaking projects
-        const projectsQuerySnapshot = await getDocs(collection(db, "rulemakingProjects"));
-        const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project));
-        
-        const projectsWithDefaults = projectsFromDb.map(p => ({
-          ...p,
-          subProjects: p.subProjects || [],
-          documents: p.documents || [],
-        }));
+      // Fetch Rulemaking projects
+      const projectsQuerySnapshot = await getDocs(collection(db, "rulemakingProjects"));
+      const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project));
+      
+      const projectsWithDefaults = projectsFromDb.map(p => ({
+        ...p,
+        subProjects: p.subProjects || [],
+        documents: p.documents || [],
+      }));
 
-        const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
-        setRulemakingProjects(userVisibleProjects);
-      } catch (error) {
-        console.error("Error fetching projects from Firestore:", error);
-      }
+      // Show all projects to all users
+      setRulemakingProjects(projectsWithDefaults);
+    } catch (error) {
+      console.error("Error fetching projects from Firestore:", error);
     }
     setIsLoading(false);
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
-    if (userId) {
-        fetchData();
-    } else {
-        setIsLoading(false);
-    }
-  }, [userId, fetchData, version]);
+    fetchData();
+  }, [fetchData, version]);
 
   const refreshData = () => {
     setVersion(v => v + 1);

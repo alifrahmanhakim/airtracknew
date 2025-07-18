@@ -179,6 +179,7 @@ type ProjectDetailsPageProps = {
 export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords: initialGapRecords }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
   const [allGapAnalysisRecords, setAllGapAnalysisRecords] = useState<GapAnalysisRecord[]>(initialGapRecords);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
   const [isDeletingDoc, setIsDeletingDoc] = useState<string | null>(null);
   const [isDeletingTask, setIsDeletingTask] = useState<string | null>(null);
@@ -192,6 +193,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
   const router = useRouter();
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    const userId = localStorage.getItem('loggedInUserId');
+    if (userId) {
+      const user = findUserById(userId, users);
+      if(user) setCurrentUser(user);
+    }
+  }, [users]);
+
 
   const associatedGapRecords = React.useMemo(() => {
     if (project.projectType !== 'Rulemaking' || !project.casr) return [];
@@ -293,7 +303,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         title: "Project Deleted",
         description: `"${project.name}" has been permanently deleted.`,
       });
-      router.push('/dashboard');
+      router.push(project.projectType === 'Rulemaking' ? '/rulemaking' : '/dashboard');
     } else {
       toast({
         variant: 'destructive',
@@ -376,6 +386,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const handlePrint = () => {
     window.print();
   };
+  
+  const canDeleteProject = currentUser && (currentUser.role === 'Sub-Directorate Head' || currentUser.email === 'admin@admin2023.com' || currentUser.id === project.ownerId);
 
   return (
     <TooltipProvider>
@@ -391,10 +403,12 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               Export as PDF
             </Button>
             <EditProjectDialog project={project} allUsers={users} />
-            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Project
-            </Button>
+            {canDeleteProject && (
+              <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Project
+              </Button>
+            )}
         </div>
       </div>
 
