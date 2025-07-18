@@ -91,12 +91,22 @@ export default function CcefodPage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1); // Reset to first page on new search
+      setPageDocs([]);
     }, 500); // 500ms delay
 
     return () => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
+
+  // Refocus input after data fetching
+  useEffect(() => {
+    if (!isFetchingPage) {
+      searchInputRef.current?.focus();
+    }
+  }, [isFetchingPage]);
+
 
   // Fetch all records once for analytics and filters
   useEffect(() => {
@@ -108,7 +118,10 @@ export default function CcefodPage() {
         recordsFromDb.push({ id: doc.id, ...data } as CcefodRecord);
       });
       setAllRecordsForAnalytics(recordsFromDb);
-      setTotalRecords(querySnapshot.size);
+      // We only update totalRecords here if no filters are active
+      if(annexFilter === 'all' && implementationLevelFilter === 'all' && adaPerubahanFilter === 'all') {
+          setTotalRecords(querySnapshot.size);
+      }
     }, (error) => {
       console.error("Error fetching all CCEFOD records for analytics: ", error);
       toast({
@@ -119,31 +132,38 @@ export default function CcefodPage() {
     });
 
     return () => unsubscribe();
-  }, [toast]);
+  }, [toast, annexFilter, implementationLevelFilter, adaPerubahanFilter]);
   
 
   const fetchPaginatedData = useCallback(async (page: number, direction: 'next' | 'prev' | 'first') => {
-    setIsLoading(true);
+    if(page < 1) return;
     setIsFetchingPage(true);
 
     const constraints: QueryConstraint[] = [];
+    const countConstraints: QueryConstraint[] = [];
 
     if (annexFilter !== 'all') {
         constraints.push(where('annex', '==', annexFilter));
+        countConstraints.push(where('annex', '==', annexFilter));
     }
     if (implementationLevelFilter !== 'all') {
         constraints.push(where('implementationLevel', '==', implementationLevelFilter));
+        countConstraints.push(where('implementationLevel', '==', implementationLevelFilter));
     }
     if (adaPerubahanFilter !== 'all') {
         constraints.push(where('adaPerubahan', '==', adaPerubahanFilter));
+        countConstraints.push(where('adaPerubahan', '==', adaPerubahanFilter));
     }
     
-    // Firestore does not support range filters on multiple fields without a composite index.
-    // So, if we are filtering by text (which uses a range filter), we disable sorting on other fields.
     if (debouncedSearchTerm) {
         constraints.push(orderBy('annexReference'));
         constraints.push(where('annexReference', '>=', debouncedSearchTerm));
         constraints.push(where('annexReference', '<=', debouncedSearchTerm + '\uf8ff'));
+        
+        countConstraints.push(orderBy('annexReference'));
+        countConstraints.push(where('annexReference', '>=', debouncedSearchTerm));
+        countConstraints.push(where('annexReference', '<=', debouncedSearchTerm + '\uf8ff'));
+
     } else if (sort) {
         constraints.push(orderBy(sort.column, sort.direction));
     }
@@ -167,6 +187,10 @@ export default function CcefodPage() {
     const q = query(collection(db, "ccefodRecords"), ...constraints);
     
     try {
+        const countQuery = query(collection(db, "ccefodRecords"), ...countConstraints);
+        const countSnapshot = await getDocs(countQuery);
+        setTotalRecords(countSnapshot.size);
+
         const querySnapshot = await getDocs(q);
         const recordsFromDb: CcefodRecord[] = [];
         querySnapshot.forEach((doc) => {
@@ -197,16 +221,14 @@ export default function CcefodPage() {
     } finally {
         setIsLoading(false);
         setIsFetchingPage(false);
-        // Refocus the input element after data fetching is complete
-        searchInputRef.current?.focus();
     }
   }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, debouncedSearchTerm, pageDocs, toast]);
 
   useEffect(() => {
-    // Initial fetch
-    fetchPaginatedData(1, 'first');
-    // We disable exhaustive-deps here because we want this to run ONLY on mount and when filters/sort change.
-    // The pagination logic is handled by handlePageChange.
+    if(isLoading) {
+        setIsLoading(false);
+    }
+    fetchPaginatedData(currentPage, 'first');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, debouncedSearchTerm]);
 
@@ -336,7 +358,7 @@ export default function CcefodPage() {
   };
   
   function renderContent() {
-    if (isLoading && paginatedRecords.length === 0) {
+    if (isLoading) {
       return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -502,7 +524,7 @@ export default function CcefodPage() {
                                     </span>
                                 </PaginationItem>
                                 <PaginationItem>
-                                    <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages || paginatedRecords.length < RECORDS_PER_PAGE ? 'pointer-events-none opacity-50' : ''} />
+                                    <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
                                 </PaginationItem>
                                 </PaginationContent>
                             </Pagination>
@@ -563,5 +585,7 @@ export default function CcefodPage() {
     </div>
   );
 }
+
+    
 
     
