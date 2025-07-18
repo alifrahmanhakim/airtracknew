@@ -50,6 +50,7 @@ interface MultiSelectProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   defaultValue: string[];
   placeholder?: string;
   maxCount?: number;
+  className?: string;
 }
 
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -102,21 +103,17 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 className={cn("w-full justify-between", className)}
                 variant="outline"
             >
-                <div className="flex flex-wrap items-center gap-1">
+                <div className="flex items-center gap-1">
                 {selectedValues.length > 0 ? (
-                    selectedValues.map((value) => {
-                    const option = options.find((o) => o.value === value);
-                    if (!option) return null;
-                    return (
-                        <Badge
-                            key={value}
-                            variant="secondary"
-                            className="px-2 py-1"
-                        >
-                            {option.label}
-                        </Badge>
-                    );
-                    })
+                    selectedValues.length === 1 ? (
+                        <span className="text-sm font-medium truncate">
+                            {options.find(o => o.value === selectedValues[0])?.label}
+                        </span>
+                    ) : (
+                        <span className="text-sm font-medium">
+                            {selectedValues.length} items selected
+                        </span>
+                    )
                 ) : (
                     <span className="text-sm text-muted-foreground">{placeholder}</span>
                 )}
