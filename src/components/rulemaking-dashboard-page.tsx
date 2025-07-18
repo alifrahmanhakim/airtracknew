@@ -188,7 +188,9 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
                                         <CardHeader className="pb-4">
                                           <div className="flex justify-between items-start">
-                                            <CardTitle className="text-base font-bold">CASR {project.casr}</CardTitle>
+                                            <CardTitle className="text-base font-bold">
+                                                CASR {project.casr}{project.casrRevision ? ` (Rev. ${project.casrRevision})` : ''}
+                                            </CardTitle>
                                              <div className="flex items-center gap-2">
                                                 {project.tags?.includes('High Priority') && (
                                                     <Badge variant="destructive" className="font-medium">
