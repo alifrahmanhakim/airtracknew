@@ -1,12 +1,13 @@
 
+
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PqRecord } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +26,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+
 
 // Dynamically import heavy components
 const PqsForm = dynamic(() => import('@/components/pqs-form').then(mod => mod.PqsForm), { 
@@ -41,9 +46,11 @@ const ImportPqsCsvDialog = dynamic(() => import('@/components/import-pqs-csv-dia
     ssr: false
 });
 
+const RECORDS_PER_PAGE = 10;
 
 export default function PqsPage() {
-  const [records, setRecords] = useState<PqRecord[]>([]);
+  const [allRecordsForAnalytics, setAllRecordsForAnalytics] = useState<PqRecord[]>([]);
+  const [paginatedRecords, setPaginatedRecords] = useState<PqRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('form');
   const { toast } = useToast();
@@ -53,35 +60,159 @@ export default function PqsPage() {
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
+  // Filters and sorting
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [criticalElementFilter, setCriticalElementFilter] = useState('all');
+  const [icaoStatusFilter, setIcaoStatusFilter] = useState('all');
+  const [sort, setSort] = useState<{column: keyof PqRecord, direction: 'asc'|'desc'} | null>({ column: 'pqNumber', direction: 'asc' });
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageDocs, setPageDocs] = useState<any[]>([]); // Stores first and last doc of each page
+  const [isFetchingPage, setIsFetchingPage] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  // Debounce search term
   useEffect(() => {
-    const q = query(collection(db, "pqsRecords"), orderBy("createdAt", "desc"));
-    
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1);
+      setPageDocs([]);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  // Refocus input after data fetching
+  useEffect(() => {
+    if (!isFetchingPage) {
+      searchInputRef.current?.focus();
+    }
+  }, [isFetchingPage]);
+
+  // Fetch all records once for analytics
+  useEffect(() => {
+    const q = query(collection(db, "pqsRecords"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const recordsFromDb: PqRecord[] = [];
       querySnapshot.forEach((doc) => {
         recordsFromDb.push({ id: doc.id, ...doc.data() } as PqRecord);
       });
-      setRecords(recordsFromDb);
-      setIsLoading(false);
+      setAllRecordsForAnalytics(recordsFromDb);
     }, (error) => {
-      console.error("Error fetching PQs records: ", error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to fetch Protocol Questions records from the database.',
-      });
-      setIsLoading(false);
+      console.error("Error fetching all PQs records for analytics: ", error);
     });
 
     return () => unsubscribe();
-  }, [toast]);
+  }, []);
   
+  const fetchPaginatedData = useCallback(async (page: number, direction: 'next' | 'prev' | 'first') => {
+    if(page < 1) return;
+    setIsFetchingPage(true);
+
+    const constraints: QueryConstraint[] = [];
+    const countConstraints: QueryConstraint[] = [];
+
+    if (criticalElementFilter !== 'all') {
+        constraints.push(where('criticalElement', '==', criticalElementFilter));
+        countConstraints.push(where('criticalElement', '==', criticalElementFilter));
+    }
+    if (icaoStatusFilter !== 'all') {
+        constraints.push(where('icaoStatus', '==', icaoStatusFilter));
+        countConstraints.push(where('icaoStatus', '==', icaoStatusFilter));
+    }
+    
+    if (debouncedSearchTerm) {
+        constraints.push(orderBy('pqNumber')); // Must order by the field used in range filter
+        constraints.push(where('pqNumber', '>=', debouncedSearchTerm));
+        constraints.push(where('pqNumber', '<=', debouncedSearchTerm + '\uf8ff'));
+        
+        countConstraints.push(orderBy('pqNumber'));
+        countConstraints.push(where('pqNumber', '>=', debouncedSearchTerm));
+        countConstraints.push(where('pqNumber', '<=', debouncedSearchTerm + '\uf8ff'));
+    } else if (sort) {
+        constraints.push(orderBy(sort.column, sort.direction));
+    }
+
+    if (page > 1 && direction !== 'first') {
+        const cursorDocId = direction === 'next' ? pageDocs[page - 2]?.last : pageDocs[page]?.first;
+        if(cursorDocId) {
+            const cursorDoc = await getDoc(doc(db, 'pqsRecords', cursorDocId));
+            if (cursorDoc.exists()) {
+                if (direction === 'next') {
+                    constraints.push(startAfter(cursorDoc));
+                } else {
+                    constraints.push(endBefore(cursorDoc));
+                }
+            }
+        }
+    }
+
+    constraints.push(limit(RECORDS_PER_PAGE));
+    const q = query(collection(db, "pqsRecords"), ...constraints);
+    
+    try {
+        const countQuery = query(collection(db, "pqsRecords"), ...countConstraints);
+        const countSnapshot = await getCountFromServer(countQuery);
+        setTotalRecords(countSnapshot.data().count);
+
+        const querySnapshot = await getDocs(q);
+        const recordsFromDb: PqRecord[] = [];
+        querySnapshot.forEach((doc) => {
+            recordsFromDb.push({ id: doc.id, ...doc.data() } as PqRecord);
+        });
+        
+        if (recordsFromDb.length > 0) {
+            const firstDocId = querySnapshot.docs[0].id;
+            const lastDocId = querySnapshot.docs[querySnapshot.docs.length - 1].id;
+            setPageDocs(prev => {
+                const newPageDocs = [...prev];
+                newPageDocs[page - 1] = { first: firstDocId, last: lastDocId };
+                return newPageDocs;
+            });
+        }
+        
+        setPaginatedRecords(recordsFromDb);
+        setCurrentPage(page);
+
+    } catch (error) {
+        console.error("Error fetching PQs records: ", error);
+        toast({
+            variant: 'destructive',
+            title: 'Error fetching data',
+            description: 'The database query failed. This might be due to a missing index in Firestore. Please check the browser console for a link to create it.',
+        });
+    } finally {
+        setIsLoading(false);
+        setIsFetchingPage(false);
+    }
+  }, [sort, debouncedSearchTerm, criticalElementFilter, icaoStatusFilter, pageDocs, toast]);
+
+  useEffect(() => {
+      fetchPaginatedData(1, 'first');
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort, debouncedSearchTerm, criticalElementFilter, icaoStatusFilter]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage > currentPage) {
+        fetchPaginatedData(newPage, 'next');
+    } else if (newPage < currentPage) {
+        fetchPaginatedData(newPage, 'prev');
+    }
+  };
+
+  const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
+
   const handleDeleteRequest = (record: PqRecord) => {
     setRecordToDelete(record);
   };
 
   const handleRecordUpdate = (updatedRecord: PqRecord) => {
-    setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    setPaginatedRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
   };
   
   const confirmDelete = async () => {
@@ -93,6 +224,7 @@ export default function PqsPage() {
 
     if (result.success) {
       toast({ title: "Record Deleted", description: "The Protocol Question record has been removed." });
+      fetchPaginatedData(currentPage, 'first');
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
@@ -110,6 +242,7 @@ export default function PqsPage() {
         title: 'All Records Deleted',
         description: `${result.count} records have been successfully removed.`,
       });
+      fetchPaginatedData(1, 'first');
     } else {
       toast({
         variant: 'destructive',
@@ -120,7 +253,7 @@ export default function PqsPage() {
   };
 
   const confirmExport = () => {
-    if (records.length === 0) {
+    if (allRecordsForAnalytics.length === 0) {
         toast({
             variant: 'destructive',
             title: 'No Data to Export',
@@ -135,7 +268,7 @@ export default function PqsPage() {
     });
 
     setTimeout(() => {
-        const csv = Papa.unparse(records);
+        const csv = Papa.unparse(allRecordsForAnalytics);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         if (link.download !== undefined) {
@@ -173,7 +306,7 @@ export default function PqsPage() {
                 </div>
                 <div className='flex items-center gap-2'>
                   <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                    <ImportPqsCsvDialog />
+                    <ImportPqsCsvDialog onImportSuccess={() => fetchPaginatedData(1, 'first')} />
                   </Suspense>
                   <TabsList>
                       <TabsTrigger value="form">Input Form</TabsTrigger>
@@ -191,7 +324,7 @@ export default function PqsPage() {
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
-                       <PqsForm onFormSubmit={() => {}} />
+                       <PqsForm onFormSubmit={() => { setActiveTab('records'); fetchPaginatedData(1, 'first'); }} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -210,7 +343,7 @@ export default function PqsPage() {
                                     <FileSpreadsheet className="h-4 w-4" />
                                     <span className="sr-only">Export as CSV</span>
                                 </Button>
-                                <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={records.length === 0}>
+                                <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecordsForAnalytics.length === 0}>
                                     <Trash2 className="h-4 w-4" />
                                     <span className="sr-only">Delete All Records</span>
                                 </Button>
@@ -218,7 +351,20 @@ export default function PqsPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <PqsRecordsTable records={records} onDelete={handleDeleteRequest} onUpdate={handleRecordUpdate} />
+                        <PqsRecordsTable 
+                          records={paginatedRecords} 
+                          onDelete={handleDeleteRequest} 
+                          onUpdate={handleRecordUpdate}
+                          isFetchingPage={isFetchingPage}
+                          totalPages={totalPages}
+                          currentPage={currentPage}
+                          handlePageChange={handlePageChange}
+                          sort={sort}
+                          setSort={setSort}
+                          filters={{ searchTerm, criticalElementFilter, icaoStatusFilter }}
+                          setFilters={{ setSearchTerm, setCriticalElementFilter, setIcaoStatusFilter }}
+                          searchInputRef={searchInputRef}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -235,7 +381,7 @@ export default function PqsPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                       <PqsAnalyticsDashboard records={records} />
+                       <PqsAnalyticsDashboard records={allRecordsForAnalytics} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -276,7 +422,7 @@ export default function PqsPage() {
                     </div>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all <strong>{records.length}</strong> PQ records from the database.
+                    This action cannot be undone. This will permanently delete all <strong>{totalRecords}</strong> PQ records from the database.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

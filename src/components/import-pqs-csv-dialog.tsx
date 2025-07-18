@@ -23,7 +23,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { ScrollArea } from './ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
-export function ImportPqsCsvDialog() {
+interface ImportPqsCsvDialogProps {
+  onImportSuccess: () => void;
+}
+
+export function ImportPqsCsvDialog({ onImportSuccess }: ImportPqsCsvDialogProps) {
   const [open, setOpen] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,6 +84,7 @@ export function ImportPqsCsvDialog() {
             title: 'Import Successful!',
             description: `${result.count} records have been imported.`,
         });
+        onImportSuccess();
         resetState();
     } else {
         toast({

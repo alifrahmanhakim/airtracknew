@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -40,12 +41,30 @@ import { cn } from '@/lib/utils';
 import { EditPqRecordDialog } from './edit-pq-record-dialog';
 import { PqRecordDetailDialog } from './pq-record-detail-dialog';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './ui/pagination';
+import { Loader2 } from 'lucide-react';
 
 
 type PqsRecordsTableProps = {
   records: PqRecord[];
   onDelete: (record: PqRecord) => void;
   onUpdate: (updatedRecord: PqRecord) => void;
+  isFetchingPage: boolean;
+  totalPages: number;
+  currentPage: number;
+  handlePageChange: (page: number) => void;
+  sort: SortDescriptor;
+  setSort: (sort: SortDescriptor) => void;
+  filters: {
+    searchTerm: string;
+    criticalElementFilter: string;
+    icaoStatusFilter: string;
+  };
+  setFilters: {
+    setSearchTerm: (value: string) => void;
+    setCriticalElementFilter: (value: string) => void;
+    setIcaoStatusFilter: (value: string) => void;
+  };
+  searchInputRef: React.RefObject<HTMLInputElement>;
 };
 
 type SortDescriptor = {
@@ -56,15 +75,21 @@ type SortDescriptor = {
 const criticalElementOptions = ["CE - 1", "CE - 2", "CE - 3", "CE - 4", "CE - 5", "CE - 6", "CE - 7", "CE - 8"];
 const icaoStatusOptions = ["Satisfactory", "No Satisfactory"];
 
-const RECORDS_PER_PAGE = 10;
-
-export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTableProps) {
-  const [filter, setFilter] = useState('');
-  const [sort, setSort] = useState<SortDescriptor>({ column: 'pqNumber', direction: 'asc' });
+export function PqsRecordsTable({ 
+  records, 
+  onDelete, 
+  onUpdate, 
+  isFetchingPage,
+  totalPages,
+  currentPage,
+  handlePageChange,
+  sort,
+  setSort,
+  filters,
+  setFilters,
+  searchInputRef
+}: PqsRecordsTableProps) {
   const [recordToView, setRecordToView] = useState<PqRecord | null>(null);
-  const [criticalElementFilter, setCriticalElementFilter] = useState<string>('all');
-  const [icaoStatusFilter, setIcaoStatusFilter] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState(1);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
@@ -81,55 +106,9 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
     icaoStatus: true,
     status: true,
     createdAt: false,
+    cap: false,
+    sspComponent: false,
   });
-
-  const processedRecords = useMemo(() => {
-    let filteredData = [...records];
-    
-    if (criticalElementFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.criticalElement === criticalElementFilter);
-    }
-    
-    if (icaoStatusFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.icaoStatus === icaoStatusFilter);
-    }
-
-    if (filter) {
-        const lowercasedFilter = filter.toLowerCase();
-        filteredData = filteredData.filter(record => 
-            Object.values(record).some(value => 
-                String(value).toLowerCase().includes(lowercasedFilter)
-            )
-        );
-    }
-
-    if (sort) {
-        filteredData.sort((a, b) => {
-            const aVal = a[sort.column as keyof PqRecord] ?? '';
-            const bVal = b[sort.column as keyof PqRecord] ?? '';
-            
-            if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }
-
-    return filteredData;
-  }, [records, filter, sort, criticalElementFilter, icaoStatusFilter]);
-  
-  const totalPages = Math.ceil(processedRecords.length / RECORDS_PER_PAGE);
-
-  const paginatedRecords = useMemo(() => {
-    const startIndex = (currentPage - 1) * RECORDS_PER_PAGE;
-    const endIndex = startIndex + RECORDS_PER_PAGE;
-    return processedRecords.slice(startIndex, endIndex);
-  }, [processedRecords, currentPage]);
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-        setCurrentPage(page);
-    }
-  }
 
   const handleSort = (column: keyof PqRecord) => {
     setSort(prevSort => {
@@ -165,12 +144,12 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key as keyof PqRecord]);
 
-  if (records.length === 0) {
+  if (records.length === 0 && !isFetchingPage) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
-        <p className="font-semibold">No records found.</p>
-        <p className="text-sm">Submit the form to add a new record.</p>
+        <p className="font-semibold">No records found for the current filter.</p>
+        <p className="text-sm">Try adjusting your search or filter criteria.</p>
       </div>
     );
   }
@@ -183,20 +162,21 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                        placeholder="Filter records..."
-                        value={filter}
-                        onChange={e => setFilter(e.target.value)}
+                        ref={searchInputRef}
+                        placeholder="Search by PQ number..."
+                        value={filters.searchTerm}
+                        onChange={e => setFilters.setSearchTerm(e.target.value)}
                         className="pl-9 w-full"
                     />
                 </div>
-                <Select value={criticalElementFilter} onValueChange={setCriticalElementFilter}>
+                <Select value={filters.criticalElementFilter} onValueChange={setFilters.setCriticalElementFilter}>
                     <SelectTrigger><SelectValue placeholder="Filter by CE..." /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Critical Elements</SelectItem>
                         {criticalElementOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                     </SelectContent>
                 </Select>
-                <Select value={icaoStatusFilter} onValueChange={setIcaoStatusFilter}>
+                <Select value={filters.icaoStatusFilter} onValueChange={setFilters.setIcaoStatusFilter}>
                     <SelectTrigger><SelectValue placeholder="Filter by ICAO Status..." /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All ICAO Statuses</SelectItem>
@@ -230,6 +210,8 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
+        {isFetchingPage ? <div className='flex items-center justify-center p-8'><Loader2 className="mr-2 h-8 w-8 animate-spin" /> Loading...</div> :
+        <>
         <div className="border rounded-md overflow-x-auto">
           <Table className="min-w-full">
             <TableHeader className="sticky top-0 bg-background/95 z-10">
@@ -247,7 +229,7 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedRecords.map((record) => (
+              {records.map((record) => (
                 <TableRow 
                     key={record.id} 
                     className="cursor-pointer" 
@@ -295,29 +277,24 @@ export function PqsRecordsTable({ records, onDelete, onUpdate }: PqsRecordsTable
               ))}
             </TableBody>
           </Table>
-          {processedRecords.length === 0 && (
-            <div className="text-center p-6 text-muted-foreground">
-                <p>No matching records found.</p>
-            </div>
-          )}
         </div>
-         {totalPages > 1 && (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
-                </PaginationItem>
-                <PaginationItem>
-                    <span className="px-4 py-2 text-sm">
-                        Page {currentPage} of {totalPages}
-                    </span>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-        )}
+         <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+            </PaginationItem>
+            <PaginationItem>
+                <span className="px-4 py-2 text-sm">
+                    Page {currentPage} of {totalPages}
+                </span>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+        </>
+      }
       </div>
       {recordToView && (
         <PqRecordDetailDialog 
