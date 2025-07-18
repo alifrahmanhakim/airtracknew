@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
+import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -80,6 +80,7 @@ export default function CcefodPage() {
   const [adaPerubahanFilter, setAdaPerubahanFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [sort, setSort] = useState<SortDescriptor>({ column: 'annex', direction: 'asc' });
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Pagination state
   const [pageDocs, setPageDocs] = useState<any[]>([]); // Stores first and last doc of each page
@@ -196,6 +197,8 @@ export default function CcefodPage() {
     } finally {
         setIsLoading(false);
         setIsFetchingPage(false);
+        // Refocus the input element after data fetching is complete
+        searchInputRef.current?.focus();
     }
   }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, debouncedSearchTerm, pageDocs, toast]);
 
@@ -443,6 +446,7 @@ export default function CcefodPage() {
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input 
+                                            ref={searchInputRef}
                                             placeholder="Search by Annex Ref..."
                                             value={searchTerm}
                                             onChange={e => setSearchTerm(e.target.value)}
