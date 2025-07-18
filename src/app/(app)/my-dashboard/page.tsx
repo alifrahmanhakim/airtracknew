@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, Task, User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -77,11 +77,12 @@ export default function MyDashboardPage() {
       try {
         const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
         const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
-        const ccefodPromise = getDocs(collection(db, 'ccefodRecords'));
-        const pqsPromise = getDocs(collection(db, 'pqsRecords'));
-        const gapAnalysisPromise = getDocs(collection(db, 'gapAnalysisRecords'));
-        const glossaryPromise = getDocs(collection(db, 'glossaryRecords'));
-
+        
+        // Use getCountFromServer for efficient counting
+        const ccefodPromise = getCountFromServer(collection(db, 'ccefodRecords'));
+        const pqsPromise = getCountFromServer(collection(db, 'pqsRecords'));
+        const gapAnalysisPromise = getCountFromServer(collection(db, 'gapAnalysisRecords'));
+        const glossaryPromise = getCountFromServer(collection(db, 'glossaryRecords'));
 
         const [
             timKerjaSnapshot, 
@@ -100,10 +101,10 @@ export default function MyDashboardPage() {
         ]);
         
         setWorkspaceAnalytics({
-            ccefod: ccefodSnapshot.size,
-            pqs: pqsSnapshot.size,
-            gapAnalysis: gapAnalysisSnapshot.size,
-            glossary: glossarySnapshot.size,
+            ccefod: ccefodSnapshot.data().count,
+            pqs: pqsSnapshot.data().count,
+            gapAnalysis: gapAnalysisSnapshot.data().count,
+            glossary: glossarySnapshot.data().count,
         });
 
         const allProjects: Project[] = [
