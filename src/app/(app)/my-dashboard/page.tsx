@@ -91,8 +91,7 @@ export default function MyDashboardPage() {
       }
 
       try {
-        const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
-        const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
+        const projectsSnapshot = await getDocs(collection(db, "projects"));
         
         // Use getCountFromServer for efficient counting
         const ccefodPromise = getCountFromServer(collection(db, 'ccefodRecords'));
@@ -101,15 +100,11 @@ export default function MyDashboardPage() {
         const glossaryPromise = getCountFromServer(collection(db, 'glossaryRecords'));
 
         const [
-            timKerjaSnapshot, 
-            rulemakingSnapshot,
             ccefodSnapshot,
             pqsSnapshot,
             gapAnalysisSnapshot,
             glossarySnapshot,
         ] = await Promise.all([
-            timKerjaPromise, 
-            rulemakingPromise,
             ccefodPromise,
             pqsPromise,
             gapAnalysisPromise,
@@ -123,10 +118,7 @@ export default function MyDashboardPage() {
             glossary: glossarySnapshot.data().count,
         });
 
-        const allProjects: Project[] = [
-          ...timKerjaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project)),
-          ...rulemakingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project))
-        ];
+        const allProjects: Project[] = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
         
         const tasksForUser: AssignedTask[] = [];
         const projectsForUser: Project[] = [];
