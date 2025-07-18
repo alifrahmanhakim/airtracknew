@@ -362,7 +362,14 @@ export default function MyDashboardPage() {
                                         <Checkbox 
                                             id={`task-complete-${task.id}`}
                                             className="mt-1"
-                                            onCheckedChange={() => setTaskToComplete(task)}
+                                            checked={taskToComplete?.id === task.id}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setTaskToComplete(task);
+                                                } else {
+                                                    setTaskToComplete(null);
+                                                }
+                                            }}
                                         />
                                         <div className="flex-1">
                                             <label htmlFor={`task-complete-${task.id}`} className="font-semibold leading-tight cursor-pointer">{task.title}</label>
@@ -436,4 +443,5 @@ export default function MyDashboardPage() {
     </TooltipProvider>
   );
 }
+
 
