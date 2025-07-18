@@ -89,10 +89,6 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
         return;
     }
 
-    const teamMembers = data.team
-      .map(userId => allUsers.find(u => u.id === userId))
-      .filter((user): user is User => user !== undefined);
-
     const highPriorityTag = 'High Priority';
     
     let finalTags = data.tags ? [...data.tags] : [];
@@ -111,7 +107,7 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
       status: 'On Track' as const,
-      team: teamMembers,
+      team: data.team, // Pass array of user IDs
       tags: finalTags,
     };
     
@@ -126,7 +122,7 @@ export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogP
       });
       setOpen(false);
       form.reset();
-      window.location.reload();
+      router.refresh(); // Use router.refresh() for modern Next.js apps
     } else {
       toast({
         variant: 'destructive',

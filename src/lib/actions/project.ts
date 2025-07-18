@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { db } from '../firebase';
 import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc } from 'firebase/firestore';
-import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem } from '../types';
+import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem, User } from '../types';
 import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/flows/summarize-project-status';
 import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
 
@@ -17,7 +17,7 @@ export async function addRulemakingProject(projectData: unknown) {
         startDate: z.string(),
         endDate: z.string(),
         status: z.enum(['On Track', 'Off Track', 'At Risk', 'Completed']),
-        team: z.array(z.any()),
+        team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
         annex: z.string().min(1, 'Annex is required.'),
         casr: z.string().min(1, 'CASR is required.'),
         tags: z.array(z.string()).optional(),
@@ -32,9 +32,23 @@ export async function addRulemakingProject(projectData: unknown) {
         };
     }
 
+    // Fetch full user objects for the team
+    const teamUsers: User[] = [];
+    if (parsed.data.team.length > 0) {
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        parsed.data.team.forEach(userId => {
+            const user = allUsers.find(u => u.id === userId);
+            if (user) {
+                teamUsers.push(user);
+            }
+        });
+    }
+
     try {
         const docRef = await addDoc(collection(db, 'rulemakingProjects'), {
             ...parsed.data,
+            team: teamUsers, // Store full user objects
             projectType: 'Rulemaking',
             tasks: [],
             documents: [],
@@ -53,10 +67,24 @@ export async function addRulemakingProject(projectData: unknown) {
 }
 
 
-export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist'>) {
+export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist' | 'team'> & { team: string[] }) {
     try {
+        // Fetch full user objects for the team
+        const teamUsers: User[] = [];
+        if (projectData.team.length > 0) {
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+            projectData.team.forEach(userId => {
+                const user = allUsers.find(u => u.id === userId);
+                if (user) {
+                    teamUsers.push(user);
+                }
+            });
+        }
+        
         const docRef = await addDoc(collection(db, 'timKerjaProjects'), {
             ...projectData,
+            team: teamUsers, // Store full user objects
             projectType: 'Tim Kerja',
             tasks: [],
             documents: [],
