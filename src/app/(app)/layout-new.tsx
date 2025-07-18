@@ -196,7 +196,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
                     </div>
                 </div>
-                <div className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+                 <div className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
                     <ThemeToggle />
                 </div>
             </div>
