@@ -273,7 +273,7 @@ export function DashboardPage() {
                 <CardTitle>Team Workload</CardTitle>
                 <CardDescription>Distribution of tasks among team members.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[350px] w-full overflow-y-auto">
+            <CardContent className="h-[350px] overflow-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
