@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { CcefodRecord } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { collection, onSnapshot, query, orderBy, Timestamp, getDocs, limit, startAfter, endBefore, where, documentId, getDoc, doc, QueryConstraint } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, getDocs, limit, startAfter, endBefore, where, documentId, getDoc, QueryConstraint } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -73,7 +73,8 @@ export default function CcefodPage() {
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   // Filters and sorting for the records table
-  const [filter, setFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [annexFilter, setAnnexFilter] = useState<string>('all');
   const [implementationLevelFilter, setImplementationLevelFilter] = useState<string>('all');
   const [adaPerubahanFilter, setAdaPerubahanFilter] = useState<string>('all');
@@ -84,6 +85,17 @@ export default function CcefodPage() {
   const [pageDocs, setPageDocs] = useState<any[]>([]); // Stores first and last doc of each page
   const [isFetchingPage, setIsFetchingPage] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
+
+  // Debounce search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   // Fetch all records once for analytics and filters
   useEffect(() => {
@@ -127,10 +139,10 @@ export default function CcefodPage() {
     
     // Firestore does not support range filters on multiple fields without a composite index.
     // So, if we are filtering by text (which uses a range filter), we disable sorting on other fields.
-    if (filter) {
+    if (debouncedSearchTerm) {
         constraints.push(orderBy('annexReference'));
-        constraints.push(where('annexReference', '>=', filter));
-        constraints.push(where('annexReference', '<=', filter + '\uf8ff'));
+        constraints.push(where('annexReference', '>=', debouncedSearchTerm));
+        constraints.push(where('annexReference', '<=', debouncedSearchTerm + '\uf8ff'));
     } else if (sort) {
         constraints.push(orderBy(sort.column, sort.direction));
     }
@@ -185,7 +197,7 @@ export default function CcefodPage() {
         setIsLoading(false);
         setIsFetchingPage(false);
     }
-  }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, filter, pageDocs, toast]);
+  }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, debouncedSearchTerm, pageDocs, toast]);
 
   useEffect(() => {
     // Initial fetch
@@ -193,7 +205,7 @@ export default function CcefodPage() {
     // We disable exhaustive-deps here because we want this to run ONLY on mount and when filters/sort change.
     // The pagination logic is handled by handlePageChange.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, filter]);
+  }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, debouncedSearchTerm]);
 
 
   const handlePageChange = (newPage: number) => {
@@ -432,8 +444,8 @@ export default function CcefodPage() {
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input 
                                             placeholder="Search by Annex Ref..."
-                                            value={filter}
-                                            onChange={e => setFilter(e.target.value)}
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
                                             className="pl-9 w-full"
                                         />
                                     </div>
@@ -547,3 +559,5 @@ export default function CcefodPage() {
     </div>
   );
 }
+
+    
