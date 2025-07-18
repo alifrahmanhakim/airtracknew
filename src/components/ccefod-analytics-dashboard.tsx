@@ -89,8 +89,8 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
     }, {} as Record<string, number>);
 
     const implementationLevelData = Object.entries(countBy('implementationLevel')).map(([name, value]) => ({ name, value }));
-    const statusData = Object.entries(countBy('status')).map(([name, value]) => ({ name, value }));
-    const adaPerubahanData = Object.entries(countBy('adaPerubahan')).map(([name, value]) => ({ name, value }));
+    const statusCounts = countBy('status');
+    const adaPerubahanCounts = countBy('adaPerubahan');
     
     const annexCounts = countBy('annex');
     const annexData = Object.entries(annexCounts)
@@ -104,12 +104,24 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
           return a.name.localeCompare(b.name);
       });
     
-    const statusTotal = statusData.reduce((acc, curr) => acc + curr.value, 0);
-    const finalStatusCount = statusData.find(s => s.name === 'Final')?.value || 0;
+    const statusTotal = Object.values(statusCounts).reduce((acc, curr) => acc + curr, 0);
+    const statusData = Object.entries(statusCounts).map(([name, value]) => ({ 
+        name, 
+        value,
+        percentage: statusTotal > 0 ? (value / statusTotal) * 100 : 0,
+        displayName: `${name} (${value}/${statusTotal} - ${((value / statusTotal) * 100).toFixed(1)}%)`
+    }));
+    const finalStatusCount = statusCounts['Final'] || 0;
     const finalStatusPercentage = statusTotal > 0 ? (finalStatusCount / statusTotal) * 100 : 0;
     
-    const adaPerubahanTotal = adaPerubahanData.reduce((acc, curr) => acc + curr.value, 0);
-    const yaAdaPerubahanCount = adaPerubahanData.find(s => s.name === 'YA')?.value || 0;
+    const adaPerubahanTotal = Object.values(adaPerubahanCounts).reduce((acc, curr) => acc + curr, 0);
+    const adaPerubahanData = Object.entries(adaPerubahanCounts).map(([name, value]) => ({ 
+        name, 
+        value, 
+        percentage: adaPerubahanTotal > 0 ? (value / adaPerubahanTotal) * 100 : 0,
+        displayName: `${name} (${value}/${adaPerubahanTotal} - ${((value / adaPerubahanTotal) * 100).toFixed(1)}%)`
+    }));
+    const yaAdaPerubahanCount = adaPerubahanCounts['YA'] || 0;
     const yaAdaPerubahanPercentage = adaPerubahanTotal > 0 ? (yaAdaPerubahanCount / adaPerubahanTotal) * 100 : 0;
     
     const implementationLevelTotal = implementationLevelData.reduce((acc, curr) => acc + curr.value, 0);
@@ -127,7 +139,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             <div key={item.name} className="flex items-baseline gap-2">
                 <span>{item.name}</span>
                 <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
-                <span className="font-bold whitespace-nowrap pl-2">{item.percentage.toFixed(1)}%</span>
+                <span className="font-bold whitespace-nowrap pl-2">{item.value} ({item.percentage.toFixed(1)}%)</span>
             </div>
           ))}
         </div>
@@ -147,7 +159,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
            <div key={item.name} className="flex items-baseline gap-2">
               <span>{item.name}</span>
               <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
-              <span className="font-bold whitespace-nowrap text-right">{item.percentage.toFixed(1)}%</span>
+              <span className="font-bold whitespace-nowrap text-right">{item.value} ({item.percentage.toFixed(1)}%)</span>
            </div>
         ))}
       </div>
@@ -207,7 +219,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
                             ))}
                         </Pie>
-                         <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                         <ChartLegend content={<ChartLegendContent nameKey="displayName" />} className="[&>*]:justify-center flex-wrap" />
                     </PieChart>
                 </ChartContainer>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center pointer-events-none">
@@ -237,7 +249,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.adaPerubahanData)[entry.name].color} />
                             ))}
                         </Pie>
-                        <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                        <ChartLegend content={<ChartLegendContent nameKey="displayName" />} className="[&>*]:justify-center flex-wrap" />
                     </PieChart>
                 </ChartContainer>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center pointer-events-none">
@@ -301,11 +313,11 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
-                    <ResponsiveContainer width="100%" height={analyticsData.implementationLevelData.length * 40 + 50}>
+                    <ResponsiveContainer width="100%" height={analyticsData.implementationLevelData.length * 35 + 50}>
                         <BarChart data={analyticsData.implementationLevelData} layout="vertical" margin={{ left: 100, right: 30, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" allowDecimals={false} />
-                            <YAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} width={120} />
+                            <YAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} width={200} />
                             <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
                                 wrapperStyle={{ zIndex: 1000 }}
