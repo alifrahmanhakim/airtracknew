@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -144,16 +144,6 @@ export function PqsRecordsTable({
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key as keyof PqRecord]);
 
-  if (records.length === 0 && !isFetchingPage) {
-    return (
-      <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
-        <Info className="mx-auto h-8 w-8 mb-2" />
-        <p className="font-semibold">No records found for the current filter.</p>
-        <p className="text-sm">Try adjusting your search or filter criteria.</p>
-      </div>
-    );
-  }
-
   return (
     <TooltipProvider>
       <div className="space-y-4">
@@ -210,91 +200,99 @@ export function PqsRecordsTable({
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        {isFetchingPage ? <div className='flex items-center justify-center p-8'><Loader2 className="mr-2 h-8 w-8 animate-spin" /> Loading...</div> :
-        <>
-        <div className="border rounded-md overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHeader className="sticky top-0 bg-background/95 z-10">
-              <TableRow>
-                {visibleColumns.map((col) => (
-                    <TableHead 
-                        key={col.key} 
-                        className={cn("cursor-pointer whitespace-nowrap align-middle", col.key === 'protocolQuestion' && 'w-1/3')} 
-                        onClick={() => handleSort(col.key as keyof PqRecord)}
-                    >
-                        <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof PqRecord)}</div>
-                    </TableHead>
-                ))}
-                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px] align-middle">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {records.map((record) => (
-                <TableRow 
-                    key={record.id} 
-                    className="cursor-pointer" 
-                    onClick={() => setRecordToView(record)}
-                >
-                    {visibleColumns.map((col) => (
-                        <TableCell key={col.key} className="align-middle whitespace-normal">
-                            {(() => {
-                                const value = record[col.key as keyof PqRecord] as string | undefined;
-                                
-                                if (col.key === 'status') {
-                                    return (<Badge
-                                    className={cn({
-                                        'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
-                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
-                                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                    })}
-                                    >
-                                    {value}
-                                    </Badge>);
-                                }
 
-                                if (value === null || value === undefined || value === '') {
-                                    return <span className='text-muted-foreground'>—</span>;
-                                }
-                                
-                                return <div className="truncate-multiline">{value}</div>;
-                            })()}
-                        </TableCell>
-                    ))}
-                    <TableCell className="text-right sticky right-0 bg-background/95 align-middle">
-                        <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
-                            <EditPqRecordDialog record={record} onRecordUpdate={onUpdate} />
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>Delete Record</p></TooltipContent>
-                            </Tooltip>
-                        </div>
-                    </TableCell>
+        {isFetchingPage ? <div className='flex items-center justify-center p-8'><Loader2 className="mr-2 h-8 w-8 animate-spin" /> Loading...</div> :
+        (records.length === 0 ? (
+          <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
+            <Info className="mx-auto h-8 w-8 mb-2" />
+            <p className="font-semibold">No records found for the current filter.</p>
+            <p className="text-sm">Try adjusting your search or filter criteria.</p>
+          </div>
+        ) : (
+        <>
+          <div className="border rounded-md overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader className="sticky top-0 bg-background/95 z-10">
+                <TableRow>
+                  {visibleColumns.map((col) => (
+                      <TableHead 
+                          key={col.key} 
+                          className={cn("cursor-pointer whitespace-nowrap align-middle", col.key === 'protocolQuestion' && 'w-1/3')} 
+                          onClick={() => handleSort(col.key as keyof PqRecord)}
+                      >
+                          <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof PqRecord)}</div>
+                      </TableHead>
+                  ))}
+                  <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px] align-middle">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-         <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
-            </PaginationItem>
-            <PaginationItem>
-                <span className="px-4 py-2 text-sm">
-                    Page {currentPage} of {totalPages}
-                </span>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              </TableHeader>
+              <TableBody>
+                {records.map((record) => (
+                  <TableRow 
+                      key={record.id} 
+                      className="cursor-pointer" 
+                      onClick={() => setRecordToView(record)}
+                  >
+                      {visibleColumns.map((col) => (
+                          <TableCell key={col.key} className="align-middle whitespace-normal">
+                              {(() => {
+                                  const value = record[col.key as keyof PqRecord] as string | undefined;
+                                  
+                                  if (col.key === 'status') {
+                                      return (<Badge
+                                      className={cn({
+                                          'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
+                                          'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
+                                          'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                      })}
+                                      >
+                                      {value}
+                                      </Badge>);
+                                  }
+
+                                  if (value === null || value === undefined || value === '') {
+                                      return <span className='text-muted-foreground'>—</span>;
+                                  }
+                                  
+                                  return <div className="truncate-multiline">{value}</div>;
+                              })()}
+                          </TableCell>
+                      ))}
+                      <TableCell className="text-right sticky right-0 bg-background/95 align-middle">
+                          <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+                              <EditPqRecordDialog record={record} onRecordUpdate={onUpdate} />
+                              <Tooltip>
+                                  <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
+                                          <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>Delete Record</p></TooltipContent>
+                              </Tooltip>
+                          </div>
+                      </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+              </PaginationItem>
+              <PaginationItem>
+                  <span className="px-4 py-2 text-sm">
+                      Page {currentPage} of {totalPages}
+                  </span>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </>
-      }
+      ))}
       </div>
       {recordToView && (
         <PqRecordDetailDialog 
