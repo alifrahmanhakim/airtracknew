@@ -138,9 +138,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Button>
               <span className="text-lg font-semibold">AirTrack</span>
             </div>
-            <div className="flex items-center gap-2">
-                <LiveClock />
-            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -220,9 +217,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-background/20 backdrop-blur-lg">
-        <div className="p-2 absolute top-0 left-0">
-          <SidebarTrigger />
-        </div>
+        <header className="absolute top-0 left-0 right-0 flex items-center justify-between p-2 z-10">
+            <div className="flex items-center gap-2">
+                <SidebarTrigger />
+            </div>
+            <div className="flex items-center gap-2">
+                <LiveClock />
+            </div>
+        </header>
         <div className="animate-in fade-in-50 duration-500 pt-12">
             {children}
         </div>
