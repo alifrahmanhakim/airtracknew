@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { CcefodRecord } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, getDocs, limit, startAfter, endBefore, where, documentId, getDoc, doc, QueryConstraint } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -60,7 +60,8 @@ const implementationLevelOptions = [
 const RECORDS_PER_PAGE = 10;
 
 export default function CcefodPage() {
-  const [records, setRecords] = useState<CcefodRecord[]>([]);
+  const [allRecordsForAnalytics, setAllRecordsForAnalytics] = useState<CcefodRecord[]>([]);
+  const [paginatedRecords, setPaginatedRecords] = useState<CcefodRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [analyticsAnnexFilter, setAnalyticsAnnexFilter] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('form');
@@ -79,39 +80,140 @@ export default function CcefodPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sort, setSort] = useState<SortDescriptor>({ column: 'annex', direction: 'asc' });
 
+  // Pagination state
+  const [pageDocs, setPageDocs] = useState<any[]>([]); // Stores first and last doc of each page
+  const [isFetchingPage, setIsFetchingPage] = useState(false);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  // Fetch all records once for analytics and filters
   useEffect(() => {
-    const q = query(collection(db, "ccefodRecords"), orderBy("createdAt", "desc"));
-    
+    const q = query(collection(db, "ccefodRecords"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const recordsFromDb: CcefodRecord[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (data.createdAt && data.createdAt instanceof Timestamp) {
-            data.createdAt = data.createdAt.toDate().toISOString();
-        }
         recordsFromDb.push({ id: doc.id, ...data } as CcefodRecord);
       });
-      setRecords(recordsFromDb);
-      setIsLoading(false);
+      setAllRecordsForAnalytics(recordsFromDb);
+      setTotalRecords(querySnapshot.size);
     }, (error) => {
-      console.error("Error fetching CCEFOD records: ", error);
+      console.error("Error fetching all CCEFOD records for analytics: ", error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to fetch CCEFOD records from the database.',
+        description: 'Failed to fetch analytics data from the database.',
       });
-      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, [toast]);
+  
+
+  const fetchPaginatedData = useCallback(async (page: number, direction: 'next' | 'prev' | 'first') => {
+    setIsLoading(true);
+    setIsFetchingPage(true);
+
+    const constraints: QueryConstraint[] = [];
+
+    if (annexFilter !== 'all') {
+        constraints.push(where('annex', '==', annexFilter));
+    }
+    if (implementationLevelFilter !== 'all') {
+        constraints.push(where('implementationLevel', '==', implementationLevelFilter));
+    }
+    if (adaPerubahanFilter !== 'all') {
+        constraints.push(where('adaPerubahan', '==', adaPerubahanFilter));
+    }
+    
+    // Note: Firestore does not support full text search natively. The filter here is limited.
+    // For a real app, a third-party search service like Algolia or Typesense would be better.
+    // This basic filter will only work on the `annexReference` field for demonstration.
+    if (filter) {
+        constraints.push(where('annexReference', '>=', filter));
+        constraints.push(where('annexReference', '<=', filter + '\uf8ff'));
+    }
+
+
+    if (sort) {
+        constraints.push(orderBy(sort.column, sort.direction));
+    }
+
+    if (page > 1 && direction !== 'first') {
+        const cursorDocId = direction === 'next' ? pageDocs[page - 2]?.last : pageDocs[page]?.first;
+        if(cursorDocId) {
+            const cursorDoc = await getDoc(doc(db, 'ccefodRecords', cursorDocId));
+            if (cursorDoc.exists()) {
+                if (direction === 'next') {
+                    constraints.push(startAfter(cursorDoc));
+                } else {
+                    constraints.push(endBefore(cursorDoc));
+                }
+            }
+        }
+    }
+
+    constraints.push(limit(RECORDS_PER_PAGE));
+    const q = query(collection(db, "ccefodRecords"), ...constraints);
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        const recordsFromDb: CcefodRecord[] = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            recordsFromDb.push({ id: doc.id, ...data } as CcefodRecord);
+        });
+        
+        if (recordsFromDb.length > 0) {
+            const firstDocId = querySnapshot.docs[0].id;
+            const lastDocId = querySnapshot.docs[querySnapshot.docs.length - 1].id;
+            setPageDocs(prev => {
+                const newPageDocs = [...prev];
+                newPageDocs[page - 1] = { first: firstDocId, last: lastDocId };
+                return newPageDocs;
+            });
+        }
+        
+        setPaginatedRecords(recordsFromDb);
+        setCurrentPage(page);
+
+    } catch (error) {
+        console.error("Error fetching CCEFOD records: ", error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to fetch CCEFOD records.',
+        });
+    } finally {
+        setIsLoading(false);
+        setIsFetchingPage(false);
+    }
+  }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, filter, pageDocs, toast]);
+
+  useEffect(() => {
+    // Initial fetch
+    fetchPaginatedData(1, 'first');
+    // We disable exhaustive-deps here because we want this to run ONLY on mount and when filters/sort change.
+    // The pagination logic is handled by handlePageChange.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort, annexFilter, implementationLevelFilter, adaPerubahanFilter, filter]);
+
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage > currentPage) {
+        fetchPaginatedData(newPage, 'next');
+    } else if (newPage < currentPage) {
+        fetchPaginatedData(newPage, 'prev');
+    }
+  };
+
+  const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
   
   const handleDeleteRequest = (record: CcefodRecord) => {
     setRecordToDelete(record);
   };
 
   const handleRecordUpdate = (updatedRecord: CcefodRecord) => {
-    setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    setPaginatedRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
   };
   
   const confirmDelete = async () => {
@@ -123,6 +225,8 @@ export default function CcefodPage() {
 
     if (result.success) {
       toast({ title: "Record Deleted", description: "The CCEFOD record has been removed." });
+      // Refetch current page data after deletion
+      fetchPaginatedData(currentPage, 'first');
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
@@ -140,6 +244,8 @@ export default function CcefodPage() {
         title: 'All Records Deleted',
         description: `${result.count} records have been successfully removed.`,
       });
+       // Refetch current page data after deletion
+      fetchPaginatedData(1, 'first');
     } else {
       toast({
         variant: 'destructive',
@@ -151,7 +257,7 @@ export default function CcefodPage() {
 
 
   const annexOptions = useMemo(() => {
-    const annexes = Array.from(new Set(records.map(r => r.annex).filter(Boolean)));
+    const annexes = Array.from(new Set(allRecordsForAnalytics.map(r => r.annex).filter(Boolean)));
     
     annexes.sort((a, b) => {
         const numA = parseInt(a, 10);
@@ -165,7 +271,7 @@ export default function CcefodPage() {
     });
     
     return ['all', ...annexes];
-  }, [records]);
+  }, [allRecordsForAnalytics]);
   
   const annexSelectOptions: MultiSelectOption[] = useMemo(() => {
     return annexOptions.filter(o => o !== 'all').map(o => ({ value: o, label: o }));
@@ -173,13 +279,13 @@ export default function CcefodPage() {
 
   const filteredAnalyticsRecords = useMemo(() => {
     if (analyticsAnnexFilter.length === 0) {
-      return records;
+      return allRecordsForAnalytics;
     }
-    return records.filter(record => analyticsAnnexFilter.includes(record.annex));
-  }, [records, analyticsAnnexFilter]);
+    return allRecordsForAnalytics.filter(record => analyticsAnnexFilter.includes(record.annex));
+  }, [allRecordsForAnalytics, analyticsAnnexFilter]);
 
   const confirmExport = () => {
-    if (records.length === 0) {
+    if (allRecordsForAnalytics.length === 0) {
         toast({
             variant: 'destructive',
             title: 'No Data to Export',
@@ -195,7 +301,7 @@ export default function CcefodPage() {
 
     setTimeout(() => {
         // Remove HTML tags from standardPractice before exporting
-        const dataToExport = records.map(r => {
+        const dataToExport = allRecordsForAnalytics.map(r => {
             const { standardPractice, ...rest } = r;
             const cleanStandardPractice = (standardPractice || '').replace(/<[^>]+>/g, '');
             return { ...rest, standardPractice: cleanStandardPractice };
@@ -216,70 +322,8 @@ export default function CcefodPage() {
     }, 500);
   };
   
-  const processedRecords = useMemo(() => {
-    let filteredData = [...records];
-    
-    // Filtering
-    if (annexFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.annex === annexFilter);
-    }
-    if (implementationLevelFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.implementationLevel === implementationLevelFilter);
-    }
-    if (adaPerubahanFilter !== 'all') {
-        filteredData = filteredData.filter(record => record.adaPerubahan === adaPerubahanFilter);
-    }
-    if (filter) {
-        const lowercasedFilter = filter.toLowerCase();
-        filteredData = filteredData.filter(record => 
-            Object.values(record).some(value => 
-                String(value).toLowerCase().includes(lowercasedFilter)
-            )
-        );
-    }
-
-    // Sorting
-    if (sort) {
-        filteredData.sort((a, b) => {
-            const aVal = a[sort.column as keyof CcefodRecord] ?? '';
-            const bVal = b[sort.column as keyof CcefodRecord] ?? '';
-
-            if (sort.column === 'annex') {
-                 const numA = parseInt(aVal as string, 10);
-                 const numB = parseInt(bVal as string, 10);
-
-                 if (!isNaN(numA) && !isNaN(numB)) {
-                    if (numA !== numB) {
-                        return sort.direction === 'asc' ? numA - numB : numB - numA;
-                    }
-                 }
-            }
-            
-            if (String(aVal) < String(bVal)) return sort.direction === 'asc' ? -1 : 1;
-            if (String(aVal) > String(bVal)) return sort.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }
-
-    return filteredData;
-  }, [records, filter, annexFilter, implementationLevelFilter, adaPerubahanFilter, sort]);
-
-  const totalPages = Math.ceil(processedRecords.length / RECORDS_PER_PAGE);
-
-  const paginatedRecords = useMemo(() => {
-    const startIndex = (currentPage - 1) * RECORDS_PER_PAGE;
-    const endIndex = startIndex + RECORDS_PER_PAGE;
-    return processedRecords.slice(startIndex, endIndex);
-  }, [processedRecords, currentPage]);
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-        setCurrentPage(page);
-    }
-  }
-
   function renderContent() {
-    if (isLoading) {
+    if (isLoading && paginatedRecords.length === 0) {
       return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -320,7 +364,7 @@ export default function CcefodPage() {
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
-                       <CcefodForm onFormSubmit={() => {}} />
+                       <CcefodForm onFormSubmit={() => { fetchPaginatedData(1, 'first') }} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -375,7 +419,7 @@ export default function CcefodPage() {
                                     <FileSpreadsheet className="h-4 w-4" />
                                     <span className="sr-only">Export as CSV</span>
                                  </Button>
-                                 <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={records.length === 0}>
+                                 <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecordsForAnalytics.length === 0}>
                                     <Trash2 className="h-4 w-4" />
                                     <span className="sr-only">Delete All Records</span>
                                 </Button>
@@ -389,7 +433,7 @@ export default function CcefodPage() {
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input 
-                                            placeholder="Filter records..."
+                                            placeholder="Search by Annex Ref..."
                                             value={filter}
                                             onChange={e => setFilter(e.target.value)}
                                             className="pl-9 w-full"
@@ -424,14 +468,16 @@ export default function CcefodPage() {
                                     </Select>
                                 </div>
                             </div>
-                            <CcefodRecordsTable 
-                                records={paginatedRecords} 
-                                onDelete={handleDeleteRequest} 
-                                onUpdate={handleRecordUpdate}
-                                sort={sort}
-                                setSort={setSort}
-                            />
-                            <Pagination>
+                            {isFetchingPage ? <div className='flex items-center justify-center p-8'><Loader2 className="mr-2 h-8 w-8 animate-spin" /> Loading...</div> :
+                                <CcefodRecordsTable 
+                                    records={paginatedRecords} 
+                                    onDelete={handleDeleteRequest} 
+                                    onUpdate={handleRecordUpdate}
+                                    sort={sort}
+                                    setSort={setSort}
+                                />
+                            }
+                             <Pagination>
                                 <PaginationContent>
                                 <PaginationItem>
                                     <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
@@ -442,7 +488,7 @@ export default function CcefodPage() {
                                     </span>
                                 </PaginationItem>
                                 <PaginationItem>
-                                    <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} />
+                                    <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage === totalPages || paginatedRecords.length < RECORDS_PER_PAGE ? 'pointer-events-none opacity-50' : ''} />
                                 </PaginationItem>
                                 </PaginationContent>
                             </Pagination>
@@ -487,7 +533,7 @@ export default function CcefodPage() {
                     </div>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all <strong>{records.length}</strong> CCEFOD records from the database.
+                    This action cannot be undone. This will permanently delete all <strong>{totalRecords}</strong> CCEFOD records from the database.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -503,3 +549,5 @@ export default function CcefodPage() {
     </div>
   );
 }
+
+    
