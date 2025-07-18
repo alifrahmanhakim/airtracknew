@@ -1,5 +1,5 @@
 
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User, GapAnalysisRecord } from '@/lib/types';
 import { ProjectDetailsPage } from '@/components/project-details-page';
@@ -29,12 +29,28 @@ async function fetchProjectData(id: string, type: 'rulemaking' | 'timkerja' = 't
             getDocs(gapAnalysisRef)
         ]);
 
-        const project = projectSnap.exists() ? { id: projectSnap.id, ...projectSnap.data() } as Project : null;
-        if (project) {
-          project.projectType = type === 'rulemaking' ? 'Rulemaking' : 'Tim Kerja';
+        let project: Project | null = null;
+        if (projectSnap.exists()) {
+            const projectData = projectSnap.data();
+            project = {
+                id: projectSnap.id,
+                ...projectData,
+                createdAt: projectData.createdAt instanceof Timestamp ? projectData.createdAt.toDate().toISOString() : new Date().toISOString(),
+                projectType: type === 'rulemaking' ? 'Rulemaking' : 'Tim Kerja'
+            } as Project;
         }
+
         const users = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        const gapAnalysisRecords = gapAnalysisSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as GapAnalysisRecord));
+        
+        const gapAnalysisRecords = gapAnalysisSnap.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : (data.createdAt || new Date().toISOString()),
+            } as GapAnalysisRecord
+        });
+
 
         return { project, users, gapAnalysisRecords };
     } catch (err) {
