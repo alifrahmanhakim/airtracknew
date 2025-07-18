@@ -105,6 +105,7 @@
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    background-image: none !important;
   }
   
   [data-sidebar="sidebar"],
@@ -124,9 +125,18 @@
   }
 
   .card {
-    border: 1px solid #e2e8f0;
-    box-shadow: none;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
     break-inside: avoid;
+  }
+  
+  .no-print-break {
+    break-inside: avoid;
+  }
+
+  [data-radix-scroll-area-viewport] {
+    height: auto !important;
+    overflow: visible !important;
   }
 
   @page {

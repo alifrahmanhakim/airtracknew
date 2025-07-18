@@ -58,6 +58,7 @@ import {
   Pencil,
   GitCompareArrows,
   Eye,
+  Printer,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -133,7 +134,7 @@ function AssociatedGapAnalysisCard({
                       </Badge>
                     </TableCell>
                     <TableCell>{format(parseISO(record.dateOfEvaluation), 'PPP')}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right print:hidden">
                        <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" onClick={() => setRecordToView(record)}>
@@ -373,6 +374,10 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
   const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -381,7 +386,11 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <p className="text-muted-foreground">{project.description}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 print:hidden">
+            <Button variant="outline" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              Export as PDF
+            </Button>
             <EditProjectDialog project={project} allUsers={users} />
             <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject}>
               <Trash2 className="mr-2 h-4 w-4" />
@@ -421,7 +430,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               <AddTaskDialog projectId={project.id} projectType={project.projectType} onTaskAdd={handleTaskAdd} teamMembers={project.team} />
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[350px]">
+              <div className="w-full overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -494,7 +503,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                               {task.status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right flex justify-end items-center gap-1">
+                          <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
                               <EditTaskDialog projectId={project.id} projectType={project.projectType} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
                               <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isDeletingTask === task.id}>
                                   {isDeletingTask === task.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -509,7 +518,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                     )}
                   </TableBody>
                 </Table>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
           
@@ -535,7 +544,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                                     <LinkIcon className="h-4 w-4" />
                                 </a>
                             </Button>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDocToDelete(doc)} disabled={isDeletingDoc === doc.id} aria-label={`Delete document ${doc.name}`}>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => setDocToDelete(doc)} disabled={isDeletingDoc === doc.id} aria-label={`Delete document ${doc.name}`}>
                                 {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                              </Button>
                           </div>
@@ -568,7 +577,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                         <Badge variant="outline" className={cn("text-xs font-semibold", subProjectStatusStyles[sub.status])}>
                             {sub.status}
                         </Badge>
-                        <EditSubProjectDialog projectId={project.id} projectType={project.projectType} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
+                        <div className="print:hidden">
+                          <EditSubProjectDialog projectId={project.id} projectType={project.projectType} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -770,5 +781,3 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </TooltipProvider>
   );
 }
-
-    
