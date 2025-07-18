@@ -125,18 +125,16 @@ export default function CcefodPage() {
         constraints.push(where('adaPerubahan', '==', adaPerubahanFilter));
     }
     
-    // Note: Firestore does not support full text search natively. The filter here is limited.
-    // For a real app, a third-party search service like Algolia or Typesense would be better.
-    // This basic filter will only work on the `annexReference` field for demonstration.
+    // Firestore does not support range filters on multiple fields without a composite index.
+    // So, if we are filtering by text (which uses a range filter), we disable sorting on other fields.
     if (filter) {
+        constraints.push(orderBy('annexReference'));
         constraints.push(where('annexReference', '>=', filter));
         constraints.push(where('annexReference', '<=', filter + '\uf8ff'));
-    }
-
-
-    if (sort) {
+    } else if (sort) {
         constraints.push(orderBy(sort.column, sort.direction));
     }
+
 
     if (page > 1 && direction !== 'first') {
         const cursorDocId = direction === 'next' ? pageDocs[page - 2]?.last : pageDocs[page]?.first;
@@ -180,8 +178,8 @@ export default function CcefodPage() {
         console.error("Error fetching CCEFOD records: ", error);
         toast({
             variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to fetch CCEFOD records.',
+            title: 'Error fetching data',
+            description: 'The database query failed. This might be due to a missing index in Firestore. Please check the browser console for a link to create it.',
         });
     } finally {
         setIsLoading(false);
@@ -549,5 +547,3 @@ export default function CcefodPage() {
     </div>
   );
 }
-
-    
