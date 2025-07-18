@@ -2,7 +2,7 @@
 'use server';
 
 import { db, auth } from '../firebase';
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { sendPasswordResetEmail, type AuthError } from "firebase/auth";
 import type { User } from '../types';
 
@@ -44,6 +44,54 @@ export async function updateUserProfile(userId: string, name: string) {
     return { success: false, error: 'Failed to update profile.' };
   }
 }
+
+export async function updateUserProfileImage(userId: string, { dataUrl }: { dataUrl: string }) {
+    try {
+        const avatarUrl = await uploadAndGetUrl(`avatars/${userId}`, dataUrl);
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, { avatarUrl });
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            return { success: true, user: { id: userSnap.id, ...userSnap.data() } as User };
+        }
+        return { success: false, error: 'User data not found after update.' };
+    } catch (error) {
+        return { success: false, error: 'Failed to update avatar.' };
+    }
+}
+
+export async function updateUserHeaderImage(userId: string, { dataUrl }: { dataUrl: string }) {
+    try {
+        const headerImageUrl = await uploadAndGetUrl(`headers/${userId}`, dataUrl);
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, { headerImageUrl });
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            return { success: true, user: { id: userSnap.id, ...userSnap.data() } as User };
+        }
+        return { success: false, error: 'User data not found after update.' };
+    } catch (error) {
+        return { success: false, error: 'Failed to update header image.' };
+    }
+}
+
+async function uploadAndGetUrl(path: string, dataUrl: string) {
+    const { getStorage, ref, uploadString, getDownloadURL } = await import('firebase/storage');
+    const storage = getStorage();
+    const storageRef = ref(storage, path);
+    
+    // Extract mime type and base64 data
+    const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
+    if (!match) {
+        throw new Error("Invalid data URL format.");
+    }
+    const contentType = match[1];
+    const base64Data = match[2];
+
+    await uploadString(storageRef, base64Data, 'base64', { contentType });
+    return getDownloadURL(storageRef);
+}
+
 
 export async function sendPasswordReset(email: string) {
   try {
