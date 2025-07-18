@@ -29,10 +29,11 @@ const statusConfig: { [key in Project['status']]: { icon: React.ElementType, sty
 type RulemakingDashboardPageProps = {
     projects: Project[];
     allUsers: User[];
+    onProjectAdd: () => void;
 };
 
 
-export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashboardPageProps) {
+export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
 
     const stats = useMemo(() => {
@@ -80,7 +81,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                 <AddRulemakingProjectDialog allUsers={allUsers} />
+                 <AddRulemakingProjectDialog allUsers={allUsers} onProjectAdd={onProjectAdd} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 flex-1">

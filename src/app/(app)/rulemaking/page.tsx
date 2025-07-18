@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import type { Project, User } from '@/lib/types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -27,47 +27,52 @@ export default function RulemakingDashboard() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [version, setVersion] = useState(0); // State to trigger re-fetch
 
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     setUserId(loggedInUserId);
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      if (userId) {
-        try {
-          // Fetch users
-          const usersQuerySnapshot = await getDocs(collection(db, "users"));
-          const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-          setAllUsers(usersFromDb);
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    if (userId) {
+      try {
+        // Fetch users
+        const usersQuerySnapshot = await getDocs(collection(db, "users"));
+        const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setAllUsers(usersFromDb);
 
-          // Fetch Rulemaking projects
-          const projectsQuerySnapshot = await getDocs(collection(db, "rulemakingProjects"));
-          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project));
-          
-          const projectsWithDefaults = projectsFromDb.map(p => ({
-            ...p,
-            subProjects: p.subProjects || [],
-            documents: p.documents || [],
-          }));
+        // Fetch Rulemaking projects
+        const projectsQuerySnapshot = await getDocs(collection(db, "rulemakingProjects"));
+        const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project));
+        
+        const projectsWithDefaults = projectsFromDb.map(p => ({
+          ...p,
+          subProjects: p.subProjects || [],
+          documents: p.documents || [],
+        }));
 
-          const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
-          setRulemakingProjects(userVisibleProjects);
-        } catch (error) {
-          console.error("Error fetching projects from Firestore:", error);
-        }
+        const userVisibleProjects = getProjectsForUser(userId, projectsWithDefaults, usersFromDb);
+        setRulemakingProjects(userVisibleProjects);
+      } catch (error) {
+        console.error("Error fetching projects from Firestore:", error);
       }
-      setIsLoading(false);
-    };
+    }
+    setIsLoading(false);
+  }, [userId]);
 
+  useEffect(() => {
     if (userId) {
         fetchData();
     } else {
         setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, fetchData, version]);
+
+  const refreshData = () => {
+    setVersion(v => v + 1);
+  };
 
   if (isLoading) {
     return (
@@ -100,5 +105,5 @@ export default function RulemakingDashboard() {
     );
   }
 
-  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={allUsers} />;
+  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={allUsers} onProjectAdd={refreshData} />;
 }

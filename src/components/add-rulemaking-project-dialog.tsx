@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -52,9 +53,10 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 
 type AddRulemakingProjectDialogProps = {
   allUsers: User[];
+  onProjectAdd: () => void;
 };
 
-export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDialogProps) {
+export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulemakingProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -124,7 +126,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       });
       setOpen(false);
       form.reset();
-      router.refresh(); 
+      onProjectAdd(); // Refresh the data on the parent page
     } else {
       toast({
         variant: 'destructive',
