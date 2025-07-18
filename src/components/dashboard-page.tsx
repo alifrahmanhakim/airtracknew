@@ -16,6 +16,7 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
+  Users,
 } from 'lucide-react';
 import type { Project, User } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -26,8 +27,9 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, Tooltip } from 'recharts';
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AddTimKerjaProjectDialog } from './add-tim-kerja-project-dialog';
 import { Button } from './ui/button';
 import {
@@ -42,7 +44,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllTimKerjaProjects } from '@/lib/actions/project';
-import { useRouter } from 'next/navigation';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -105,24 +106,40 @@ export function DashboardPage() {
 
 
   const totalProjects = allProjects.length;
-  const completedTasks = allProjects.flatMap(p => p.tasks).filter(t => t.status === 'Done').length;
-  const totalTasks = allProjects.flatMap(p => p.tasks).length;
+  const completedTasks = allProjects.flatMap(p => p.tasks || []).filter(t => t.status === 'Done').length;
+  const totalTasks = allProjects.flatMap(p => p.tasks || []).length;
   const atRiskProjects = allProjects.filter(p => p.status === 'At Risk').length;
   const offTrackProjects = allProjects.filter(p => p.status === 'Off Track').length;
 
-  const projectStatusData = useMemo(() => {
+  const { projectStatusData, teamWorkloadData } = useMemo(() => {
     const statusCounts = allProjects.reduce((acc, project) => {
       acc[project.status] = (acc[project.status] || 0) + 1;
       return acc;
     }, {} as Record<Project['status'], number>);
 
-    return [
-      { name: 'On Track', count: statusCounts['On Track'] || 0, fill: 'var(--color-On Track)' },
-      { name: 'At Risk', count: statusCounts['At Risk'] || 0, fill: 'var(--color-At Risk)' },
-      { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--color-Off Track)' },
-      { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-Completed)' },
-    ];
-  }, [allProjects]);
+    const workloadCounts: { [userId: string]: { name: string, tasks: number } } = {};
+    allProjects.forEach(project => {
+        (project.tasks || []).forEach(task => {
+            (task.assigneeIds || []).forEach(userId => {
+                if (!workloadCounts[userId]) {
+                    const user = allUsers.find(u => u.id === userId);
+                    workloadCounts[userId] = { name: user?.name || 'Unknown', tasks: 0 };
+                }
+                workloadCounts[userId].tasks += 1;
+            });
+        });
+    });
+
+    return {
+      projectStatusData: [
+        { name: 'On Track', count: statusCounts['On Track'] || 0, fill: 'var(--color-On Track)' },
+        { name: 'At Risk', count: statusCounts['At Risk'] || 0, fill: 'var(--color-At Risk)' },
+        { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--color-Off Track)' },
+        { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-Completed)' },
+      ],
+      teamWorkloadData: Object.values(workloadCounts).sort((a,b) => b.tasks - a.tasks),
+    };
+  }, [allProjects, allUsers]);
   
   const chartConfig = {
     count: { label: 'Projects' },
@@ -130,6 +147,7 @@ export function DashboardPage() {
     'At Risk': { label: 'At Risk', color: 'hsl(var(--chart-2))' },
     'Off Track': { label: 'Off Track', color: 'hsl(var(--chart-3))' },
     'Completed': { label: 'Completed', color: 'hsl(var(--chart-4))' },
+    tasks: { label: 'Tasks', color: 'hsl(var(--chart-1))' },
   };
   
   const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com';
@@ -219,7 +237,7 @@ export function DashboardPage() {
         </div>
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-          <Card className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Project Status Overview</CardTitle>
               <CardDescription>A look at the health of all projects in the portfolio.</CardDescription>
@@ -240,6 +258,29 @@ export function DashboardPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+                <CardTitle>Team Workload</CardTitle>
+                <CardDescription>Distribution of tasks among team members.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[350px] w-full pl-2">
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                    <ResponsiveContainer>
+                        <BarChart data={teamWorkloadData} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                            <CartesianGrid horizontal={false} />
+                            <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={80} />
+                            <XAxis dataKey="tasks" type="number" hide />
+                            <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                            <Bar dataKey="tasks" radius={5}>
+                                {teamWorkloadData.map((_entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </ChartContainer>
             </CardContent>
           </Card>
         </div>
