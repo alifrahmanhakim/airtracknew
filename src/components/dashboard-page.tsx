@@ -46,6 +46,9 @@ import { useToast } from '@/hooks/use-toast';
 import { deleteAllTimKerjaProjects } from '@/lib/actions/project';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Progress } from './ui/progress';
 
 // Note: This component is now dynamically imported by `dashboard-wrapper.tsx`
 // with SSR turned off. This is the key to fixing the build error.
@@ -69,39 +72,35 @@ export function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      if (userId) {
-        try {
+      try {
+        const usersQuerySnapshot = await getDocs(collection(db, "users"));
+        const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setAllUsers(usersFromDb);
+
+        const projectsQuerySnapshot = await getDocs(collection(db, "timKerjaProjects"));
+        const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
+        
+        const projectsWithDefaults = projectsFromDb.map(p => ({
+          ...p,
+          subProjects: p.subProjects || [],
+          documents: p.documents || [],
+        }));
+
+        setAllProjects(projectsWithDefaults);
+
+        if (userId) {
           const userDoc = await getDoc(doc(db, 'users', userId));
           if (userDoc.exists()) {
             setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
           }
-
-          const usersQuerySnapshot = await getDocs(collection(db, "users"));
-          const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-          setAllUsers(usersFromDb);
-
-          const projectsQuerySnapshot = await getDocs(collection(db, "timKerjaProjects"));
-          const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
-          
-          const projectsWithDefaults = projectsFromDb.map(p => ({
-            ...p,
-            subProjects: p.subProjects || [],
-            documents: p.documents || [],
-          }));
-
-          setAllProjects(projectsWithDefaults);
-        } catch (error) {
-          console.error("Error fetching data from Firestore:", error);
         }
+      } catch (error) {
+        console.error("Error fetching data from Firestore:", error);
       }
       setIsLoading(false);
     };
 
-    if (userId) {
-        fetchData();
-    } else {
-        setIsLoading(false);
-    }
+    fetchData();
   }, [userId]);
 
 
@@ -117,18 +116,25 @@ export function DashboardPage() {
       return acc;
     }, {} as Record<Project['status'], number>);
 
-    const workloadCounts: { [userId: string]: { name: string, tasks: number } } = {};
+    const workloadCounts: { [userId: string]: { user: User, tasks: number } } = {};
+    
+    allUsers.forEach(user => {
+        workloadCounts[user.id] = { user, tasks: 0 };
+    });
+
     allProjects.forEach(project => {
         (project.tasks || []).forEach(task => {
             (task.assigneeIds || []).forEach(userId => {
-                if (!workloadCounts[userId]) {
-                    const user = allUsers.find(u => u.id === userId);
-                    workloadCounts[userId] = { name: user?.name || 'Unknown', tasks: 0 };
+                if (workloadCounts[userId]) {
+                    workloadCounts[userId].tasks += 1;
                 }
-                workloadCounts[userId].tasks += 1;
             });
         });
     });
+
+    const workloadArray = Object.values(workloadCounts)
+        .filter(item => item.tasks > 0)
+        .sort((a,b) => b.tasks - a.tasks);
 
     return {
       projectStatusData: [
@@ -137,7 +143,7 @@ export function DashboardPage() {
         { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--color-Off Track)' },
         { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-Completed)' },
       ],
-      teamWorkloadData: Object.values(workloadCounts).sort((a,b) => b.tasks - a.tasks),
+      teamWorkloadData: workloadArray,
     };
   }, [allProjects, allUsers]);
   
@@ -174,6 +180,8 @@ export function DashboardPage() {
       });
     }
   };
+
+  const maxTasks = teamWorkloadData.length > 0 ? Math.max(...teamWorkloadData.map(item => item.tasks)) : 0;
 
   return (
     <>
@@ -265,22 +273,38 @@ export function DashboardPage() {
                 <CardTitle>Team Workload</CardTitle>
                 <CardDescription>Distribution of tasks among team members.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[350px] w-full pl-2">
-                <ChartContainer config={chartConfig} className="h-full w-full">
-                    <ResponsiveContainer>
-                        <BarChart data={teamWorkloadData} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                            <CartesianGrid horizontal={false} />
-                            <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tickMargin={10} width={80} />
-                            <XAxis dataKey="tasks" type="number" hide />
-                            <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                            <Bar dataKey="tasks" radius={5}>
-                                {teamWorkloadData.map((_entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
+            <CardContent className="h-[350px] w-full overflow-y-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Member</TableHead>
+                            <TableHead>Tasks</TableHead>
+                            <TableHead className="w-[120px]">Workload</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {teamWorkloadData.map(({ user, tasks }) => (
+                            <TableRow key={user.id}>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                            <AvatarFallback>{user.name?.[0] || '?'}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="font-medium text-sm">{user.name}</p>
+                                            <p className="text-xs text-muted-foreground">{user.role}</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-center font-bold">{tasks}</TableCell>
+                                <TableCell>
+                                    <Progress value={maxTasks > 0 ? (tasks / maxTasks) * 100 : 0} className="h-2" />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </CardContent>
           </Card>
         </div>
