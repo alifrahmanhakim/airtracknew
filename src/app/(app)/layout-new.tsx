@@ -125,7 +125,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
   
-  const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com';
+  const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com';
 
   return (
     <SidebarProvider>

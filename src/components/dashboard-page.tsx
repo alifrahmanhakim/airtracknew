@@ -171,7 +171,7 @@ export function DashboardPage() {
     tasks: { label: 'Tasks', color: 'hsl(var(--chart-1))' },
   };
   
-  const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com';
+  const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com';
 
   const handleDeleteAll = async () => {
     setIsDeleting(true);
