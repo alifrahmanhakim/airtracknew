@@ -48,8 +48,7 @@ import {
   Link as LinkIcon,
   Trash2,
   Loader2,
-  ListTree,
-  BarChart2,
+  GanttChartSquare,
   Info,
   ArrowRight,
   CheckCircle,
@@ -403,7 +402,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         <Card className="lg:col-span-3">
           <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                  <ListTree /> Project Timeline
+                  <GanttChartSquare /> Project Timeline
               </CardTitle>
               <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
           </CardHeader>
@@ -670,8 +669,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {project.team.map(user => (
-                  <div key={user.id} className="flex items-center gap-4">
+              {project.team.map((user, index) => (
+                  <div key={`${user.id}-${index}`} className="flex items-center gap-4">
                       <Avatar>
                           <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
                           <AvatarFallback>{user.name?.charAt(0) || user.email?.charAt(0) || '?'}</AvatarFallback>
