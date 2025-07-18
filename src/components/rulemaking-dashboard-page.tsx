@@ -244,8 +244,8 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                         <CardFooter className="pt-2 flex justify-between items-center mt-auto">
                                            <div className="flex items-center gap-2">
                                                 <div className="flex items-center -space-x-2">
-                                                    {project.team.slice(0, 5).map(member => (
-                                                        <Tooltip key={member.id}>
+                                                    {project.team.slice(0, 5).map((member, index) => (
+                                                        <Tooltip key={`${member.id}-${index}`}>
                                                             <TooltipTrigger asChild>
                                                                 <Avatar className="h-6 w-6 border-2 border-background">
                                                                     <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
