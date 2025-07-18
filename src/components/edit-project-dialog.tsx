@@ -94,7 +94,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
       ownerId: project.ownerId,
       annex: project.annex,
       casr: project.casr,
-      casrRevision: project.casrRevision,
+      casrRevision: project.casrRevision || '',
       tags: project.tags?.filter(t => t.toLowerCase() !== highPriorityTag.toLowerCase()) || [],
       isHighPriority: project.tags?.some(t => t.toLowerCase() === highPriorityTag.toLowerCase()),
     },
