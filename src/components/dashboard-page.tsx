@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Loader2,
   Users,
+  Calendar,
 } from 'lucide-react';
 import type { Project, User } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -49,9 +50,8 @@ import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Progress } from './ui/progress';
-
-// Note: This component is now dynamically imported by `dashboard-wrapper.tsx`
-// with SSR turned off. This is the key to fixing the build error.
+import { parseISO, getYear } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 export function DashboardPage() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
@@ -61,6 +61,7 @@ export function DashboardPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<string>('all');
   const { toast } = useToast();
   const router = useRouter();
 
@@ -103,15 +104,20 @@ export function DashboardPage() {
     fetchData();
   }, [userId]);
 
+  const yearOptions = useMemo(() => {
+    const years = new Set(allProjects.map(p => getYear(parseISO(p.startDate))));
+    return ['all', ...Array.from(years).sort((a, b) => b - a)];
+  }, [allProjects]);
 
-  const totalProjects = allProjects.length;
-  const completedTasks = allProjects.flatMap(p => p.tasks || []).filter(t => t.status === 'Done').length;
-  const totalTasks = allProjects.flatMap(p => p.tasks || []).length;
-  const atRiskProjects = allProjects.filter(p => p.status === 'At Risk').length;
-  const offTrackProjects = allProjects.filter(p => p.status === 'Off Track').length;
+  const filteredProjects = useMemo(() => {
+    if (selectedYear === 'all') {
+      return allProjects;
+    }
+    return allProjects.filter(p => getYear(parseISO(p.startDate)) === parseInt(selectedYear, 10));
+  }, [allProjects, selectedYear]);
 
-  const { projectStatusData, teamWorkloadData } = useMemo(() => {
-    const statusCounts = allProjects.reduce((acc, project) => {
+  const { projectStatusData, teamWorkloadData, stats } = useMemo(() => {
+    const statusCounts = filteredProjects.reduce((acc, project) => {
       acc[project.status] = (acc[project.status] || 0) + 1;
       return acc;
     }, {} as Record<Project['status'], number>);
@@ -122,7 +128,7 @@ export function DashboardPage() {
         workloadCounts[user.id] = { user, tasks: 0 };
     });
 
-    allProjects.forEach(project => {
+    filteredProjects.forEach(project => {
         (project.tasks || []).forEach(task => {
             (task.assigneeIds || []).forEach(userId => {
                 if (workloadCounts[userId]) {
@@ -135,6 +141,14 @@ export function DashboardPage() {
     const workloadArray = Object.values(workloadCounts)
         .filter(item => item.tasks > 0)
         .sort((a,b) => b.tasks - a.tasks);
+        
+    const projectStats = {
+        totalProjects: filteredProjects.length,
+        completedTasks: filteredProjects.flatMap(p => p.tasks || []).filter(t => t.status === 'Done').length,
+        totalTasks: filteredProjects.flatMap(p => p.tasks || []).length,
+        atRiskProjects: filteredProjects.filter(p => p.status === 'At Risk').length,
+        offTrackProjects: filteredProjects.filter(p => p.status === 'Off Track').length,
+    };
 
     return {
       projectStatusData: [
@@ -144,8 +158,9 @@ export function DashboardPage() {
         { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-Completed)' },
       ],
       teamWorkloadData: workloadArray,
+      stats: projectStats,
     };
-  }, [allProjects, allUsers]);
+  }, [filteredProjects, allUsers]);
   
   const chartConfig = {
     count: { label: 'Projects' },
@@ -169,9 +184,7 @@ export function DashboardPage() {
         title: 'All Projects Deleted',
         description: `${result.count} Tim Kerja projects have been removed.`,
       });
-      // Force a reload to reflect the empty state
-      router.refresh();
-      setAllProjects([]); // Also clear local state immediately
+      setAllProjects([]);
     } else {
       toast({
         variant: 'destructive',
@@ -186,16 +199,28 @@ export function DashboardPage() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
               <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
                   <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
                   <p className="text-muted-foreground">An overview of all team-based projects.</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                 <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder="Select a year..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearOptions.map(year => (
+                        <SelectItem key={year} value={String(year)}>
+                          {year === 'all' ? 'All Years' : year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 {isAdmin && (
                   <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={allProjects.length === 0}>
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete All Projects
+                    Delete All
                   </Button>
                 )}
                 <AddTimKerjaProjectDialog allUsers={allUsers} />
@@ -208,7 +233,7 @@ export function DashboardPage() {
               <FolderKanban className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalProjects}</div>
+              <div className="text-2xl font-bold">{stats.totalProjects}</div>
               <p className="text-xs text-muted-foreground">All active and completed projects</p>
             </CardContent>
           </Card>
@@ -218,8 +243,8 @@ export function DashboardPage() {
               <ListTodo className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalTasks}</div>
-              <p className="text-xs text-muted-foreground">{completedTasks} tasks completed</p>
+              <div className="text-2xl font-bold">{stats.totalTasks}</div>
+              <p className="text-xs text-muted-foreground">{stats.completedTasks} tasks completed</p>
             </CardContent>
           </Card>
           <Card>
@@ -228,7 +253,7 @@ export function DashboardPage() {
               <AlarmClockOff className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{atRiskProjects}</div>
+              <div className="text-2xl font-bold text-yellow-600">{stats.atRiskProjects}</div>
               <p className="text-xs text-muted-foreground">Projects needing attention</p>
             </CardContent>
           </Card>
@@ -238,7 +263,7 @@ export function DashboardPage() {
               <Frown className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{offTrackProjects}</div>
+              <div className="text-2xl font-bold text-red-600">{stats.offTrackProjects}</div>
               <p className="text-xs text-muted-foreground">Projects with critical issues</p>
             </CardContent>
           </Card>
@@ -312,7 +337,7 @@ export function DashboardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight mb-4">Active Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {allProjects.filter(p => p.status !== 'Completed').map((project) => (
+            {filteredProjects.filter(p => p.status !== 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
@@ -321,7 +346,7 @@ export function DashboardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">Completed Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {allProjects.filter(p => p.status === 'Completed').map((project) => (
+            {filteredProjects.filter(p => p.status === 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
@@ -337,7 +362,7 @@ export function DashboardPage() {
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete all
-              <span className="font-semibold"> {allProjects.length} Tim Kerja projects</span> and all of their associated data.
+              <span className="font-semibold"> {filteredProjects.length} Tim Kerja projects</span> and all of their associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
