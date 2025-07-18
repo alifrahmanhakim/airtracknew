@@ -30,6 +30,7 @@ import Papa from 'papaparse';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 
 
 // Dynamically import heavy components
@@ -61,7 +62,7 @@ const RECORDS_PER_PAGE = 10;
 export default function CcefodPage() {
   const [records, setRecords] = useState<CcefodRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [analyticsAnnexFilter, setAnalyticsAnnexFilter] = useState('all');
+  const [analyticsAnnexFilter, setAnalyticsAnnexFilter] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('form');
   const { toast } = useToast();
   
@@ -165,12 +166,16 @@ export default function CcefodPage() {
     
     return ['all', ...annexes];
   }, [records]);
+  
+  const annexSelectOptions: MultiSelectOption[] = useMemo(() => {
+    return annexOptions.filter(o => o !== 'all').map(o => ({ value: o, label: o }));
+  }, [annexOptions]);
 
   const filteredAnalyticsRecords = useMemo(() => {
-    if (analyticsAnnexFilter === 'all') {
+    if (analyticsAnnexFilter.length === 0) {
       return records;
     }
-    return records.filter(record => record.annex === analyticsAnnexFilter);
+    return records.filter(record => analyticsAnnexFilter.includes(record.annex));
   }, [records, analyticsAnnexFilter]);
 
   const confirmExport = () => {
@@ -330,24 +335,20 @@ export default function CcefodPage() {
                                     Visualisasi data dari catatan yang telah dimasukkan.
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2 print:hidden">
-                                <Label htmlFor="annex-filter" className="text-sm font-medium">Filter by Annex</Label>
-                                <Select value={analyticsAnnexFilter} onValueChange={setAnalyticsAnnexFilter}>
-                                    <SelectTrigger id="annex-filter" className="w-full sm:w-[280px]">
-                                        <SelectValue placeholder="Filter by Annex..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {annexOptions.map(annex => (
-                                            <SelectItem key={annex} value={annex}>
-                                                {annex === 'all' ? 'All Annexes' : annex}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {analyticsAnnexFilter !== 'all' && (
-                                    <Button variant="ghost" size="icon" onClick={() => setAnalyticsAnnexFilter('all')}>
-                                        <RotateCcw className="h-4 w-4" />
-                                        <span className="sr-only">Reset Filter</span>
+                            <div className="flex items-center gap-2 print:hidden w-full sm:w-auto">
+                                <div className="flex-grow">
+                                    <Label htmlFor="annex-filter" className="sr-only">Filter by Annex</Label>
+                                    <MultiSelect
+                                        options={annexSelectOptions}
+                                        onValueChange={setAnalyticsAnnexFilter}
+                                        defaultValue={analyticsAnnexFilter}
+                                        placeholder="Filter by Annex..."
+                                        className="w-full sm:w-[350px]"
+                                    />
+                                </div>
+                                {analyticsAnnexFilter.length > 0 && (
+                                    <Button variant="ghost" onClick={() => setAnalyticsAnnexFilter([])}>
+                                        <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                     </Button>
                                 )}
                             </div>
