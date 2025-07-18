@@ -20,6 +20,7 @@ export async function addRulemakingProject(projectData: unknown) {
         team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
         annex: z.string().min(1, 'Annex is required.'),
         casr: z.string().min(1, 'CASR is required.'),
+        casrRevision: z.string().optional(),
         tags: z.array(z.string()).optional(),
     });
 

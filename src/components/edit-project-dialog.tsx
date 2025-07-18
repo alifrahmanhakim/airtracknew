@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -54,6 +55,7 @@ const editProjectSchema = z.object({
   ownerId: z.string().min(1, 'Project Manager is required.'),
   annex: z.string().optional(),
   casr: z.string().optional(),
+  casrRevision: z.string().optional(),
   tags: z.array(z.string()).optional(),
   isHighPriority: z.boolean().default(false),
 });
@@ -92,6 +94,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
       ownerId: project.ownerId,
       annex: project.annex,
       casr: project.casr,
+      casrRevision: project.casrRevision,
       tags: project.tags?.filter(t => t.toLowerCase() !== highPriorityTag.toLowerCase()) || [],
       isHighPriority: project.tags?.some(t => t.toLowerCase() === highPriorityTag.toLowerCase()),
     },
@@ -134,6 +137,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
     if (project.projectType === 'Rulemaking') {
       projectUpdateData.annex = data.annex;
       projectUpdateData.casr = data.casr;
+      projectUpdateData.casrRevision = data.casrRevision;
     }
     
     const result = await updateProject(project.id, project.projectType, projectUpdateData);
@@ -188,7 +192,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
             />
 
             {project.projectType === 'Rulemaking' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                   control={form.control}
                   name="annex"
@@ -210,6 +214,19 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
                       <FormLabel>CASR</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., 61" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="casrRevision"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Revisi CASR Ke</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 2" {...field} type="number" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

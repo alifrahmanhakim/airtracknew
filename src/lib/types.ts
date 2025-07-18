@@ -64,6 +64,7 @@ export type Project = {
   projectType: 'Rulemaking' | 'Tim Kerja';
   annex?: string;
   casr?: string;
+  casrRevision?: string;
   tags?: string[];
   checklist?: ChecklistItem[];
 };

@@ -45,6 +45,7 @@ const projectSchema = z.object({
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
   annex: z.string().min(1, 'Annex is required.'),
   casr: z.string().min(1, 'CASR is required.'),
+  casrRevision: z.string().optional(),
   tags: z.array(z.string()).optional(),
   isHighPriority: z.boolean().default(false),
 });
@@ -75,6 +76,7 @@ export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulema
       team: [],
       annex: '',
       casr: '',
+      casrRevision: '',
       tags: [],
       isHighPriority: false,
     },
@@ -166,7 +168,7 @@ export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulema
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                 control={form.control}
                 name="annex"
@@ -188,6 +190,19 @@ export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulema
                     <FormLabel>CASR</FormLabel>
                     <FormControl>
                         <Input placeholder="e.g., 61" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                 <FormField
+                control={form.control}
+                name="casrRevision"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Revisi CASR Ke</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., 2" {...field} type="number" />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
