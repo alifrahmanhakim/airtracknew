@@ -12,15 +12,12 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
-  Text,
-  Legend,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CcefodRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 type CcefodAnalyticsDashboardProps = {
   records: CcefodRecord[];
@@ -29,21 +26,17 @@ type CcefodAnalyticsDashboardProps = {
 const CHART_COLORS = [
     'hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))',
     'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--chart-6))',
-    'hsl(var(--chart-7))', 'hsl(var(--chart-8))', 'hsl(var(--chart-1))',
-    'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))', 'hsl(var(--chart-6))', 'hsl(var(--chart-7))',
-    'hsl(var(--chart-8))', 'hsl(var(--chart-1))', 'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))', 'hsl(var(--muted))',
+    'hsl(var(--chart-7))', 'hsl(var(--chart-8))',
 ];
 
 const CustomizedAxisTick = (props: any) => {
     const { x, y, payload } = props;
-    const maxCharsPerLine = 45;
+    const maxCharsPerLine = 35; // Adjusted for better wrapping
     const text = payload.value;
 
     const splitTextIntoLines = (text: string, maxChars: number) => {
         const words = text.split(' ');
-        const lines: string[] = [];
+        let lines: string[] = [];
         let currentLine = '';
 
         words.forEach(word => {
@@ -168,8 +161,8 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       annexTotal,
       finalStatusPercentage,
       yaAdaPerubahanPercentage,
-      implementationDescription: implementationDescription,
-      topAnnexDescription: topAnnexDescription,
+      implementationDescription,
+      topAnnexDescription,
     };
   }, [records]);
 
@@ -268,7 +261,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                         <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 20, right: 30, top: 20, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" width={350} interval={0} tick={<CustomizedAxisTick />} />
+                            <YAxis dataKey="name" type="category" width={250} interval={0} tick={<CustomizedAxisTick />} />
                              <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
                                 wrapperStyle={{ zIndex: 1000 }}
@@ -308,32 +301,17 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={chartConfig(analyticsData.implementationLevelData)}>
-                    <ResponsiveContainer width="100%" height={400}>
-                        <BarChart data={analyticsData.implementationLevelData} layout="horizontal" margin={{ right: 30, top: 20, bottom: 80 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                             <XAxis 
-                                dataKey="name" 
-                                type="category"
-                                tickLine={false}
-                                axisLine={false}
-                                height={100}
-                                interval={0}
-                                tick={(props) => {
-                                    const { x, y, payload } = props;
-                                    return (
-                                        <g transform={`translate(${x},${y})`}>
-                                            <text x={0} y={0} dy={16} textAnchor="end" fill="#666" transform="rotate(-35)">{payload.value}</text>
-                                        </g>
-                                    );
-                                }}
-                            />
-                            <YAxis type="number" allowDecimals={false} />
+                    <ResponsiveContainer width="100%" height={analyticsData.implementationLevelData.length * 40 + 50}>
+                        <BarChart data={analyticsData.implementationLevelData} layout="vertical" margin={{ left: 100, right: 30, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                            <XAxis type="number" allowDecimals={false} />
+                            <YAxis dataKey="name" type="category" interval={0} tick={{ fontSize: 12 }} width={120} />
                             <ChartTooltip
                                 cursor={{ fill: 'hsl(var(--muted))' }}
                                 wrapperStyle={{ zIndex: 1000 }}
                                 content={<ChartTooltipContent indicator="dot" />}
                             />
-                            <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
+                            <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
                                 {analyticsData.implementationLevelData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                 ))}

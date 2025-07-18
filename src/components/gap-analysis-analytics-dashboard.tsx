@@ -1,14 +1,13 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { GapAnalysisRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { GitCompareArrows, Info, FolderOpen } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Label } from './ui/label';
 
 type GapAnalysisAnalyticsDashboardProps = {
   allRecords: GapAnalysisRecord[];
@@ -103,8 +102,8 @@ export function GapAnalysisAnalyticsDashboard({
       closedPercentage,
       complianceStatusData,
       statusItemData,
-      casrData,
-      annexData,
+      casrData: casrData.slice(0, 10),
+      annexData: annexData.slice(0,10)
     };
   }, [filteredRecords]);
 
@@ -233,7 +232,7 @@ export function GapAnalysisAnalyticsDashboard({
                     <CardContent className="pl-2">
                         <ChartContainer config={chartConfig(analyticsData.casrData)} className="h-[300px] w-full">
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.casrData.slice(0, 10)} layout="vertical" margin={{ left: 50, right: 30 }}>
+                                <BarChart data={analyticsData.casrData} layout="vertical" margin={{ left: 50, right: 30 }}>
                                     <YAxis dataKey="name" type="category" width={100} interval={0} tick={{ fontSize: 12 }} />
                                     <XAxis type="number" allowDecimals={false} />
                                     <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent indicator="dot" />} />
@@ -250,13 +249,13 @@ export function GapAnalysisAnalyticsDashboard({
                 
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Annex Count</CardTitle>
+                        <CardTitle>Top Annex Count</CardTitle>
                         <CardDescription>Distribution of records per Annex in filtered results.</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
                         <ChartContainer config={chartConfig(analyticsData.annexData)} className="h-[300px] w-full">
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.annexData.slice(0, 10)} layout="vertical" margin={{ left: 100, right: 30 }}>
+                                <BarChart data={analyticsData.annexData} layout="vertical" margin={{ left: 100, right: 30 }}>
                                     <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
                                     <XAxis type="number" allowDecimals={false} />
                                     <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent indicator="dot" />} />
@@ -279,11 +278,11 @@ export function GapAnalysisAnalyticsDashboard({
                     <CardContent className="pl-2">
                         <ChartContainer config={chartConfig(analyticsData.complianceStatusData)} className="h-[300px] w-full">
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.complianceStatusData} layout="horizontal" margin={{ right: 30, top: 20, bottom: 80 }}>
-                                    <XAxis dataKey="name" type="category" angle={-45} textAnchor="end" height={100} interval={0} tick={{ fontSize: 10 }} />
-                                    <YAxis type="number" allowDecimals={false} />
+                                <BarChart data={analyticsData.complianceStatusData} layout="vertical" margin={{ left: 100, right: 30 }}>
+                                    <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                                    <XAxis type="number" allowDecimals={false} />
                                     <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent indicator="dot" />} />
-                                    <Bar dataKey="value" name="Record Count" radius={[4, 4, 0, 0]}>
+                                    <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
                                         {analyticsData.complianceStatusData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                         ))}
