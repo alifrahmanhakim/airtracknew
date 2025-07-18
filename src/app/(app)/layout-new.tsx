@@ -136,7 +136,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground">
                   <Plane className="h-5 w-5" />
               </Button>
-              <span className="text-lg font-semibold">AirTrack</span>
+              <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">AirTrack</span>
             </div>
           </div>
         </SidebarHeader>
@@ -186,17 +186,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter className="flex flex-col gap-3">
             <SidebarSeparator />
             <div className='flex items-center justify-between gap-2 px-2'>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
                     <Avatar className="h-9 w-9">
                         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
                         <AvatarFallback>{currentUser.name?.charAt(0) || currentUser.email?.charAt(0) || '?'}</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+                    <div className="flex flex-col">
                         <span className='text-sm font-semibold'>{currentUser.name}</span>
                         <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
                     </div>
                 </div>
-                <ThemeToggle />
+                <div className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+                    <ThemeToggle />
+                </div>
             </div>
             <SidebarMenu>
                 <SidebarMenuItem>
