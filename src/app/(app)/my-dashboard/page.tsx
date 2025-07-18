@@ -20,12 +20,25 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays } from 'date-fns';
-import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight } from 'lucide-react';
+import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Checkbox } from '../ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from '@/hooks/use-toast';
+import { updateTask } from '@/lib/actions/project';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -53,6 +66,9 @@ export default function MyDashboardPage() {
       gapAnalysis: 0,
       glossary: 0,
   });
+  const [taskToComplete, setTaskToComplete] = React.useState<AssignedTask | null>(null);
+  const [isUpdatingTask, setIsUpdatingTask] = React.useState(false);
+  const { toast } = useToast();
 
   React.useEffect(() => {
     const id = localStorage.getItem('loggedInUserId');
@@ -147,6 +163,39 @@ export default function MyDashboardPage() {
 
     fetchUserData();
   }, [userId]);
+
+  const handleCompleteTask = async () => {
+    if (!taskToComplete) return;
+
+    setIsUpdatingTask(true);
+    const updatedTask: Task = {
+        ...taskToComplete,
+        status: 'Done',
+        doneDate: format(new Date(), 'yyyy-MM-dd'),
+    };
+    
+    // Remove properties that are not part of the base Task type
+    const { projectId, projectName, projectType, projectTags, ...baseTask } = updatedTask;
+
+    const result = await updateTask(taskToComplete.projectId, baseTask, taskToComplete.projectType);
+    
+    if (result.success) {
+        setAssignedTasks(prev => prev.map(t => t.id === taskToComplete.id ? { ...t, status: 'Done' } : t));
+        toast({
+            title: 'Task Completed!',
+            description: `"${taskToComplete.title}" has been marked as done.`,
+        });
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || "Failed to update task.",
+        });
+    }
+
+    setTaskToComplete(null);
+    setIsUpdatingTask(false);
+  }
   
   const statusStyles: { [key in Task['status']]: string } = {
     'Done': 'border-transparent bg-green-100 text-green-800',
@@ -158,7 +207,7 @@ export default function MyDashboardPage() {
   const openTasksCount = assignedTasks.filter(t => t.status !== 'Done').length;
   const atRiskProjectsCount = myProjects.filter(p => p.status === 'At Risk' || p.status === 'Off Track').length;
   const upcomingTasks = assignedTasks
-    .filter(t => t.status !== 'Done' && new Date(t.dueDate) >= new Date())
+    .filter(t => t.status !== 'Done')
     .slice(0, 3);
     
   const workspaceCards = [
@@ -311,8 +360,13 @@ export default function MyDashboardPage() {
                             return (
                                 <React.Fragment key={task.id}>
                                     <div className="flex items-start justify-between gap-4">
+                                        <Checkbox 
+                                            id={`task-complete-${task.id}`}
+                                            className="mt-1"
+                                            onCheckedChange={() => setTaskToComplete(task)}
+                                        />
                                         <div className="flex-1">
-                                            <p className="font-semibold leading-tight">{task.title}</p>
+                                            <label htmlFor={`task-complete-${task.id}`} className="font-semibold leading-tight cursor-pointer">{task.title}</label>
                                             <p className="text-xs text-muted-foreground">{task.projectName}</p>
                                         </div>
                                         <div className="text-right">
@@ -360,6 +414,25 @@ export default function MyDashboardPage() {
              </Card>
         </aside>
       </div>
+
+       <AlertDialog open={!!taskToComplete} onOpenChange={() => setTaskToComplete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Complete Task?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Are you sure you want to mark the task <span className="font-semibold">"{taskToComplete?.title}"</span> as done?
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUpdatingTask}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCompleteTask} disabled={isUpdatingTask}>
+                {isUpdatingTask && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Confirm & Complete
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+        </AlertDialog>
+
     </main>
     </TooltipProvider>
   );
