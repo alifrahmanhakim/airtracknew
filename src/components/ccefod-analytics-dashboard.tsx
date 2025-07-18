@@ -105,22 +105,12 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       });
     
     const statusTotal = Object.values(statusCounts).reduce((acc, curr) => acc + curr, 0);
-    const statusData = Object.entries(statusCounts).map(([name, value]) => ({ 
-        name, 
-        value,
-        percentage: statusTotal > 0 ? (value / statusTotal) * 100 : 0,
-        displayName: `${name} (${value}/${statusTotal} - ${((value / statusTotal) * 100).toFixed(1)}%)`
-    }));
+    const statusData = Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
     const finalStatusCount = statusCounts['Final'] || 0;
     const finalStatusPercentage = statusTotal > 0 ? (finalStatusCount / statusTotal) * 100 : 0;
     
     const adaPerubahanTotal = Object.values(adaPerubahanCounts).reduce((acc, curr) => acc + curr, 0);
-    const adaPerubahanData = Object.entries(adaPerubahanCounts).map(([name, value]) => ({ 
-        name, 
-        value, 
-        percentage: adaPerubahanTotal > 0 ? (value / adaPerubahanTotal) * 100 : 0,
-        displayName: `${name} (${value}/${adaPerubahanTotal} - ${((value / adaPerubahanTotal) * 100).toFixed(1)}%)`
-    }));
+    const adaPerubahanData = Object.entries(adaPerubahanCounts).map(([name, value]) => ({ name, value }));
     const yaAdaPerubahanCount = adaPerubahanCounts['YA'] || 0;
     const yaAdaPerubahanPercentage = adaPerubahanTotal > 0 ? (yaAdaPerubahanCount / adaPerubahanTotal) * 100 : 0;
     
@@ -164,6 +154,31 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         ))}
       </div>
     ) : <p className="text-sm text-muted-foreground">No data to describe.</p>;
+    
+    const statusDescription = (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            {statusData.map(item => (
+                <div key={item.name} className="flex items-baseline gap-2">
+                    <span>{item.name}</span>
+                    <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
+                    <span className="font-bold whitespace-nowrap pl-2">{item.value} ({((item.value / statusTotal) * 100).toFixed(1)}%)</span>
+                </div>
+            ))}
+        </div>
+    );
+    
+    const adaPerubahanDescription = (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            {adaPerubahanData.map(item => (
+                <div key={item.name} className="flex items-baseline gap-2">
+                    <span>{item.name}</span>
+                    <div className="flex-grow border-b border-dashed border-muted-foreground/30"></div>
+                    <span className="font-bold whitespace-nowrap pl-2">{item.value} ({((item.value / adaPerubahanTotal) * 100).toFixed(1)}%)</span>
+                </div>
+            ))}
+        </div>
+    );
+
 
     return {
       implementationLevelData,
@@ -175,6 +190,8 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
       yaAdaPerubahanPercentage,
       implementationDescription,
       topAnnexDescription,
+      statusDescription,
+      adaPerubahanDescription,
     };
   }, [records]);
 
@@ -202,9 +219,12 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <Card>
             <CardHeader>
                 <CardTitle>Status Distribution</CardTitle>
-                <CardDescription>Overview of all record statuses in the database.</CardDescription>
+                <CardDescription>
+                    Overview of all record statuses in the database.
+                </CardDescription>
+                <div className="pt-2">{analyticsData.statusDescription}</div>
             </CardHeader>
-            <CardContent className="h-[300px] relative">
+            <CardContent className="h-[250px] relative">
                 <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-full">
                     <PieChart>
                         <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
@@ -219,7 +239,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
                             ))}
                         </Pie>
-                         <ChartLegend content={<ChartLegendContent nameKey="displayName" />} className="[&>*]:justify-center flex-wrap" />
+                         <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center flex-wrap" />
                     </PieChart>
                 </ChartContainer>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center pointer-events-none">
@@ -232,9 +252,12 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
         <Card>
             <CardHeader>
                 <CardTitle>Proposed Changes</CardTitle>
-                <CardDescription>Breakdown of records with or without proposed changes.</CardDescription>
+                <CardDescription>
+                    Breakdown of records with or without proposed changes.
+                </CardDescription>
+                <div className="pt-2">{analyticsData.adaPerubahanDescription}</div>
             </CardHeader>
-            <CardContent className="h-[300px] relative">
+            <CardContent className="h-[250px] relative">
                 <ChartContainer config={chartConfig(analyticsData.adaPerubahanData)} className="mx-auto aspect-square h-full">
                     <PieChart>
                         <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
@@ -249,7 +272,7 @@ export function CcefodAnalyticsDashboard({ records }: CcefodAnalyticsDashboardPr
                                 <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.adaPerubahanData)[entry.name].color} />
                             ))}
                         </Pie>
-                        <ChartLegend content={<ChartLegendContent nameKey="displayName" />} className="[&>*]:justify-center flex-wrap" />
+                        <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center flex-wrap" />
                     </PieChart>
                 </ChartContainer>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+1.5rem)] text-center pointer-events-none">
