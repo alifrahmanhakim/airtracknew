@@ -35,6 +35,7 @@ export function ThemeToggle() {
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       className={cn(
+        "transition-transform active:scale-90",
         isLoginPage
           ? "border-white/20 bg-black/20 text-white hover:bg-black/30 dark:border-white/20 dark:bg-black/20 dark:text-white dark:hover:bg-black/30"
           : "border-input bg-background"
