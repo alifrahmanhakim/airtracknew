@@ -57,7 +57,7 @@ type TaskRowProps = {
 };
 
 const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting }: TaskRowProps) => {
-    const [isOpen, setIsOpen] = React.useState(true);
+    const [isSubtaskOpen, setIsSubtaskOpen] = React.useState(false);
     const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean);
     const hasSubtasks = task.subTasks && task.subTasks.length > 0;
     
@@ -75,8 +75,8 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                    <div className="flex items-center gap-1">
                      {hasSubtasks ? (
                         <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(!isOpen)}>
-                                <ChevronRight className={cn("h-4 w-4 transition-transform", isOpen && "rotate-90")} />
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <ChevronRight className="h-4 w-4" />
                             </Button>
                         </CollapsibleTrigger>
                     ) : (
@@ -113,33 +113,35 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     </Badge>
                 </TableCell>
                 <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
-                    <AddTaskDialog 
-                        projectId={projectId} 
-                        projectType={projectType}
-                        teamMembers={teamMembers}
-                        onTasksChange={onTaskUpdate}
-                        parentId={task.id}
-                        triggerButton={
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                                        <Network className="h-4 w-4"/>
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Add Subtask</TooltipContent>
-                            </Tooltip>
-                        }
-                    />
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsSubtaskOpen(true)}>
+                                <Network className="h-4 w-4"/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add Subtask</TooltipContent>
+                    </Tooltip>
                     <EditTaskDialog projectId={projectId} projectType={projectType} task={task} teamMembers={teamMembers} onTaskUpdate={onTaskUpdate} />
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => onTaskDelete(task.id)} disabled={isDeleting}>
                         {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     </Button>
                 </TableCell>
             </TableRow>
+            
+            <AddTaskDialog 
+                open={isSubtaskOpen}
+                onOpenChange={setIsSubtaskOpen}
+                projectId={projectId} 
+                projectType={projectType}
+                teamMembers={teamMembers}
+                onTasksChange={onTaskUpdate}
+                parentId={task.id}
+            />
+
             {hasSubtasks && (
                 <CollapsibleContent asChild>
-                    <>
-                    {isOpen && task.subTasks?.map(subTask => (
+                   <React.Fragment>
+                     {task.subTasks?.map(subTask => (
                         <TaskRow
                             key={subTask.id}
                             task={subTask}
@@ -152,7 +154,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                             isDeleting={isDeleting}
                         />
                     ))}
-                    </>
+                   </React.Fragment>
                 </CollapsibleContent>
             )}
         </React.Fragment>
@@ -240,8 +242,8 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         </TableHeader>
                         <TableBody>
                             {tasks.length > 0 ? tasks.map((task) => (
-                                <TaskRow 
-                                    key={task.id}
+                                <Collapsible asChild key={task.id}>
+                                  <TaskRow 
                                     task={task}
                                     level={0}
                                     teamMembers={teamMembers}
@@ -251,6 +253,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                     onTaskDelete={handleDeleteRequest}
                                     isDeleting={isDeleting && taskToDelete?.id === task.id}
                                 />
+                                </Collapsible>
                             )) : (
                             <TableRow>
                                 <TableCell colSpan={6} className="text-center text-muted-foreground">No tasks yet.</TableCell>

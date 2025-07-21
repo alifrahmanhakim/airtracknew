@@ -54,11 +54,11 @@ type AddTaskDialogProps = {
   onTasksChange: (tasks: Task[]) => void;
   teamMembers: User[];
   parentId?: string | null;
-  triggerButton?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
-export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembers, parentId = null, triggerButton }: AddTaskDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembers, parentId = null, open, onOpenChange }: AddTaskDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -97,7 +97,7 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
         title: parentId ? 'Subtask Added' : 'Task Added',
         description: `"${data.title}" has been successfully added.`,
       });
-      setOpen(false);
+      if (onOpenChange) onOpenChange(false);
       form.reset();
     } else {
         toast({
@@ -114,15 +114,15 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
   const dialogDescription = parentId ? 'Fill in details for the new subtask.' : 'Fill in the details for the new task. It will be added to the current project.';
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {triggerButton ? triggerButton : (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+       {!parentId && (
+        <DialogTrigger asChild>
           <Button size="sm">
             <Plus className="mr-2 h-4 w-4" />
             Add Task
           </Button>
-        )}
-      </DialogTrigger>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
