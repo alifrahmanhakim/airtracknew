@@ -32,6 +32,8 @@ export type Task = {
   doneDate?: string; // Add optional completion date
   status: 'Done' | 'In Progress' | 'To Do' | 'Blocked';
   attachments?: Attachment[];
+  parentId?: string | null;
+  subTasks?: Task[];
 };
 
 export type SubProject = {

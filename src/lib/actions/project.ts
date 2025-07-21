@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -238,15 +239,71 @@ export async function updateSubProject(projectId: string, subProject: SubProject
     }
 }
 
-export async function addTask(projectId: string, task: Task, projectType: Project['projectType']) {
+// Recursive function to find and update a task in a nested structure
+function findAndUpdateTask(tasks: Task[], updatedTask: Task): Task[] {
+  return tasks.map(task => {
+    if (task.id === updatedTask.id) {
+      // Retain existing subTasks if the update doesn't include them
+      return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
+    }
+    if (task.subTasks && task.subTasks.length > 0) {
+      return { ...task, subTasks: findAndUpdateTask(task.subTasks, updatedTask) };
+    }
+    return task;
+  });
+}
+
+// Recursive function to find and delete a task
+function findAndDeleteTask(tasks: Task[], taskId: string): Task[] {
+  return tasks.reduce((acc, task) => {
+    if (task.id === taskId) {
+      return acc; // Skip adding the task to be deleted
+    }
+    if (task.subTasks && task.subTasks.length > 0) {
+      task.subTasks = findAndDeleteTask(task.subTasks, taskId);
+    }
+    acc.push(task);
+    return acc;
+  }, [] as Task[]);
+}
+
+// Recursive function to add a subtask
+function findAndAddSubTask(tasks: Task[], parentId: string, subTask: Task): Task[] {
+    return tasks.map(task => {
+        if (task.id === parentId) {
+            const newSubTasks = [...(task.subTasks || []), subTask];
+            return { ...task, subTasks: newSubTasks };
+        }
+        if (task.subTasks && task.subTasks.length > 0) {
+            return { ...task, subTasks: findAndAddSubTask(task.subTasks, parentId, subTask) };
+        }
+        return task;
+    });
+}
+
+export async function addTask(projectId: string, task: Task, projectType: Project['projectType'], parentId: string | null = null) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
 
     try {
-        await updateDoc(projectRef, {
-            tasks: arrayUnion(task)
-        });
-        return { success: true };
+        const projectSnap = await getDoc(projectRef);
+        if (!projectSnap.exists()) {
+            return { success: false, error: 'Project not found' };
+        }
+        
+        const projectData = projectSnap.data() as Project;
+        let updatedTasks: Task[];
+
+        if (parentId) {
+            // Adding a subtask
+            updatedTasks = findAndAddSubTask(projectData.tasks || [], parentId, task);
+        } else {
+            // Adding a top-level task
+            updatedTasks = [...(projectData.tasks || []), task];
+        }
+
+        await updateDoc(projectRef, { tasks: updatedTasks });
+        return { success: true, tasks: updatedTasks };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Failed to add task.' };
     }
@@ -259,9 +316,9 @@ export async function updateTask(projectId: string, task: Task, projectType: Pro
         const projectSnap = await getDoc(projectRef);
         if (projectSnap.exists()) {
             const projectData = projectSnap.data() as Project;
-            const updatedTasks = projectData.tasks.map(t => t.id === task.id ? task : t);
+            const updatedTasks = findAndUpdateTask(projectData.tasks, task);
             await updateDoc(projectRef, { tasks: updatedTasks });
-            return { success: true };
+            return { success: true, tasks: updatedTasks };
         }
         return { success: false, error: 'Project not found' };
     } catch (error) {
@@ -276,9 +333,9 @@ export async function deleteTask(projectId: string, taskId: string, projectType:
         const projectSnap = await getDoc(projectRef);
         if (projectSnap.exists()) {
             const projectData = projectSnap.data() as Project;
-            const updatedTasks = projectData.tasks.filter(t => t.id !== taskId);
+            const updatedTasks = findAndDeleteTask(projectData.tasks, taskId);
             await updateDoc(projectRef, { tasks: updatedTasks });
-            return { success: true };
+            return { success: true, tasks: updatedTasks };
         }
         return { success: false, error: 'Project not found' };
     } catch (error) {

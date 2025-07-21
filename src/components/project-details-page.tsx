@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -13,14 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,20 +34,14 @@ import {
   FileQuestion,
   File,
   Users,
-  Calendar,
-  ClipboardList,
   Paperclip,
   Folder,
   Link as LinkIcon,
   Trash2,
   Loader2,
   GanttChartSquare,
-  Info,
   ArrowRight,
-  CheckCircle,
   Flag,
-  AlertTriangle,
-  Pencil,
   GitCompareArrows,
   Eye,
   Printer,
@@ -65,7 +52,6 @@ import { Progress } from './ui/progress';
 import { EditProjectDialog } from './edit-project-dialog';
 import { AddTaskDialog } from './add-task-dialog';
 import { AddSubProjectDialog } from './add-subproject-dialog';
-import { EditTaskDialog } from './edit-task-dialog';
 import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -79,7 +65,7 @@ import { ChecklistCard } from './checklist-card';
 import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
 import { RulemakingAnalytics } from './rulemaking-analytics';
 import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
-import { ScrollArea } from './ui/scroll-area';
+import { TasksTable } from './tasks-table';
 
 function AssociatedGapAnalysisCard({ 
     records, 
@@ -108,54 +94,56 @@ function AssociatedGapAnalysisCard({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>SL Ref. Number</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Annex</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Evaluation Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {records.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className="font-semibold">{record.slReferenceNumber}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{record.subject}</TableCell>
-                    <TableCell>{record.annex}</TableCell>
-                    <TableCell>{record.typeOfStateLetter}</TableCell>
-                    <TableCell>
-                      <Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>
-                        {record.statusItem}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{format(parseISO(record.dateOfEvaluation), 'PPP')}</TableCell>
-                    <TableCell className="text-right print:hidden">
-                       <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => setRecordToView(record)}>
-                                    <Eye className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>View Details</p></TooltipContent>
-                       </Tooltip>
-                       <EditGapAnalysisRecordDialog record={record} onRecordUpdate={onUpdate} />
-                       <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Delete Record</p></TooltipContent>
-                       </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">SL Ref. Number</th>
+                    <th className="text-left p-2">Subject</th>
+                    <th className="text-left p-2">Annex</th>
+                    <th className="text-left p-2">Type</th>
+                    <th className="text-left p-2">Status</th>
+                    <th className="text-left p-2">Evaluation Date</th>
+                    <th className="text-right p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map((record) => (
+                    <tr key={record.id} className="border-b">
+                      <td className="p-2 font-semibold">{record.slReferenceNumber}</td>
+                      <td className="p-2 max-w-[200px] truncate">{record.subject}</td>
+                      <td className="p-2">{record.annex}</td>
+                      <td className="p-2">{record.typeOfStateLetter}</td>
+                      <td className="p-2">
+                        <Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>
+                          {record.statusItem}
+                        </Badge>
+                      </td>
+                      <td className="p-2">{format(parseISO(record.dateOfEvaluation), 'PPP')}</td>
+                      <td className="text-right p-2 print:hidden">
+                        <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" onClick={() => setRecordToView(record)}>
+                                      <Eye className="h-4 w-4" />
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>View Details</p></TooltipContent>
+                        </Tooltip>
+                        <EditGapAnalysisRecordDialog record={record} onRecordUpdate={onUpdate} />
+                        <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
+                                      <Trash2 className="h-4 w-4" />
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Delete Record</p></TooltipContent>
+                        </Tooltip>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
 
@@ -182,13 +170,11 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
   const [isDeletingDoc, setIsDeletingDoc] = useState<string | null>(null);
-  const [isDeletingTask, setIsDeletingTask] = useState<string | null>(null);
   const [isDeletingProject, setIsDeletingProject] = useState<boolean>(false);
   const [isDeletingGapRecord, setIsDeletingGapRecord] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [docToDelete, setDocToDelete] = useState<ProjectDocument | null>(null);
-  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [gapRecordToDelete, setGapRecordToDelete] = useState<GapAnalysisRecord | null>(null);
 
   const router = useRouter();
@@ -215,15 +201,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     return <div>Loading project details...</div>;
   }
 
-  const handleTaskAdd = (newTask: Task) => {
-    setProject(prev => ({...prev, tasks: [...(prev.tasks || []), newTask]}));
-  };
-
-  const handleTaskUpdate = (updatedTask: Task) => {
-    setProject(prev => ({
-        ...prev, 
-        tasks: (prev.tasks || []).map(task => task.id === updatedTask.id ? updatedTask : task)
-    }));
+  const handleTaskDataChange = (updatedTasks: Task[]) => {
+    setProject(prev => ({...prev, tasks: updatedTasks}));
   }
 
   const handleSubProjectAdd = (newSubProject: SubProject) => {
@@ -266,32 +245,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     }
     setDocToDelete(null);
   };
-  
-  const handleDeleteTask = async () => {
-    if (!taskToDelete) return;
-
-    setIsDeletingTask(taskToDelete.id);
-    const result = await deleteTask(project.id, taskToDelete.id, project.projectType);
-    setIsDeletingTask(null);
-
-    if (result.success) {
-      setProject(prev => ({
-        ...prev,
-        tasks: (prev.tasks || []).filter(task => task.id !== taskToDelete.id)
-      }));
-      toast({
-        title: "Task Deleted",
-        description: `"${taskToDelete.title}" has been removed.`,
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: result.error || "Failed to delete task.",
-      });
-    }
-    setTaskToDelete(null);
-  }
 
   const handleDeleteProject = async () => {
     setIsDeletingProject(true);
@@ -352,13 +305,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       default:
         return <FileQuestion className="h-6 w-6 text-gray-500" />;
     }
-  };
-
-  const statusStyles: { [key in Task['status']]: string } = {
-    'Done': 'border-transparent bg-green-100 text-green-800',
-    'In Progress': 'border-transparent bg-blue-100 text-blue-800',
-    'To Do': 'border-transparent bg-gray-100 text-gray-800',
-    'Blocked': 'border-transparent bg-red-100 text-red-800',
   };
   
   const subProjectStatusStyles: { [key in SubProject['status']]: string } = {
@@ -426,7 +372,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                 projectType={project.projectType}
                 tasks={tasks}
                 teamMembers={project.team}
-                onTaskUpdate={handleTaskUpdate}
+                onTaskUpdate={() => {}} // Placeholder, timeline updates are visual only
               />
           </CardContent>
         </Card>
@@ -435,105 +381,13 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardList /> Tasks
-              </CardTitle>
-              <AddTaskDialog projectId={project.id} projectType={project.projectType} onTaskAdd={handleTaskAdd} teamMembers={project.team} />
-            </CardHeader>
-            <CardContent>
-              <div className="w-full overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Assignee</TableHead>
-                      <TableHead>Start Date</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead>Completed On</TableHead>
-                      <TableHead>Attachments</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tasks.length > 0 ? tasks.map((task) => {
-                      const assignees = (task.assigneeIds || []).map(id => findUserById(id, users)).filter(u => u);
-                      const attachmentCount = task.attachments?.length || 0;
-                      return (
-                        <TableRow key={task.id}>
-                          <TableCell className="font-medium">
-                            {task.title}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center -space-x-2">
-                              {assignees.map((assignee) => (
-                                assignee && (
-                                  <Tooltip key={assignee.id}>
-                                    <TooltipTrigger asChild>
-                                      <Avatar className="h-6 w-6 border-2 border-background">
-                                        <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
-                                        <AvatarFallback>
-                                          {assignee.name?.charAt(0) || assignee.email?.charAt(0) || '?'}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    </TooltipTrigger>
-                                    <TooltipContent>{assignee.name}</TooltipContent>
-                                  </Tooltip>
-                                )
-                              ))}
-                              {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
-                            </div>
-                          </TableCell>
-                          <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>
-                          <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
-                          <TableCell>
-                            {task.doneDate ? format(parseISO(task.doneDate), 'PPP') : 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            {attachmentCount > 0 ? (
-                              <div className="flex flex-col gap-1">
-                                {task.attachments?.map((att) => (
-                                  <a
-                                    key={att.id}
-                                    href={att.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-primary hover:underline flex items-center gap-1.5"
-                                  >
-                                    <LinkIcon className="h-3 w-3" />
-                                    <span className="truncate max-w-[120px]">{att.name}</span>
-                                  </a>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">No files</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
-                              {task.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
-                              <EditTaskDialog projectId={project.id} projectType={project.projectType} task={task} teamMembers={project.team} onTaskUpdate={handleTaskUpdate} />
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isDeletingTask === task.id}>
-                                  {isDeletingTask === task.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                              </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }) : (
-                      <TableRow>
-                          <TableCell colSpan={8} className="text-center text-muted-foreground">No tasks yet.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <TasksTable 
+            projectId={project.id}
+            projectType={project.projectType}
+            tasks={tasks}
+            teamMembers={project.team}
+            onTasksChange={handleTaskDataChange}
+          />
           
           <Card>
              <CardHeader className="flex flex-row items-center justify-between">
@@ -723,27 +577,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </AlertDialogContent>
       </AlertDialog>
       
-      <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
-        <AlertDialogContent>
-            <AlertDialogHeader className="text-center items-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
-                </div>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the task
-                    <span className="font-semibold"> "{taskToDelete?.title}"</span>.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteTask} className={buttonVariants({ variant: 'destructive' })}>
-                    Delete
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
             <AlertDialogHeader className="text-center items-center">

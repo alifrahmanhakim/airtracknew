@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import { useState } from 'react';
@@ -53,7 +55,7 @@ const taskSchema = z.object({
   startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
   status: z.enum(['Done', 'In Progress', 'To Do', 'Blocked']),
-  doneDate: z.date().optional(),
+  doneDate: z.date().optional().nullable(),
   attachments: z.array(attachmentSchema).optional(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
@@ -66,7 +68,7 @@ type EditTaskDialogProps = {
   projectId: string;
   projectType: 'Rulemaking' | 'Tim Kerja';
   task: Task;
-  onTaskUpdate: (updatedTask: Task) => void;
+  onTaskUpdate: (updatedTasks: Task[]) => void;
   teamMembers: User[];
 };
 
@@ -88,7 +90,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
       startDate: parseISO(task.startDate || task.dueDate),
       dueDate: parseISO(task.dueDate),
       status: task.status,
-      doneDate: task.doneDate ? parseISO(task.doneDate) : undefined,
+      doneDate: task.doneDate ? parseISO(task.doneDate) : null,
       attachments: task.attachments || [],
     },
   });
@@ -122,8 +124,8 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
     const result = await updateTask(projectId, updatedTask, projectType);
     setIsSubmitting(false);
 
-    if (result.success) {
-      onTaskUpdate(updatedTask);
+    if (result.success && result.tasks) {
+      onTaskUpdate(result.tasks);
       toast({
         title: 'Task Updated',
         description: `"${data.title}" has been successfully updated.`,

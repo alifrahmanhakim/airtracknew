@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import { useState } from 'react';
@@ -24,7 +26,7 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import type { Task, User } from '@/lib/types';
-import { CalendarIcon, Loader2, Plus } from 'lucide-react';
+import { CalendarIcon, Loader2, Plus, GanttChartSquare } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
@@ -49,11 +51,13 @@ type TaskFormValues = z.infer<typeof taskSchema>;
 type AddTaskDialogProps = {
   projectId: string;
   projectType: 'Rulemaking' | 'Tim Kerja';
-  onTaskAdd: (newTask: Task) => void;
+  onTasksChange: (tasks: Task[]) => void;
   teamMembers: User[];
+  parentId?: string | null;
+  triggerButton?: React.ReactNode;
 };
 
-export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }: AddTaskDialogProps) {
+export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembers, parentId = null, triggerButton }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -80,15 +84,17 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
       status: 'To Do',
+      parentId: parentId,
+      subTasks: [],
     };
     
-    const result = await addTask(projectId, newTask, projectType);
+    const result = await addTask(projectId, newTask, projectType, parentId);
     setIsSubmitting(false);
 
-    if (result.success) {
-      onTaskAdd(newTask);
+    if (result.success && result.tasks) {
+      onTasksChange(result.tasks);
       toast({
-        title: 'Task Added',
+        title: parentId ? 'Subtask Added' : 'Task Added',
         description: `"${data.title}" has been successfully added.`,
       });
       setOpen(false);
@@ -104,19 +110,26 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
   
   const taskOptions = projectType === 'Rulemaking' ? rulemakingTaskOptions : timKerjaTaskOptions;
 
+  const dialogTitle = parentId ? 'Add New Subtask' : 'Add New Task';
+  const dialogDescription = parentId ? 'Fill in details for the new subtask.' : 'Fill in the details for the new task. It will be added to the current project.';
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Task
-        </Button>
+        {triggerButton ? triggerButton : (
+          <Button size="sm">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Task
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <GanttChartSquare className="h-6 w-6" /> {dialogTitle}
+          </DialogTitle>
           <DialogDescription>
-            Fill in the details for the new task. It will be added to the current project.
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -234,7 +247,7 @@ export function AddTaskDialog({ projectId, projectType, onTaskAdd, teamMembers }
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Add Task
+                {parentId ? 'Add Subtask' : 'Add Task'}
               </Button>
             </DialogFooter>
           </form>
