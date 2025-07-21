@@ -69,18 +69,18 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
     };
 
     return (
-        <React.Fragment>
+        <Collapsible asChild open={isOpen} onOpenChange={setIsOpen}>
+          <>
             <TableRow className="border-b">
-                <TableCell style={{ paddingLeft: `${level * 2}rem` }} className="font-medium flex items-center gap-2">
-                    {hasSubtasks && (
-                         <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(!isOpen)}>
+                <TableCell style={{ paddingLeft: `${level * 1.5 + 0.5}rem` }} className="font-medium flex items-center gap-1">
+                    {hasSubtasks ? (
+                        <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
                                 <ChevronRight className={cn("h-4 w-4 transition-transform", isOpen && "rotate-90")} />
                             </Button>
                         </CollapsibleTrigger>
-                    )}
-                     {!hasSubtasks && level > 0 && (
-                        <span className="w-6 h-6 inline-block"></span> 
+                    ) : (
+                        <span className="w-6 h-6 inline-block shrink-0"></span> // Placeholder for alignment
                     )}
                     <span>{task.title}</span>
                 </TableCell>
@@ -136,27 +136,26 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                 </TableCell>
             </TableRow>
             {hasSubtasks && (
-                <Collapsible open={isOpen} asChild>
-                    <CollapsibleContent asChild>
-                        <>
-                            {task.subTasks?.map(subTask => (
-                                <TaskRow
-                                    key={subTask.id}
-                                    task={subTask}
-                                    level={level + 1}
-                                    teamMembers={teamMembers}
-                                    projectId={projectId}
-                                    projectType={projectType}
-                                    onTaskUpdate={onTaskUpdate}
-                                    onTaskDelete={onTaskDelete}
-                                    isDeleting={isDeleting}
-                                />
-                            ))}
-                        </>
-                    </CollapsibleContent>
-                </Collapsible>
+                <CollapsibleContent asChild>
+                  <>
+                      {task.subTasks?.map(subTask => (
+                          <TaskRow
+                              key={subTask.id}
+                              task={subTask}
+                              level={level + 1}
+                              teamMembers={teamMembers}
+                              projectId={projectId}
+                              projectType={projectType}
+                              onTaskUpdate={onTaskUpdate}
+                              onTaskDelete={onTaskDelete}
+                              isDeleting={isDeleting}
+                          />
+                      ))}
+                  </>
+                </CollapsibleContent>
             )}
-        </React.Fragment>
+          </>
+        </Collapsible>
     );
 };
 
