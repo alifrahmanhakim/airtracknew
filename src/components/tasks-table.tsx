@@ -31,7 +31,8 @@ import {
   AlertTriangle,
   ClipboardList,
   ChevronRight,
-  Network
+  Network,
+  Link as LinkIcon
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -41,6 +42,7 @@ import { deleteTask } from '@/lib/actions/project';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import Link from 'next/link';
 
 type TaskRowProps = {
   task: Task;
@@ -108,6 +110,21 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                         {task.status}
                     </Badge>
+                </TableCell>
+                <TableCell>
+                    <div className="flex flex-col gap-1">
+                        {(task.attachments || []).map(att => (
+                            <Tooltip key={att.id}>
+                                <TooltipTrigger asChild>
+                                    <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary hover:underline">
+                                        <LinkIcon className="h-3 w-3" />
+                                        <span className="truncate">{att.name}</span>
+                                    </a>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{att.url}</p></TooltipContent>
+                            </Tooltip>
+                        ))}
+                    </div>
                 </TableCell>
                 <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
                     <Tooltip>
@@ -221,7 +238,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         onTasksChange={onTasksChange}
                     />
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                 <div className="w-full overflow-x-auto">
                     <Table>
                         <TableHeader>
@@ -231,6 +248,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                             <TableHead>Start Date</TableHead>
                             <TableHead>Due Date</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Attachments</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -249,7 +267,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 />
                             )) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center text-muted-foreground">No tasks yet.</TableCell>
+                                <TableCell colSpan={7} className="text-center text-muted-foreground h-24">No tasks yet.</TableCell>
                             </TableRow>
                             )}
                         </TableBody>
@@ -280,5 +298,3 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         </TooltipProvider>
     )
 }
-
-    
