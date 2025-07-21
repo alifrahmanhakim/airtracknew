@@ -27,7 +27,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
-  Link as LinkIcon,
   Trash2,
   Loader2,
   AlertTriangle,
@@ -60,9 +59,7 @@ type TaskRowProps = {
 const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting }: TaskRowProps) => {
     const [isOpen, setIsOpen] = React.useState(true);
     const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean);
-    const attachmentCount = task.attachments?.length || 0;
     const hasSubtasks = task.subTasks && task.subTasks.length > 0;
-    const { toast } = useToast();
     
     const statusStyles: { [key in Task['status']]: string } = {
         'Done': 'border-transparent bg-green-100 text-green-800',
@@ -72,19 +69,18 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
     };
 
     return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} asChild>
-            <>
+        <React.Fragment>
             <TableRow className="border-b">
                 <TableCell style={{ paddingLeft: `${level * 2}rem` }} className="font-medium flex items-center gap-2">
                     {hasSubtasks && (
-                        <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                         <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(!isOpen)}>
                                 <ChevronRight className={cn("h-4 w-4 transition-transform", isOpen && "rotate-90")} />
                             </Button>
                         </CollapsibleTrigger>
                     )}
-                    {!hasSubtasks && (
-                        <span style={{ width: '2.5rem' }}></span> // Placeholder for alignment
+                     {!hasSubtasks && level > 0 && (
+                        <span className="w-6 h-6 inline-block"></span> 
                     )}
                     <span>{task.title}</span>
                 </TableCell>
@@ -140,26 +136,27 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                 </TableCell>
             </TableRow>
             {hasSubtasks && (
-                <CollapsibleContent asChild>
-                    <>
-                        {task.subTasks?.map(subTask => (
-                            <TaskRow
-                                key={subTask.id}
-                                task={subTask}
-                                level={level + 1}
-                                teamMembers={teamMembers}
-                                projectId={projectId}
-                                projectType={projectType}
-                                onTaskUpdate={onTaskUpdate}
-                                onTaskDelete={onTaskDelete}
-                                isDeleting={isDeleting}
-                            />
-                        ))}
-                    </>
-                </CollapsibleContent>
+                <Collapsible open={isOpen} asChild>
+                    <CollapsibleContent asChild>
+                        <>
+                            {task.subTasks?.map(subTask => (
+                                <TaskRow
+                                    key={subTask.id}
+                                    task={subTask}
+                                    level={level + 1}
+                                    teamMembers={teamMembers}
+                                    projectId={projectId}
+                                    projectType={projectType}
+                                    onTaskUpdate={onTaskUpdate}
+                                    onTaskDelete={onTaskDelete}
+                                    isDeleting={isDeleting}
+                                />
+                            ))}
+                        </>
+                    </CollapsibleContent>
+                </Collapsible>
             )}
-            </>
-        </Collapsible>
+        </React.Fragment>
     );
 };
 
