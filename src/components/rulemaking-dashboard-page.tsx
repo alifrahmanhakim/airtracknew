@@ -179,12 +179,10 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                            const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
                            
-                           const upcomingTasks = (project.tasks || [])
-                             .filter(t => t.status !== 'Done')
-                             .sort((a, b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime());
-
-                           const currentTask = upcomingTasks[0] || null;
-                           const nextTask = upcomingTasks[1] || null;
+                           const doneTaskTitles = new Set((project.tasks || []).filter(t => t.status === 'Done').map(t => t.title));
+                           const currentTaskIndex = rulemakingTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
+                           const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
+                           const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
 
                            return (
                                 <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg h-full block">
@@ -230,9 +228,9 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                                             <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <p className="font-semibold text-foreground truncate">{currentTask.title}</p>
+                                                                    <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
                                                                 </TooltipTrigger>
-                                                                <TooltipContent><p>{currentTask.title}</p></TooltipContent>
+                                                                <TooltipContent><p>{currentTask.label}</p></TooltipContent>
                                                             </Tooltip>
                                                         </div>
                                                     </div>
@@ -242,9 +240,9 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                                             <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.title : 'Finalization'}</p>
+                                                                    <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
                                                                 </TooltipTrigger>
-                                                                <TooltipContent><p>{nextTask ? nextTask.title : 'Finalization'}</p></TooltipContent>
+                                                                <TooltipContent><p>{nextTask ? nextTask.label : 'Finalization'}</p></TooltipContent>
                                                             </Tooltip>
                                                         </div>
                                                     </div>
