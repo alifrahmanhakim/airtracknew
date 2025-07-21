@@ -29,6 +29,9 @@ import { deleteUser, updateUserApproval } from '@/lib/actions/user';
 import { AssignRoleDialog } from '@/components/assign-role-dialog';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+
+const USERS_PER_PAGE = 10;
 
 export default function TeamPage() {
   const [users, setUsers] = React.useState<User[]>([]);
@@ -36,6 +39,7 @@ export default function TeamPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [userToDelete, setUserToDelete] = React.useState<User | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(1);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -66,6 +70,15 @@ export default function TeamPage() {
     }
     fetchData();
   }, [toast]);
+
+  const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
+  const paginatedUsers = users.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   const handleUserUpdate = (updatedUser: User) => {
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
@@ -160,7 +173,7 @@ export default function TeamPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {users.map(user => (
+                    {paginatedUsers.map(user => (
                         <TableRow key={user.id}>
                             <TableCell>
                                 <div className="flex items-center gap-4">
@@ -214,6 +227,29 @@ export default function TeamPage() {
                     ))}
                 </TableBody>
             </Table>
+            <Pagination className="mt-4">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} 
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} 
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <span className="px-4 py-2 text-sm">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                    className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
         </CardContent>
       </Card>
       
