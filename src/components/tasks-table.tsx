@@ -132,12 +132,10 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     </Tooltip>
                 </TableCell>
             </TableRow>
-
             {hasSubtasks && (
                 <CollapsibleContent asChild>
-                   <tr className="bg-muted/20">
-                     <td colSpan={6} className="p-0">
-                         {task.subTasks?.map(subTask => (
+                    <React.Fragment>
+                        {task.subTasks?.map(subTask => (
                             <TaskRow
                                 key={subTask.id}
                                 task={subTask}
@@ -150,11 +148,9 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                                 isDeleting={isDeleting}
                             />
                         ))}
-                     </td>
-                   </tr>
+                    </React.Fragment>
                 </CollapsibleContent>
             )}
-             
             <AddTaskDialog 
                 open={isSubtaskDialogOpen}
                 onOpenChange={setIsSubtaskDialogOpen}
