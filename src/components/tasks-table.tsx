@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -32,7 +31,6 @@ import {
   AlertTriangle,
   ClipboardList,
   ChevronRight,
-  Plus,
   Network
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -70,87 +68,76 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
     };
 
     return (
-      <Collapsible asChild>
-        <React.Fragment>
-          <TableRow className="border-b">
-              <TableCell style={{ paddingLeft: `${level * 1.5 + 0.5}rem` }} className="font-medium">
-              <div className="flex items-center gap-1">
-                  {hasSubtasks ? (
-                      <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-6 w-6">
-                              <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                          </Button>
-                      </CollapsibleTrigger>
-                  ) : (
-                      <span className="w-6 h-6 inline-block shrink-0"></span>
-                  )}
-                  <span>{task.title}</span>
-              </div>
-              </TableCell>
-              <TableCell>
-                  <div className="flex items-center -space-x-2">
-                      {assignees.map((assignee) => (
-                          assignee && (
-                          <Tooltip key={assignee.id}>
-                              <TooltipTrigger asChild>
-                              <Avatar className="h-6 w-6 border-2 border-background">
-                                  <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
-                                  <AvatarFallback>
-                                  {assignee.name?.charAt(0) || assignee.email?.charAt(0) || '?'}
-                                  </AvatarFallback>
-                              </Avatar>
-                              </TooltipTrigger>
-                              <TooltipContent>{assignee.name}</TooltipContent>
-                          </Tooltip>
-                          )
-                      ))}
-                      {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
-                  </div>
-              </TableCell>
-              <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>
-              <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
-              <TableCell>
-                  <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
-                      {task.status}
-                  </Badge>
-              </TableCell>
-              <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsSubtaskDialogOpen(true)}>
-                              <Network className="h-4 w-4"/>
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Add Subtask</TooltipContent>
-                  </Tooltip>
-                  <EditTaskDialog projectId={projectId} projectType={projectType} task={task} teamMembers={teamMembers} onTaskUpdate={onTaskUpdate} />
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => onTaskDelete(task.id)} disabled={isDeleting}>
-                              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Delete Task</TooltipContent>
-                  </Tooltip>
-              </TableCell>
-          </TableRow>
-          
-          <AddTaskDialog 
-              open={isSubtaskDialogOpen}
-              onOpenChange={setIsSubtaskDialogOpen}
-              projectId={projectId} 
-              projectType={projectType}
-              teamMembers={teamMembers}
-              onTasksChange={onTaskUpdate}
-              parentId={task.id}
-          />
-          {hasSubtasks && (
-            <CollapsibleContent asChild>
-                <tr className="bg-muted/50">
-                  <td colSpan={6} className="p-0">
-                    <Table className="bg-transparent">
-                      <TableBody>
-                        {task.subTasks?.map(subTask => (
+        <Collapsible asChild>
+          <React.Fragment>
+            <TableRow className="border-b">
+                <TableCell style={{ paddingLeft: `${level * 1.5 + 0.5}rem` }} className="font-medium">
+                    <div className="flex items-center gap-1">
+                        {hasSubtasks ? (
+                             <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                    <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                                </Button>
+                            </CollapsibleTrigger>
+                        ) : (
+                            <span className="w-6 h-6 inline-block shrink-0"></span>
+                        )}
+                        <span>{task.title}</span>
+                    </div>
+                </TableCell>
+                <TableCell>
+                    <div className="flex items-center -space-x-2">
+                        {assignees.map((assignee) => (
+                            assignee && (
+                            <Tooltip key={assignee.id}>
+                                <TooltipTrigger asChild>
+                                <Avatar className="h-6 w-6 border-2 border-background">
+                                    <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
+                                    <AvatarFallback>
+                                    {assignee.name?.charAt(0) || assignee.email?.charAt(0) || '?'}
+                                    </AvatarFallback>
+                                </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent>{assignee.name}</TooltipContent>
+                            </Tooltip>
+                            )
+                        ))}
+                        {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
+                    </div>
+                </TableCell>
+                <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>
+                <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
+                <TableCell>
+                    <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
+                        {task.status}
+                    </Badge>
+                </TableCell>
+                <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsSubtaskDialogOpen(true)}>
+                                <Network className="h-4 w-4"/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add Subtask</TooltipContent>
+                    </Tooltip>
+                    <EditTaskDialog projectId={projectId} projectType={projectType} task={task} teamMembers={teamMembers} onTaskUpdate={onTaskUpdate} />
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => onTaskDelete(task.id)} disabled={isDeleting}>
+                                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete Task</TooltipContent>
+                    </Tooltip>
+                </TableCell>
+            </TableRow>
+
+            {hasSubtasks && (
+                <CollapsibleContent asChild>
+                   <tr className="bg-muted/20">
+                     <td colSpan={6} className="p-0">
+                         {task.subTasks?.map(subTask => (
                             <TaskRow
                                 key={subTask.id}
                                 task={subTask}
@@ -163,14 +150,22 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                                 isDeleting={isDeleting}
                             />
                         ))}
-                      </TableBody>
-                    </Table>
-                  </td>
-                </tr>
-            </CollapsibleContent>
-        )}
-        </React.Fragment>
-      </Collapsible>
+                     </td>
+                   </tr>
+                </CollapsibleContent>
+            )}
+             
+            <AddTaskDialog 
+                open={isSubtaskDialogOpen}
+                onOpenChange={setIsSubtaskDialogOpen}
+                projectId={projectId} 
+                projectType={projectType}
+                teamMembers={teamMembers}
+                onTasksChange={onTaskUpdate}
+                parentId={task.id}
+            />
+          </React.Fragment>
+        </Collapsible>
     );
 };
 
@@ -299,4 +294,3 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         </TooltipProvider>
     )
 }
-
