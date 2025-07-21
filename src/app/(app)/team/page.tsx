@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -13,7 +14,7 @@ import type { User } from "@/lib/types";
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, AlertTriangle, Loader2, UserCheck, UserX } from 'lucide-react';
+import { Trash2, AlertTriangle, Loader2, UserCheck, UserX, ArrowUpDown, Search } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,8 +31,16 @@ import { AssignRoleDialog } from '@/components/assign-role-dialog';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const USERS_PER_PAGE = 10;
+const userRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
+
+type SortDescriptor = {
+    column: keyof User;
+    direction: 'asc' | 'desc';
+} | null;
 
 export default function TeamPage() {
   const [users, setUsers] = React.useState<User[]>([]);
@@ -41,6 +50,12 @@ export default function TeamPage() {
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
   const { toast } = useToast();
+
+  // State for filtering and sorting
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [roleFilter, setRoleFilter] = React.useState('all');
+  const [statusFilter, setStatusFilter] = React.useState('all');
+  const [sort, setSort] = React.useState<SortDescriptor>({ column: 'name', direction: 'asc' });
 
   React.useEffect(() => {
     async function fetchData() {
@@ -70,9 +85,48 @@ export default function TeamPage() {
     }
     fetchData();
   }, [toast]);
+  
+  const filteredAndSortedUsers = React.useMemo(() => {
+      let filtered = [...users];
 
-  const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
-  const paginatedUsers = users.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
+      // Filter by search term
+      if (searchTerm) {
+          const lowercasedTerm = searchTerm.toLowerCase();
+          filtered = filtered.filter(user => 
+              user.name.toLowerCase().includes(lowercasedTerm) || 
+              user.email?.toLowerCase().includes(lowercasedTerm)
+          );
+      }
+
+      // Filter by role
+      if (roleFilter !== 'all') {
+          filtered = filtered.filter(user => user.role === roleFilter);
+      }
+
+      // Filter by status
+      if (statusFilter !== 'all') {
+          const isApproved = statusFilter === 'approved';
+          filtered = filtered.filter(user => !!user.isApproved === isApproved);
+      }
+
+      // Sort
+      if (sort) {
+          filtered.sort((a, b) => {
+              const aVal = a[sort.column as keyof User] as string | undefined;
+              const bVal = b[sort.column as keyof User] as string | undefined;
+              if (!aVal) return 1;
+              if (!bVal) return -1;
+              if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
+              if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
+              return 0;
+          });
+      }
+      
+      return filtered;
+  }, [users, searchTerm, roleFilter, statusFilter, sort]);
+
+  const totalPages = Math.ceil(filteredAndSortedUsers.length / USERS_PER_PAGE);
+  const paginatedUsers = filteredAndSortedUsers.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -123,6 +177,20 @@ export default function TeamPage() {
     setUserToDelete(null);
   };
 
+  const handleSort = (column: keyof User) => {
+    setSort(prevSort => {
+        if (prevSort?.column === column) {
+            return { column, direction: prevSort.direction === 'asc' ? 'desc' : 'asc' };
+        }
+        return { column, direction: 'asc' };
+    });
+  }
+
+  const renderSortIcon = (column: keyof User) => {
+      if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
+      return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
+  }
+
 
   if (isLoading) {
     return (
@@ -163,70 +231,108 @@ export default function TeamPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        {isAdmin && <TableHead className="text-right">Actions</TableHead>}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {paginatedUsers.map(user => (
-                        <TableRow key={user.id}>
-                            <TableCell>
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="hidden h-9 w-9 sm:flex">
-                                        <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                                        <AvatarFallback>{user.name?.charAt(0) || user.email?.charAt(0) || '?'}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="grid gap-1">
-                                        <p className="text-sm font-medium leading-none">{user.name}</p>
-                                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                                    </div>
-                                </div>
-                            </TableCell>
-                            <TableCell>{user.role}</TableCell>
-                            <TableCell>
-                                <div className={cn("flex items-center gap-2 text-sm", user.isApproved ? "text-green-600" : "text-yellow-600")}>
-                                    {user.isApproved ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
-                                    <span>{user.isApproved ? 'Approved' : 'Pending'}</span>
-                                </div>
-                            </TableCell>
-                            {isAdmin && (
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <AssignRoleDialog user={user} onUserUpdate={handleUserUpdate} />
-                                         {user.isApproved ? (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, false)}>
-                                                        <UserX className="h-4 w-4 text-yellow-600" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent><p>Unapprove User</p></TooltipContent>
-                                            </Tooltip>
-                                        ) : (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, true)}>
-                                                        <UserCheck className="h-4 w-4 text-green-600" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent><p>Approve User</p></TooltipContent>
-                                            </Tooltip>
-                                        )}
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(user)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search by name or email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Roles</SelectItem>
+                        {userRoles.map(role => (
+                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by status..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="border rounded-md overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort('name')}>
+                                <div className="flex items-center">User {renderSortIcon('name')}</div>
+                            </TableHead>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort('role')}>
+                                <div className="flex items-center">Role {renderSortIcon('role')}</div>
+                            </TableHead>
+                            <TableHead>Status</TableHead>
+                            {isAdmin && <TableHead className="text-right">Actions</TableHead>}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedUsers.map(user => (
+                            <TableRow key={user.id}>
+                                <TableCell>
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="hidden h-9 w-9 sm:flex">
+                                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
+                                            <AvatarFallback>{user.name?.charAt(0) || user.email?.charAt(0) || '?'}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="grid gap-1">
+                                            <p className="text-sm font-medium leading-none">{user.name}</p>
+                                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                                        </div>
                                     </div>
                                 </TableCell>
-                            )}
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                                <TableCell>{user.role}</TableCell>
+                                <TableCell>
+                                    <div className={cn("flex items-center gap-2 text-sm", user.isApproved ? "text-green-600" : "text-yellow-600")}>
+                                        {user.isApproved ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                                        <span>{user.isApproved ? 'Approved' : 'Pending'}</span>
+                                    </div>
+                                </TableCell>
+                                {isAdmin && (
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <AssignRoleDialog user={user} onUserUpdate={handleUserUpdate} />
+                                            {user.isApproved ? (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, false)}>
+                                                            <UserX className="h-4 w-4 text-yellow-600" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent><p>Unapprove User</p></TooltipContent>
+                                                </Tooltip>
+                                            ) : (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, true)}>
+                                                            <UserCheck className="h-4 w-4 text-green-600" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent><p>Approve User</p></TooltipContent>
+                                                </Tooltip>
+                                            )}
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(user)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
             <Pagination className="mt-4">
               <PaginationContent>
                 <PaginationItem>
