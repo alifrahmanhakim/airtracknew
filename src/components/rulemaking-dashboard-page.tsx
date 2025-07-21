@@ -223,14 +223,14 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                                 <div className="grid grid-cols-2 items-start gap-2">
                                                     <div className='flex items-start gap-1.5'>
                                                         <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0"/>
-                                                        <div>
+                                                        <div className="overflow-hidden">
                                                             <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
                                                             <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
                                                         </div>
                                                     </div>
                                                     <div className="pl-2 border-l flex items-start gap-1.5">
                                                         <ArrowRight className="h-4 w-4 text-muted-foreground/70 mt-0.5 flex-shrink-0"/>
-                                                        <div>
+                                                        <div className="overflow-hidden">
                                                             <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
                                                             <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
                                                         </div>
