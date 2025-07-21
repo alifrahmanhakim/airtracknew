@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -150,12 +151,12 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
               style={{ maxHeight: `${timelineMaxHeight}px` }}
             >
               <div className="flex" style={{ width: 'min-content' }}>
-                <div className="sticky left-0 z-40 bg-card">
-                  <div className="flex items-center px-4 font-semibold border-b border-r bg-card" style={{height: `${HEADER_HEIGHT}px`}}>
+                <div className="sticky left-0 z-40 bg-card border-r">
+                  <div className="flex items-center px-4 font-semibold border-b bg-card" style={{height: `${HEADER_HEIGHT}px`, minWidth: `${TASK_LIST_WIDTH}px`}}>
                     Tasks / Project
                   </div>
                   {sortedTasks.map((task) => (
-                    <div key={task.id} className="flex flex-col justify-center px-2 border-b border-r" style={{ height: `${ROW_HEIGHT}px` }}>
+                    <div key={task.id} className="flex flex-col justify-center px-2 border-b" style={{ height: `${ROW_HEIGHT}px`, minWidth: `${TASK_LIST_WIDTH}px` }}>
                       <p className="text-xs font-semibold truncate">{task.title}</p>
                       <p className="text-xs truncate text-muted-foreground">{task.projectName}</p>
                     </div>
