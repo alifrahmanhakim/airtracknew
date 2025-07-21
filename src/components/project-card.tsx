@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AiSummaryDialog } from './ai-summary-dialog';
-import type { Project } from '@/lib/types';
+import type { Project, Task } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -27,8 +27,27 @@ type ProjectCardProps = {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const { name, status, endDate, tasks, notes, team, projectType, annex, casr, tags } = project;
-  const totalTasks = tasks?.length || 0;
-  const completedTasks = tasks?.filter((task) => task.status === 'Done').length || 0;
+
+  const countAllTasks = (tasks: Task[]): { total: number; completed: number } => {
+    let total = 0;
+    let completed = 0;
+
+    tasks.forEach(task => {
+      total++;
+      if (task.status === 'Done') {
+        completed++;
+      }
+      if (task.subTasks && task.subTasks.length > 0) {
+        const subCounts = countAllTasks(task.subTasks);
+        total += subCounts.total;
+        completed += subCounts.completed;
+      }
+    });
+
+    return { total, completed };
+  };
+
+  const { total: totalTasks, completed: completedTasks } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const statusConfig = {
