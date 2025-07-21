@@ -40,7 +40,6 @@ import { AddTaskDialog } from './add-task-dialog';
 import { deleteTask } from '@/lib/actions/project';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 
 type TaskRowProps = {
@@ -56,6 +55,7 @@ type TaskRowProps = {
 
 const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting }: TaskRowProps) => {
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = React.useState(false);
     
     const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean);
     const hasSubtasks = task.subTasks && task.subTasks.length > 0;
@@ -68,22 +68,19 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
     };
 
     return (
-        <Collapsible asChild>
-          <React.Fragment>
+        <React.Fragment>
             <TableRow className="border-b">
                 <TableCell style={{ paddingLeft: `${level * 1.5 + 0.5}rem` }} className="font-medium">
-                    <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(!isOpen)} disabled={!hasSubtasks}>
                         {hasSubtasks ? (
-                             <CollapsibleTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6">
-                                    <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                                </Button>
-                            </CollapsibleTrigger>
+                            <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-90")} />
                         ) : (
-                            <span className="w-6 h-6 inline-block shrink-0"></span>
+                           <span className='w-4 h-4'></span>
                         )}
-                        <span>{task.title}</span>
-                    </div>
+                    </Button>
+                    <span>{task.title}</span>
+                </div>
                 </TableCell>
                 <TableCell>
                     <div className="flex items-center -space-x-2">
@@ -105,8 +102,8 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                         {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
                     </div>
                 </TableCell>
-                <TableCell>{format(parseISO(task.startDate), 'PPP')}</TableCell>
-                <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
+                <TableCell>{task.startDate ? format(parseISO(task.startDate), 'PPP') : 'N/A'}</TableCell>
+                <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
                     <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                         {task.status}
@@ -132,25 +129,19 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     </Tooltip>
                 </TableCell>
             </TableRow>
-            {hasSubtasks && (
-                <CollapsibleContent asChild>
-                    <React.Fragment>
-                        {task.subTasks?.map(subTask => (
-                            <TaskRow
-                                key={subTask.id}
-                                task={subTask}
-                                level={level + 1}
-                                teamMembers={teamMembers}
-                                projectId={projectId}
-                                projectType={projectType}
-                                onTaskUpdate={onTaskUpdate}
-                                onTaskDelete={onTaskDelete}
-                                isDeleting={isDeleting}
-                            />
-                        ))}
-                    </React.Fragment>
-                </CollapsibleContent>
-            )}
+            {isOpen && hasSubtasks && task.subTasks.map(subTask => (
+                <TaskRow
+                    key={subTask.id}
+                    task={subTask}
+                    level={level + 1}
+                    teamMembers={teamMembers}
+                    projectId={projectId}
+                    projectType={projectType}
+                    onTaskUpdate={onTaskUpdate}
+                    onTaskDelete={onTaskDelete}
+                    isDeleting={isDeleting}
+                />
+            ))}
             <AddTaskDialog 
                 open={isSubtaskDialogOpen}
                 onOpenChange={setIsSubtaskDialogOpen}
@@ -160,8 +151,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                 onTasksChange={onTaskUpdate}
                 parentId={task.id}
             />
-          </React.Fragment>
-        </Collapsible>
+        </React.Fragment>
     );
 };
 
@@ -290,3 +280,5 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         </TooltipProvider>
     )
 }
+
+    
