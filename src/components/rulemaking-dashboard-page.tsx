@@ -182,6 +182,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                            const currentTaskIndex = rulemakingTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
                            const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
                            const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
+                           const nextTaskLabel = nextTask ? nextTask.label : 'Finalization';
 
                            return (
                                 <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg h-full block">
@@ -225,14 +226,24 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                                         <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0"/>
                                                         <div className="overflow-hidden">
                                                             <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
-                                                            <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent><p>{currentTask.label}</p></TooltipContent>
+                                                            </Tooltip>
                                                         </div>
                                                     </div>
                                                     <div className="pl-2 border-l flex items-start gap-1.5">
                                                         <ArrowRight className="h-4 w-4 text-muted-foreground/70 mt-0.5 flex-shrink-0"/>
                                                         <div className="overflow-hidden">
                                                             <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
-                                                            <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <p className="font-semibold text-muted-foreground truncate">{nextTaskLabel}</p>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent><p>{nextTaskLabel}</p></TooltipContent>
+                                                            </Tooltip>
                                                         </div>
                                                     </div>
                                                 </div>
