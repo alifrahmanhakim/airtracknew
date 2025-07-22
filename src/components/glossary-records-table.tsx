@@ -23,6 +23,7 @@ import {
 } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { EditGlossaryRecordDialog } from './edit-glossary-record-dialog';
+import { GlossaryRecordDetailDialog } from './glossary-record-detail-dialog';
 
 
 type GlossaryRecordsTableProps = {
@@ -39,7 +40,8 @@ type SortDescriptor = {
 } | null;
 
 export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSort }: GlossaryRecordsTableProps) {
-  
+  const [recordToView, setRecordToView] = useState<GlossaryRecord | null>(null);
+
   const handleSort = (column: keyof GlossaryRecord) => {
     setSort(prevSort => {
         if (prevSort?.column === column) {
@@ -95,7 +97,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
             </TableHeader>
             <TableBody>
               {records.map((record) => (
-                <TableRow key={record.id}>
+                <TableRow key={record.id} className="cursor-pointer" onClick={() => setRecordToView(record)}>
                     <TableCell className="font-semibold max-w-xs truncate">{record.tsu}</TableCell>
                     <TableCell className="max-w-xs truncate">{record.tsa}</TableCell>
                     <TableCell className="max-w-xs truncate">{record.editing}</TableCell>
@@ -110,7 +112,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                             {record.status}
                         </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-2">
                             <EditGlossaryRecordDialog record={record} onRecordUpdate={onUpdate} />
                             <Tooltip>
@@ -128,6 +130,15 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
             </TableBody>
           </Table>
         </div>
+        {recordToView && (
+            <GlossaryRecordDetailDialog
+                record={recordToView}
+                open={!!recordToView}
+                onOpenChange={(open) => {
+                if (!open) setRecordToView(null);
+                }}
+            />
+        )}
     </TooltipProvider>
   );
 }
