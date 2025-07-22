@@ -61,6 +61,7 @@ type GapAnalysisRecordsTableProps = {
     annexOptions: string[];
     casrOptions: string[];
   };
+  onResetFilters: () => void;
 };
 
 type SortDescriptor = {
@@ -74,7 +75,8 @@ export function GapAnalysisRecordsTable({
     onUpdate,
     filters,
     setFilters,
-    filterOptions
+    filterOptions,
+    onResetFilters
 }: GapAnalysisRecordsTableProps) {
   const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
   const [recordToView, setRecordToView] = useState<GapAnalysisRecord | null>(null);
@@ -132,14 +134,7 @@ export function GapAnalysisRecordsTable({
   
   const areFiltersActive = filters.statusFilter !== 'all' || filters.annexFilter !== 'all' || filters.casrFilter !== 'all' || filters.textFilter !== '';
 
-  const handleResetFilters = () => {
-    setFilters.setStatusFilter('all');
-    setFilters.setAnnexFilter('all');
-    setFilters.setCasrFilter('all');
-    setFilters.setTextFilter('');
-  };
-
-  if (records.length === 0 && filters.textFilter === '' && filters.annexFilter === 'all' && filters.casrFilter === 'all' && filters.statusFilter === 'all') {
+  if (records.length === 0 && !areFiltersActive) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
@@ -193,7 +188,7 @@ export function GapAnalysisRecordsTable({
                 </Select>
             </div>
             {areFiltersActive && (
-              <Button variant="ghost" onClick={handleResetFilters}>
+              <Button variant="ghost" onClick={onResetFilters}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset
               </Button>

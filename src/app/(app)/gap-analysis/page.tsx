@@ -36,12 +36,19 @@ export default function GapAnalysisPage() {
   const [recordToDelete, setRecordToDelete] = useState<GapAnalysisRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Filter states
+  // Filter states - centralized here
   const [statusFilter, setStatusFilter] = useState('all');
   const [annexFilter, setAnnexFilter] = useState('all');
   const [casrFilter, setCasrFilter] = useState('all');
   const [textFilter, setTextFilter] = useState('');
 
+  const resetFilters = () => {
+    setStatusFilter('all');
+    setAnnexFilter('all');
+    setCasrFilter('all');
+    setTextFilter('');
+  };
+  
   useEffect(() => {
     const fetchRulemakingProjects = async () => {
         try {
@@ -82,8 +89,8 @@ export default function GapAnalysisPage() {
     return () => unsubscribe();
   }, [toast]);
 
-  const annexOptions = useMemo(() => ['all', ...Array.from(new Set(records.map(r => r.annex)))], [records]);
-  const casrOptions = useMemo(() => ['all', ...Array.from(new Set(records.flatMap(r => r.evaluations.map(e => e.casrAffected))))], [records]);
+  const annexOptions = useMemo(() => ['all', ...Array.from(new Set(records.map(r => r.annex).filter(Boolean)))], [records]);
+  const casrOptions = useMemo(() => ['all', ...Array.from(new Set(records.flatMap(r => r.evaluations.map(e => e.casrAffected)))).sort()], [records]);
   
   const filteredRecords = useMemo(() => {
     return records.filter(record => {
@@ -91,9 +98,12 @@ export default function GapAnalysisPage() {
       const annexMatch = annexFilter === 'all' || record.annex === annexFilter;
       const casrMatch = casrFilter === 'all' || record.evaluations.some(e => e.casrAffected === casrFilter);
       
-      const textMatch = textFilter === '' || Object.values(record).some(value =>
-        String(value).toLowerCase().includes(textFilter.toLowerCase())
-      );
+      const textMatch = textFilter === '' || 
+        Object.values(record).some(value =>
+            String(value).toLowerCase().includes(textFilter.toLowerCase())
+        ) ||
+        record.evaluations.some(e => Object.values(e).some(val => String(val).toLowerCase().includes(textFilter.toLowerCase())));
+
 
       return statusMatch && annexMatch && casrMatch && textMatch;
     });
@@ -179,6 +189,7 @@ export default function GapAnalysisPage() {
                             filters={{ statusFilter, annexFilter, casrFilter, textFilter }}
                             setFilters={{ setStatusFilter, setAnnexFilter, setCasrFilter, setTextFilter }}
                             filterOptions={{ annexOptions, casrOptions }}
+                            onResetFilters={resetFilters}
                         />
                     </CardContent>
                 </Card>
@@ -191,6 +202,7 @@ export default function GapAnalysisPage() {
                     filters={{ statusFilter, annexFilter, casrFilter, textFilter }}
                     setFilters={{ setStatusFilter, setAnnexFilter, setCasrFilter, setTextFilter }}
                     filterOptions={{ annexOptions, casrOptions }}
+                    onResetFilters={resetFilters}
                 />
             </TabsContent>
         </Tabs>

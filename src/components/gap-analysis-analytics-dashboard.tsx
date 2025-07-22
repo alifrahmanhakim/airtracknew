@@ -29,6 +29,7 @@ type GapAnalysisAnalyticsDashboardProps = {
     annexOptions: string[];
     casrOptions: string[];
   };
+  onResetFilters: () => void;
 };
 
 const CHART_COLORS = [
@@ -45,7 +46,8 @@ export function GapAnalysisAnalyticsDashboard({
     filteredRecords, 
     filters,
     setFilters,
-    filterOptions
+    filterOptions,
+    onResetFilters
 }: GapAnalysisAnalyticsDashboardProps) {
 
   const analyticsData = useMemo(() => {
@@ -128,12 +130,6 @@ export function GapAnalysisAnalyticsDashboard({
 
   const areFiltersActive = filters.statusFilter !== 'all' || filters.annexFilter !== 'all' || filters.casrFilter !== 'all';
 
-  const handleResetFilters = () => {
-    setFilters.setStatusFilter('all');
-    setFilters.setAnnexFilter('all');
-    setFilters.setCasrFilter('all');
-  };
-
   return (
     <div className="space-y-6">
         <Card>
@@ -176,7 +172,7 @@ export function GapAnalysisAnalyticsDashboard({
                         </Select>
                     </div>
                     {areFiltersActive && (
-                        <Button variant="ghost" onClick={handleResetFilters}>
+                        <Button variant="ghost" onClick={onResetFilters}>
                             <RotateCcw className="mr-2 h-4 w-4" /> Reset
                         </Button>
                     )}
