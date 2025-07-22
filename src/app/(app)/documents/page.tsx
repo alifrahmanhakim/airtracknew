@@ -238,12 +238,12 @@ export default function DocumentsPage() {
                     <Link href={`/projects/${file.projectId}?type=${file.projectType === 'Rulemaking' ? 'rulemaking' : 'timkerja'}`} className="flex flex-col group">
                         <div className="flex items-center gap-2 group-hover:underline text-primary">
                             <Folder className="h-4 w-4" />
-                            <span className="truncate">{file.projectName}</span>
+                            <span className="break-words">{file.projectName}</span>
                         </div>
                         {file.taskTitle && (
                             <div className="flex items-center gap-2 pl-6 text-muted-foreground text-xs">
                                 <GanttChartSquare className="h-3 w-3" />
-                                <span className="truncate">{file.taskTitle}</span>
+                                <span className="break-words">{file.taskTitle}</span>
                             </div>
                         )}
                     </Link>
