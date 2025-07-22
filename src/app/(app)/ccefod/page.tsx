@@ -63,7 +63,12 @@ export default function CcefodPage() {
   const [allRecordsForAnalytics, setAllRecordsForAnalytics] = useState<CcefodRecord[]>([]);
   const [paginatedRecords, setPaginatedRecords] = useState<CcefodRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Analytics Filters
   const [analyticsAnnexFilter, setAnalyticsAnnexFilter] = useState<string[]>([]);
+  const [analyticsAdaPerubahanFilter, setAnalyticsAdaPerubahanFilter] = useState<string>('all');
+  const [analyticsStatusFilter, setAnalyticsStatusFilter] = useState<string>('all');
+  
   const [activeTab, setActiveTab] = useState('form');
   const { toast } = useToast();
   
@@ -313,11 +318,13 @@ export default function CcefodPage() {
   }, [annexOptions]);
 
   const filteredAnalyticsRecords = useMemo(() => {
-    if (analyticsAnnexFilter.length === 0) {
-      return allRecordsForAnalytics;
-    }
-    return allRecordsForAnalytics.filter(record => analyticsAnnexFilter.includes(record.annex));
-  }, [allRecordsForAnalytics, analyticsAnnexFilter]);
+    return allRecordsForAnalytics.filter(record => {
+        const annexMatch = analyticsAnnexFilter.length === 0 || analyticsAnnexFilter.includes(record.annex);
+        const adaPerubahanMatch = analyticsAdaPerubahanFilter === 'all' || record.adaPerubahan === analyticsAdaPerubahanFilter;
+        const statusMatch = analyticsStatusFilter === 'all' || record.status === analyticsStatusFilter;
+        return annexMatch && adaPerubahanMatch && statusMatch;
+    });
+  }, [allRecordsForAnalytics, analyticsAnnexFilter, analyticsAdaPerubahanFilter, analyticsStatusFilter]);
 
   const confirmExport = () => {
     if (allRecordsForAnalytics.length === 0) {
@@ -415,18 +422,38 @@ export default function CcefodPage() {
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden w-full sm:w-auto">
-                                <div className="flex-grow">
-                                    <Label htmlFor="annex-filter" className="sr-only">Filter by Annex</Label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 w-full">
                                     <MultiSelect
                                         options={annexSelectOptions}
                                         onValueChange={setAnalyticsAnnexFilter}
                                         defaultValue={analyticsAnnexFilter}
                                         placeholder="Filter by Annex..."
-                                        className="w-full sm:w-[350px]"
+                                        className="w-full"
                                     />
+                                    <Select value={analyticsAdaPerubahanFilter} onValueChange={setAnalyticsAdaPerubahanFilter}>
+                                        <SelectTrigger><SelectValue placeholder="Filter by Change..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Change Statuses</SelectItem>
+                                            <SelectItem value="YA">YA</SelectItem>
+                                            <SelectItem value="TIDAK">TIDAK</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={analyticsStatusFilter} onValueChange={setAnalyticsStatusFilter}>
+                                        <SelectTrigger><SelectValue placeholder="Filter by Status..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Statuses</SelectItem>
+                                            <SelectItem value="Draft">Draft</SelectItem>
+                                            <SelectItem value="Final">Final</SelectItem>
+                                            <SelectItem value="Existing">Existing</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                                {analyticsAnnexFilter.length > 0 && (
-                                    <Button variant="ghost" onClick={() => setAnalyticsAnnexFilter([])}>
+                                { (analyticsAnnexFilter.length > 0 || analyticsAdaPerubahanFilter !== 'all' || analyticsStatusFilter !== 'all') && (
+                                    <Button variant="ghost" onClick={() => {
+                                        setAnalyticsAnnexFilter([]);
+                                        setAnalyticsAdaPerubahanFilter('all');
+                                        setAnalyticsStatusFilter('all');
+                                    }}>
                                         <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                     </Button>
                                 )}
@@ -589,3 +616,4 @@ export default function CcefodPage() {
     
 
     
+
