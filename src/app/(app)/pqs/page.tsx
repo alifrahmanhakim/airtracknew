@@ -49,7 +49,7 @@ const ImportPqsCsvDialog = dynamic(() => import('@/components/import-pqs-csv-dia
 const RECORDS_PER_PAGE = 10;
 
 export default function PqsPage() {
-  const [allRecordsForAnalytics, setAllRecordsForAnalytics] = useState<PqRecord[]>([]);
+  const [allRecords, setAllRecords] = useState<PqRecord[]>([]);
   const [paginatedRecords, setPaginatedRecords] = useState<PqRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('form');
@@ -60,13 +60,18 @@ export default function PqsPage() {
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
-  // Filters and sorting
+  // Filters and sorting for table
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [criticalElementFilter, setCriticalElementFilter] = useState('all');
-  const [icaoStatusFilter, setIcaoStatusFilter] = useState('all');
+  const [tableIcaoStatusFilter, setTableIcaoStatusFilter] = useState('all');
+  const [tableCriticalElementFilter, setTableCriticalElementFilter] = useState('all');
   const [sort, setSort] = useState<{column: keyof PqRecord, direction: 'asc'|'desc'} | null>({ column: 'pqNumber', direction: 'asc' });
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Filters for analytics
+  const [analyticsStatusFilter, setAnalyticsStatusFilter] = useState('all');
+  const [analyticsIcaoStatusFilter, setAnalyticsIcaoStatusFilter] = useState('all');
+  const [analyticsCriticalElementFilter, setAnalyticsCriticalElementFilter] = useState('all');
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,7 +99,7 @@ export default function PqsPage() {
     }
   }, [isFetchingPage]);
 
-  // Fetch all records once for analytics
+  // Fetch all records once
   useEffect(() => {
     const q = query(collection(db, "pqsRecords"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -102,9 +107,11 @@ export default function PqsPage() {
       querySnapshot.forEach((doc) => {
         recordsFromDb.push({ id: doc.id, ...doc.data() } as PqRecord);
       });
-      setAllRecordsForAnalytics(recordsFromDb);
+      setAllRecords(recordsFromDb);
+      setIsLoading(false);
     }, (error) => {
       console.error("Error fetching all PQs records for analytics: ", error);
+       setIsLoading(false);
     });
 
     return () => unsubscribe();
@@ -117,13 +124,13 @@ export default function PqsPage() {
     const constraints: QueryConstraint[] = [];
     const countConstraints: QueryConstraint[] = [];
 
-    if (criticalElementFilter !== 'all') {
-        constraints.push(where('criticalElement', '==', criticalElementFilter));
-        countConstraints.push(where('criticalElement', '==', criticalElementFilter));
+    if (tableCriticalElementFilter !== 'all') {
+        constraints.push(where('criticalElement', '==', tableCriticalElementFilter));
+        countConstraints.push(where('criticalElement', '==', tableCriticalElementFilter));
     }
-    if (icaoStatusFilter !== 'all') {
-        constraints.push(where('icaoStatus', '==', icaoStatusFilter));
-        countConstraints.push(where('icaoStatus', '==', icaoStatusFilter));
+    if (tableIcaoStatusFilter !== 'all') {
+        constraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
+        countConstraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
     }
     
     if (debouncedSearchTerm) {
@@ -187,15 +194,14 @@ export default function PqsPage() {
             description: 'The database query failed. This might be due to a missing index in Firestore. Please check the browser console for a link to create it.',
         });
     } finally {
-        setIsLoading(false);
         setIsFetchingPage(false);
     }
-  }, [sort, debouncedSearchTerm, criticalElementFilter, icaoStatusFilter, pageDocs, toast]);
+  }, [sort, debouncedSearchTerm, tableCriticalElementFilter, tableIcaoStatusFilter, pageDocs, toast]);
 
   useEffect(() => {
       fetchPaginatedData(1, 'first');
       // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, debouncedSearchTerm, criticalElementFilter, icaoStatusFilter]);
+  }, [sort, debouncedSearchTerm, tableCriticalElementFilter, tableIcaoStatusFilter]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage > currentPage) {
@@ -253,7 +259,7 @@ export default function PqsPage() {
   };
 
   const confirmExport = () => {
-    if (allRecordsForAnalytics.length === 0) {
+    if (allRecords.length === 0) {
         toast({
             variant: 'destructive',
             title: 'No Data to Export',
@@ -268,7 +274,7 @@ export default function PqsPage() {
     });
 
     setTimeout(() => {
-        const csv = Papa.unparse(allRecordsForAnalytics);
+        const csv = Papa.unparse(allRecords);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         if (link.download !== undefined) {
@@ -282,6 +288,15 @@ export default function PqsPage() {
         }
     }, 500);
   };
+
+  const filteredAnalyticsRecords = useMemo(() => {
+    return allRecords.filter(record => {
+      const statusMatch = analyticsStatusFilter === 'all' || record.status === analyticsStatusFilter;
+      const icaoStatusMatch = analyticsIcaoStatusFilter === 'all' || record.icaoStatus === analyticsIcaoStatusFilter;
+      const criticalElementMatch = analyticsCriticalElementFilter === 'all' || record.criticalElement === analyticsCriticalElementFilter;
+      return statusMatch && icaoStatusMatch && criticalElementMatch;
+    });
+  }, [allRecords, analyticsStatusFilter, analyticsIcaoStatusFilter, analyticsCriticalElementFilter]);
 
   function renderContent() {
     if (isLoading) {
@@ -343,7 +358,7 @@ export default function PqsPage() {
                                     <FileSpreadsheet className="h-4 w-4" />
                                     <span className="sr-only">Export as CSV</span>
                                 </Button>
-                                <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecordsForAnalytics.length === 0}>
+                                <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
                                     <Trash2 className="h-4 w-4" />
                                     <span className="sr-only">Delete All Records</span>
                                 </Button>
@@ -361,29 +376,28 @@ export default function PqsPage() {
                           handlePageChange={handlePageChange}
                           sort={sort}
                           setSort={setSort}
-                          filters={{ searchTerm, criticalElementFilter, icaoStatusFilter }}
-                          setFilters={{ setSearchTerm, setCriticalElementFilter, setIcaoStatusFilter }}
+                          filters={{ searchTerm, criticalElementFilter: tableCriticalElementFilter, icaoStatusFilter: tableIcaoStatusFilter }}
+                          setFilters={{ setSearchTerm, setCriticalElementFilter: setTableCriticalElementFilter, setIcaoStatusFilter: setTableIcaoStatusFilter }}
                           searchInputRef={searchInputRef}
                         />
                     </CardContent>
                 </Card>
             </TabsContent>
             <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div>
-                                <CardTitle>PQs Analytics Dashboard</CardTitle>
-                                <CardDescription>
-                                    Visualizations of the Protocol Questions data.
-                                </CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                       <PqsAnalyticsDashboard records={allRecordsForAnalytics} />
-                    </CardContent>
-                </Card>
+                <PqsAnalyticsDashboard 
+                    allRecords={allRecords}
+                    filteredRecords={filteredAnalyticsRecords}
+                    filters={{ 
+                        statusFilter: analyticsStatusFilter,
+                        icaoStatusFilter: analyticsIcaoStatusFilter,
+                        criticalElementFilter: analyticsCriticalElementFilter
+                    }}
+                    setFilters={{
+                        setStatusFilter: setAnalyticsStatusFilter,
+                        setIcaoStatusFilter: setAnalyticsIcaoStatusFilter,
+                        setCriticalElementFilter: setAnalyticsCriticalElementFilter
+                    }}
+                />
             </TabsContent>
         </Tabs>
     );
