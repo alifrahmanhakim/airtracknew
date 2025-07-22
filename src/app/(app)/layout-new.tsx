@@ -216,6 +216,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
+            <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
+                Stdatabase © 2025
+            </div>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-background/20 backdrop-blur-lg">
