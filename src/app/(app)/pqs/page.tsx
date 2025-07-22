@@ -121,31 +121,32 @@ export default function PqsPage() {
     if(page < 1) return;
     setIsFetchingPage(true);
 
-    const constraints: QueryConstraint[] = [];
+    let constraints: QueryConstraint[] = [];
     const countConstraints: QueryConstraint[] = [];
+    const isFiltered = tableCriticalElementFilter !== 'all' || tableIcaoStatusFilter !== 'all';
 
-    // Prioritize search term over other filters to avoid complex queries
+    // Apply filters
+    if (tableCriticalElementFilter !== 'all') {
+        constraints.push(where('criticalElement', '==', tableCriticalElementFilter));
+        countConstraints.push(where('criticalElement', '==', tableCriticalElementFilter));
+    }
+    if (tableIcaoStatusFilter !== 'all') {
+        constraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
+        countConstraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
+    }
+    
+    // Apply search term if present
     if (debouncedSearchTerm) {
-        constraints.push(orderBy('pqNumber'));
         constraints.push(where('pqNumber', '>=', debouncedSearchTerm));
         constraints.push(where('pqNumber', '<=', debouncedSearchTerm + '\uf8ff'));
-        
+        constraints.push(orderBy('pqNumber')); // Order by the field being searched
+
         countConstraints.push(where('pqNumber', '>=', debouncedSearchTerm));
         countConstraints.push(where('pqNumber', '<=', debouncedSearchTerm + '\uf8ff'));
-    } else {
-        if (tableCriticalElementFilter !== 'all') {
-            constraints.push(where('criticalElement', '==', tableCriticalElementFilter));
-            countConstraints.push(where('criticalElement', '==', tableCriticalElementFilter));
-        }
-        if (tableIcaoStatusFilter !== 'all') {
-            constraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
-            countConstraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
-        }
-
-        // Apply sorting only when no search term is present
-        if (sort && tableIcaoStatusFilter === 'all') { // Disable custom sort if filtering by icaoStatus
-            constraints.push(orderBy(sort.column, sort.direction));
-        }
+    } else if (sort && !isFiltered) {
+        // Apply sorting only when no search term and no filters are active
+        // to avoid complex queries requiring composite indexes.
+        constraints.push(orderBy(sort.column, sort.direction));
     }
 
 
@@ -164,13 +165,13 @@ export default function PqsPage() {
     }
 
     constraints.push(limit(RECORDS_PER_PAGE));
-    const q = query(collection(db, "pqsRecords"), ...constraints);
     
     try {
         const countQuery = query(collection(db, "pqsRecords"), ...countConstraints);
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalRecords(countSnapshot.data().count);
 
+        const q = query(collection(db, "pqsRecords"), ...constraints);
         const querySnapshot = await getDocs(q);
         const recordsFromDb: PqRecord[] = [];
         querySnapshot.forEach((doc) => {
