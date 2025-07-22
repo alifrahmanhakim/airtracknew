@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PqRecord } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -141,7 +141,7 @@ export default function PqsPage() {
         countConstraints.push(orderBy('pqNumber'));
         countConstraints.push(where('pqNumber', '>=', debouncedSearchTerm));
         countConstraints.push(where('pqNumber', '<=', debouncedSearchTerm + '\uf8ff'));
-    } else if (sort) {
+    } else if (sort && tableIcaoStatusFilter === 'all') { // Disable custom sort if filtering by icaoStatus
         constraints.push(orderBy(sort.column, sort.direction));
     }
 
