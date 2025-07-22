@@ -6,8 +6,9 @@ import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { GapAnalysisRecord } from '@/lib/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { GitCompareArrows, Info, FolderOpen } from 'lucide-react';
+import { GitCompareArrows, Info, FolderOpen, RotateCcw } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Button } from './ui/button';
 
 type GapAnalysisAnalyticsDashboardProps = {
   allRecords: GapAnalysisRecord[];
@@ -125,6 +126,14 @@ export function GapAnalysisAnalyticsDashboard({
       }, {} as any)
   });
 
+  const areFiltersActive = filters.statusFilter !== 'all' || filters.annexFilter !== 'all' || filters.casrFilter !== 'all';
+
+  const handleResetFilters = () => {
+    setFilters.setStatusFilter('all');
+    setFilters.setAnnexFilter('all');
+    setFilters.setCasrFilter('all');
+  };
+
   return (
     <div className="space-y-6">
         <Card>
@@ -166,6 +175,11 @@ export function GapAnalysisAnalyticsDashboard({
                             </SelectContent>
                         </Select>
                     </div>
+                    {areFiltersActive && (
+                        <Button variant="ghost" onClick={handleResetFilters}>
+                            <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                        </Button>
+                    )}
                 </div>
             </CardHeader>
         </Card>

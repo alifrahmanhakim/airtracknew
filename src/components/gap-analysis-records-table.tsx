@@ -14,7 +14,7 @@ import type { GapAnalysisRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown, RotateCcw } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -129,6 +129,15 @@ export function GapAnalysisRecordsTable({
   ];
   
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key as keyof GapAnalysisRecord]);
+  
+  const areFiltersActive = filters.statusFilter !== 'all' || filters.annexFilter !== 'all' || filters.casrFilter !== 'all' || filters.textFilter !== '';
+
+  const handleResetFilters = () => {
+    setFilters.setStatusFilter('all');
+    setFilters.setAnnexFilter('all');
+    setFilters.setCasrFilter('all');
+    setFilters.setTextFilter('');
+  };
 
   if (records.length === 0 && filters.textFilter === '' && filters.annexFilter === 'all' && filters.casrFilter === 'all' && filters.statusFilter === 'all') {
     return (
@@ -183,6 +192,12 @@ export function GapAnalysisRecordsTable({
                     </SelectContent>
                 </Select>
             </div>
+            {areFiltersActive && (
+              <Button variant="ghost" onClick={handleResetFilters}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+            )}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="sm:ml-auto w-full sm:w-auto">
