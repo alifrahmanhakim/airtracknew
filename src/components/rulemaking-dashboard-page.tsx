@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import type { Project, User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown } from 'lucide-react';
+import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon } from 'lucide-react';
 import { useMemo, useState, useRef } from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -263,7 +264,9 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                                             <TooltipTrigger asChild>
                                                                 <Avatar className="h-6 w-6 border-2 border-background">
                                                                     <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
-                                                                    <AvatarFallback>{member.name?.charAt(0) || '?'}</AvatarFallback>
+                                                                    <AvatarFallback>
+                                                                        <UserIcon className="h-3 w-3" />
+                                                                    </AvatarFallback>
                                                                 </Avatar>
                                                             </TooltipTrigger>
                                                             <TooltipContent>{member.name}</TooltipContent>

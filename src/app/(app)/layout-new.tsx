@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -20,6 +21,7 @@ import {
   GitCompareArrows,
   Settings,
   BookText,
+  User as UserIcon,
 } from 'lucide-react';
 
 import {
@@ -189,7 +191,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
                     <Avatar className="h-9 w-9">
                         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                        <AvatarFallback>{currentUser.name?.charAt(0) || currentUser.email?.charAt(0) || '?'}</AvatarFallback>
+                        <AvatarFallback>
+                            <UserIcon className="h-5 w-5" />
+                        </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
                         <span className='text-sm font-semibold'>{currentUser.name}</span>

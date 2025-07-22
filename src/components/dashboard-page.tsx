@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -18,6 +19,7 @@ import {
   Loader2,
   Users,
   Calendar,
+  User as UserIcon,
 } from 'lucide-react';
 import type { Project, User } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -314,7 +316,9 @@ export function DashboardPage() {
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                            <AvatarFallback>{user.name?.[0] || '?'}</AvatarFallback>
+                                            <AvatarFallback>
+                                                <UserIcon className="h-4 w-4" />
+                                            </AvatarFallback>
                                         </Avatar>
                                         <div>
                                             <p className="font-medium text-sm">{user.name}</p>

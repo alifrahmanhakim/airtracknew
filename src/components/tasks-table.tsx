@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -32,7 +33,8 @@ import {
   ClipboardList,
   ChevronRight,
   Network,
-  Link as LinkIcon
+  Link as LinkIcon,
+  User as UserIcon,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -94,7 +96,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                                 <Avatar className="h-6 w-6 border-2 border-background">
                                     <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
                                     <AvatarFallback>
-                                    {assignee.name?.charAt(0) || assignee.email?.charAt(0) || '?'}
+                                      <UserIcon className="h-3 w-3" />
                                     </AvatarFallback>
                                 </Avatar>
                                 </TooltipTrigger>

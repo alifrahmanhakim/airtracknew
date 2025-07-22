@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -17,7 +18,7 @@ import type { Project, Task } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle, User as UserIcon } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 
 
@@ -133,7 +134,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
                                     <TooltipTrigger asChild>
                                         <Avatar className="h-7 w-7 border-2 border-background">
                                             <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
-                                            <AvatarFallback>{member.name?.charAt(0) || '?'}</AvatarFallback>
+                                            <AvatarFallback>
+                                                <UserIcon className="h-4 w-4" />
+                                            </AvatarFallback>
                                         </Avatar>
                                     </TooltipTrigger>
                                     <TooltipContent><p>{member.name}</p></TooltipContent>

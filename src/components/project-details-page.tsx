@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -45,6 +46,7 @@ import {
   Eye,
   Printer,
   AlertTriangle,
+  User as UserIcon,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -541,7 +543,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                   <div key={`${user.id}-${index}`} className="flex items-center gap-4">
                       <Avatar>
                           <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                          <AvatarFallback>{user.name?.charAt(0) || user.email?.charAt(0) || '?'}</AvatarFallback>
+                          <AvatarFallback>
+                            <UserIcon className="h-5 w-5" />
+                          </AvatarFallback>
                       </Avatar>
                       <div>
                           <p className="font-medium">{user.name}</p>
