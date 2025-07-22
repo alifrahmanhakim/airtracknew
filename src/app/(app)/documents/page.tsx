@@ -2,9 +2,9 @@
 'use client';
 
 import * as React from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { Project, Document as ProjectDocument } from '@/lib/types';
+import type { Project, Document as ProjectDocument, Task, Attachment } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -18,13 +18,47 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
-import { FileText, FileSpreadsheet, FileImage, FileQuestion, File, Link as LinkIcon, Search, Folder, Info } from 'lucide-react';
+import { FileText, FileSpreadsheet, FileImage, FileQuestion, File, Link as LinkIcon, Search, Folder, Info, GanttChartSquare } from 'lucide-react';
 import Link from 'next/link';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
-type EnhancedDocument = ProjectDocument & {
+type LinkedFile = {
+  id: string;
+  name: string;
+  url: string;
+  type: ProjectDocument['type'];
+  date: string;
   projectId: string;
   projectName: string;
+  projectType: Project['projectType'];
+  source: 'Project' | 'Task';
+  taskTitle?: string;
 };
+
+const ITEMS_PER_PAGE = 10;
+
+const getFileExtension = (url: string) => {
+    try {
+    const pathname = new URL(url).pathname;
+    const extension = pathname.split('.').pop()?.toLowerCase();
+    return extension;
+    } catch (e) {
+    return 'other';
+    }
+};
+
+const determineFileType = (url: string): ProjectDocument['type'] => {
+    const extension = getFileExtension(url);
+    if (!extension) return 'Other';
+
+    if (extension === 'pdf') return 'PDF';
+    if (['doc', 'docx'].includes(extension)) return 'Word';
+    if (['xls', 'xlsx', 'csv'].includes(extension)) return 'Excel';
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) return 'Image';
+    
+    return 'Other';
+};
+
 
 const getDocumentIcon = (type: ProjectDocument['type']) => {
     switch (type) {
@@ -42,52 +76,108 @@ const getDocumentIcon = (type: ProjectDocument['type']) => {
 };
 
 export default function DocumentsPage() {
-  const [allDocuments, setAllDocuments] = React.useState<EnhancedDocument[]>([]);
+  const [allFiles, setAllFiles] = React.useState<LinkedFile[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('');
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   React.useEffect(() => {
-    const fetchDocuments = async () => {
+    const fetchAllLinkedFiles = async () => {
       setIsLoading(true);
       try {
-        const projectsSnapshot = await getDocs(collection(db, 'projects'));
-        const projects = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+        const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
+        const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
         
-        const documents: EnhancedDocument[] = [];
-        projects.forEach(project => {
+        const [timKerjaSnapshot, rulemakingSnapshot] = await Promise.all([
+          timKerjaPromise,
+          rulemakingPromise,
+        ]);
+
+        const allProjects: Project[] = [
+          ...timKerjaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)),
+          ...rulemakingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)),
+        ];
+
+        const linkedFiles: LinkedFile[] = [];
+
+        // Recursive function to extract attachments from tasks and subtasks
+        const extractTaskAttachments = (tasks: Task[], project: Project) => {
+            tasks.forEach(task => {
+                if (task.attachments && task.attachments.length > 0) {
+                    task.attachments.forEach((att: Attachment) => {
+                        linkedFiles.push({
+                            id: att.id,
+                            name: att.name,
+                            url: att.url,
+                            type: determineFileType(att.url),
+                            date: task.dueDate,
+                            projectId: project.id,
+                            projectName: project.name,
+                            projectType: project.projectType,
+                            source: 'Task',
+                            taskTitle: task.title,
+                        });
+                    });
+                }
+                if (task.subTasks && task.subTasks.length > 0) {
+                    extractTaskAttachments(task.subTasks, project);
+                }
+            });
+        };
+
+        allProjects.forEach(project => {
+          // Project-level documents
           if (project.documents && project.documents.length > 0) {
             project.documents.forEach(doc => {
-              documents.push({
+              linkedFiles.push({
                 ...doc,
+                type: determineFileType(doc.url),
+                date: doc.uploadDate,
                 projectId: project.id,
                 projectName: project.name,
+                projectType: project.projectType,
+                source: 'Project',
               });
             });
           }
+          // Task-level attachments
+          if (project.tasks && project.tasks.length > 0) {
+              extractTaskAttachments(project.tasks, project);
+          }
         });
         
-        // Sort by upload date descending
-        documents.sort((a, b) => parseISO(b.uploadDate).getTime() - parseISO(a.uploadDate).getTime());
-        setAllDocuments(documents);
+        // Sort by date descending
+        linkedFiles.sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+        setAllFiles(linkedFiles);
 
       } catch (error) {
-        console.error("Failed to fetch documents:", error);
+        console.error("Failed to fetch linked files:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDocuments();
+    fetchAllLinkedFiles();
   }, []);
 
-  const filteredDocuments = React.useMemo(() => {
-    if (!filter) return allDocuments;
+  const filteredFiles = React.useMemo(() => {
+    if (!filter) return allFiles;
     const lowercasedFilter = filter.toLowerCase();
-    return allDocuments.filter(doc => 
-      doc.name.toLowerCase().includes(lowercasedFilter) ||
-      doc.projectName.toLowerCase().includes(lowercasedFilter)
+    return allFiles.filter(file => 
+      file.name.toLowerCase().includes(lowercasedFilter) ||
+      file.projectName.toLowerCase().includes(lowercasedFilter) ||
+      file.taskTitle?.toLowerCase().includes(lowercasedFilter)
     );
-  }, [allDocuments, filter]);
+  }, [allFiles, filter]);
+
+  const totalPages = Math.ceil(filteredFiles.length / ITEMS_PER_PAGE);
+  const paginatedFiles = filteredFiles.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -107,12 +197,12 @@ export default function DocumentsPage() {
       );
     }
     
-    if (allDocuments.length === 0) {
+    if (allFiles.length === 0) {
         return (
             <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
                 <Info className="mx-auto h-8 w-8 mb-2" />
                 <p className="font-semibold">No Documents Found</p>
-                <p className="text-sm">No documents have been linked to any projects yet.</p>
+                <p className="text-sm">No documents or attachments have been linked to any projects or tasks yet.</p>
             </div>
         );
     }
@@ -122,7 +212,7 @@ export default function DocumentsPage() {
         <div className="relative mb-4 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by document or project name..."
+            placeholder="Search by file, project, or task name..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="pl-9"
@@ -133,27 +223,35 @@ export default function DocumentsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]">Type</TableHead>
-                <TableHead>Document Name</TableHead>
-                <TableHead>Project</TableHead>
+                <TableHead>File Name</TableHead>
+                <TableHead>Source</TableHead>
                 <TableHead>Date Added</TableHead>
                 <TableHead className="text-right">Link</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDocuments.length > 0 ? filteredDocuments.map((doc) => (
-                <TableRow key={doc.id}>
-                  <TableCell>{getDocumentIcon(doc.type)}</TableCell>
-                  <TableCell className="font-medium">{doc.name}</TableCell>
+              {paginatedFiles.length > 0 ? paginatedFiles.map((file) => (
+                <TableRow key={file.id}>
+                  <TableCell>{getDocumentIcon(file.type)}</TableCell>
+                  <TableCell className="font-medium">{file.name}</TableCell>
                   <TableCell>
-                    <Link href={`/projects/${doc.projectId}`} className="flex items-center gap-2 hover:underline text-muted-foreground hover:text-primary">
-                        <Folder className="h-4 w-4" />
-                        {doc.projectName}
+                    <Link href={`/projects/${file.projectId}?type=${file.projectType === 'Rulemaking' ? 'rulemaking' : 'timkerja'}`} className="flex flex-col group">
+                        <div className="flex items-center gap-2 group-hover:underline text-primary">
+                            <Folder className="h-4 w-4" />
+                            <span className="truncate">{file.projectName}</span>
+                        </div>
+                        {file.taskTitle && (
+                            <div className="flex items-center gap-2 pl-6 text-muted-foreground text-xs">
+                                <GanttChartSquare className="h-3 w-3" />
+                                <span className="truncate">{file.taskTitle}</span>
+                            </div>
+                        )}
                     </Link>
                   </TableCell>
-                  <TableCell>{format(parseISO(doc.uploadDate), 'PPP')}</TableCell>
+                  <TableCell>{format(parseISO(file.date), 'PPP')}</TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="ghost" size="icon">
-                      <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                      <a href={file.url} target="_blank" rel="noopener noreferrer">
                         <LinkIcon className="h-4 w-4" />
                       </a>
                     </Button>
@@ -169,6 +267,29 @@ export default function DocumentsPage() {
             </TableBody>
           </Table>
         </div>
+        <Pagination className="mt-4">
+            <PaginationContent>
+            <PaginationItem>
+                <PaginationPrevious 
+                href="#" 
+                onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} 
+                className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} 
+                />
+            </PaginationItem>
+            <PaginationItem>
+                <span className="px-4 py-2 text-sm">
+                Page {currentPage} of {totalPages}
+                </span>
+            </PaginationItem>
+            <PaginationItem>
+                <PaginationNext 
+                href="#" 
+                onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                />
+            </PaginationItem>
+            </PaginationContent>
+        </Pagination>
       </>
     );
   };
@@ -180,7 +301,7 @@ export default function DocumentsPage() {
         <CardHeader>
           <CardTitle>Document Repository</CardTitle>
           <CardDescription>
-            A centralized list of all documents linked across all projects.
+            A centralized list of all documents and attachments linked across all projects and tasks.
           </CardDescription>
         </CardHeader>
         <CardContent>
