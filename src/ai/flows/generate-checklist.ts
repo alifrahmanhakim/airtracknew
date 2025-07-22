@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'generateChecklistPrompt',
   input: {schema: GenerateChecklistInputSchema},
   output: {schema: GenerateChecklistOutputSchema},
-  model: 'gemini-1.0-pro',
+  model: 'gemini-pro',
   prompt: `You are an expert project manager specializing in the aviation industry.
   
   Based on the project name and description provided, generate a concise and actionable checklist of 5 to 7 essential tasks or milestones.
