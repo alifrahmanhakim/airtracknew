@@ -217,7 +217,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
             </SidebarMenu>
             <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
-                Stdatabase © 2025
+                stdatabase © 2025
             </div>
         </SidebarFooter>
       </Sidebar>
