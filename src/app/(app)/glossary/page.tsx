@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { GlossaryRecord } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -54,8 +54,7 @@ type SortDescriptor = {
 const RECORDS_PER_PAGE = 10;
 
 export default function GlossaryPage() {
-  const [allRecordsForAnalytics, setAllRecordsForAnalytics] = useState<GlossaryRecord[]>([]);
-  const [paginatedRecords, setPaginatedRecords] = useState<GlossaryRecord[]>([]);
+  const [allRecords, setAllRecords] = useState<GlossaryRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('records');
   const { toast } = useToast();
@@ -67,37 +66,13 @@ export default function GlossaryPage() {
   
   // Filters and sorting
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sort, setSort] = useState<SortDescriptor>({ column: 'tsu', direction: 'asc' });
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageDocs, setPageDocs] = useState<any[]>([]); // Stores first and last doc of each page
-  const [isFetchingPage, setIsFetchingPage] = useState(false);
-  const [totalRecords, setTotalRecords] = useState(0);
 
-  // Debounce search term
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-      setCurrentPage(1);
-      setPageDocs([]);
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
-
-  // Refocus input after data fetching
-  useEffect(() => {
-    if (!isFetchingPage) {
-      searchInputRef.current?.focus();
-    }
-  }, [isFetchingPage]);
-  
   // Fetch all records once for analytics
   useEffect(() => {
     const q = query(collection(db, "glossaryRecords"));
@@ -106,110 +81,81 @@ export default function GlossaryPage() {
       querySnapshot.forEach((doc) => {
         recordsFromDb.push({ id: doc.id, ...doc.data() } as GlossaryRecord);
       });
-      setAllRecordsForAnalytics(recordsFromDb);
+      setAllRecords(recordsFromDb);
+      setIsLoading(false);
     }, (error) => {
-      console.error("Error fetching all Glossary records for analytics: ", error);
+      console.error("Error fetching all Glossary records: ", error);
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const fetchPaginatedData = useCallback(async (page: number, direction: 'next' | 'prev' | 'first') => {
-    if(page < 1) return;
-    setIsFetchingPage(true);
+  const filteredAndSortedRecords = useMemo(() => {
+    let filtered = [...allRecords];
 
-    const constraints: QueryConstraint[] = [];
-    const countConstraints: QueryConstraint[] = [];
-
+    // Filter by status
     if (statusFilter !== 'all') {
-        constraints.push(where('status', '==', statusFilter));
-        countConstraints.push(where('status', '==', statusFilter));
+      filtered = filtered.filter(record => record.status === statusFilter);
     }
     
-    if (debouncedSearchTerm) {
-        constraints.push(where('tsu', '>=', debouncedSearchTerm));
-        constraints.push(where('tsu', '<=', debouncedSearchTerm + '\uf8ff'));
-        countConstraints.push(where('tsu', '>=', debouncedSearchTerm));
-        countConstraints.push(where('tsu', '<=', debouncedSearchTerm + '\uf8ff'));
-    } else if (sort) {
-        constraints.push(orderBy(sort.column, sort.direction));
+    // Filter by search term
+    if (searchTerm) {
+      const lowercasedTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(record => {
+        return (
+          record.tsu?.toLowerCase().includes(lowercasedTerm) ||
+          record.tsa?.toLowerCase().includes(lowercasedTerm) ||
+          record.editing?.toLowerCase().includes(lowercasedTerm) ||
+          record.makna?.toLowerCase().includes(lowercasedTerm) ||
+          record.keterangan?.toLowerCase().includes(lowercasedTerm) ||
+          record.referensi?.toLowerCase().includes(lowercasedTerm)
+        );
+      });
     }
 
-    if (page > 1 && direction !== 'first') {
-        const cursorDocId = direction === 'next' ? pageDocs[page - 2]?.last : pageDocs[page]?.first;
-        if(cursorDocId) {
-            const cursorDoc = await getDoc(doc(db, 'glossaryRecords', cursorDocId));
-            if (cursorDoc.exists()) {
-                if (direction === 'next') {
-                    constraints.push(startAfter(cursorDoc));
-                } else {
-                    constraints.push(endBefore(cursorDoc));
-                }
-            }
-        }
-    }
+    // Sort
+    if (sort) {
+      filtered.sort((a, b) => {
+        const aVal = a[sort.column as keyof GlossaryRecord] as string | undefined;
+        const bVal = b[sort.column as keyof GlossaryRecord] as string | undefined;
+        
+        if (aVal === undefined || aVal === null) return 1;
+        if (bVal === undefined || bVal === null) return -1;
 
-    constraints.push(limit(RECORDS_PER_PAGE));
-    const q = query(collection(db, "glossaryRecords"), ...constraints);
+        if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
     
-    try {
-        const countQuery = query(collection(db, "glossaryRecords"), ...countConstraints);
-        const countSnapshot = await getCountFromServer(countQuery);
-        setTotalRecords(countSnapshot.data().count);
-
-        const querySnapshot = await getDocs(q);
-        const recordsFromDb: GlossaryRecord[] = [];
-        querySnapshot.forEach((doc) => {
-            recordsFromDb.push({ id: doc.id, ...doc.data() } as GlossaryRecord);
-        });
-        
-        if (recordsFromDb.length > 0) {
-            const firstDocId = querySnapshot.docs[0].id;
-            const lastDocId = querySnapshot.docs[querySnapshot.docs.length - 1].id;
-            setPageDocs(prev => {
-                const newPageDocs = [...prev];
-                newPageDocs[page - 1] = { first: firstDocId, last: lastDocId };
-                return newPageDocs;
-            });
-        }
-        
-        setPaginatedRecords(recordsFromDb);
-        setCurrentPage(page);
-
-    } catch (error) {
-        console.error("Error fetching Glossary records: ", error);
-        toast({
-            variant: 'destructive',
-            title: 'Error fetching data',
-            description: 'The database query failed. This might be due to a missing index in Firestore. Please check the browser console for a link to create it.',
-        });
-    } finally {
-        setIsLoading(false);
-        setIsFetchingPage(false);
-    }
-  }, [sort, debouncedSearchTerm, statusFilter, pageDocs, toast]);
+    return filtered;
+  }, [allRecords, searchTerm, statusFilter, sort]);
 
   useEffect(() => {
-      fetchPaginatedData(1, 'first');
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, debouncedSearchTerm, statusFilter]);
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const totalPages = Math.ceil(filteredAndSortedRecords.length / RECORDS_PER_PAGE);
+  const paginatedRecords = filteredAndSortedRecords.slice(
+    (currentPage - 1) * RECORDS_PER_PAGE,
+    currentPage * RECORDS_PER_PAGE
+  );
+
 
   const handlePageChange = (newPage: number) => {
-    if (newPage > currentPage) {
-        fetchPaginatedData(newPage, 'next');
-    } else if (newPage < currentPage) {
-        fetchPaginatedData(newPage, 'prev');
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
     }
   };
 
-  const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
 
   const handleDeleteRequest = (record: GlossaryRecord) => {
     setRecordToDelete(record);
   };
 
   const handleRecordUpdate = (updatedRecord: GlossaryRecord) => {
-    setPaginatedRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    setAllRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
   };
   
   const confirmDelete = async () => {
@@ -221,7 +167,7 @@ export default function GlossaryPage() {
 
     if (result.success) {
       toast({ title: "Record Deleted", description: "The Glossary record has been removed." });
-       fetchPaginatedData(currentPage, 'first');
+       // The onSnapshot will automatically update the state
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
@@ -239,7 +185,7 @@ export default function GlossaryPage() {
         title: 'All Records Deleted',
         description: `${result.count} records have been successfully removed.`,
       });
-      fetchPaginatedData(1, 'first');
+      // The onSnapshot will automatically update the state
     } else {
       toast({
         variant: 'destructive',
@@ -251,11 +197,11 @@ export default function GlossaryPage() {
 
 
   const handleExport = () => {
-    if (allRecordsForAnalytics.length === 0) {
+    if (allRecords.length === 0) {
       toast({ variant: 'destructive', title: 'No Data', description: 'There are no records to export.' });
       return;
     }
-    const csv = Papa.unparse(allRecordsForAnalytics);
+    const csv = Papa.unparse(allRecords);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -308,7 +254,7 @@ export default function GlossaryPage() {
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
-                       <GlossaryForm onFormSubmit={() => { setActiveTab('records'); fetchPaginatedData(1, 'first'); }} />
+                       <GlossaryForm onFormSubmit={() => { setActiveTab('records'); }} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -324,11 +270,11 @@ export default function GlossaryPage() {
                           </CardDescription>
                         </div>
                         <div className='flex items-center gap-2'>
-                          <Button variant="outline" onClick={handleExport} disabled={allRecordsForAnalytics.length === 0}>
+                          <Button variant="outline" onClick={handleExport} disabled={allRecords.length === 0}>
                               <FileSpreadsheet className="mr-2 h-4 w-4" />
                               Export CSV
                           </Button>
-                           <Button variant="destructive" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecordsForAnalytics.length === 0}>
+                           <Button variant="destructive" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete All
                           </Button>
@@ -342,7 +288,7 @@ export default function GlossaryPage() {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input 
                                         ref={searchInputRef}
-                                        placeholder="Search by TSU..."
+                                        placeholder="Search across all text fields..."
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
                                         className="pl-9 w-full sm:w-[300px]"
@@ -357,15 +303,15 @@ export default function GlossaryPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            {isFetchingPage ? <div className='flex items-center justify-center p-8'><Loader2 className="mr-2 h-8 w-8 animate-spin" /> Loading...</div> :
-                                <GlossaryRecordsTable 
-                                    records={paginatedRecords} 
-                                    onDelete={handleDeleteRequest} 
-                                    onUpdate={handleRecordUpdate}
-                                    sort={sort}
-                                    setSort={setSort}
-                                />
-                            }
+                            
+                            <GlossaryRecordsTable 
+                                records={paginatedRecords} 
+                                onDelete={handleDeleteRequest} 
+                                onUpdate={handleRecordUpdate}
+                                sort={sort}
+                                setSort={setSort}
+                            />
+                            
                              <Pagination>
                                 <PaginationContent>
                                 <PaginationItem>
@@ -395,7 +341,7 @@ export default function GlossaryPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                       <GlossaryAnalyticsDashboard records={allRecordsForAnalytics} />
+                       <GlossaryAnalyticsDashboard records={allRecords} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -436,7 +382,7 @@ export default function GlossaryPage() {
                     </div>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete all <strong>{totalRecords}</strong> glossary records from the database.
+                        This action cannot be undone. This will permanently delete all <strong>{allRecords.length}</strong> glossary records from the database.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
