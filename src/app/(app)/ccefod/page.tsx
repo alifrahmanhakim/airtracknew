@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -146,6 +146,7 @@ export default function CcefodPage() {
 
     const constraints: QueryConstraint[] = [];
     const countConstraints: QueryConstraint[] = [];
+    const isFiltered = annexFilter !== 'all' || implementationLevelFilter !== 'all' || adaPerubahanFilter !== 'all';
 
     if (annexFilter !== 'all') {
         constraints.push(where('annex', '==', annexFilter));
@@ -169,7 +170,7 @@ export default function CcefodPage() {
         countConstraints.push(where('annexReference', '>=', debouncedSearchTerm));
         countConstraints.push(where('annexReference', '<=', debouncedSearchTerm + '\uf8ff'));
 
-    } else if (sort) {
+    } else if (sort && !isFiltered) {
         constraints.push(orderBy(sort.column, sort.direction));
     }
 
@@ -614,6 +615,3 @@ export default function CcefodPage() {
 }
 
     
-
-    
-
