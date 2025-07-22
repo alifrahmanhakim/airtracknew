@@ -35,6 +35,7 @@ const prompt = ai.definePrompt({
   name: 'summarizeProjectStatusPrompt',
   input: {schema: SummarizeProjectStatusInputSchema},
   output: {schema: SummarizeProjectStatusOutputSchema},
+  model: 'gemini-1.0-pro',
   prompt: `You are a project manager tasked with summarizing project statuses.
 
   Based on the task completion percentage and project notes provided, generate a concise summary of the project's current status.
