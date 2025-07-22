@@ -240,40 +240,40 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                     />
                 </CardHeader>
                 <CardContent className="pt-0">
-                <ScrollArea className="h-[300px] w-full overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                            <TableHead>Task</TableHead>
-                            <TableHead>Assignee</TableHead>
-                            <TableHead>Start Date</TableHead>
-                            <TableHead>Due Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Attachments</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {tasks.length > 0 ? tasks.map((task) => (
-                                <TaskRow 
-                                    key={task.id}
-                                    task={task}
-                                    level={0}
-                                    teamMembers={teamMembers}
-                                    projectId={projectId}
-                                    projectType={projectType}
-                                    onTaskUpdate={onTasksChange}
-                                    onTaskDelete={handleDeleteRequest}
-                                    isDeleting={isDeleting && taskToDelete?.id === task.id}
-                                />
-                            )) : (
-                            <TableRow>
-                                <TableCell colSpan={7} className="text-center text-muted-foreground h-24">No tasks yet.</TableCell>
-                            </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </ScrollArea>
+                    <div className="w-full overflow-x-auto">
+                        <Table className="min-w-[800px]">
+                            <TableHeader>
+                                <TableRow>
+                                <TableHead className="w-[40%]">Task</TableHead>
+                                <TableHead>Assignee</TableHead>
+                                <TableHead>Start Date</TableHead>
+                                <TableHead>Due Date</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Attachments</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {tasks.length > 0 ? tasks.map((task) => (
+                                    <TaskRow 
+                                        key={task.id}
+                                        task={task}
+                                        level={0}
+                                        teamMembers={teamMembers}
+                                        projectId={projectId}
+                                        projectType={projectType}
+                                        onTaskUpdate={onTasksChange}
+                                        onTaskDelete={handleDeleteRequest}
+                                        isDeleting={isDeleting && taskToDelete?.id === task.id}
+                                    />
+                                )) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center text-muted-foreground h-24">No tasks yet.</TableCell>
+                                </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
