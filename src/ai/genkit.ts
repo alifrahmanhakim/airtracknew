@@ -9,6 +9,6 @@ export const ai = genkit({
   model: 'gemini-pro',
   flow: {
     // Memberikan batas waktu yang lebih panjang untuk model yang lebih besar
-    timeout: 3000
+    timeout: 30000,
   },
 });
