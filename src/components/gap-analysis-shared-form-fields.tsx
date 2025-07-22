@@ -270,31 +270,36 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                   </FormItem>
                               )}
                           />
-                          <div className='space-y-2'>
-                              <FormLabel className="text-xs">Digital Signature</FormLabel>
-                              {signature ? (
-                                  <div className='relative group'>
-                                      <div className="bg-white p-2 border rounded-md aspect-video max-w-[200px]">
-                                          <Image src={signature} alt="Signature" width={200} height={100} className='w-full h-auto' />
-                                      </div>
-                                      <SignaturePadDialog
+                          <FormItem>
+                            <FormLabel className="text-xs">Digital Signature</FormLabel>
+                             <FormControl>
+                                <div>
+                                {signature ? (
+                                    <div className='relative group'>
+                                        <div className="bg-white p-2 border rounded-md aspect-video max-w-[200px]">
+                                            <Image src={signature} alt="Signature" width={200} height={100} className='w-full h-auto' />
+                                        </div>
+                                        <SignaturePadDialog
+                                            onSave={(newSignature) => updateInspector(index, { ...field, signature: newSignature })}
+                                            trigger={
+                                                <Button size="icon" variant="outline" className='absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity'>
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            }
+                                        />
+                                    </div>
+                                ) : (
+                                    <SignaturePadDialog
                                         onSave={(newSignature) => updateInspector(index, { ...field, signature: newSignature })}
                                         trigger={
-                                            <Button size="icon" variant="outline" className='absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity'>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
+                                            <Button type="button" variant="outline">Add Signature</Button>
                                         }
-                                      />
-                                  </div>
-                              ) : (
-                                <SignaturePadDialog
-                                    onSave={(newSignature) => updateInspector(index, { ...field, signature: newSignature })}
-                                    trigger={
-                                        <Button type="button" variant="outline">Add Signature</Button>
-                                    }
-                                />
-                              )}
-                          </div>
+                                    />
+                                )}
+                                </div>
+                             </FormControl>
+                            <FormMessage />
+                           </FormItem>
                         </div>
                       <Button type="button" variant="ghost" size="icon" onClick={() => removeInspector(index)} className='text-destructive hover:text-destructive'>
                         <Trash2 className="h-4 w-4" />
