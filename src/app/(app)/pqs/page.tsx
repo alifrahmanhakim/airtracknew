@@ -124,26 +124,30 @@ export default function PqsPage() {
     const constraints: QueryConstraint[] = [];
     const countConstraints: QueryConstraint[] = [];
 
-    if (tableCriticalElementFilter !== 'all') {
-        constraints.push(where('criticalElement', '==', tableCriticalElementFilter));
-        countConstraints.push(where('criticalElement', '==', tableCriticalElementFilter));
-    }
-    if (tableIcaoStatusFilter !== 'all') {
-        constraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
-        countConstraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
-    }
-    
+    // Prioritize search term over other filters to avoid complex queries
     if (debouncedSearchTerm) {
-        constraints.push(orderBy('pqNumber')); // Must order by the field used in range filter
+        constraints.push(orderBy('pqNumber'));
         constraints.push(where('pqNumber', '>=', debouncedSearchTerm));
         constraints.push(where('pqNumber', '<=', debouncedSearchTerm + '\uf8ff'));
         
-        countConstraints.push(orderBy('pqNumber'));
         countConstraints.push(where('pqNumber', '>=', debouncedSearchTerm));
         countConstraints.push(where('pqNumber', '<=', debouncedSearchTerm + '\uf8ff'));
-    } else if (sort && tableIcaoStatusFilter === 'all') { // Disable custom sort if filtering by icaoStatus
-        constraints.push(orderBy(sort.column, sort.direction));
+    } else {
+        if (tableCriticalElementFilter !== 'all') {
+            constraints.push(where('criticalElement', '==', tableCriticalElementFilter));
+            countConstraints.push(where('criticalElement', '==', tableCriticalElementFilter));
+        }
+        if (tableIcaoStatusFilter !== 'all') {
+            constraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
+            countConstraints.push(where('icaoStatus', '==', tableIcaoStatusFilter));
+        }
+
+        // Apply sorting only when no search term is present
+        if (sort && tableIcaoStatusFilter === 'all') { // Disable custom sort if filtering by icaoStatus
+            constraints.push(orderBy(sort.column, sort.direction));
+        }
     }
+
 
     if (page > 1 && direction !== 'first') {
         const cursorDocId = direction === 'next' ? pageDocs[page - 2]?.last : pageDocs[page]?.first;
