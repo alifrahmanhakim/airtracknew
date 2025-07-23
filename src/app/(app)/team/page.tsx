@@ -337,7 +337,7 @@ export default function TeamPage() {
                                 <TableRow key={user.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-4">
-                                            <Avatar className="hidden h-9 w-9 sm:flex" online={isOnline}>
+                                            <Avatar className="h-9 w-9" online={isOnline}>
                                                 <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
                                                 <AvatarFallback>
                                                     <UserIcon className="h-5 w-5" />
