@@ -146,25 +146,21 @@ export async function updateProject(projectId: string, projectType: Project['pro
     const projectRef = doc(db, collectionName, projectId);
     
     try {
-        // Get the current project state to compare teams
         const currentProjectSnap = await getDoc(projectRef);
         if (!currentProjectSnap.exists()) {
             return { success: false, error: "Project not found." };
         }
         const currentProjectData = currentProjectSnap.data() as Project;
-        const currentTeamIds = new Set(currentProjectData.team.map(m => m.id));
+        const currentTeamIds = new Set((currentProjectData.team || []).map(m => m.id));
 
-        // Update the document
         await updateDoc(projectRef, projectData);
         
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         const projectName = projectData.name || currentProjectData.name;
 
-        // Send notifications based on team changes
         if (projectData.team) {
-            const newTeamIds = new Set(projectData.team.map(m => m.id));
+            const newTeamIds = new Set((projectData.team || []).map(m => m.id));
             
-            // Notify newly added members
             const addedMembers = projectData.team.filter(member => !currentTeamIds.has(member.id));
             for (const newMember of addedMembers) {
                  await createNotification({
@@ -175,7 +171,6 @@ export async function updateProject(projectId: string, projectType: Project['pro
                 });
             }
 
-            // Notify removed members
             const removedMemberIds = [...currentTeamIds].filter(id => !newTeamIds.has(id));
              for (const removedId of removedMemberIds) {
                  await createNotification({
@@ -345,16 +340,13 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
         let updatedTasks: Task[];
 
         if (parentId) {
-            // Adding a subtask
             updatedTasks = findAndAddSubTask(projectData.tasks || [], parentId, task);
         } else {
-            // Adding a top-level task
             updatedTasks = [...(projectData.tasks || []), task];
         }
 
         await updateDoc(projectRef, { tasks: updatedTasks });
 
-        // Create notifications for assignees
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         for (const userId of task.assigneeIds) {
             await createNotification({
@@ -371,27 +363,21 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
     }
 }
 
-// Recursive helper to find a task by ID in a nested structure
 const findTaskById = (tasks: Task[], taskId: string): Task | null => {
     for (const task of tasks) {
-        if (task.id === taskId) {
-            return task;
-        }
+        if (task.id === taskId) return task;
         if (task.subTasks) {
             const found = findTaskById(task.subTasks, taskId);
-            if (found) {
-                return found;
-            }
+            if (found) return found;
         }
     }
     return null;
 };
 
-// Recursive helper to replace a task in a nested structure
 const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
     return tasks.map(task => {
         if (task.id === updatedTask.id) {
-            return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
+            return { ...task, ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
         }
         if (task.subTasks) {
             return { ...task, subTasks: replaceTaskById(task.subTasks, updatedTask) };
@@ -399,7 +385,6 @@ const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
         return task;
     });
 };
-
 
 export async function updateTask(projectId: string, updatedTaskData: Task, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
@@ -413,24 +398,21 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         
         const projectData = projectSnap.data() as Project;
         const currentTasks = projectData.tasks || [];
-
         const oldTask = findTaskById(currentTasks, updatedTaskData.id);
 
         if (!oldTask) {
              return { success: false, error: 'Original task not found for update.' };
         }
 
-        const updatedTasks = replaceTaskById(currentTasks, updatedTaskData);
-        
-        await updateDoc(projectRef, { tasks: updatedTasks });
-
+        // --- Notification Logic ---
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
-        
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTaskData.assigneeIds || []);
-
-        // Notify newly added members
+        
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
+        const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
+        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id) && id !== oldTask.id);
+
         for (const userId of addedAssignees) {
             await createNotification({
                 userId: userId,
@@ -440,8 +422,6 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
 
-        // Notify removed members
-        const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
         for (const userId of removedAssignees) {
             await createNotification({
                 userId: userId,
@@ -451,16 +431,20 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
         
-        // Notify existing members of an update
-        const existingAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id));
-        for (const userId of existingAssignees) {
-            await createNotification({
+        // Notify existing members of an update, but only if they weren't just added or removed
+        for (const userId of keptAssignees) {
+             await createNotification({
                 userId: userId,
                 title: 'Task Updated',
                 description: `The task "${updatedTaskData.title}" in project "${projectData.name}" has been updated.`,
                 href: projectLink,
             });
         }
+        
+        // --- End Notification Logic ---
+        
+        const updatedTasks = replaceTaskById(currentTasks, updatedTaskData);
+        await updateDoc(projectRef, { tasks: updatedTasks });
 
         return { success: true, tasks: updatedTasks };
     } catch (error) {
@@ -519,4 +503,5 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
 
 
     
+
 
