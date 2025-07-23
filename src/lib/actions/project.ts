@@ -175,14 +175,14 @@ export async function updateProject(projectId: string, projectType: Project['pro
             return { success: false, error: "Project not found." };
         }
         const currentProjectData = currentProjectSnap.data() as Project;
-        const currentTeamIds = new Set((currentProjectData.team || []).map(m => m.id));
-
+        
         await updateDoc(projectRef, projectData);
         
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         const projectName = projectData.name || currentProjectData.name;
 
         if (projectData.team) {
+            const currentTeamIds = new Set((currentProjectData.team || []).map(m => m.id));
             const newTeamIds = new Set((projectData.team || []).map(m => m.id));
             
             const addedMembers = projectData.team.filter(member => !currentTeamIds.has(member.id));
@@ -405,18 +405,16 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              return { success: false, error: 'Original task not found for update.' };
         }
         
-        // Create a complete updated task object by merging old and new data
         const updatedTask: Task = { ...oldTask, ...updatedTaskData };
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
-        // Ensure assignee arrays are always arrays for safe comparison
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTask.assigneeIds || []);
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id) && id !== oldTask.id); 
+        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id)); 
 
         for (const userId of addedAssignees) {
             await createNotification({
