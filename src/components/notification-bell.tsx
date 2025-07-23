@@ -30,16 +30,15 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     if (!userId) return;
 
     const q = query(
-      collection(db, 'notifications'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'asc'),
+      collection(db, 'users', userId, 'notifications'),
+      orderBy('createdAt', 'desc'),
       limit(20)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifs: Notification[] = [];
       let count = 0;
-      snapshot.docs.reverse().forEach((doc) => {
+      snapshot.docs.forEach((doc) => {
         const data = doc.data() as Omit<Notification, 'id'>;
         notifs.push({ id: doc.id, ...data });
         if (!data.isRead) {
@@ -56,18 +55,19 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   }, [userId]);
 
   const handleMarkAsRead = async (notificationId: string) => {
-    const notifRef = doc(db, 'notifications', notificationId);
+    if (!userId) return;
+    const notifRef = doc(db, 'users', userId, 'notifications', notificationId);
     await updateDoc(notifRef, { isRead: true });
   };
   
   const handleMarkAllAsRead = async () => {
-    if (unreadCount === 0) return;
+    if (unreadCount === 0 || !userId) return;
     
     const unreadNotifications = notifications.filter(n => !n.isRead);
     const batch = writeBatch(db);
     
     unreadNotifications.forEach(notif => {
-        const notifRef = doc(db, 'notifications', notif.id);
+        const notifRef = doc(db, 'users', userId, 'notifications', notif.id);
         batch.update(notifRef, { isRead: true });
     });
     

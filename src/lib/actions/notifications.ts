@@ -9,7 +9,9 @@ type CreateNotificationPayload = Omit<Notification, 'id' | 'createdAt' | 'isRead
 
 export async function createNotification(payload: CreateNotificationPayload) {
   try {
-    await addDoc(collection(db, 'notifications'), {
+    // Store notifications as a subcollection of the user
+    const notificationRef = collection(db, 'users', payload.userId, 'notifications');
+    await addDoc(notificationRef, {
       ...payload,
       isRead: false,
       createdAt: serverTimestamp(),
