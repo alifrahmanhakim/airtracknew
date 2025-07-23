@@ -158,6 +158,7 @@ export async function updateProject(projectId: string, projectType: Project['pro
         await updateDoc(projectRef, projectData);
         
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
+        const projectName = projectData.name || currentProjectData.name;
 
         // Send notifications based on team changes
         if (projectData.team) {
@@ -169,7 +170,7 @@ export async function updateProject(projectId: string, projectType: Project['pro
                  await createNotification({
                     userId: newMember.id,
                     title: 'Added to Project',
-                    description: `You have been added to the project: "${projectData.name}".`,
+                    description: `You have been added to the project: "${projectName}".`,
                     href: projectLink,
                 });
             }
@@ -180,7 +181,7 @@ export async function updateProject(projectId: string, projectType: Project['pro
                  await createNotification({
                     userId: removedId,
                     title: 'Removed from Project',
-                    description: `You have been removed from the project: "${projectData.name}".`,
+                    description: `You have been removed from the project: "${projectName}".`,
                     href: projectLink,
                 });
             }
@@ -303,11 +304,11 @@ export async function updateSubProject(projectId: string, subProject: SubProject
 }
 
 // Recursive function to find and update a task in a nested structure
-function findAndUpdateTask(tasks: Task[], updatedTask: Task, originalTasks: Task[]): { updatedTasks: Task[], oldTask?: Task } {
+function findAndUpdateTask(tasks: Task[], updatedTask: Task): { updatedTasks: Task[], oldTask?: Task } {
   let oldTask: Task | undefined;
   
-  const runUpdate = (tasks: Task[]): Task[] => {
-    return tasks.map(task => {
+  const runUpdate = (currentTasks: Task[]): Task[] => {
+    return currentTasks.map(task => {
         if (task.id === updatedTask.id) {
             oldTask = task; // Found the original task
             // Retain existing subTasks if the update doesn't include them
@@ -404,7 +405,7 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         }
         
         const projectData = projectSnap.data() as Project;
-        const { updatedTasks, oldTask } = findAndUpdateTask(projectData.tasks || [], updatedTaskData, projectData.tasks || []);
+        const { updatedTasks, oldTask } = findAndUpdateTask(projectData.tasks || [], updatedTaskData);
 
         if (!oldTask) {
              return { success: false, error: 'Original task not found for update.' };
@@ -440,7 +441,7 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         }
         
         // Notify existing assignees of the update
-        const existingAssignees = updatedTaskData.assigneeIds.filter(id => oldAssigneeIds.has(id));
+        const existingAssignees = updatedTaskData.assigneeIds.filter(id => oldAssigneeIds.has(id) && !addedAssignees.includes(id));
         for (const userId of existingAssignees) {
             await createNotification({
                 userId: userId,
