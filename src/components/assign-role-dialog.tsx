@@ -43,11 +43,12 @@ type RoleFormValues = z.infer<typeof roleSchema>;
 type AssignRoleDialogProps = {
   user: User;
   onUserUpdate: (updatedUser: User) => void;
+  isAdmin: boolean;
 };
 
-const userRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
+const allRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
 
-export function AssignRoleDialog({ user, onUserUpdate }: AssignRoleDialogProps) {
+export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
@@ -85,6 +86,8 @@ export function AssignRoleDialog({ user, onUserUpdate }: AssignRoleDialogProps) 
     }
   };
 
+  const availableRoles = isAdmin ? allRoles : allRoles.filter(role => role !== 'Sub-Directorate Head');
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -115,7 +118,7 @@ export function AssignRoleDialog({ user, onUserUpdate }: AssignRoleDialogProps) 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {userRoles.map((role) => (
+                      {availableRoles.map((role) => (
                         <SelectItem key={role} value={role}>
                           {role}
                         </SelectItem>

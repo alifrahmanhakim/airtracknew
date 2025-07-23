@@ -36,7 +36,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const USERS_PER_PAGE = 10;
-const userRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
 
 type SortDescriptor = {
     column: keyof User;
@@ -57,6 +56,8 @@ export default function TeamPage() {
   const [roleFilter, setRoleFilter] = React.useState('all');
   const [statusFilter, setStatusFilter] = React.useState('all');
   const [sort, setSort] = React.useState<SortDescriptor>({ column: 'name', direction: 'asc' });
+  
+  const userRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
 
   React.useEffect(() => {
     async function fetchData() {
@@ -305,7 +306,7 @@ export default function TeamPage() {
                                 {isAdmin && (
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <AssignRoleDialog user={user} onUserUpdate={handleUserUpdate} />
+                                            <AssignRoleDialog user={user} onUserUpdate={handleUserUpdate} isAdmin={isAdmin} />
                                             {user.isApproved ? (
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
