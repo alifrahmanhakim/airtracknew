@@ -405,23 +405,21 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              return { success: false, error: 'Original task not found for update.' };
         }
         
-        // Create the full updated task object by merging old and new data
-        const finalUpdatedTask: Task = { ...oldTask, ...updatedTaskData };
+        const updatedTask: Task = { ...oldTask, ...updatedTaskData };
 
-        // --- Notification Logic ---
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
-        const newAssigneeIds = new Set(finalUpdatedTask.assigneeIds || []);
+        const newAssigneeIds = new Set(updatedTask.assigneeIds || []);
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id) && id !== oldTask.id); // Exclude self-notification for updater
+        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id)); 
 
         for (const userId of addedAssignees) {
             await createNotification({
                 userId: userId,
                 title: 'New Task Assigned',
-                description: `You have been assigned to task "${finalUpdatedTask.title}" in project "${projectData.name}".`,
+                description: `You have been assigned to task "${updatedTask.title}" in project "${projectData.name}".`,
                 href: projectLink,
             });
         }
@@ -430,7 +428,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
             await createNotification({
                 userId: userId,
                 title: 'Unassigned from Task',
-                description: `You have been unassigned from task "${finalUpdatedTask.title}" in project "${projectData.name}".`,
+                description: `You have been unassigned from task "${updatedTask.title}" in project "${projectData.name}".`,
                 href: projectLink,
             });
         }
@@ -439,15 +437,15 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              await createNotification({
                 userId: userId,
                 title: 'Task Updated',
-                description: `The task "${finalUpdatedTask.title}" in project "${projectData.name}" has been updated.`,
+                description: `The task "${updatedTask.title}" in project "${projectData.name}" has been updated.`,
                 href: projectLink,
             });
         }
         
-        const updatedTasks = replaceTaskById(currentTasks, finalUpdatedTask);
-        await updateDoc(projectRef, { tasks: updatedTasks });
+        const finalTasks = replaceTaskById(currentTasks, updatedTask);
+        await updateDoc(projectRef, { tasks: finalTasks });
 
-        return { success: true, tasks: updatedTasks };
+        return { success: true, tasks: finalTasks };
     } catch (error) {
         console.error("Error in updateTask:", error);
         return { success: false, error: error instanceof Error ? error.message : 'Failed to update task.' };
@@ -504,6 +502,7 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
 
 
     
+
 
 
 
