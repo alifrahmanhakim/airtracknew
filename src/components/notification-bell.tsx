@@ -32,14 +32,14 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     const q = query(
       collection(db, 'notifications'),
       where('userId', '==', userId),
-      orderBy('createdAt', 'desc'),
+      orderBy('createdAt', 'asc'),
       limit(20)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifs: Notification[] = [];
       let count = 0;
-      snapshot.forEach((doc) => {
+      snapshot.docs.reverse().forEach((doc) => {
         const data = doc.data() as Omit<Notification, 'id'>;
         notifs.push({ id: doc.id, ...data });
         if (!data.isRead) {
@@ -48,6 +48,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       });
       setNotifications(notifs);
       setUnreadCount(count);
+    }, (err) => {
+        console.error("Firestore snapshot error:", err);
     });
 
     return () => unsubscribe();
@@ -116,7 +118,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                         <p className="text-sm font-semibold">{notif.title}</p>
                         <p className="text-sm text-muted-foreground">{notif.description}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                            {formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true })}
+                            {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true }) : ''}
                         </p>
                     </div>
                   </div>
