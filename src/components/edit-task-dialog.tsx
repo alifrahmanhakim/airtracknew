@@ -255,10 +255,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                     <FormLabel>Assignees</FormLabel>
                      <MultiSelect
                       options={userOptions}
-                      onValueChange={(value) => {
-                          field.onChange(value);
-                          form.setValue('assigneeIds', value, { shouldValidate: true, shouldDirty: true });
-                      }}
+                      onValueChange={field.onChange}
                       defaultValue={field.value}
                       placeholder="Select team members..."
                     />

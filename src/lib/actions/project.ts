@@ -409,6 +409,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
+        // Ensure assignee arrays are always arrays for comparison
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTask.assigneeIds || []);
         
