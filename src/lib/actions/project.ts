@@ -303,29 +303,6 @@ export async function updateSubProject(projectId: string, subProject: SubProject
     }
 }
 
-// Recursive function to find and update a task in a nested structure
-function findAndUpdateTask(tasks: Task[], updatedTask: Task): { updatedTasks: Task[], oldTask?: Task } {
-  let oldTask: Task | undefined;
-  
-  const runUpdate = (currentTasks: Task[]): Task[] => {
-    return currentTasks.map(task => {
-        if (task.id === updatedTask.id) {
-            oldTask = task; // Found the original task
-            // Retain existing subTasks if the update doesn't include them
-            return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
-        }
-        if (task.subTasks && task.subTasks.length > 0) {
-            return { ...task, subTasks: runUpdate(task.subTasks) };
-        }
-        return task;
-    });
-  }
-
-  const updatedTasks = runUpdate(tasks);
-  return { updatedTasks, oldTask };
-}
-
-
 // Recursive function to find and delete a task
 function findAndDeleteTask(tasks: Task[], taskId: string): Task[] {
   return tasks.reduce((acc, task) => {
@@ -394,6 +371,38 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
     }
 }
 
+// --- REFACTORED/FIXED `updateTask` function ---
+
+// Recursive helper to find a task by ID in a nested structure
+const findTaskById = (tasks: Task[], taskId: string): Task | null => {
+    for (const task of tasks) {
+        if (task.id === taskId) {
+            return task;
+        }
+        if (task.subTasks) {
+            const found = findTaskById(task.subTasks, taskId);
+            if (found) {
+                return found;
+            }
+        }
+    }
+    return null;
+};
+
+// Recursive helper to replace a task in a nested structure
+const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
+    return tasks.map(task => {
+        if (task.id === updatedTask.id) {
+            return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
+        }
+        if (task.subTasks) {
+            return { ...task, subTasks: replaceTaskById(task.subTasks, updatedTask) };
+        }
+        return task;
+    });
+};
+
+
 export async function updateTask(projectId: string, updatedTaskData: Task, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
@@ -405,14 +414,22 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         }
         
         const projectData = projectSnap.data() as Project;
-        const { updatedTasks, oldTask } = findAndUpdateTask(projectData.tasks || [], updatedTaskData);
+        const currentTasks = projectData.tasks || [];
+
+        // 1. Find the original task from the current data in DB
+        const oldTask = findTaskById(currentTasks, updatedTaskData.id);
 
         if (!oldTask) {
-             return { success: false, error: 'Original task not found for update.' };
+             return { success: false, error: 'Original task not found for update. This could happen if the task was deleted by another user.' };
         }
 
+        // 2. Create the new task structure
+        const updatedTasks = replaceTaskById(currentTasks, updatedTaskData);
+        
+        // 3. Update the document in Firestore
         await updateDoc(projectRef, { tasks: updatedTasks });
 
+        // 4. Handle notifications by comparing old and new assignee sets
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
@@ -440,8 +457,8 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
         
-        // Notify existing assignees of the update
-        const existingAssignees = updatedTaskData.assigneeIds.filter(id => oldAssigneeIds.has(id) && !addedAssignees.includes(id));
+        // Notify existing assignees of the update (if there were other changes)
+        const existingAssignees = updatedTaskData.assigneeIds.filter(id => oldAssigneeIds.has(id));
         for (const userId of existingAssignees) {
             await createNotification({
                 userId: userId,
@@ -451,9 +468,9 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
 
-
         return { success: true, tasks: updatedTasks };
     } catch (error) {
+        console.error("Error in updateTask:", error);
         return { success: false, error: error instanceof Error ? error.message : 'Failed to update task.' };
     }
 }
