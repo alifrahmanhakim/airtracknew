@@ -86,9 +86,9 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: task.title,
-      assigneeIds: task.assigneeIds,
-      startDate: parseISO(task.startDate || task.dueDate),
-      dueDate: parseISO(task.dueDate),
+      assigneeIds: task.assigneeIds || [],
+      startDate: task.startDate ? parseISO(task.startDate) : new Date(),
+      dueDate: task.dueDate ? parseISO(task.dueDate) : new Date(),
       status: task.status,
       doneDate: task.doneDate ? parseISO(task.doneDate) : null,
       attachments: task.attachments || [],
@@ -112,16 +112,15 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
 
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
-    const updatedTask: Task = {
-      ...task,
-      ...data,
-      startDate: format(data.startDate, 'yyyy-MM-dd'),
-      dueDate: format(data.dueDate, 'yyyy-MM-dd'),
-      doneDate: data.doneDate ? format(data.doneDate, 'yyyy-MM-dd') : undefined,
-      attachments: data.attachments,
+    const updatedTaskData: Partial<Task> & { id: string } = {
+        id: task.id,
+        ...data,
+        startDate: format(data.startDate, 'yyyy-MM-dd'),
+        dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+        doneDate: data.doneDate ? format(data.doneDate, 'yyyy-MM-dd') : undefined,
     };
     
-    const result = await updateTask(projectId, updatedTask, projectType);
+    const result = await updateTask(projectId, updatedTaskData, projectType);
     setIsSubmitting(false);
 
     if (result.success && result.tasks) {

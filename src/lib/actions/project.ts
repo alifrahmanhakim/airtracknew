@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc } from 'firestore/db';
 import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem, User } from '../types';
 import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/flows/summarize-project-status';
 import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
@@ -377,7 +377,7 @@ const findTaskById = (tasks: Task[], taskId: string): Task | null => {
 const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
     return tasks.map(task => {
         if (task.id === updatedTask.id) {
-            return { ...task, ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
+            return updatedTask;
         }
         if (task.subTasks) {
             return { ...task, subTasks: replaceTaskById(task.subTasks, updatedTask) };
@@ -386,7 +386,7 @@ const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
     });
 };
 
-export async function updateTask(projectId: string, updatedTaskData: Task, projectType: Project['projectType']) {
+export async function updateTask(projectId: string, updatedTaskData: Partial<Task> & { id: string }, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
     
@@ -398,26 +398,30 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         
         const projectData = projectSnap.data() as Project;
         const currentTasks = projectData.tasks || [];
+        
         const oldTask = findTaskById(currentTasks, updatedTaskData.id);
 
         if (!oldTask) {
              return { success: false, error: 'Original task not found for update.' };
         }
+        
+        // Create the full updated task object by merging old and new data
+        const finalUpdatedTask: Task = { ...oldTask, ...updatedTaskData };
 
         // --- Notification Logic ---
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
-        const newAssigneeIds = new Set(updatedTaskData.assigneeIds || []);
+        const newAssigneeIds = new Set(finalUpdatedTask.assigneeIds || []);
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id) && id !== oldTask.id);
+        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id));
 
         for (const userId of addedAssignees) {
             await createNotification({
                 userId: userId,
                 title: 'New Task Assigned',
-                description: `You have been assigned to task "${updatedTaskData.title}" in project "${projectData.name}".`,
+                description: `You have been assigned to task "${finalUpdatedTask.title}" in project "${projectData.name}".`,
                 href: projectLink,
             });
         }
@@ -426,24 +430,22 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             await createNotification({
                 userId: userId,
                 title: 'Unassigned from Task',
-                description: `You have been unassigned from task "${updatedTaskData.title}" in project "${projectData.name}".`,
+                description: `You have been unassigned from task "${finalUpdatedTask.title}" in project "${projectData.name}".`,
                 href: projectLink,
             });
         }
         
-        // Notify existing members of an update, but only if they weren't just added or removed
+        // Notify existing members of an update
         for (const userId of keptAssignees) {
              await createNotification({
                 userId: userId,
                 title: 'Task Updated',
-                description: `The task "${updatedTaskData.title}" in project "${projectData.name}" has been updated.`,
+                description: `The task "${finalUpdatedTask.title}" in project "${projectData.name}" has been updated.`,
                 href: projectLink,
             });
         }
         
-        // --- End Notification Logic ---
-        
-        const updatedTasks = replaceTaskById(currentTasks, updatedTaskData);
+        const updatedTasks = replaceTaskById(currentTasks, finalUpdatedTask);
         await updateDoc(projectRef, { tasks: updatedTasks });
 
         return { success: true, tasks: updatedTasks };
@@ -503,5 +505,6 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
 
 
     
+
 
 
