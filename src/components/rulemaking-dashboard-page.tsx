@@ -59,7 +59,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         return projects.filter(p => 
             p.name.toLowerCase().includes(lowercasedFilter) ||
             p.casr?.toLowerCase().includes(lowercasedFilter) ||
-            p.team.some(t => t.name.toLowerCase().includes(lowercasedFilter)) ||
+            p.team.some(t => t.name && t.name.toLowerCase().includes(lowercasedFilter)) ||
             p.tags?.some(tag => tag.toLowerCase().includes(lowercasedFilter))
         );
     }, [projects, searchTerm]);
