@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc } from 'firestore/db';
+import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc } from 'firebase/firestore';
 import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem, User } from '../types';
 import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/flows/summarize-project-status';
 import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
@@ -415,7 +415,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id));
+        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id) && id !== oldTask.id); // Exclude self-notification for updater
 
         for (const userId of addedAssignees) {
             await createNotification({
@@ -435,7 +435,6 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
             });
         }
         
-        // Notify existing members of an update
         for (const userId of keptAssignees) {
              await createNotification({
                 userId: userId,
@@ -505,6 +504,8 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
 
 
     
+
+
 
 
 
