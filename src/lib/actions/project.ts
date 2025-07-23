@@ -14,7 +14,7 @@ import { createNotification } from './notifications';
 const findTaskById = (tasks: Task[], taskId: string): Task | null => {
     for (const task of tasks) {
         if (task.id === taskId) return task;
-        if (task.subTasks) {
+        if (task.subTasks && task.subTasks.length > 0) {
             const found = findTaskById(task.subTasks, taskId);
             if (found) return found;
         }
@@ -405,17 +405,18 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              return { success: false, error: 'Original task not found for update.' };
         }
         
+        // Create a complete updated task object
         const updatedTask: Task = { ...oldTask, ...updatedTaskData };
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
-        // Ensure assignee arrays are always arrays for comparison
+        // Correctly compare old and new assignees
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTask.assigneeIds || []);
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id) && id !== oldTask.id); 
+        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id));
 
         for (const userId of addedAssignees) {
             await createNotification({
@@ -501,3 +502,4 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
     return null;
   }
 }
+
