@@ -59,6 +59,7 @@ export default function MyDashboardPage() {
   const [myProjects, setMyProjects] = React.useState<Project[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [allUsers, setAllUsers] = React.useState<User[]>([]);
   const [userId, setUserId] = React.useState<string | null>(null);
   const [workspaceAnalytics, setWorkspaceAnalytics] = React.useState<WorkspaceAnalytics>({
       ccefod: 0,
@@ -91,6 +92,7 @@ export default function MyDashboardPage() {
       }
 
       try {
+        const usersPromise = getDocs(collection(db, 'users'));
         const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
         const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
         
@@ -101,6 +103,7 @@ export default function MyDashboardPage() {
         const glossaryPromise = getCountFromServer(collection(db, 'glossaryRecords'));
 
         const [
+            usersSnapshot,
             timKerjaSnapshot,
             rulemakingSnapshot,
             ccefodSnapshot,
@@ -108,6 +111,7 @@ export default function MyDashboardPage() {
             gapAnalysisSnapshot,
             glossarySnapshot,
         ] = await Promise.all([
+            usersPromise,
             timKerjaPromise,
             rulemakingPromise,
             ccefodPromise,
@@ -115,6 +119,9 @@ export default function MyDashboardPage() {
             gapAnalysisPromise,
             glossaryPromise
         ]);
+
+        const usersFromDb: User[] = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setAllUsers(usersFromDb);
         
         setWorkspaceAnalytics({
             ccefod: ccefodSnapshot.data().count,
@@ -261,7 +268,7 @@ export default function MyDashboardPage() {
                 <TabsContent value="projects">
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {myProjects.length > 0 ? (
-                            myProjects.map(project => <ProjectCard key={project.id} project={project} />)
+                            myProjects.map(project => <ProjectCard key={project.id} project={project} allUsers={allUsers} />)
                         ) : (
                             <div className="col-span-full text-center text-muted-foreground py-16 bg-muted/50 rounded-lg">
                                 <FolderKanban className="mx-auto h-12 w-12 mb-4" />
@@ -443,5 +450,3 @@ export default function MyDashboardPage() {
     </TooltipProvider>
   );
 }
-
-
