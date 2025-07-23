@@ -145,7 +145,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarHeader>
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-               <div className="flex items-center justify-center h-10 w-10 shrink-0 text-primary">
+               <div className="flex items-center justify-center h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground">
                   <Plane className="h-5 w-5" />
               </div>
               <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">AirTrack</span>
