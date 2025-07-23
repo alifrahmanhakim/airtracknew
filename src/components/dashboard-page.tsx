@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -289,7 +288,11 @@ export function DashboardPage() {
                       content={<ChartTooltipContent indicator="dot" />} 
                     />
                     <ChartLegend content={<ChartLegendContent />} />
-                    <Bar dataKey="count" radius={8} />
+                    <Bar dataKey="count" radius={8}>
+                        {projectStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
