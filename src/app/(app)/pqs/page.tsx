@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PqRecord } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -105,7 +105,9 @@ export default function PqsPage() {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const recordsFromDb: PqRecord[] = [];
       querySnapshot.forEach((doc) => {
-        recordsFromDb.push({ id: doc.id, ...doc.data() } as PqRecord);
+        const data = doc.data();
+        const createdAt = data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt;
+        recordsFromDb.push({ id: doc.id, ...data, createdAt } as PqRecord);
       });
       setAllRecords(recordsFromDb);
       setIsLoading(false);
@@ -175,7 +177,9 @@ export default function PqsPage() {
         const querySnapshot = await getDocs(q);
         const recordsFromDb: PqRecord[] = [];
         querySnapshot.forEach((doc) => {
-            recordsFromDb.push({ id: doc.id, ...doc.data() } as PqRecord);
+            const data = doc.data();
+            const createdAt = data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt;
+            recordsFromDb.push({ id: doc.id, ...data, createdAt } as PqRecord);
         });
         
         if (recordsFromDb.length > 0) {
@@ -456,3 +460,5 @@ export default function PqsPage() {
     </div>
   );
 }
+
+    

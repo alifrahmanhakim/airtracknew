@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -11,7 +12,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { PqRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 type DetailRowProps = {
   label: string;
@@ -38,6 +39,19 @@ type PqRecordDetailDialogProps = {
 export function PqRecordDetailDialog({ record, open, onOpenChange }: PqRecordDetailDialogProps) {
   if (!record) return null;
 
+  const getFormattedDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    try {
+        const date = parseISO(dateString);
+        if (isValid(date)) {
+            return format(date, 'PPP p');
+        }
+        return 'Invalid Date';
+    } catch {
+        return 'Invalid Date';
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -63,10 +77,12 @@ export function PqRecordDetailDialog({ record, open, onOpenChange }: PqRecordDet
                 <DetailRow label="CAP" value={record.cap} isLongText />
                 <DetailRow label="SSP Component" value={record.sspComponent} isLongText />
                 <DetailRow label="Status" value={<Badge>{record.status}</Badge>} />
-                <DetailRow label="Created At" value={format(parseISO(record.createdAt), 'PPP p')} />
+                <DetailRow label="Created At" value={getFormattedDate(record.createdAt)} />
             </dl>
         </ScrollArea>
       </DialogContent>
     </Dialog>
   );
 }
+
+    
