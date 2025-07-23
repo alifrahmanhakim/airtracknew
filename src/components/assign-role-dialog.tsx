@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -46,7 +47,7 @@ type AssignRoleDialogProps = {
   isAdmin: boolean;
 };
 
-const allRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
+const baseRoles: User['role'][] = ['Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
 
 export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDialogProps) {
   const [open, setOpen] = React.useState(false);
@@ -86,7 +87,7 @@ export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDial
     }
   };
 
-  const availableRoles = isAdmin ? allRoles : allRoles.filter(role => role !== 'Sub-Directorate Head');
+  const availableRoles = isAdmin ? ['Sub-Directorate Head', ...baseRoles] : baseRoles;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
