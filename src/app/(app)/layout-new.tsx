@@ -231,7 +231,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                        <span className='text-sm font-semibold'>{currentUser.name.split(' ')[0]}</span>
+                        <span className='text-sm font-semibold'>{currentUser.name ? currentUser.name.split(' ')[0] : ''}</span>
                         <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
                     </div>
                 </div>
