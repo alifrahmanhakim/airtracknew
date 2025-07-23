@@ -48,6 +48,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { StatusIndicator } from '@/components/status-indicator';
 import { updateUserOnlineStatus } from '@/lib/actions/user';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const navItems = {
     dashboards: [
@@ -81,58 +82,82 @@ function LiveClock() {
     )
 }
 
+function AppLayoutLoader() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex items-center space-x-2">
+        <Skeleton className="h-12 w-12 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[250px]" />
+          <Skeleton className="h-4 w-[200px]" />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [userId, setUserId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setUserId(localStorage.getItem('loggedInUserId'));
-  }, []);
+    // This effect runs only once on mount to check for the user ID.
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (!loggedInUserId) {
+      router.push('/login');
+    } else {
+      setUserId(loggedInUserId);
+    }
+    setIsCheckingAuth(false);
+  }, [router]);
 
   React.useEffect(() => {
+    // This effect runs when the userId is set.
     if (!userId) {
-      router.push('/login');
+      // If after the initial check, userId is still null, and we're not checking anymore,
+      // it means the user should be redirected.
+      if (!isCheckingAuth) {
+        router.push('/login');
+      }
       return;
     }
 
+    setLoading(true);
     const userRef = doc(db, 'users', userId);
     const unsubscribe = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
             setCurrentUser({ id: doc.id, ...doc.data() } as User);
         } else {
             console.log("User not found in Firestore, redirecting to login");
+            localStorage.removeItem('loggedInUserId');
             router.push('/login');
         }
         setLoading(false);
     });
 
+    // Set up a recurring task to update the user's online status
+    updateUserOnlineStatus(userId); // Update immediately
     const presenceInterval = setInterval(() => {
         updateUserOnlineStatus(userId);
     }, 60 * 1000); // Every 1 minute
-
-    updateUserOnlineStatus(userId);
 
     return () => {
         unsubscribe();
         clearInterval(presenceInterval);
     };
-  }, [userId, router]);
+  }, [userId, router, isCheckingAuth]);
 
   const handleLogout = () => {
     localStorage.removeItem('loggedInUserId');
     router.push('/login');
   };
   
-  if (loading || !currentUser) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-          <p>Loading user profile...</p>
-      </div>
-    );
+  if (isCheckingAuth || loading || !currentUser) {
+    return <AppLayoutLoader />;
   }
   
   const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
