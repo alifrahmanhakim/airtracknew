@@ -25,6 +25,13 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [isOpen, setIsOpen] = React.useState(false);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const prevUnreadCount = React.useRef(0);
+
+  React.useEffect(() => {
+      // Initialize Audio object only on the client side
+      audioRef.current = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.mp3?alt=media&token=42c418a4-0985-4424-9a84-1d15b02b5454');
+  }, []);
 
   React.useEffect(() => {
     if (!userId) return;
@@ -53,6 +60,17 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
     return () => unsubscribe();
   }, [userId]);
+
+  React.useEffect(() => {
+    // Play sound only when the count of unread messages increases
+    if (unreadCount > prevUnreadCount.current) {
+        audioRef.current?.play().catch(error => {
+            console.error("Audio play failed:", error);
+        });
+    }
+    // Update the previous count ref
+    prevUnreadCount.current = unreadCount;
+  }, [unreadCount]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     if (!userId) return;
