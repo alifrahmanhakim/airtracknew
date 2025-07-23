@@ -313,28 +313,31 @@ export function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {teamWorkloadData.map(({ user, tasks }) => (
-                            <TableRow key={user.id}>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                            <AvatarFallback>
-                                                <UserIcon className="h-4 w-4" />
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-medium text-sm">{user.name}</p>
-                                            <p className="text-xs text-muted-foreground">{user.role}</p>
+                        {teamWorkloadData.map(({ user, tasks }) => {
+                             const isOnline = user.lastOnline ? (new Date().getTime() - new Date(user.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+                            return (
+                                <TableRow key={user.id}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Avatar className="h-8 w-8" online={isOnline}>
+                                                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                                <AvatarFallback>
+                                                    <UserIcon className="h-4 w-4" />
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="font-medium text-sm">{user.name}</p>
+                                                <p className="text-xs text-muted-foreground">{user.role}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-center font-bold">{tasks}</TableCell>
-                                <TableCell>
-                                    <Progress value={maxTasks > 0 ? (tasks / maxTasks) * 100 : 0} className="h-2" />
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                    </TableCell>
+                                    <TableCell className="text-center font-bold">{tasks}</TableCell>
+                                    <TableCell>
+                                        <Progress value={maxTasks > 0 ? (tasks / maxTasks) * 100 : 0} className="h-2" />
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </CardContent>

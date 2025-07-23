@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -138,6 +137,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   
   const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
 
+  const isCurrentUserOnline = currentUser.lastOnline ? (new Date().getTime() - new Date(currentUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+
   return (
     <SidebarProvider>
       <Sidebar variant="inset" collapsible="icon">
@@ -198,7 +199,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarSeparator />
             <div className='flex items-center justify-between gap-2 px-2'>
                 <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-                    <Avatar className="h-9 w-9">
+                    <Avatar className="h-9 w-9" online={isCurrentUserOnline}>
                         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
                         <AvatarFallback>
                             <UserIcon className="h-5 w-5" />

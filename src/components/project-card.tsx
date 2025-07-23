@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -12,9 +11,9 @@ import {
   CardDescription
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Progress } from './ui/progress';
 import { AiSummaryDialog } from './ai-summary-dialog';
-import type { Project, Task } from '@/lib/types';
+import type { Project, Task, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -129,19 +128,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
                      <div className="flex items-center gap-3 text-sm">
                         <Users className="h-5 w-5 text-muted-foreground"/>
                         <div className="flex items-center -space-x-2">
-                            {team.slice(0, 3).map(member => (
-                                <Tooltip key={member.id}>
-                                    <TooltipTrigger asChild>
-                                        <Avatar className="h-7 w-7 border-2 border-background">
-                                            <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
-                                            <AvatarFallback>
-                                                <UserIcon className="h-4 w-4" />
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>{member.name}</p></TooltipContent>
-                                </Tooltip>
-                            ))}
+                            {team.slice(0, 3).map((member: User) => {
+                                const isOnline = member.lastOnline ? (new Date().getTime() - new Date(member.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+                                return (
+                                    <Tooltip key={member.id}>
+                                        <TooltipTrigger asChild>
+                                            <Avatar className="h-7 w-7 border-2 border-background" online={isOnline}>
+                                                <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
+                                                <AvatarFallback>
+                                                    <UserIcon className="h-4 w-4" />
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>{member.name}</p></TooltipContent>
+                                    </Tooltip>
+                                )}
+                            )}
                             {team.length > 3 && (
                                 <Avatar className="h-7 w-7 border-2 border-background">
                                     <AvatarFallback>+{team.length - 3}</AvatarFallback>
