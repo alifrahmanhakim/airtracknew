@@ -10,11 +10,12 @@ const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> & { online?: boolean }
 >(({ className, online, ...props }, ref) => (
-  <div className={cn("relative inline-block", className)}>
+  <div className="relative">
     <AvatarPrimitive.Root
       ref={ref}
       className={cn(
-        "relative flex h-full w-full shrink-0 overflow-hidden rounded-full"
+        "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+        className
       )}
       {...props}
     />

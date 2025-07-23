@@ -44,24 +44,15 @@ type SortDescriptor = {
 } | null;
 
 
-const UserStatus = ({ lastOnline }: { lastOnline?: string }) => {
-    const [isOnline, setIsOnline] = React.useState(false);
+const UserStatus = ({ lastOnline, isOnline }: { lastOnline?: string, isOnline: boolean }) => {
     const [lastSeenText, setLastSeenText] = React.useState('Never');
 
     React.useEffect(() => {
-        if (lastOnline) {
+        if (lastOnline && !isOnline) {
             const lastOnlineDate = new Date(lastOnline);
-            const now = new Date();
-            const diffInMinutes = (now.getTime() - lastOnlineDate.getTime()) / (1000 * 60);
-
-            if (diffInMinutes < 5) {
-                setIsOnline(true);
-            } else {
-                setIsOnline(false);
-                setLastSeenText(`Last seen ${formatDistanceToNow(lastOnlineDate, { addSuffix: true })}`);
-            }
+            setLastSeenText(`Last seen ${formatDistanceToNow(lastOnlineDate, { addSuffix: true })}`);
         }
-    }, [lastOnline]);
+    }, [lastOnline, isOnline]);
 
 
     if (isOnline) {
@@ -338,63 +329,68 @@ export default function TeamPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {paginatedUsers.map(user => (
-                            <TableRow key={user.id}>
-                                <TableCell>
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="hidden h-9 w-9 sm:flex">
-                                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                                            <AvatarFallback>
-                                                <UserIcon className="h-5 w-5" />
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1">
-                                            <p className="text-sm font-medium leading-none">{user.name}</p>
-                                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                                        </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell>{user.role}</TableCell>
-                                <TableCell>
-                                    <div className={cn("flex items-center gap-2 text-sm", user.isApproved ? "text-green-600" : "text-yellow-600")}>
-                                        {user.isApproved ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
-                                        <span>{user.isApproved ? 'Approved' : 'Pending'}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <UserStatus lastOnline={user.lastOnline} />
-                                </TableCell>
-                                {isAdmin && (
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <AssignRoleDialog user={user} onUserUpdate={handleUserUpdate} isAdmin={isAdmin} />
-                                            {user.isApproved ? (
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, false)}>
-                                                            <UserX className="h-4 w-4 text-yellow-600" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Unapprove User</p></TooltipContent>
-                                                </Tooltip>
-                                            ) : (
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, true)}>
-                                                            <UserCheck className="h-4 w-4 text-green-600" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Approve User</p></TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(user)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                        {paginatedUsers.map(user => {
+                            const lastOnlineDate = user.lastOnline ? new Date(user.lastOnline) : null;
+                            const isOnline = lastOnlineDate ? (new Date().getTime() - lastOnlineDate.getTime()) / (1000 * 60) < 5 : false;
+
+                            return (
+                                <TableRow key={user.id}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="hidden h-9 w-9 sm:flex" online={isOnline}>
+                                                <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
+                                                <AvatarFallback>
+                                                    <UserIcon className="h-5 w-5" />
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="grid gap-1">
+                                                <p className="text-sm font-medium leading-none">{user.name}</p>
+                                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                                            </div>
                                         </div>
                                     </TableCell>
-                                )}
-                            </TableRow>
-                        ))}
+                                    <TableCell>{user.role}</TableCell>
+                                    <TableCell>
+                                        <div className={cn("flex items-center gap-2 text-sm", user.isApproved ? "text-green-600" : "text-yellow-600")}>
+                                            {user.isApproved ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                                            <span>{user.isApproved ? 'Approved' : 'Pending'}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <UserStatus lastOnline={user.lastOnline} isOnline={isOnline} />
+                                    </TableCell>
+                                    {isAdmin && (
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <AssignRoleDialog user={user} onUserUpdate={handleUserUpdate} isAdmin={isAdmin} />
+                                                {user.isApproved ? (
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, false)}>
+                                                                <UserX className="h-4 w-4 text-yellow-600" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent><p>Unapprove User</p></TooltipContent>
+                                                    </Tooltip>
+                                                ) : (
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant="outline" size="icon" onClick={() => handleApprovalChange(user, true)}>
+                                                                <UserCheck className="h-4 w-4 text-green-600" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent><p>Approve User</p></TooltipContent>
+                                                    </Tooltip>
+                                                )}
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(user)}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </div>
