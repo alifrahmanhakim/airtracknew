@@ -11,7 +11,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { CcefodRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from './ui/separator';
 
 type DetailRowProps = {
@@ -43,6 +43,18 @@ type CcefodRecordDetailDialogProps = {
 
 export function CcefodRecordDetailDialog({ record, open, onOpenChange }: CcefodRecordDetailDialogProps) {
   if (!record) return null;
+
+  const getFormattedDate = (dateString: string) => {
+    try {
+        const date = parseISO(dateString);
+        if (isValid(date)) {
+            return format(date, 'PPP p');
+        }
+        return 'Invalid Date';
+    } catch {
+        return 'Invalid Date';
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,7 +91,7 @@ export function CcefodRecordDetailDialog({ record, open, onOpenChange }: CcefodR
                 <DetailRow label="Comments Including the Reason for the Difference" value={record.differenceReason} isLongText />
                 <DetailRow label="Remarks" value={record.remarks} isLongText />
                 <DetailRow label="Status" value={<Badge>{record.status}</Badge>} />
-                <DetailRow label="Created At" value={format(parseISO(record.createdAt), 'PPP p')} />
+                <DetailRow label="Created At" value={getFormattedDate(record.createdAt)} />
             </dl>
         </ScrollArea>
       </DialogContent>

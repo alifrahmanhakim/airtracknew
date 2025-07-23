@@ -120,7 +120,10 @@ export default function CcefodPage() {
       const recordsFromDb: CcefodRecord[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        recordsFromDb.push({ id: doc.id, ...data } as CcefodRecord);
+        const createdAt = data.createdAt instanceof Timestamp 
+          ? data.createdAt.toDate().toISOString()
+          : data.createdAt;
+        recordsFromDb.push({ id: doc.id, ...data, createdAt } as CcefodRecord);
       });
       setAllRecordsForAnalytics(recordsFromDb);
       // We only update totalRecords here if no filters are active
@@ -201,7 +204,10 @@ export default function CcefodPage() {
         const recordsFromDb: CcefodRecord[] = [];
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            recordsFromDb.push({ id: doc.id, ...data } as CcefodRecord);
+            const createdAt = data.createdAt instanceof Timestamp
+              ? data.createdAt.toDate().toISOString()
+              : data.createdAt;
+            recordsFromDb.push({ id: doc.id, ...data, createdAt } as CcefodRecord);
         });
         
         if (recordsFromDb.length > 0) {
