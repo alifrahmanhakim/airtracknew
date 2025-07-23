@@ -12,7 +12,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { Separator } from './ui/separator';
 
 type Status = 'connected' | 'disconnected' | 'connecting';
 
@@ -47,15 +46,11 @@ export function StatusIndicator() {
     setFirebaseStatus('connecting');
 
     // Use a non-existent doc for a lightweight ping.
-    // The important part is whether the request succeeds or fails due to permissions/network,
-    // not whether the doc exists. We're listening for snapshot changes which implies a connection.
     const unsubscribe = onSnapshot(doc(db, '_metadata', 'status'),
       () => {
-        // Successfully connected
         setFirebaseStatus('connected');
       },
       (error) => {
-        // Error implies disconnection
         console.warn('Firebase connection check failed:', error.code);
         setFirebaseStatus('disconnected');
       }
