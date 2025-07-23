@@ -363,6 +363,7 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
     }
 }
 
+// Helper function to find a task by ID in a nested structure
 const findTaskById = (tasks: Task[], taskId: string): Task | null => {
     for (const task of tasks) {
         if (task.id === taskId) return task;
@@ -374,6 +375,7 @@ const findTaskById = (tasks: Task[], taskId: string): Task | null => {
     return null;
 };
 
+// Helper function to replace a task by ID in a nested structure
 const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
     return tasks.map(task => {
         if (task.id === updatedTask.id) {
@@ -385,6 +387,7 @@ const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
         return task;
     });
 };
+
 
 export async function updateTask(projectId: string, updatedTaskData: Partial<Task> & { id: string }, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
@@ -400,14 +403,16 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
         const currentTasks = projectData.tasks || [];
         
         const oldTask = findTaskById(currentTasks, updatedTaskData.id);
-
         if (!oldTask) {
              return { success: false, error: 'Original task not found for update.' };
         }
         
+        // Create a complete updated task object
         const updatedTask: Task = { ...oldTask, ...updatedTaskData };
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
+        
+        // Ensure assignee arrays are always arrays for safe comparison
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTask.assigneeIds || []);
         
@@ -502,6 +507,7 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
 
 
     
+
 
 
 
