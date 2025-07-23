@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -348,7 +349,7 @@ export function DashboardPage() {
           <h2 className="text-2xl font-bold tracking-tight mb-4">Active Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.filter(p => p.status !== 'Completed').map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} allUsers={allUsers}/>
             ))}
           </div>
         </div>
@@ -357,7 +358,7 @@ export function DashboardPage() {
           <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">Completed Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.filter(p => p.status === 'Completed').map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} allUsers={allUsers}/>
             ))}
           </div>
         </div>

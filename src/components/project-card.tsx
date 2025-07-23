@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -23,9 +24,10 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/t
 
 type ProjectCardProps = {
   project: Project;
+  allUsers: User[];
 };
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const { name, status, endDate, tasks, notes, team, projectType, annex, casr, tags } = project;
 
   const countAllTasks = (tasks: Task[]): { total: number; completed: number } => {
@@ -128,8 +130,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
                      <div className="flex items-center gap-3 text-sm">
                         <Users className="h-5 w-5 text-muted-foreground"/>
                         <div className="flex items-center -space-x-2">
-                            {team.slice(0, 3).map((member: User) => {
-                                const isOnline = member.lastOnline ? (new Date().getTime() - new Date(member.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+                            {team.slice(0, 3).map((member) => {
+                                const fullUser = allUsers.find(u => u.id === member.id);
+                                const isOnline = fullUser?.lastOnline ? (new Date().getTime() - new Date(fullUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
                                 return (
                                     <Tooltip key={member.id}>
                                         <TooltipTrigger asChild>
