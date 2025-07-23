@@ -11,7 +11,7 @@ const messageSchema = z.object({
   text: z.string().min(1, 'Message cannot be empty.').max(1000, 'Message is too long.'),
   senderId: z.string(),
   senderName: z.string(),
-  senderAvatarUrl: z.string().url(),
+  senderAvatarUrl: z.string().url().or(z.literal('')),
 });
 
 export async function sendChatMessage(data: Omit<ChatMessage, 'id' | 'createdAt'>) {

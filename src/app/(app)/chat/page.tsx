@@ -119,8 +119,8 @@ export default function ChatPage() {
       chatRoomId,
       text: newMessage,
       senderId: currentUser.id,
-      senderName: currentUser.name,
-      senderAvatarUrl: currentUser.avatarUrl,
+      senderName: currentUser.name || "Unknown User",
+      senderAvatarUrl: currentUser.avatarUrl || "",
     });
 
     if (result.success) {
