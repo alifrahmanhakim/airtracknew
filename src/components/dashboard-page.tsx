@@ -153,10 +153,10 @@ export function DashboardPage() {
 
     return {
       projectStatusData: [
-        { name: 'On Track', count: statusCounts['On Track'] || 0, fill: 'var(--color-On Track)' },
-        { name: 'At Risk', count: statusCounts['At Risk'] || 0, fill: 'var(--color-At Risk)' },
-        { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'var(--color-Off Track)' },
-        { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'var(--color-Completed)' },
+        { name: 'On Track', count: statusCounts['On Track'] || 0, fill: 'hsl(var(--chart-1))' },
+        { name: 'At Risk', count: statusCounts['At Risk'] || 0, fill: 'hsl(var(--chart-2))' },
+        { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'hsl(var(--chart-3))' },
+        { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'hsl(var(--chart-4))' },
       ],
       teamWorkloadData: workloadArray,
       stats: projectStats,
