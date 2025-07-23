@@ -29,11 +29,6 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const prevUnreadCount = React.useRef(0);
 
   React.useEffect(() => {
-      // Initialize Audio object only on the client side
-      audioRef.current = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.mp3?alt=media&token=42c418a4-0985-4424-9a84-1d15b02b5454');
-  }, []);
-
-  React.useEffect(() => {
     if (!userId) return;
 
     const q = query(
@@ -62,13 +57,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   }, [userId]);
 
   React.useEffect(() => {
-    // Play sound only when the count of unread messages increases
-    if (unreadCount > prevUnreadCount.current) {
-        audioRef.current?.play().catch(error => {
+    if (unreadCount > prevUnreadCount.current && audioRef.current) {
+        audioRef.current.play().catch(error => {
             console.error("Audio play failed:", error);
         });
     }
-    // Update the previous count ref
     prevUnreadCount.current = unreadCount;
   }, [unreadCount]);
 
@@ -93,63 +86,67 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0">
-        <div className="flex items-center justify-between p-4 border-b">
-            <h4 className="font-medium text-sm">Notifications</h4>
-            <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>
-                <CheckCheck className="mr-2 h-4 w-4" />
-                Mark all as read
-            </Button>
-        </div>
-        <ScrollArea className="h-96">
-          {notifications.length > 0 ? (
-            notifications.map((notif) => (
-              <Link
-                key={notif.id}
-                href={notif.href}
-                onClick={() => {
-                  if (!notif.isRead) handleMarkAsRead(notif.id);
-                  setIsOpen(false);
-                }}
-              >
-                <div
-                  className={cn(
-                    "p-4 border-b hover:bg-muted/50 cursor-pointer",
-                    !notif.isRead && "bg-blue-500/10"
-                  )}
+    <>
+      {/* Audio element is now part of the JSX, but hidden */}
+      <audio ref={audioRef} src="https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.mp3?alt=media&token=42c418a4-0985-4424-9a84-1d15b02b5454" preload="auto" className="hidden" />
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0">
+          <div className="flex items-center justify-between p-4 border-b">
+              <h4 className="font-medium text-sm">Notifications</h4>
+              <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>
+                  <CheckCheck className="mr-2 h-4 w-4" />
+                  Mark all as read
+              </Button>
+          </div>
+          <ScrollArea className="h-96">
+            {notifications.length > 0 ? (
+              notifications.map((notif) => (
+                <Link
+                  key={notif.id}
+                  href={notif.href}
+                  onClick={() => {
+                    if (!notif.isRead) handleMarkAsRead(notif.id);
+                    setIsOpen(false);
+                  }}
                 >
-                  <div className="flex items-start gap-3">
-                    {!notif.isRead && <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>}
-                    <div className={cn("flex-grow", notif.isRead && "pl-5")}>
-                        <p className="text-sm font-semibold">{notif.title}</p>
-                        <p className="text-sm text-muted-foreground">{notif.description}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true }) : ''}
-                        </p>
+                  <div
+                    className={cn(
+                      "p-4 border-b hover:bg-muted/50 cursor-pointer",
+                      !notif.isRead && "bg-blue-500/10"
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      {!notif.isRead && <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>}
+                      <div className={cn("flex-grow", notif.isRead && "pl-5")}>
+                          <p className="text-sm font-semibold">{notif.title}</p>
+                          <p className="text-sm text-muted-foreground">{notif.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                              {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true }) : ''}
+                          </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              You have no notifications.
-            </div>
-          )}
-        </ScrollArea>
-      </PopoverContent>
-    </Popover>
+                </Link>
+              ))
+            ) : (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                You have no notifications.
+              </div>
+            )}
+          </ScrollArea>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }
