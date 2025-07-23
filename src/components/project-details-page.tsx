@@ -335,7 +335,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     window.print();
   };
   
-  const canDeleteProject = currentUser && (currentUser.role === 'Sub-Directorate Head' || currentUser.email === 'admin@admin2023.com' || currentUser.id === project.ownerId);
+  const canDeleteProject = currentUser && (currentUser.role === 'Sub-Directorate Head' || currentUser.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser.id === project.ownerId);
 
   return (
     <TooltipProvider>
