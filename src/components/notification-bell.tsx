@@ -25,7 +25,7 @@ type NotificationBellProps = {
 // to prevent re-creation on every render cycle.
 let notificationAudio: HTMLAudioElement | null = null;
 if (typeof window !== 'undefined') {
-    notificationAudio = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.mp3?alt=media&token=42c418a4-0985-4424-9a84-1d15b02b5454');
+    notificationAudio = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.firebasestorage.app/o/icon%2Fnew-notification-09-352705.mp3?alt=media&token=39a21338-150c-428a-893c-72bc2a6f8b80');
     notificationAudio.preload = 'auto';
 }
 
