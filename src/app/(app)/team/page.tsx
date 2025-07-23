@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { User } from "@/lib/types";
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trash2, AlertTriangle, Loader2, UserCheck, UserX, ArrowUpDown, Search, User as UserIcon } from 'lucide-react';
@@ -34,6 +34,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatDistanceToNow } from 'date-fns';
 
 const USERS_PER_PAGE = 10;
 
@@ -41,6 +42,57 @@ type SortDescriptor = {
     column: keyof User;
     direction: 'asc' | 'desc';
 } | null;
+
+
+const UserStatus = ({ lastOnline }: { lastOnline?: string }) => {
+    const [isOnline, setIsOnline] = React.useState(false);
+    const [lastSeenText, setLastSeenText] = React.useState('Never');
+
+    React.useEffect(() => {
+        if (lastOnline) {
+            const lastOnlineDate = new Date(lastOnline);
+            const now = new Date();
+            const diffInMinutes = (now.getTime() - lastOnlineDate.getTime()) / (1000 * 60);
+
+            if (diffInMinutes < 5) {
+                setIsOnline(true);
+            } else {
+                setIsOnline(false);
+                setLastSeenText(`Last seen ${formatDistanceToNow(lastOnlineDate, { addSuffix: true })}`);
+            }
+        }
+    }, [lastOnline]);
+
+
+    if (isOnline) {
+        return (
+            <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span className="text-sm">Online</span>
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex items-center gap-2 text-muted-foreground">
+             <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gray-400"></span>
+            </span>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span className="text-sm cursor-default">{lastSeenText}</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{lastOnline ? new Date(lastOnline).toLocaleString() : 'Never'}</p>
+                </TooltipContent>
+            </Tooltip>
+        </div>
+    )
+};
+
 
 export default function TeamPage() {
   const [users, setUsers] = React.useState<User[]>([]);
@@ -60,7 +112,7 @@ export default function TeamPage() {
   const userRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
 
   React.useEffect(() => {
-    async function fetchData() {
+    async function fetchInitialData() {
       setIsLoading(true);
       try {
         const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -71,9 +123,14 @@ export default function TeamPage() {
           }
         }
 
-        const querySnapshot = await getDocs(collection(db, "users"));
-        const usersFromDb: User[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        setUsers(usersFromDb);
+        const usersQuery = query(collection(db, "users"));
+        const unsubscribe = onSnapshot(usersQuery, (querySnapshot) => {
+            const usersFromDb: User[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+            setUsers(usersFromDb);
+            setIsLoading(false);
+        });
+        
+        return () => unsubscribe();
 
       } catch (error) {
         console.error("Failed to fetch users:", error);
@@ -82,10 +139,10 @@ export default function TeamPage() {
             title: 'Error fetching users',
             description: 'Could not load team members from the database.'
         });
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
-    fetchData();
+    fetchInitialData();
   }, [toast]);
   
   const filteredAndSortedUsers = React.useMemo(() => {
@@ -275,7 +332,8 @@ export default function TeamPage() {
                             <TableHead className="cursor-pointer" onClick={() => handleSort('role')}>
                                 <div className="flex items-center">Role {renderSortIcon('role')}</div>
                             </TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Approval Status</TableHead>
+                             <TableHead>Online Status</TableHead>
                             {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
@@ -302,6 +360,9 @@ export default function TeamPage() {
                                         {user.isApproved ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
                                         <span>{user.isApproved ? 'Approved' : 'Pending'}</span>
                                     </div>
+                                </TableCell>
+                                <TableCell>
+                                    <UserStatus lastOnline={user.lastOnline} />
                                 </TableCell>
                                 {isAdmin && (
                                     <TableCell className="text-right">

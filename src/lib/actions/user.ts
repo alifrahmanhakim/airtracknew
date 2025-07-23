@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { db, auth } from '../firebase';
@@ -117,4 +118,19 @@ export async function sendPasswordReset(email: string) {
             };
     }
   }
+}
+
+export async function updateUserOnlineStatus(userId: string) {
+    if (!userId) return;
+    try {
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, {
+            lastOnline: new Date().toISOString()
+        });
+        return { success: true };
+    } catch (error) {
+        // We don't want to show an error for this background task
+        console.warn('Failed to update online status:', error);
+        return { success: false };
+    }
 }

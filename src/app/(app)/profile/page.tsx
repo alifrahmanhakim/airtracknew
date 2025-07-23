@@ -30,6 +30,8 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { updateUserProfile, sendPasswordReset } from '@/lib/actions/user';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { formatDistanceToNowStrict } from 'date-fns';
 
 const profileSchema = z.object({
   name: z.string().min(3, { message: 'Name must be at least 3 characters long.' }),
@@ -42,6 +44,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
   const [isSendingEmail, setIsSendingEmail] = React.useState(false);
+  const [isOnline, setIsOnline] = React.useState(false);
   const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
@@ -79,6 +82,15 @@ export default function ProfilePage() {
       toast({ variant: 'destructive', title: 'Error', description: 'Not logged in.' });
     }
   }, [form, toast]);
+  
+  React.useEffect(() => {
+    if (currentUser?.lastOnline) {
+      const lastOnlineDate = new Date(currentUser.lastOnline);
+      const now = new Date();
+      const diffInMinutes = (now.getTime() - lastOnlineDate.getTime()) / (1000 * 60);
+      setIsOnline(diffInMinutes < 5);
+    }
+  }, [currentUser]);
 
   const onSubmit = async (data: ProfileFormValues) => {
     if (!currentUser) return;
@@ -117,7 +129,7 @@ export default function ProfilePage() {
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-72" />
+            <Skeleton className="h-5 w-72" />
           </CardHeader>
           <CardContent className="space-y-6">
             <Skeleton className="h-10 w-full" />
@@ -149,9 +161,17 @@ export default function ProfilePage() {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Profile</CardTitle>
-                        <CardDescription>Manage your personal information.</CardDescription>
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <Avatar online={isOnline} className="h-16 w-16">
+                            <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                            <AvatarFallback>
+                                <UserIcon className="h-8 w-8" />
+                            </AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <CardTitle>Profile</CardTitle>
+                            <CardDescription>Manage your personal information.</CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <FormField

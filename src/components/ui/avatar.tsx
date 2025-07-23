@@ -7,16 +7,20 @@ import { cn } from "@/lib/utils"
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
-      className
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> & { online?: boolean }
+>(({ className, online, ...props }, ref) => (
+  <div className={cn("relative inline-block", className)}>
+    <AvatarPrimitive.Root
+      ref={ref}
+      className={cn(
+        "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      )}
+      {...props}
+    />
+    {online && (
+      <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-background" />
     )}
-    {...props}
-  />
+  </div>
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName
 

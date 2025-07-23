@@ -42,12 +42,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { User } from '@/lib/types';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { StatusIndicator } from '@/components/status-indicator';
+import { updateUserOnlineStatus } from '@/lib/actions/user';
 
 const navItems = {
     dashboards: [
@@ -87,33 +88,40 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [userId, setUserId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const fetchUser = async (userId: string) => {
-        try {
-            const userRef = doc(db, 'users', userId);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-                setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
-            } else {
-                console.log("User not found in Firestore, redirecting to login");
-                router.push('/login');
-            }
-        } catch (error) {
-            console.error("Error fetching user from Firestore:", error);
-            router.push('/login');
-        } finally {
-            setLoading(false);
-        }
-    };
+    setUserId(localStorage.getItem('loggedInUserId'));
+  }, []);
 
-    const userId = localStorage.getItem('loggedInUserId');
-    if (userId) {
-        fetchUser(userId);
-    } else {
+  React.useEffect(() => {
+    if (!userId) {
       router.push('/login');
+      return;
     }
-  }, [router]);
+
+    const userRef = doc(db, 'users', userId);
+    const unsubscribe = onSnapshot(userRef, (doc) => {
+        if (doc.exists()) {
+            setCurrentUser({ id: doc.id, ...doc.data() } as User);
+        } else {
+            console.log("User not found in Firestore, redirecting to login");
+            router.push('/login');
+        }
+        setLoading(false);
+    });
+
+    const presenceInterval = setInterval(() => {
+        updateUserOnlineStatus(userId);
+    }, 60 * 1000); // Every 1 minute
+
+    updateUserOnlineStatus(userId);
+
+    return () => {
+        unsubscribe();
+        clearInterval(presenceInterval);
+    };
+  }, [userId, router]);
 
   const handleLogout = () => {
     localStorage.removeItem('loggedInUserId');

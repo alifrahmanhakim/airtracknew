@@ -7,6 +7,8 @@ export type User = {
   avatarUrl: string;
   role: 'Sub-Directorate Head' | 'Team Lead' | 'PIC' | 'PIC Assistant' | 'Functional';
   isApproved?: boolean;
+  lastOnline?: string; // ISO string
+  headerImageUrl?: string;
 };
 
 export type Document = {
