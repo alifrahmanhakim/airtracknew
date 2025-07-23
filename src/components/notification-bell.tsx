@@ -21,11 +21,19 @@ type NotificationBellProps = {
   userId: string | null;
 };
 
+// Create a single, persistent audio instance outside the component
+// to prevent re-creation on every render cycle.
+let notificationAudio: HTMLAudioElement | null = null;
+if (typeof window !== 'undefined') {
+    notificationAudio = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.mp3?alt=media&token=42c418a4-0985-4424-9a84-1d15b02b5454');
+    notificationAudio.preload = 'auto';
+}
+
+
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [isOpen, setIsOpen] = React.useState(false);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const prevUnreadCount = React.useRef(0);
 
   React.useEffect(() => {
@@ -57,9 +65,12 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   }, [userId]);
 
   React.useEffect(() => {
-    if (unreadCount > prevUnreadCount.current && audioRef.current) {
-        audioRef.current.play().catch(error => {
-            console.error("Audio play failed:", error);
+    // Play sound only when a new notification arrives
+    if (unreadCount > prevUnreadCount.current && notificationAudio) {
+        notificationAudio.play().catch(error => {
+            // This error can happen if the user hasn't interacted with the page yet.
+            // It's a browser policy to prevent auto-playing audio.
+            console.warn("Audio play failed, likely due to browser policy:", error);
         });
     }
     prevUnreadCount.current = unreadCount;
@@ -82,13 +93,14 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         batch.update(notifRef, { isRead: true });
     });
     
-    await batch.commit();
+    try {
+        await batch.commit();
+    } catch (error) {
+        console.error("Failed to mark all notifications as read:", error);
+    }
   }
 
   return (
-    <>
-      {/* Audio element is now part of the JSX, but hidden */}
-      <audio ref={audioRef} src="https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.mp3?alt=media&token=42c418a4-0985-4424-9a84-1d15b02b5454" preload="auto" className="hidden" />
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">
@@ -147,6 +159,5 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           </ScrollArea>
         </PopoverContent>
       </Popover>
-    </>
   );
 }
