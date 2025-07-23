@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import { useSearchParams } from 'next/navigation';
 import { collection, onSnapshot, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { User, ChatMessage } from '@/lib/types';
@@ -29,13 +30,15 @@ const getPrivateChatRoomId = (userId1: string, userId2: string) => {
     return [userId1, userId2].sort().join('_');
 };
 
-export default function ChatPage() {
+
+function ChatPageContent() {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSending, setIsSending] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [allUsers, setAllUsers] = React.useState<User[]>([]);
+  const searchParams = useSearchParams();
   
   const [activeChat, setActiveChat] = React.useState<ChatTarget>({
       id: 'global',
@@ -70,6 +73,23 @@ export default function ChatPage() {
     };
     fetchInitialData();
   }, []);
+
+  React.useEffect(() => {
+    if (allUsers.length > 0) {
+      const userIdFromQuery = searchParams.get('user');
+      if (userIdFromQuery) {
+        const targetUser = allUsers.find(u => u.id === userIdFromQuery);
+        if (targetUser) {
+          setActiveChat({
+            id: targetUser.id,
+            name: targetUser.name,
+            avatarUrl: targetUser.avatarUrl,
+            type: 'private',
+          });
+        }
+      }
+    }
+  }, [allUsers, searchParams]);
 
   React.useEffect(() => {
     if (!currentUser) return;
@@ -265,4 +285,12 @@ export default function ChatPage() {
       </div>
     </div>
   );
+}
+
+export default function ChatPage() {
+    return (
+        <React.Suspense fallback={<div>Loading...</div>}>
+            <ChatPageContent />
+        </React.Suspense>
+    )
 }

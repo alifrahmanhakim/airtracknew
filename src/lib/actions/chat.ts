@@ -41,7 +41,7 @@ export async function sendChatMessage(data: Omit<ChatMessage, 'id' | 'createdAt'
                     userId: recipientId,
                     title: `New Message from ${messageData.senderName}`,
                     description: messageData.text,
-                    href: '/chat',
+                    href: `/chat?user=${messageData.senderId}`,
                 });
             }
         }
