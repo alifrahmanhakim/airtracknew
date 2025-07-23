@@ -96,7 +96,7 @@ export function StatusIndicator() {
 
   return (
     <TooltipProvider>
-      <div className="flex items-center justify-between p-2 rounded-lg bg-background/50 border border-border/50 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+      <div className="flex items-center justify-between p-2 rounded-lg bg-sidebar-accent/50 border border-sidebar-border/50 text-xs text-sidebar-foreground/80 group-data-[collapsible=icon]:hidden">
         <span className='font-semibold'>Status:</span>
         <div className="flex items-center gap-3">
           <Tooltip>
