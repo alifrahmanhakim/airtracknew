@@ -142,9 +142,35 @@ export async function deleteAllTimKerjaProjects() {
 
 export async function updateProject(projectId: string, projectType: Project['projectType'], projectData: Partial<Omit<Project, 'id'>>) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
+    const projectRef = doc(db, collectionName, projectId);
+    
     try {
-        const projectRef = doc(db, collectionName, projectId);
+        // Get the current project state to compare teams
+        const currentProjectSnap = await getDoc(projectRef);
+        if (!currentProjectSnap.exists()) {
+            return { success: false, error: "Project not found." };
+        }
+        const currentProjectData = currentProjectSnap.data() as Project;
+        const currentTeamIds = new Set(currentProjectData.team.map(m => m.id));
+
+        // Update the document
         await updateDoc(projectRef, projectData);
+
+        // Send notifications to new team members
+        if (projectData.team) {
+            const newTeamMembers = projectData.team.filter(member => !currentTeamIds.has(member.id));
+            const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
+
+            for (const newMember of newTeamMembers) {
+                 await createNotification({
+                    userId: newMember.id,
+                    title: 'Added to Project',
+                    description: `You have been added to the project: "${projectData.name}".`,
+                    href: projectLink,
+                });
+            }
+        }
+        
         return { success: true };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
@@ -327,7 +353,7 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
         await updateDoc(projectRef, { tasks: updatedTasks });
 
         // Create notifications for assignees
-        const projectLink = `/projects/${projectId}?type=${projectType === 'Rulemaking' ? 'rulemaking' : 'timkerja'}`;
+        const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         for (const userId of task.assigneeIds) {
             await createNotification({
                 userId: userId,
