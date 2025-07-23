@@ -405,18 +405,18 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              return { success: false, error: 'Original task not found for update.' };
         }
         
-        // Create a complete updated task object
+        // Create a complete updated task object by merging old and new data
         const updatedTask: Task = { ...oldTask, ...updatedTaskData };
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
-        // Correctly compare old and new assignees
+        // Ensure assignee arrays are always arrays for safe comparison
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTask.assigneeIds || []);
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id));
+        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id) && id !== oldTask.assigneeIds.find(uid => uid === id));
 
         for (const userId of addedAssignees) {
             await createNotification({
@@ -502,4 +502,3 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
     return null;
   }
 }
-
