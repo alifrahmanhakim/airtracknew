@@ -393,6 +393,7 @@ const findTaskById = (tasks: Task[], taskId: string): Task | null => {
 const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
     return tasks.map(task => {
         if (task.id === updatedTask.id) {
+            // Ensure subTasks from the original task are preserved if not included in the update
             return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
         }
         if (task.subTasks) {
@@ -416,26 +417,21 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         const projectData = projectSnap.data() as Project;
         const currentTasks = projectData.tasks || [];
 
-        // 1. Find the original task from the current data in DB
         const oldTask = findTaskById(currentTasks, updatedTaskData.id);
 
         if (!oldTask) {
-             return { success: false, error: 'Original task not found for update. This could happen if the task was deleted by another user.' };
+             return { success: false, error: 'Original task not found for update.' };
         }
 
-        // 2. Create the new task structure
         const updatedTasks = replaceTaskById(currentTasks, updatedTaskData);
         
-        // 3. Update the document in Firestore
         await updateDoc(projectRef, { tasks: updatedTasks });
 
-        // 4. Handle notifications by comparing old and new assignee sets
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTaskData.assigneeIds || []);
 
-        // Notify added assignees
         const addedAssignees = updatedTaskData.assigneeIds.filter(id => !oldAssigneeIds.has(id));
         for (const userId of addedAssignees) {
             await createNotification({
@@ -446,7 +442,6 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
 
-        // Notify removed assignees
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
         for (const userId of removedAssignees) {
             await createNotification({
@@ -457,15 +452,17 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
         
-        // Notify existing assignees of the update (if there were other changes)
         const existingAssignees = updatedTaskData.assigneeIds.filter(id => oldAssigneeIds.has(id));
         for (const userId of existingAssignees) {
-            await createNotification({
-                userId: userId,
-                title: 'Task Updated',
-                description: `The task "${updatedTaskData.title}" in project "${projectData.name}" has been updated.`,
-                href: projectLink,
-            });
+             // Avoid notifying about self-updates unless necessary
+            if (JSON.stringify(oldTask) !== JSON.stringify(updatedTaskData)) {
+                 await createNotification({
+                    userId: userId,
+                    title: 'Task Updated',
+                    description: `The task "${updatedTaskData.title}" in project "${projectData.name}" has been updated.`,
+                    href: projectLink,
+                });
+            }
         }
 
         return { success: true, tasks: updatedTasks };
