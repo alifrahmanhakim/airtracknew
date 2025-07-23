@@ -156,17 +156,31 @@ export async function updateProject(projectId: string, projectType: Project['pro
 
         // Update the document
         await updateDoc(projectRef, projectData);
+        
+        const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
 
-        // Send notifications to new team members
+        // Send notifications based on team changes
         if (projectData.team) {
-            const newTeamMembers = projectData.team.filter(member => !currentTeamIds.has(member.id));
-            const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
-
-            for (const newMember of newTeamMembers) {
+            const newTeamIds = new Set(projectData.team.map(m => m.id));
+            
+            // Notify newly added members
+            const addedMembers = projectData.team.filter(member => !currentTeamIds.has(member.id));
+            for (const newMember of addedMembers) {
                  await createNotification({
                     userId: newMember.id,
                     title: 'Added to Project',
                     description: `You have been added to the project: "${projectData.name}".`,
+                    href: projectLink,
+                });
+            }
+
+            // Notify removed members
+            const removedMemberIds = [...currentTeamIds].filter(id => !newTeamIds.has(id));
+             for (const removedId of removedMemberIds) {
+                 await createNotification({
+                    userId: removedId,
+                    title: 'Removed from Project',
+                    description: `You have been removed from the project: "${projectData.name}".`,
                     href: projectLink,
                 });
             }
@@ -289,18 +303,27 @@ export async function updateSubProject(projectId: string, subProject: SubProject
 }
 
 // Recursive function to find and update a task in a nested structure
-function findAndUpdateTask(tasks: Task[], updatedTask: Task): Task[] {
-  return tasks.map(task => {
-    if (task.id === updatedTask.id) {
-      // Retain existing subTasks if the update doesn't include them
-      return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
-    }
-    if (task.subTasks && task.subTasks.length > 0) {
-      return { ...task, subTasks: findAndUpdateTask(task.subTasks, updatedTask) };
-    }
-    return task;
-  });
+function findAndUpdateTask(tasks: Task[], updatedTask: Task, originalTasks: Task[]): { updatedTasks: Task[], oldTask?: Task } {
+  let oldTask: Task | undefined;
+  
+  const runUpdate = (tasks: Task[]): Task[] => {
+    return tasks.map(task => {
+        if (task.id === updatedTask.id) {
+            oldTask = task; // Found the original task
+            // Retain existing subTasks if the update doesn't include them
+            return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
+        }
+        if (task.subTasks && task.subTasks.length > 0) {
+            return { ...task, subTasks: runUpdate(task.subTasks) };
+        }
+        return task;
+    });
+  }
+
+  const updatedTasks = runUpdate(tasks);
+  return { updatedTasks, oldTask };
 }
+
 
 // Recursive function to find and delete a task
 function findAndDeleteTask(tasks: Task[], taskId: string): Task[] {
@@ -370,34 +393,70 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
     }
 }
 
-export async function updateTask(projectId: string, task: Task, projectType: Project['projectType']) {
+export async function updateTask(projectId: string, updatedTaskData: Task, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
+    
     try {
         const projectSnap = await getDoc(projectRef);
-        if (projectSnap.exists()) {
-            const projectData = projectSnap.data() as Project;
-            const updatedTasks = findAndUpdateTask(projectData.tasks, task);
-            await updateDoc(projectRef, { tasks: updatedTasks });
-
-            // Send notification to assignees about the update
-            const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
-            for (const userId of task.assigneeIds) {
-                await createNotification({
-                    userId: userId,
-                    title: 'Task Updated',
-                    description: `The task "${task.title}" in project "${projectData.name}" has been updated.`,
-                    href: projectLink,
-                });
-            }
-
-            return { success: true, tasks: updatedTasks };
+        if (!projectSnap.exists()) {
+            return { success: false, error: 'Project not found' };
         }
-        return { success: false, error: 'Project not found' };
+        
+        const projectData = projectSnap.data() as Project;
+        const { updatedTasks, oldTask } = findAndUpdateTask(projectData.tasks || [], updatedTaskData, projectData.tasks || []);
+
+        if (!oldTask) {
+             return { success: false, error: 'Original task not found for update.' };
+        }
+
+        await updateDoc(projectRef, { tasks: updatedTasks });
+
+        const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
+        
+        const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
+        const newAssigneeIds = new Set(updatedTaskData.assigneeIds || []);
+
+        // Notify added assignees
+        const addedAssignees = updatedTaskData.assigneeIds.filter(id => !oldAssigneeIds.has(id));
+        for (const userId of addedAssignees) {
+            await createNotification({
+                userId: userId,
+                title: 'New Task Assigned',
+                description: `You have been assigned to task "${updatedTaskData.title}" in project "${projectData.name}".`,
+                href: projectLink,
+            });
+        }
+
+        // Notify removed assignees
+        const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
+        for (const userId of removedAssignees) {
+            await createNotification({
+                userId: userId,
+                title: 'Unassigned from Task',
+                description: `You have been unassigned from task "${updatedTaskData.title}" in project "${projectData.name}".`,
+                href: projectLink,
+            });
+        }
+        
+        // Notify existing assignees of the update
+        const existingAssignees = updatedTaskData.assigneeIds.filter(id => oldAssigneeIds.has(id));
+        for (const userId of existingAssignees) {
+            await createNotification({
+                userId: userId,
+                title: 'Task Updated',
+                description: `The task "${updatedTaskData.title}" in project "${projectData.name}" has been updated.`,
+                href: projectLink,
+            });
+        }
+
+
+        return { success: true, tasks: updatedTasks };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Failed to update task.' };
     }
 }
+
 
 export async function deleteTask(projectId: string, taskId: string, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
@@ -445,3 +504,6 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
     return null;
   }
 }
+
+
+    
