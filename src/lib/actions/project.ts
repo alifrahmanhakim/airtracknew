@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -378,6 +379,18 @@ export async function updateTask(projectId: string, task: Task, projectType: Pro
             const projectData = projectSnap.data() as Project;
             const updatedTasks = findAndUpdateTask(projectData.tasks, task);
             await updateDoc(projectRef, { tasks: updatedTasks });
+
+            // Send notification to assignees about the update
+            const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
+            for (const userId of task.assigneeIds) {
+                await createNotification({
+                    userId: userId,
+                    title: 'Task Updated',
+                    description: `The task "${task.title}" in project "${projectData.name}" has been updated.`,
+                    href: projectLink,
+                });
+            }
+
             return { success: true, tasks: updatedTasks };
         }
         return { success: false, error: 'Project not found' };
