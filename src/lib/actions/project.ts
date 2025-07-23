@@ -430,9 +430,11 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
+        // Ensure newAssigneeIds is always an array, even if undefined in updatedTaskData
         const newAssigneeIds = new Set(updatedTaskData.assigneeIds || []);
 
-        const addedAssignees = updatedTaskData.assigneeIds.filter(id => !oldAssigneeIds.has(id));
+        // Notify newly added members
+        const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         for (const userId of addedAssignees) {
             await createNotification({
                 userId: userId,
@@ -442,6 +444,7 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
 
+        // Notify removed members
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
         for (const userId of removedAssignees) {
             await createNotification({
@@ -452,7 +455,8 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
             });
         }
         
-        const existingAssignees = updatedTaskData.assigneeIds.filter(id => oldAssigneeIds.has(id));
+        // Notify existing members of an update
+        const existingAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id));
         for (const userId of existingAssignees) {
              // Avoid notifying about self-updates unless necessary
             if (JSON.stringify(oldTask) !== JSON.stringify(updatedTaskData)) {
