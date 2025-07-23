@@ -1,5 +1,14 @@
 
 
+export type Notification = {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  href: string;
+  isRead: boolean;
+  createdAt: any; // Firestore Timestamp
+};
 
 export type User = {
   id: string;

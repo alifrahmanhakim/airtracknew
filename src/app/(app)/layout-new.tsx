@@ -49,6 +49,7 @@ import { cn } from '@/lib/utils';
 import { StatusIndicator } from '@/components/status-indicator';
 import { updateUserOnlineStatus } from '@/lib/actions/user';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NotificationBell } from '@/components/notification-bell';
 
 const navItems = {
     dashboards: [
@@ -169,14 +170,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
+           <div className="flex items-center gap-2">
               <div className="flex items-center justify-center h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground">
                 <Plane className="h-5 w-5" />
               </div>
               <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">AirTrack</span>
             </div>
-          </div>
         </SidebarHeader>
         <SidebarContent>
             <SidebarGroup>
@@ -270,6 +269,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
             </div>
             <div className="flex items-center gap-2">
+                <NotificationBell userId={userId} />
                 <LiveClock />
             </div>
         </header>

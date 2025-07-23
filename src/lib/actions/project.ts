@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { z } from 'zod';
@@ -8,6 +7,7 @@ import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, de
 import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem, User } from '../types';
 import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/flows/summarize-project-status';
 import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
+import { createNotification } from './notifications';
 
 
 export async function addRulemakingProject(projectData: unknown) {
@@ -59,6 +59,17 @@ export async function addRulemakingProject(projectData: unknown) {
             checklist: [],
             createdAt: serverTimestamp(),
         });
+        
+        // Create notifications for team members
+        for (const user of teamUsers) {
+            await createNotification({
+                userId: user.id,
+                title: 'Added to New Project',
+                description: `You have been added to the rulemaking project: "${parsed.data.name}".`,
+                href: `/projects/${docRef.id}?type=rulemaking`,
+            });
+        }
+        
         return { success: true, id: docRef.id };
     } catch (error) {
         return {
@@ -95,6 +106,17 @@ export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'proj
             checklist: [],
             createdAt: serverTimestamp(),
         });
+        
+        // Create notifications for team members
+        for (const user of teamUsers) {
+            await createNotification({
+                userId: user.id,
+                title: 'Added to New Project',
+                description: `You have been added to the Tim Kerja project: "${projectData.name}".`,
+                href: `/projects/${docRef.id}?type=timkerja`,
+            });
+        }
+
         return { success: true, id: docRef.id };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
@@ -303,6 +325,18 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
         }
 
         await updateDoc(projectRef, { tasks: updatedTasks });
+
+        // Create notifications for assignees
+        const projectLink = `/projects/${projectId}?type=${projectType === 'Rulemaking' ? 'rulemaking' : 'timkerja'}`;
+        for (const userId of task.assigneeIds) {
+            await createNotification({
+                userId: userId,
+                title: 'New Task Assigned',
+                description: `You have been assigned a new task "${task.title}" in project "${projectData.name}".`,
+                href: projectLink,
+            });
+        }
+
         return { success: true, tasks: updatedTasks };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Failed to add task.' };
