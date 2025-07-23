@@ -67,7 +67,7 @@ export function StatusIndicator() {
         return {
             Icon: Cloud,
             color: 'text-yellow-500 animate-pulse',
-            text: 'Connecting...',
+            text: 'Connecting to stdatabase...',
         };
     }
 
@@ -75,7 +75,7 @@ export function StatusIndicator() {
         let Icon, text;
         switch(type) {
             case 'internet': Icon = Wifi; text = 'Internet Connected'; break;
-            case 'firebase': Icon = Cloud; text = 'Firebase Connected'; break;
+            case 'firebase': Icon = Cloud; text = 'stdatabase Connected'; break;
             case 'server': Icon = Server; text = 'Server Responsive'; break;
         }
         return { Icon, color: 'text-green-500', text };
@@ -84,7 +84,7 @@ export function StatusIndicator() {
     let Icon, text;
     switch(type) {
         case 'internet': Icon = WifiOff; text = 'Internet Disconnected'; break;
-        case 'firebase': Icon = CloudOff; text = 'Firebase Disconnected'; break;
+        case 'firebase': Icon = CloudOff; text = 'stdatabase Disconnected'; break;
         case 'server': Icon = Server; text = 'Server Unresponsive'; break;
     }
     return { Icon, color: 'text-red-500', text };
