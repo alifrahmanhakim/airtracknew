@@ -371,8 +371,6 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
     }
 }
 
-// --- REFACTORED/FIXED `updateTask` function ---
-
 // Recursive helper to find a task by ID in a nested structure
 const findTaskById = (tasks: Task[], taskId: string): Task | null => {
     for (const task of tasks) {
@@ -393,7 +391,6 @@ const findTaskById = (tasks: Task[], taskId: string): Task | null => {
 const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
     return tasks.map(task => {
         if (task.id === updatedTask.id) {
-            // Ensure subTasks from the original task are preserved if not included in the update
             return { ...updatedTask, subTasks: updatedTask.subTasks || task.subTasks || [] };
         }
         if (task.subTasks) {
@@ -430,7 +427,6 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
-        // Ensure newAssigneeIds is always an array, even if undefined in updatedTaskData
         const newAssigneeIds = new Set(updatedTaskData.assigneeIds || []);
 
         // Notify newly added members
@@ -458,15 +454,12 @@ export async function updateTask(projectId: string, updatedTaskData: Task, proje
         // Notify existing members of an update
         const existingAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id));
         for (const userId of existingAssignees) {
-             // Avoid notifying about self-updates unless necessary
-            if (JSON.stringify(oldTask) !== JSON.stringify(updatedTaskData)) {
-                 await createNotification({
-                    userId: userId,
-                    title: 'Task Updated',
-                    description: `The task "${updatedTaskData.title}" in project "${projectData.name}" has been updated.`,
-                    href: projectLink,
-                });
-            }
+            await createNotification({
+                userId: userId,
+                title: 'Task Updated',
+                description: `The task "${updatedTaskData.title}" in project "${projectData.name}" has been updated.`,
+                href: projectLink,
+            });
         }
 
         return { success: true, tasks: updatedTasks };
@@ -526,3 +519,4 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
 
 
     
+
