@@ -10,6 +10,30 @@ import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/f
 import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
 import { createNotification } from './notifications';
 
+// Helper function to find a task by ID in a nested structure
+const findTaskById = (tasks: Task[], taskId: string): Task | null => {
+    for (const task of tasks) {
+        if (task.id === taskId) return task;
+        if (task.subTasks) {
+            const found = findTaskById(task.subTasks, taskId);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
+// Helper function to replace a task by ID in a nested structure
+const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
+    return tasks.map(task => {
+        if (task.id === updatedTask.id) {
+            return updatedTask;
+        }
+        if (task.subTasks && task.subTasks.length > 0) {
+            return { ...task, subTasks: replaceTaskById(task.subTasks, updatedTask) };
+        }
+        return task;
+    });
+};
 
 export async function addRulemakingProject(projectData: unknown) {
     const projectSchema = z.object({
@@ -363,32 +387,6 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
     }
 }
 
-// Helper function to find a task by ID in a nested structure
-const findTaskById = (tasks: Task[], taskId: string): Task | null => {
-    for (const task of tasks) {
-        if (task.id === taskId) return task;
-        if (task.subTasks) {
-            const found = findTaskById(task.subTasks, taskId);
-            if (found) return found;
-        }
-    }
-    return null;
-};
-
-// Helper function to replace a task by ID in a nested structure
-const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
-    return tasks.map(task => {
-        if (task.id === updatedTask.id) {
-            return updatedTask;
-        }
-        if (task.subTasks) {
-            return { ...task, subTasks: replaceTaskById(task.subTasks, updatedTask) };
-        }
-        return task;
-    });
-};
-
-
 export async function updateTask(projectId: string, updatedTaskData: Partial<Task> & { id: string }, projectType: Project['projectType']) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
@@ -407,7 +405,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              return { success: false, error: 'Original task not found for update.' };
         }
         
-        // Create a complete updated task object
+        // Create a complete updated task object by merging old and new data
         const updatedTask: Task = { ...oldTask, ...updatedTaskData };
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
@@ -418,7 +416,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id)); 
+        const keptAssignees = [...oldAssigneeIds].filter(id => newAssigneeIds.has(id) && id !== oldTask.id); 
 
         for (const userId of addedAssignees) {
             await createNotification({
@@ -504,13 +502,3 @@ export async function generateAiChecklist(input: GenerateChecklistInput) {
     return null;
   }
 }
-
-
-    
-
-
-
-
-
-
-
