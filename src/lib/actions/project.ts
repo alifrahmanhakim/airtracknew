@@ -415,7 +415,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id)); 
+        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id) && id !== oldTask.id); 
 
         for (const userId of addedAssignees) {
             await createNotification({
