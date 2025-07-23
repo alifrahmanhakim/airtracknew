@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -6,6 +7,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import type { ChatMessage } from '../types';
 
 const messageSchema = z.object({
+  chatRoomId: z.string().min(1),
   text: z.string().min(1, 'Message cannot be empty.').max(1000, 'Message is too long.'),
   senderId: z.string(),
   senderName: z.string(),
@@ -18,10 +20,13 @@ export async function sendChatMessage(data: Omit<ChatMessage, 'id' | 'createdAt'
     if (!parsed.success) {
         return { success: false, error: parsed.error.flatten().fieldErrors.text?.[0] || 'Invalid message data.' };
     }
+    
+    const { chatRoomId, ...messageData } = parsed.data;
 
     try {
-        await addDoc(collection(db, 'chatMessages'), {
-            ...parsed.data,
+        const collectionPath = `chats/${chatRoomId}/messages`;
+        await addDoc(collection(db, collectionPath), {
+            ...messageData,
             createdAt: serverTimestamp(),
         });
         return { success: true };

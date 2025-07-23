@@ -1,5 +1,6 @@
 
 
+
 export type User = {
   id: string;
   name: string;
@@ -160,4 +161,5 @@ export type ChatMessage = {
   senderName: string;
   senderAvatarUrl: string;
   createdAt: any; // Firestore Timestamp
+  chatRoomId?: string; // Add this
 };
