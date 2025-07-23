@@ -47,6 +47,7 @@ import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { StatusIndicator } from '@/components/status-indicator';
 
 const navItems = {
     dashboards: [
@@ -220,6 +221,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
+            <div className='px-2'>
+                <StatusIndicator />
+            </div>
             <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
                 stdatabase © 2025
             </div>
