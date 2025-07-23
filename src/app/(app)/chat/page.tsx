@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Send, Loader2, User as UserIcon, MessageSquare, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { sendChatMessage } from '@/lib/actions/chat';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
