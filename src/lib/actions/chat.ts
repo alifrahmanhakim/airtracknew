@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, writeBatch } from 'firebase/firestore';
 import type { ChatMessage } from '../types';
 import { createNotification } from './notifications';
 
@@ -48,6 +48,35 @@ export async function sendChatMessage(data: Omit<ChatMessage, 'id' | 'createdAt'
         
         return { success: true };
     } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+    }
+}
+
+
+export async function clearChatHistory(chatRoomId: string) {
+    if (!chatRoomId || chatRoomId === 'global') {
+        return { success: false, error: 'Cannot clear global chat or invalid chat room.' };
+    }
+
+    try {
+        const collectionPath = `chats/${chatRoomId}/messages`;
+        const messagesQuery = collection(db, collectionPath);
+        const messagesSnapshot = await getDocs(messagesQuery);
+
+        if (messagesSnapshot.empty) {
+            return { success: true }; // Nothing to delete
+        }
+
+        const batch = writeBatch(db);
+        messagesSnapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+        
+        return { success: true };
+    } catch (error) {
+        console.error("Error clearing chat history:", error);
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }

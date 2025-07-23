@@ -11,9 +11,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Loader2, User as UserIcon, MessageSquare, Users } from 'lucide-react';
+import { Send, Loader2, User as UserIcon, MessageSquare, Users, Trash2, AlertTriangle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { sendChatMessage } from '@/lib/actions/chat';
+import { sendChatMessage, clearChatHistory } from '@/lib/actions/chat';
 import { doc, getDoc, getDocs } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -46,6 +56,9 @@ function ChatPageContent() {
       avatarUrl: '', // No avatar for global chat
       type: 'global'
   });
+  
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = React.useState(false);
+  const [isClearing, setIsClearing] = React.useState(false);
 
   const { toast } = useToast();
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -155,6 +168,30 @@ function ChatPageContent() {
     setIsSending(false);
   };
   
+  const handleClearChat = async () => {
+    if (activeChat.type !== 'private' || !currentUser) return;
+
+    setIsClearing(true);
+    const chatRoomId = getPrivateChatRoomId(currentUser.id, activeChat.id);
+    const result = await clearChatHistory(chatRoomId);
+    
+    if(result.success) {
+        toast({
+            title: 'Chat Cleared',
+            description: `Your chat history with ${activeChat.name} has been deleted.`,
+        });
+    } else {
+         toast({
+            variant: 'destructive',
+            title: 'Error Clearing Chat',
+            description: result.error,
+        });
+    }
+
+    setIsClearing(false);
+    setIsClearConfirmOpen(false);
+  }
+
   const getFormattedTimestamp = (timestamp: any) => {
     if (!timestamp) return '';
     if (timestamp instanceof Timestamp) {
@@ -164,6 +201,7 @@ function ChatPageContent() {
   }
 
   return (
+    <>
     <div className="p-4 md:p-8 h-[calc(100vh-6rem)]">
       <div className="h-full flex gap-6">
         {/* Sidebar */}
@@ -207,22 +245,30 @@ function ChatPageContent() {
         {/* Main Chat Window */}
         <Card className="flex-1 flex flex-col">
           <CardHeader>
-            <div className="flex items-center gap-3">
-                 <Avatar className="h-10 w-10">
-                    {activeChat.type === 'private' && <AvatarImage src={activeChat.avatarUrl} />}
-                    <AvatarFallback>
-                        {activeChat.type === 'global' ? <MessageSquare /> : <UserIcon />}
-                    </AvatarFallback>
-                 </Avatar>
-                 <div>
-                    <CardTitle>{activeChat.name}</CardTitle>
-                    <CardDescription>
-                        {activeChat.type === 'global' 
-                            ? "Real-time communication for all team members." 
-                            : `Private conversation with ${activeChat.name}`
-                        }
-                    </CardDescription>
-                 </div>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                        {activeChat.type === 'private' && <AvatarImage src={activeChat.avatarUrl} />}
+                        <AvatarFallback>
+                            {activeChat.type === 'global' ? <MessageSquare /> : <UserIcon />}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle>{activeChat.name}</CardTitle>
+                        <CardDescription>
+                            {activeChat.type === 'global' 
+                                ? "Real-time communication for all team members." 
+                                : `Private conversation with ${activeChat.name}`
+                            }
+                        </CardDescription>
+                    </div>
+                </div>
+                {activeChat.type === 'private' && (
+                    <Button variant="ghost" size="icon" onClick={() => setIsClearConfirmOpen(true)}>
+                        <Trash2 className="h-5 w-5 text-muted-foreground" />
+                        <span className="sr-only">Clear Chat</span>
+                    </Button>
+                )}
             </div>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0">
@@ -284,6 +330,28 @@ function ChatPageContent() {
         </Card>
       </div>
     </div>
+    
+    <AlertDialog open={isClearConfirmOpen} onOpenChange={setIsClearConfirmOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader className="text-center items-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your entire chat history with <span className="font-semibold">{activeChat.name}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel disabled={isClearing}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearChat} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isClearing}>
+                    {isClearing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Yes, clear chat
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 
