@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -21,6 +20,7 @@ import {
   Settings,
   BookText,
   User as UserIcon,
+  MessageSquare,
 } from 'lucide-react';
 
 import {
@@ -57,6 +57,7 @@ const navItems = {
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark },
     ],
     workspace: [
+      { href: '/chat', label: 'Chat', icon: MessageSquare },
       { href: '/documents', label: 'Documents', icon: FileText },
       { href: '/team', label: 'Team', icon: Users, requiredRole: 'Sub-Directorate Head' },
       { href: '/reports', label: 'Reports', icon: LineChart },

@@ -152,3 +152,12 @@ export type GlossaryRecord = {
   referensi?: string;
   status: 'Draft' | 'Final';
 }
+
+export type ChatMessage = {
+  id: string;
+  text: string;
+  senderId: string;
+  senderName: string;
+  senderAvatarUrl: string;
+  createdAt: any; // Firestore Timestamp
+};
