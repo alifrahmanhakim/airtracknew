@@ -213,17 +213,18 @@ export default function MyDashboardPage() {
   const openTasksCount = assignedTasks.filter(t => t.status !== 'Done').length;
   
   const atRiskProjectsCount = React.useMemo(() => {
-    return myProjects.filter(p => {
-      const hasCriticalIssue = (p.tasks || []).some(task => !!task.criticalIssue);
-      return p.status === 'At Risk' || hasCriticalIssue;
-    }).length;
+    return myProjects.filter(p => p.status === 'At Risk').length;
   }, [myProjects]);
 
   const offTrackProjectsCount = React.useMemo(() => {
-      return myProjects.filter(p => {
-          const isPastDue = isAfter(new Date(), parseISO(p.endDate)) && p.status !== 'Completed';
-          return p.status === 'Off Track' || isPastDue;
-      }).length;
+    return myProjects.filter(p => {
+        const isPastDue = isAfter(new Date(), parseISO(p.endDate)) && p.status !== 'Completed';
+        return p.status === 'Off Track' || isPastDue;
+    }).length;
+  }, [myProjects]);
+
+  const criticalIssuesCount = React.useMemo(() => {
+    return myProjects.filter(p => (p.tasks || []).some(task => !!task.criticalIssue)).length;
   }, [myProjects]);
   
   const upcomingTasks = assignedTasks
@@ -360,20 +361,28 @@ export default function MyDashboardPage() {
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold">{openTasksCount}</div></CardContent>
                 </Card>
-                 <Card className="col-span-2">
+                 <Card>
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-yellow-500" /> Projects at Risk</CardTitle>
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold text-yellow-500">{atRiskProjectsCount}</div></CardContent>
                 </Card>
-                 <Card className="col-span-2">
+                 <Card>
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-red-500" /> Projects Off Track</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-red-500">{offTrackProjectsCount}</div>
-                      <p className="text-xs text-muted-foreground">Proyek yang terlambat atau bermasalah kritis.</p>
-                      </CardContent>
+                    </CardContent>
+                </Card>
+                <Card className="col-span-2">
+                    <CardHeader className="pb-2 h-16">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-orange-500" /> Critical Issues</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-orange-500">{criticalIssuesCount}</div>
+                      <p className="text-xs text-muted-foreground">Proyek dengan masalah kritis yang perlu perhatian segera.</p>
+                    </CardContent>
                 </Card>
             </div>
              <Card className="border-primary">
