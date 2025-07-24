@@ -212,12 +212,18 @@ export default function MyDashboardPage() {
 
   const openTasksCount = assignedTasks.filter(t => t.status !== 'Done').length;
   
-  const atRiskProjectsCount = useMemo(() => {
+  const atRiskProjectsCount = React.useMemo(() => {
     return myProjects.filter(p => {
       const hasCriticalIssue = (p.tasks || []).some(task => !!task.criticalIssue);
-      const isPastDue = isAfter(new Date(), parseISO(p.endDate)) && p.status !== 'Completed';
-      return (p.status === 'At Risk' || hasCriticalIssue) || (p.status === 'Off Track' || isPastDue);
+      return p.status === 'At Risk' || hasCriticalIssue;
     }).length;
+  }, [myProjects]);
+
+  const offTrackProjectsCount = React.useMemo(() => {
+      return myProjects.filter(p => {
+          const isPastDue = isAfter(new Date(), parseISO(p.endDate)) && p.status !== 'Completed';
+          return p.status === 'Off Track' || isPastDue;
+      }).length;
   }, [myProjects]);
   
   const upcomingTasks = assignedTasks
@@ -359,6 +365,15 @@ export default function MyDashboardPage() {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-yellow-500" /> Projects at Risk</CardTitle>
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold text-yellow-500">{atRiskProjectsCount}</div></CardContent>
+                </Card>
+                 <Card className="col-span-2">
+                    <CardHeader className="pb-2 h-16">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-red-500" /> Projects Off Track</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-red-500">{offTrackProjectsCount}</div>
+                      <p className="text-xs text-muted-foreground">Proyek yang terlambat atau bermasalah kritis.</p>
+                      </CardContent>
                 </Card>
             </div>
              <Card className="border-primary">
