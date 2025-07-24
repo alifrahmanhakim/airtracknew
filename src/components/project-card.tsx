@@ -16,7 +16,7 @@ import { Progress } from './ui/progress';
 import { AiSummaryDialog } from './ai-summary-dialog';
 import type { Project, Task, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isAfter } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle, User as UserIcon } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
@@ -59,7 +59,15 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const { total: totalTasks, completed: completedTasks, hasCritical } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
-  const effectiveStatus = hasCritical ? 'Off Track' : status;
+  const isPastDue = isAfter(new Date(), parseISO(endDate)) && status !== 'Completed';
+
+  const getEffectiveStatus = (): Project['status'] => {
+    if (isPastDue) return 'Off Track';
+    if (hasCritical) return 'At Risk';
+    return status;
+  }
+  
+  const effectiveStatus = getEffectiveStatus();
 
   const statusConfig = {
     'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
