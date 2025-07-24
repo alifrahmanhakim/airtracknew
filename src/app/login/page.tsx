@@ -21,6 +21,7 @@ import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { StatusIndicator } from '@/components/status-indicator';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -193,7 +194,7 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
       <div className="absolute inset-0 bg-black/50" />
-      <div className="relative flex flex-col items-center">
+      <div className="relative flex flex-col items-center gap-4">
         <Card className="w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
           <div className={cn("transition-transform duration-700 ease-in-out flex", !isLoginView && "-translate-x-full")}>
               {/* Login View */}
@@ -316,6 +317,7 @@ export default function LoginPage() {
               TnC AI can make mistakes, so double-check it
           </p>
         </Card>
+        <StatusIndicator className="w-full max-w-sm" />
       </div>
     </main>
   );

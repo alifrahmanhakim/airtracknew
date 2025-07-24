@@ -15,14 +15,14 @@ import {
 
 type Status = 'connected' | 'disconnected' | 'connecting';
 
-export function StatusIndicator() {
+export function StatusIndicator({ className }: { className?: string }) {
   const [onlineStatus, setOnlineStatus] = React.useState<boolean>(true);
   const [firebaseStatus, setFirebaseStatus] = React.useState<Status>('connecting');
+  const [isLoginPage, setIsLoginPage] = React.useState(false);
 
   React.useEffect(() => {
-    // Check initial online status
-    if (typeof window !== 'undefined' && typeof window.navigator !== 'undefined') {
-        setOnlineStatus(window.navigator.onLine);
+    if (typeof window !== 'undefined') {
+        setIsLoginPage(window.location.pathname === '/login');
     }
 
     const handleOnline = () => setOnlineStatus(true);
@@ -45,11 +45,8 @@ export function StatusIndicator() {
 
     setFirebaseStatus('connecting');
 
-    // Use a non-existent doc for a lightweight ping.
     const unsubscribe = onSnapshot(doc(db, '_metadata', 'status'),
-      () => {
-        setFirebaseStatus('connected');
-      },
+      () => setFirebaseStatus('connected'),
       (error) => {
         console.warn('Firebase connection check failed:', error.code);
         setFirebaseStatus('disconnected');
@@ -92,11 +89,17 @@ export function StatusIndicator() {
 
   const internet = getStatusInfo(onlineStatus, 'internet');
   const firebase = getStatusInfo(firebaseStatus, 'firebase');
-  const server = getStatusInfo(firebaseStatus, 'server'); // Server status mirrors firebase status for now
+  const server = getStatusInfo(firebaseStatus, 'server'); 
 
   return (
     <TooltipProvider>
-      <div className="flex items-center justify-between p-2 rounded-lg bg-sidebar-accent/50 border border-sidebar-border/50 text-xs text-sidebar-foreground/80 group-data-[collapsible=icon]:hidden">
+      <div className={cn(
+        "flex items-center justify-between p-2 rounded-lg text-xs",
+        isLoginPage 
+          ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80" 
+          : "bg-sidebar-accent/50 border border-sidebar-border/50 text-sidebar-foreground/80 group-data-[collapsible=icon]:hidden",
+        className
+      )}>
         <span className='font-semibold'>Status:</span>
         <div className="flex items-center gap-3">
           <Tooltip>
