@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc, where } from 'firebase/firestore';
 import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem, User } from '../types';
 import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/flows/summarize-project-status';
 import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
@@ -62,13 +62,9 @@ export async function addRulemakingProject(projectData: unknown) {
     // Fetch full user objects for the team
     const teamUsers: User[] = [];
     if (parsed.data.team.length > 0) {
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        parsed.data.team.forEach(userId => {
-            const user = allUsers.find(u => u.id === userId);
-            if (user) {
-                teamUsers.push(user);
-            }
+        const usersSnapshot = await getDocs(query(collection(db, 'users'), where('__name__', 'in', parsed.data.team)));
+        usersSnapshot.forEach(doc => {
+            teamUsers.push({ id: doc.id, ...doc.data() } as User);
         });
     }
 
@@ -110,13 +106,9 @@ export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'proj
         // Fetch full user objects for the team
         const teamUsers: User[] = [];
         if (projectData.team.length > 0) {
-            const usersSnapshot = await getDocs(collection(db, 'users'));
-            const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-            projectData.team.forEach(userId => {
-                const user = allUsers.find(u => u.id === userId);
-                if (user) {
-                    teamUsers.push(user);
-                }
+            const usersSnapshot = await getDocs(query(collection(db, 'users'), where('__name__', 'in', projectData.team)));
+            usersSnapshot.forEach(doc => {
+                teamUsers.push({ id: doc.id, ...doc.data() } as User);
             });
         }
         
@@ -410,13 +402,12 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
-        // Ensure assignee arrays are always arrays for safe comparison
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
         const newAssigneeIds = new Set(updatedTask.assigneeIds || []);
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id) && id !== oldTask.assigneeIds.find(uid => uid === id));
+        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id) && oldTask.assigneeIds.includes(id));
 
         for (const userId of addedAssignees) {
             await createNotification({

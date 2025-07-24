@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Task, User, Attachment } from '@/lib/types';
-import { CalendarIcon, Loader2, Pencil, Plus, Trash2, Link as LinkIcon } from 'lucide-react';
+import { CalendarIcon, Loader2, Pencil, Plus, Trash2, Link as LinkIcon, AlertTriangle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format, parseISO } from 'date-fns';
 import { Calendar } from './ui/calendar';
@@ -42,6 +42,8 @@ import { cn } from '@/lib/utils';
 import { updateTask } from '@/lib/actions/project';
 import { Separator } from './ui/separator';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
+import { Checkbox } from './ui/checkbox';
+import { Textarea } from './ui/textarea';
 
 const attachmentSchema = z.object({
   id: z.string(),
@@ -57,10 +59,16 @@ const taskSchema = z.object({
   status: z.enum(['Done', 'In Progress', 'To Do', 'Blocked']),
   doneDate: z.date().optional().nullable(),
   attachments: z.array(attachmentSchema).optional(),
+  isCritical: z.boolean().default(false),
+  criticalIssue: z.string().optional(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
   path: ["dueDate"],
+}).refine(data => !data.isCritical || (data.isCritical && data.criticalIssue && data.criticalIssue.length > 0), {
+    message: "Description is required for critical issues.",
+    path: ["criticalIssue"],
 });
+
 
 type TaskFormValues = z.infer<typeof taskSchema>;
 
@@ -92,6 +100,8 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
       status: task.status,
       doneDate: task.doneDate ? parseISO(task.doneDate) : null,
       attachments: task.attachments || [],
+      isCritical: !!task.criticalIssue,
+      criticalIssue: task.criticalIssue || '',
     },
   });
 
@@ -101,6 +111,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
   });
   
   const watchedStatus = form.watch('status');
+  const isCritical = form.watch('isCritical');
   
   const handleStatusChange = (status: Task['status']) => {
     form.setValue('status', status);
@@ -114,10 +125,14 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
     setIsSubmitting(true);
     const updatedTaskData: Partial<Task> & { id: string } = {
         id: task.id,
-        ...data,
+        title: data.title,
+        assigneeIds: data.assigneeIds,
         startDate: format(data.startDate, 'yyyy-MM-dd'),
         dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+        status: data.status,
         doneDate: data.doneDate ? format(data.doneDate, 'yyyy-MM-dd') : undefined,
+        attachments: data.attachments || [],
+        criticalIssue: data.isCritical ? data.criticalIssue : '',
     };
     
     const result = await updateTask(projectId, updatedTaskData, projectType);
@@ -328,6 +343,41 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                     />
                 )}
             </div>
+
+            <FormField
+              control={form.control}
+              name="isCritical"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-destructive/10 border-destructive/20">
+                    <FormControl>
+                        <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="mt-1"
+                        />
+                    </FormControl>
+                    <div className="space-y-1 leading-none w-full">
+                        <FormLabel className="text-destructive font-bold flex items-center gap-2">
+                           <AlertTriangle className="h-4 w-4" /> Mark as Critical Issue
+                        </FormLabel>
+                        {isCritical && (
+                            <FormField
+                                control={form.control}
+                                name="criticalIssue"
+                                render={({ field }) => (
+                                    <FormItem className="pt-2">
+                                        <FormControl>
+                                            <Textarea {...field} placeholder="Describe the critical issue..." rows={3}/>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                    </div>
+                </FormItem>
+              )}
+            />
 
             <Separator />
 

@@ -46,6 +46,7 @@ export type Task = {
   attachments?: Attachment[];
   parentId?: string | null;
   subTasks?: Task[];
+  criticalIssue?: string;
 };
 
 export type SubProject = {

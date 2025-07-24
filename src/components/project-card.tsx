@@ -30,28 +30,37 @@ type ProjectCardProps = {
 export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const { name, status, endDate, tasks, notes, team, projectType, annex, casr, tags } = project;
 
-  const countAllTasks = (tasks: Task[]): { total: number; completed: number } => {
+  const countAllTasks = (tasks: Task[]): { total: number; completed: number, hasCritical: boolean } => {
     let total = 0;
     let completed = 0;
+    let hasCritical = false;
 
     tasks.forEach(task => {
       total++;
       if (task.status === 'Done') {
         completed++;
       }
+      if (task.criticalIssue) {
+        hasCritical = true;
+      }
       if (task.subTasks && task.subTasks.length > 0) {
         const subCounts = countAllTasks(task.subTasks);
         total += subCounts.total;
         completed += subCounts.completed;
+        if (subCounts.hasCritical) {
+          hasCritical = true;
+        }
       }
     });
 
-    return { total, completed };
+    return { total, completed, hasCritical };
   };
 
-  const { total: totalTasks, completed: completedTasks } = countAllTasks(tasks || []);
+  const { total: totalTasks, completed: completedTasks, hasCritical } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
+  const effectiveStatus = hasCritical ? 'Off Track' : status;
+
   const statusConfig = {
     'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
     'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'On Track' },
@@ -59,7 +68,7 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
     'Off Track': { icon: AlertTriangle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
   };
 
-  const currentStatus = statusConfig[status] || statusConfig['On Track'];
+  const currentStatus = statusConfig[effectiveStatus] || statusConfig['On Track'];
 
   const getTagColor = (tag: string) => {
     if (tag.toLowerCase().includes('priority')) return 'bg-red-100 text-red-800';
