@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays, isAfter } from 'date-fns';
 import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -183,7 +183,7 @@ export default function MyDashboardPage() {
     // Remove properties that are not part of the base Task type
     const { projectId, projectName, projectType, projectTags, ...baseTask } = updatedTask;
 
-    const result = await updateTask(taskToComplete.projectId, baseTask, taskToComplete.projectType);
+    const result = await updateTask(projectId, baseTask, projectType);
     
     if (result.success) {
         setAssignedTasks(prev => prev.map(t => t.id === taskToComplete.id ? { ...t, status: 'Done' } : t));
@@ -211,7 +211,15 @@ export default function MyDashboardPage() {
   };
 
   const openTasksCount = assignedTasks.filter(t => t.status !== 'Done').length;
-  const atRiskProjectsCount = myProjects.filter(p => p.status === 'At Risk' || p.status === 'Off Track').length;
+  
+  const atRiskProjectsCount = useMemo(() => {
+    return myProjects.filter(p => {
+      const hasCriticalIssue = (p.tasks || []).some(task => !!task.criticalIssue);
+      const isPastDue = isAfter(new Date(), parseISO(p.endDate)) && p.status !== 'Completed';
+      return (p.status === 'At Risk' || hasCriticalIssue) || (p.status === 'Off Track' || isPastDue);
+    }).length;
+  }, [myProjects]);
+  
   const upcomingTasks = assignedTasks
     .filter(t => t.status !== 'Done')
     .slice(0, 3);
