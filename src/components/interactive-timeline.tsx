@@ -280,12 +280,11 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                       }
                       
                       const topPosition = index * ROW_MIN_HEIGHT;
-                      const height = ROW_MIN_HEIGHT;
 
                       return (
                         <Tooltip key={task.id}>
                           <TooltipTrigger asChild>
-                            <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, height: `${height - 12}px`, width: `${width}px` }}>
+                            <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, width: `${width}px`, minHeight: `${ROW_MIN_HEIGHT - 12}px` }}>
                               <div className={cn("h-full w-full rounded-md text-white flex items-start justify-start gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
                                 {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90 overflow-hidden'>{task.title}</p>}
                               </div>
