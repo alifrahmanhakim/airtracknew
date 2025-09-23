@@ -41,7 +41,7 @@ type ViewMode = 'week' | 'day';
 const TASK_LIST_WIDTH = 200;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
-const ROW_MIN_HEIGHT = 52; // Consistent minimum height
+const ROW_MIN_HEIGHT = 52; 
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
@@ -236,7 +236,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                     </div>
                     
                     {sortedTasks.map((_, index) => (
-                        <div key={`h-line-${index}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${(index * ROW_MIN_HEIGHT) + ROW_MIN_HEIGHT - 1}px`, height: '1px' }} />
+                        <div key={`h-line-${index}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${(index * ROW_MIN_HEIGHT) + ROW_MIN_HEIGHT - 1}px`, minHeight: '1px' }} />
                     ))}
                     
                     {(() => {
@@ -284,13 +284,11 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                       return (
                         <Tooltip key={task.id}>
                           <TooltipTrigger asChild>
-                            <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, width: `${width}px` }}>
-                               <div className={cn("h-full min-h-[40px] w-full rounded-md text-white flex items-center justify-center gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                                {(width > 120) && (
-                                    <p className='text-xs font-bold whitespace-nowrap text-white/90'>
-                                        {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
-                                    </p>
-                                )}
+                            <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, width: `${width}px`, minHeight: '40px' }}>
+                               <div className={cn("h-full min-h-full w-full rounded-md text-white flex items-start justify-center gap-2 px-3 py-1 cursor-pointer shadow-sm overflow-hidden", statusConfig[task.status].color)}>
+                                 <p className='text-xs font-bold text-white/90 text-center'>
+                                     {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
+                                 </p>
                               </div>
                             </div>
                           </TooltipTrigger>
