@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -63,7 +62,6 @@ import { deleteGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { ChecklistCard } from './checklist-card';
 import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
 import { RulemakingAnalytics } from './rulemaking-analytics';
 import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
@@ -556,7 +554,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             </CardContent>
           </Card>
           
-          <ChecklistCard project={project} />
         </div>
       </div>
 

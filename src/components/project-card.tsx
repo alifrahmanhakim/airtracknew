@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from './ui/progress';
-import { AiSummaryDialog } from './ai-summary-dialog';
 import type { Project, Task, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format, parseISO, isAfter } from 'date-fns';
@@ -187,10 +186,6 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
                 </Badge>
             ))}
             <div className="ml-auto" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
-                <AiSummaryDialog
-                    taskCompletion={progress.toFixed(0)}
-                    notes={notes || ''}
-                />
             </div>
           </CardFooter>
         </Card>

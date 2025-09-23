@@ -1,13 +1,10 @@
 
-
 'use server';
 
 import { z } from 'zod';
 import { db } from '../firebase';
 import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc, where } from 'firebase/firestore';
 import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem, User } from '../types';
-import { summarizeProjectStatus, type SummarizeProjectStatusInput } from '@/ai/flows/summarize-project-status';
-import { generateChecklist, type GenerateChecklistInput } from '@/ai/flows/generate-checklist';
 import { createNotification } from './notifications';
 
 // Helper function to find a task by ID in a nested structure
@@ -473,23 +470,4 @@ export async function updateProjectChecklist(projectId: string, checklist: Check
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Failed to update checklist.' };
     }
-}
-
-export async function getAiSummary(input: SummarizeProjectStatusInput) {
-  try {
-    const summary = await summarizeProjectStatus(input);
-    return { success: true, data: summary };
-  } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'An unknown AI error occurred' };
-  }
-}
-
-export async function generateAiChecklist(input: GenerateChecklistInput) {
-  try {
-    const checklist = await generateChecklist(input);
-    return checklist;
-  } catch (error) {
-    console.error("AI Checklist generation failed:", error);
-    return null;
-  }
 }

@@ -38,7 +38,7 @@ type TimelineTask = Task & { projectName?: string };
 type InteractiveTimelineProps = { tasks: TimelineTask[] };
 type ViewMode = 'week' | 'day';
 
-const TASK_LIST_WIDTH = 250;
+const TASK_LIST_WIDTH = 220;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 const ROW_HEIGHT = 52;
@@ -157,8 +157,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                   </div>
                   {sortedTasks.map((task) => (
                     <div key={task.id} className="flex flex-col justify-center px-2 border-b" style={{ height: `${ROW_HEIGHT}px`, minWidth: `${TASK_LIST_WIDTH}px` }}>
-                      <p className="text-xs font-semibold truncate">{task.title}</p>
-                      <p className="text-xs truncate text-muted-foreground">{task.projectName}</p>
+                      <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
+                      <p className="text-xs text-muted-foreground whitespace-normal">{task.projectName}</p>
                     </div>
                   ))}
                 </div>

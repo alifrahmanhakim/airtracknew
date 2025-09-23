@@ -175,7 +175,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
               </div>
               {sortedTasks.map((task) => (
                 <div key={task.id} className="flex flex-col justify-center px-2 border-b border-r" style={{ height: `${ROW_HEIGHT}px`, paddingLeft: `${(task.parentId ? 1.5 : 0) + 0.5}rem` }}>
-                  <p className="text-xs font-semibold truncate">{task.title}</p>
+                  <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
                 </div>
               ))}
             </div>
