@@ -200,7 +200,7 @@ export default function LoginPage() {
               {/* Login View */}
               <div className="w-full flex-shrink-0">
                   <CardHeader className="text-center">
-                      <div className="flex items-center justify-center gap-2 mb-4">
+                      <div className="flex items-center justify-center gap-2 mb-2">
                           <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
                               <Plane className="h-6 w-6" />
                           </div>
@@ -224,7 +224,7 @@ export default function LoginPage() {
                              <AlertDescription>{error}</AlertDescription>
                           </Alert>
                       )}
-                      <form onSubmit={handleLogin} className="space-y-4">
+                      <form onSubmit={handleLogin} className="space-y-3">
                           <div className="space-y-2">
                               <Label htmlFor="login-email">Email</Label>
                               <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
@@ -237,7 +237,7 @@ export default function LoginPage() {
                               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
                           </Button>
                       </form>
-                       <div className="relative my-4">
+                       <div className="relative my-3">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t border-white/20" />
                             </div>
@@ -260,7 +260,7 @@ export default function LoginPage() {
               {/* Signup View */}
               <div className="w-full flex-shrink-0">
                   <CardHeader className="text-center">
-                      <div className="flex items-center justify-center gap-2 mb-4">
+                      <div className="flex items-center justify-center gap-2 mb-2">
                           <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
                               <Plane className="h-6 w-6" />
                           </div>
@@ -275,7 +275,7 @@ export default function LoginPage() {
                              <AlertDescription>{error}</AlertDescription>
                           </Alert>
                       )}
-                      <form onSubmit={handleSignup} className="space-y-4">
+                      <form onSubmit={handleSignup} className="space-y-3">
                           <div className="space-y-2">
                               <Label htmlFor="signup-name">Name</Label>
                               <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60" />
@@ -292,7 +292,7 @@ export default function LoginPage() {
                               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
                           </Button>
                       </form>
-                      <div className="relative my-4">
+                      <div className="relative my-3">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t border-white/20" />
                             </div>
