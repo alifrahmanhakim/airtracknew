@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -249,7 +250,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={handleLogout}>
+                    <SidebarMenuButton onClick={handleLogout} className="text-red-500 hover:bg-red-500/10 hover:text-red-500 dark:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400">
                         <LogOut />
                         <span>Logout</span>
                     </SidebarMenuButton>
