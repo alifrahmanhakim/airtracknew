@@ -46,7 +46,7 @@ type ProjectTimelineProps = {
 
 type ViewMode = 'week' | 'day';
 
-const ROW_HEIGHT = 52;
+const ROW_MIN_HEIGHT = 52;
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
@@ -67,6 +67,8 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
+  const taskRowRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const [rowHeights, setRowHeights] = React.useState<number[]>([]);
   
   const flattenedTasks = React.useMemo(() => flattenTasks(tasks), [tasks]);
 
@@ -105,6 +107,17 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         totalWeeks: differenceInCalendarISOWeeks(tEnd, tStart) + 1
     };
   }, [flattenedTasks]);
+  
+  React.useEffect(() => {
+    const calculateRowHeights = () => {
+        const heights = taskRowRefs.current.map(el => Math.max(ROW_MIN_HEIGHT, el?.offsetHeight || 0));
+        setRowHeights(heights);
+    };
+
+    calculateRowHeights();
+    window.addEventListener('resize', calculateRowHeights);
+    return () => window.removeEventListener('resize', calculateRowHeights);
+}, [sortedTasks.length]);
 
   React.useEffect(() => {
     if (todayRef.current && timelineContainerRef.current) {
@@ -126,9 +139,10 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
   
   const DAY_WIDTH_DAY_VIEW = 40;
   const WEEK_WIDTH = 60;
+  const TASK_LIST_WIDTH = 220;
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
-  const timelineMaxHeight = HEADER_HEIGHT + (Math.min(sortedTasks.length, 6) * ROW_HEIGHT);
+  const totalTimelineHeight = rowHeights.reduce((acc, h) => acc + h, 0);
 
   if (tasks.length === 0) {
     return (
@@ -166,15 +180,19 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         <div 
           ref={timelineContainerRef} 
           className="w-full border-t overflow-auto relative"
-          style={{ maxHeight: `${timelineMaxHeight}px` }}
         >
           <div className="flex" style={{ width: 'min-content' }}>
             <div className="sticky left-0 z-40 bg-card">
-              <div className="flex items-center px-4 font-semibold border-b border-r bg-card" style={{height: `${HEADER_HEIGHT}px`}}>
+              <div className="flex items-center px-4 font-semibold border-b border-r bg-card" style={{height: `${HEADER_HEIGHT}px`, minWidth: `${TASK_LIST_WIDTH}px`}}>
                 Tasks
               </div>
-              {sortedTasks.map((task) => (
-                <div key={task.id} className="flex flex-col justify-center px-2 border-b border-r" style={{ height: `${ROW_HEIGHT}px`, paddingLeft: `${(task.parentId ? 1.5 : 0) + 0.5}rem` }}>
+              {sortedTasks.map((task, index) => (
+                <div 
+                    key={task.id} 
+                    ref={el => taskRowRefs.current[index] = el}
+                    className="flex flex-col justify-center px-2 py-2 border-b border-r" 
+                    style={{ minHeight: `${ROW_MIN_HEIGHT}px`, width: `${TASK_LIST_WIDTH}px`, paddingLeft: `${(task.parentId ? 1.5 : 0) + 0.5}rem` }}
+                >
                   <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
                 </div>
               ))}
@@ -218,7 +236,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                 </div>
               </div>
               
-              <div className="relative" style={{ height: `${sortedTasks.length * ROW_HEIGHT}px` }}>
+              <div className="relative" style={{ height: `${totalTimelineHeight}px` }}>
                  <div className="absolute top-0 left-0 w-full h-full z-0">
                     {viewMode === 'day' ? (
                         days.map((day, index) => {
@@ -249,9 +267,13 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                     )}
                 </div>
 
-                {sortedTasks.map((task, index) => (
-                    <div key={`h-line-${task.id}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${(index * ROW_HEIGHT) + ROW_HEIGHT -1}px`, height: '1px' }} />
-                ))}
+                {rowHeights.reduce((acc, height, index) => {
+                    const top = acc;
+                    return [
+                        ...acc, 
+                        <div key={`h-line-${index}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${top + height -1}px`, height: '1px' }} />
+                    ];
+                }, [] as React.ReactNode[])}
                 
                 {(() => {
                     const today = startOfDay(new Date());
@@ -293,12 +315,14 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                     width = duration * WEEK_WIDTH - 4;
                   }
                   
+                  const top = rowHeights.slice(0, index).reduce((acc, h) => acc + h, 0);
+
                   return (
                     <Tooltip key={task.id}>
                       <TooltipTrigger asChild>
-                        <div className="absolute group flex items-center z-10" style={{ top: `${index * ROW_HEIGHT + 6}px`, left: `${left}px`, height: `${ROW_HEIGHT - 12}px`, width: `${width}px` }}>
+                        <div className="absolute group flex items-center z-10" style={{ top: `${top + 6}px`, left: `${left}px`, height: `${rowHeights[index] - 12}px`, width: `${width}px` }}>
                           <div className={cn("h-full w-full rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                            {(width > 50) && <p className='text-xs font-bold truncate text-white/90'>{task.title}</p>}
+                            {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90'>{task.title}</p>}
                           </div>
                         </div>
                       </TooltipTrigger>

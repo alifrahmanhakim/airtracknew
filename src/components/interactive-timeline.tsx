@@ -41,7 +41,7 @@ type ViewMode = 'week' | 'day';
 const TASK_LIST_WIDTH = 220;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
-const ROW_HEIGHT = 52;
+const ROW_MIN_HEIGHT = 52;
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
@@ -50,6 +50,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
+  const taskRowRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const [rowHeights, setRowHeights] = React.useState<number[]>([]);
   
   const { sortedTasks, months, days, weeks, timelineStart, timelineEnd, totalDays, totalWeeks } = React.useMemo(() => {
     const validTasks = tasks?.filter(t => t.startDate && t.dueDate) || [];
@@ -86,6 +88,18 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
         totalWeeks: differenceInCalendarISOWeeks(tEnd, tEnd) + 1
     };
   }, [tasks]);
+  
+  React.useEffect(() => {
+    const calculateRowHeights = () => {
+        const heights = taskRowRefs.current.map(el => Math.max(ROW_MIN_HEIGHT, el?.offsetHeight || 0));
+        setRowHeights(heights);
+    };
+
+    calculateRowHeights();
+    window.addEventListener('resize', calculateRowHeights);
+    return () => window.removeEventListener('resize', calculateRowHeights);
+}, [sortedTasks.length]);
+
 
   React.useEffect(() => {
     if (todayRef.current && timelineContainerRef.current) {
@@ -107,7 +121,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
-  const timelineMaxHeight = HEADER_HEIGHT + (Math.min(sortedTasks.length, 6) * ROW_HEIGHT);
+  const totalTimelineHeight = rowHeights.reduce((acc, h) => acc + h, 0);
 
   return (
     <TooltipProvider>
@@ -148,15 +162,19 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
             <div 
               ref={timelineContainerRef} 
               className="w-full border-t overflow-auto relative"
-              style={{ maxHeight: `${timelineMaxHeight}px` }}
             >
               <div className="flex" style={{ width: 'min-content' }}>
                 <div className="sticky left-0 z-40 bg-card border-r">
                   <div className="flex items-center px-4 font-semibold border-b bg-card" style={{height: `${HEADER_HEIGHT}px`, minWidth: `${TASK_LIST_WIDTH}px`}}>
                     Tasks / Project
                   </div>
-                  {sortedTasks.map((task) => (
-                    <div key={task.id} className="flex flex-col justify-center px-2 border-b" style={{ height: `${ROW_HEIGHT}px`, minWidth: `${TASK_LIST_WIDTH}px` }}>
+                  {sortedTasks.map((task, index) => (
+                    <div 
+                        key={task.id} 
+                        ref={el => taskRowRefs.current[index] = el}
+                        className="flex flex-col justify-center px-2 py-2 border-b" 
+                        style={{ minHeight: `${ROW_MIN_HEIGHT}px`, width: `${TASK_LIST_WIDTH}px` }}
+                    >
                       <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
                       <p className="text-xs text-muted-foreground whitespace-normal">{task.projectName}</p>
                     </div>
@@ -201,7 +219,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                     </div>
                   </div>
                   
-                  <div className="relative" style={{ height: `${sortedTasks.length * ROW_HEIGHT}px` }}>
+                  <div className="relative" style={{ height: `${totalTimelineHeight}px` }}>
                      <div className="absolute top-0 left-0 w-full h-full z-0">
                         {viewMode === 'day' ? (
                             days.map((day, index) => {
@@ -232,9 +250,13 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         )}
                     </div>
 
-                    {sortedTasks.map((task, index) => (
-                        <div key={`h-line-${task.id}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${(index * ROW_HEIGHT) + ROW_HEIGHT -1}px`, height: '1px' }} />
-                    ))}
+                    {rowHeights.reduce((acc, height, index) => {
+                        const top = acc;
+                        return [
+                            ...acc, 
+                            <div key={`h-line-${index}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${top + height -1}px`, height: '1px' }} />
+                        ];
+                    }, [] as React.ReactNode[])}
                     
                     {(() => {
                         const today = startOfDay(new Date());
@@ -276,12 +298,14 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         width = duration * WEEK_WIDTH - 4;
                       }
                       
+                      const top = rowHeights.slice(0, index).reduce((acc, h) => acc + h, 0);
+
                       return (
                         <Tooltip key={task.id}>
                           <TooltipTrigger asChild>
-                            <div className="absolute group flex items-center z-10" style={{ top: `${index * ROW_HEIGHT + 6}px`, left: `${left}px`, height: `${ROW_HEIGHT - 12}px`, width: `${width}px` }}>
+                            <div className="absolute group flex items-center z-10" style={{ top: `${top + 6}px`, left: `${left}px`, height: `${rowHeights[index] - 12}px`, width: `${width}px` }}>
                               <div className={cn("h-full w-full rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                                {(width > 50) && <p className='text-xs font-bold truncate text-white/90'>{task.title}</p>}
+                                {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90'>{task.title}</p>}
                               </div>
                             </div>
                           </TooltipTrigger>
