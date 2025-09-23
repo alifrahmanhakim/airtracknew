@@ -458,6 +458,7 @@ export default function CcefodPage() {
                                 onUpdate={handleRecordUpdate}
                                 sort={sort}
                                 setSort={setSort}
+                                searchTerm={searchTerm}
                             />
                              <Pagination>
                                 <PaginationContent>

@@ -39,6 +39,7 @@ import {
 import { cn } from '@/lib/utils';
 import { EditCcefodRecordDialog } from './edit-ccefod-record-dialog';
 import { CcefodRecordDetailDialog } from './ccefod-record-detail-dialog';
+import { Highlight } from './ui/highlight';
 
 
 type SortDescriptor = {
@@ -52,10 +53,11 @@ type CcefodRecordsTableProps = {
   onUpdate: (updatedRecord: CcefodRecord) => void;
   sort: SortDescriptor;
   setSort: (sort: SortDescriptor) => void;
+  searchTerm: string;
 };
 
 
-export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort }: CcefodRecordsTableProps) {
+export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort, searchTerm }: CcefodRecordsTableProps) {
   const [recordToView, setRecordToView] = useState<CcefodRecord | null>(null);
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
@@ -170,28 +172,28 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort 
                 >
                     {visibleColumns.map((col) => {
                         const isRichText = col.key === 'standardPractice';
+                        const value = record[col.key as keyof CcefodRecord] as string | undefined;
+
                         return (
                             <TableCell key={col.key} className="align-middle">
                                 {(() => {
-                                    const value = record[col.key as keyof CcefodRecord] as string | undefined;
-                                    
-                                    if (isRichText && value) {
-                                        return <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: value }} />;
-                                    }
-                                    
                                     if (value === null || value === undefined || value === '') {
                                         return <span className='text-muted-foreground'>—</span>;
                                     }
 
+                                    if (isRichText) {
+                                        return <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: value }} />;
+                                    }
+                                    
                                     if (col.key === 'status') {
                                         return <Badge className={cn({
                                             'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
                                             'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
                                             'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                        })}>{value}</Badge>;
+                                        })}><Highlight text={value} query={searchTerm} /></Badge>;
                                     }
-
-                                    return <div>{value}</div>;
+                                    
+                                    return <Highlight text={value} query={searchTerm} />;
                                 })()}
                             </TableCell>
                         )
