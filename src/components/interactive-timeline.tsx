@@ -284,9 +284,13 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                       return (
                         <Tooltip key={task.id}>
                           <TooltipTrigger asChild>
-                            <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, width: `${width}px`, minHeight: `${ROW_MIN_HEIGHT - 12}px` }}>
-                              <div className={cn("h-full w-full rounded-md text-white flex items-start justify-start gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                                {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90 overflow-hidden'>{task.title}</p>}
+                            <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, width: `${width}px` }}>
+                               <div className={cn("h-full min-h-[40px] w-full rounded-md text-white flex items-center justify-center gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
+                                {(width > 120) && (
+                                    <p className='text-xs font-bold whitespace-nowrap text-white/90'>
+                                        {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
+                                    </p>
+                                )}
                               </div>
                             </div>
                           </TooltipTrigger>
