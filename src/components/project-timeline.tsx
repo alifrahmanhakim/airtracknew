@@ -329,7 +329,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                       <TooltipTrigger asChild>
                         <div className="absolute group flex items-start z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, height: `${height - 12}px`, width: `${width}px` }}>
                           <div className={cn("h-full w-full rounded-md text-white flex items-start justify-start gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                            {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90'>{task.title}</p>}
+                            {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90 overflow-hidden'>{task.title}</p>}
                           </div>
                         </div>
                       </TooltipTrigger>
