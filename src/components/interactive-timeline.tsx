@@ -38,7 +38,7 @@ type TimelineTask = Task & { projectName?: string };
 type InteractiveTimelineProps = { tasks: TimelineTask[] };
 type ViewMode = 'week' | 'day';
 
-const TASK_LIST_WIDTH = 220;
+const TASK_LIST_WIDTH = 200;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 const ROW_MIN_HEIGHT = 52;
@@ -96,8 +96,14 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     };
 
     calculateRowHeights();
-    window.addEventListener('resize', calculateRowHeights);
-    return () => window.removeEventListener('resize', calculateRowHeights);
+    const resizeObserver = new ResizeObserver(calculateRowHeights);
+    taskRowRefs.current.forEach(el => {
+        if(el) resizeObserver.observe(el);
+    });
+    
+    return () => {
+        resizeObserver.disconnect();
+    };
 }, [sortedTasks.length]);
 
 
@@ -250,13 +256,13 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         )}
                     </div>
 
-                    {rowHeights.reduce((acc, height, index) => {
-                        const top = acc;
-                        return [
-                            ...acc, 
+                    {rowHeights.reduce<React.ReactNode[]>((acc, height, index) => {
+                        const top = index === 0 ? 0 : acc.reduce((sum, h, i) => i < index ? sum + (rowHeights[i] || 0) : sum, 0);
+                        acc.push(
                             <div key={`h-line-${index}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${top + height -1}px`, height: '1px' }} />
-                        ];
-                    }, [] as React.ReactNode[])}
+                        );
+                        return acc;
+                    }, [])}
                     
                     {(() => {
                         const today = startOfDay(new Date());
@@ -298,13 +304,14 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         width = duration * WEEK_WIDTH - 4;
                       }
                       
-                      const top = rowHeights.slice(0, index).reduce((acc, h) => acc + h, 0);
+                      const topPosition = rowHeights.slice(0, index).reduce((acc, h) => acc + h, 0);
+                      const height = rowHeights[index] || ROW_MIN_HEIGHT;
 
                       return (
                         <Tooltip key={task.id}>
                           <TooltipTrigger asChild>
-                            <div className="absolute group flex items-center z-10" style={{ top: `${top + 6}px`, left: `${left}px`, height: `${rowHeights[index] - 12}px`, width: `${width}px` }}>
-                              <div className={cn("h-full w-full rounded-md text-white flex items-center justify-start gap-2 px-3 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
+                            <div className="absolute group flex items-start z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, height: `${height - 12}px`, width: `${width}px` }}>
+                              <div className={cn("h-full w-full rounded-md text-white flex items-start justify-start gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
                                 {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90'>{task.title}</p>}
                               </div>
                             </div>
