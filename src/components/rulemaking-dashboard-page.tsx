@@ -154,14 +154,17 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>High Priority Items</CardTitle>
+                            <CardTitle className='flex items-center gap-2'><Flag className='text-red-500' /> High Priority Items</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                            {stats.highPriority.length > 0 ? stats.highPriority.map(p => (
                                <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`}>
-                                <div className='p-3 rounded-md bg-red-50 border border-red-200 hover:bg-red-100 cursor-pointer dark:bg-red-900/20 dark:border-red-500/30 dark:hover:bg-red-900/30'>
-                                    <p className='font-bold text-red-800 dark:text-red-300'>CASR {p.casr}</p>
-                                    <p className='text-sm text-red-700 dark:text-red-400 truncate'>{p.name}</p>
+                                <div className='p-3 rounded-md bg-red-50 border border-red-200 hover:bg-red-100 cursor-pointer dark:bg-red-900/20 dark:border-red-500/30 dark:hover:bg-red-900/30 flex items-center gap-2'>
+                                    <ArrowRight className='h-4 w-4 text-red-500'/>
+                                    <div>
+                                        <p className='font-bold text-red-800 dark:text-red-300'>CASR {p.casr}</p>
+                                        <p className='text-sm text-red-700 dark:text-red-400 truncate'>{p.name}</p>
+                                    </div>
                                 </div>
                                </Link>
                            )) : (
