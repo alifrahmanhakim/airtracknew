@@ -250,9 +250,13 @@ export default function LoginPage() {
                             Sign in with Google
                         </Button>
                   </CardContent>
-                  <CardFooter className="flex-col items-center justify-center space-y-2 text-center text-sm">
-                      <p>Don't have an account?{" "}
+                  <CardFooter className="flex-col items-center justify-center text-center text-sm pb-4 pt-0">
+                      <p className="mb-4">Don't have an account?{" "}
                           <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
+                      </p>
+                       <p className="text-center text-xs text-white/60">
+                          Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
+                          TnC AI can make mistakes, so double-check it
                       </p>
                   </CardFooter>
               </div>
@@ -278,7 +282,7 @@ export default function LoginPage() {
                       <form onSubmit={handleSignup} className="space-y-3">
                           <div className="space-y-2">
                               <Label htmlFor="signup-name">Name</Label>
-                              <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60" />
+                              <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
                           </div>
                           <div className="space-y-2">
                               <Label htmlFor="signup-email">Email</Label>
@@ -305,22 +309,20 @@ export default function LoginPage() {
                             Sign up with Google
                         </Button>
                   </CardContent>
-                   <CardFooter className="flex-col items-center justify-center space-y-2 text-center text-sm">
-                       <p>Already have an account?{" "}
+                   <CardFooter className="flex-col items-center justify-center text-center text-sm pb-4 pt-0">
+                       <p className="mb-4">Already have an account?{" "}
                           <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
+                      </p>
+                       <p className="text-center text-xs text-white/60">
+                          Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
+                          TnC AI can make mistakes, so double-check it
                       </p>
                   </CardFooter>
               </div>
           </div>
-          <p className="px-6 pb-4 text-center text-xs text-white/60">
-              Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
-              TnC AI can make mistakes, so double-check it
-          </p>
         </Card>
         <StatusIndicator className="w-full max-w-sm" />
       </div>
     </main>
   );
 }
-
-    
