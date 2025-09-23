@@ -189,7 +189,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/bg%2Fbg-1.jpg?alt=media&token=8628b456-e781-420a-8551-5156847849e7')"} }>
+    <main className="relative flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{backgroundImage: "url('https://i.imgur.com/1QgsJAm.jpeg')"} }>
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
