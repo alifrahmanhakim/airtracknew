@@ -250,8 +250,8 @@ export default function LoginPage() {
                             Sign in with Google
                         </Button>
                   </CardContent>
-                  <CardFooter>
-                      <p className="w-full text-center text-sm">Don't have an account?{" "}
+                  <CardFooter className="flex-col items-center justify-center space-y-2 text-center text-sm">
+                      <p>Don't have an account?{" "}
                           <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
                       </p>
                   </CardFooter>
@@ -305,8 +305,8 @@ export default function LoginPage() {
                             Sign up with Google
                         </Button>
                   </CardContent>
-                   <CardFooter>
-                       <p className="w-full text-center text-sm">Already have an account?{" "}
+                   <CardFooter className="flex-col items-center justify-center space-y-2 text-center text-sm">
+                       <p>Already have an account?{" "}
                           <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
                       </p>
                   </CardFooter>
@@ -322,3 +322,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
+    
