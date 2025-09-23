@@ -24,7 +24,10 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
-// const analytics = getAnalytics(app);
+// In a browser environment, you can uncomment this to enable analytics
+// if (typeof window !== 'undefined') {
+//   getAnalytics(app);
+// }
 
 
 export { db, storage, app, auth, googleProvider };
