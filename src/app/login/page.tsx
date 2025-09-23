@@ -196,9 +196,9 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-black/50" />
       <div className="relative flex flex-col items-center gap-4">
         <Card className="w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
-          <div className={cn("transition-transform duration-700 ease-in-out flex", !isLoginView && "-translate-x-full")}>
+          <div className="relative">
               {/* Login View */}
-              <div className="w-full flex-shrink-0">
+              <div className={cn("transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
                   <CardHeader className="text-center">
                       <div className="flex items-center justify-center gap-2 mb-2">
                           <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
@@ -251,7 +251,7 @@ export default function LoginPage() {
                         </Button>
                   </CardContent>
                   <CardFooter className="flex-col items-center justify-center text-center text-sm pb-4 pt-0">
-                      <p className="mb-4">Don't have an account?{" "}
+                      <p className="mb-2">Don't have an account?{" "}
                           <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
                       </p>
                        <p className="text-center text-xs text-white/60">
@@ -262,7 +262,7 @@ export default function LoginPage() {
               </div>
 
               {/* Signup View */}
-              <div className="w-full flex-shrink-0">
+              <div className={cn("absolute top-0 left-0 w-full transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
                   <CardHeader className="text-center">
                       <div className="flex items-center justify-center gap-2 mb-2">
                           <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
@@ -310,7 +310,7 @@ export default function LoginPage() {
                         </Button>
                   </CardContent>
                    <CardFooter className="flex-col items-center justify-center text-center text-sm pb-4 pt-0">
-                       <p className="mb-4">Already have an account?{" "}
+                       <p className="mb-2">Already have an account?{" "}
                           <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
                       </p>
                        <p className="text-center text-xs text-white/60">
