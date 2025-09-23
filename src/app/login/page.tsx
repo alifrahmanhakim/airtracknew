@@ -196,130 +196,126 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-black/50" />
       <div className="relative flex flex-col items-center gap-4">
         <Card className="w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
-          <div className="relative">
-              {/* Login View */}
-              <div className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
-                  <CardHeader className="text-center">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
-                              <Plane className="h-6 w-6" />
-                          </div>
-                      </div>
-                      <CardTitle className="text-2xl">AirTrack Login</CardTitle>
-                      <CardDescription className="text-white/80">Enter your credentials to access your dashboard.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                      {signupSuccess && (
-                          <Alert variant="default" className="mb-4 bg-green-500/20 border-green-500/50 text-green-300">
-                             <CheckCircle className="h-4 w-4 !text-green-400" />
-                             <AlertTitle className="text-green-300 font-bold">Registration Successful!</AlertTitle>
-                             <AlertDescription className="text-green-400">
-                                 Your account has been created. Please wait for an administrator to approve it.
-                             </AlertDescription>
-                          </Alert>
-                      )}
-                       {error && (
-                          <Alert variant="destructive" className="mb-4">
-                             <AlertTitle>Login Failed</AlertTitle>
-                             <AlertDescription>{error}</AlertDescription>
-                          </Alert>
-                      )}
-                      <form onSubmit={handleLogin} className="space-y-3">
-                          <div className="space-y-2">
-                              <Label htmlFor="login-email">Email</Label>
-                              <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
-                          </div>
-                          <div className="space-y-2">
-                              <Label htmlFor="login-password">Password</Label>
-                              <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60" />
-                          </div>
-                          <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
-                              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
-                          </Button>
-                      </form>
-                       <div className="relative my-3">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-white/20" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
-                            </div>
+            <div className={cn("transition-opacity duration-300", !isLoginView && "hidden")}>
+                <CardHeader className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
+                            <Plane className="h-6 w-6" />
                         </div>
-                        <Button variant="outline" className="w-full text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                            Sign in with Google
+                    </div>
+                    <CardTitle className="text-2xl">AirTrack Login</CardTitle>
+                    <CardDescription className="text-white/80">Enter your credentials to access your dashboard.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {signupSuccess && (
+                        <Alert variant="default" className="mb-4 bg-green-500/20 border-green-500/50 text-green-300">
+                            <CheckCircle className="h-4 w-4 !text-green-400" />
+                            <AlertTitle className="text-green-300 font-bold">Registration Successful!</AlertTitle>
+                            <AlertDescription className="text-green-400">
+                                Your account has been created. Please wait for an administrator to approve it.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                      {error && (
+                        <Alert variant="destructive" className="mb-4">
+                            <AlertTitle>Login Failed</AlertTitle>
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                    <form onSubmit={handleLogin} className="space-y-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="login-email">Email</Label>
+                            <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="login-password">Password</Label>
+                            <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60" />
+                        </div>
+                        <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
                         </Button>
-                  </CardContent>
-                  <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
-                      <p className="mb-2">Don't have an account?{" "}
-                          <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
-                      </p>
-                       <p className="text-center text-xs text-white/60">
-                          Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
-                          TnC AI can make mistakes, so double-check it
-                      </p>
-                  </CardFooter>
-              </div>
-
-              {/* Signup View */}
-              <div className={cn("absolute top-0 left-0 w-full flex-shrink-0 transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
-                  <CardHeader className="text-center">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
-                              <Plane className="h-6 w-6" />
-                          </div>
-                      </div>
-                      <CardTitle className="text-2xl">Create an Account</CardTitle>
-                      <CardDescription className="text-white/80">Register to request access.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                       {error && (
-                          <Alert variant="destructive" className="mb-4">
-                             <AlertTitle>Signup Failed</AlertTitle>
-                             <AlertDescription>{error}</AlertDescription>
-                          </Alert>
-                      )}
-                      <form onSubmit={handleSignup} className="space-y-3">
-                          <div className="space-y-2">
-                              <Label htmlFor="signup-name">Name</Label>
-                              <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
-                          </div>
-                          <div className="space-y-2">
-                              <Label htmlFor="signup-email">Email</Label>
-                              <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
-                          </div>
-                          <div className="space-y-2">
-                              <Label htmlFor="signup-password">Password</Label>
-                              <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
-                          </div>
-                          <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
-                              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
-                          </Button>
-                      </form>
+                    </form>
                       <div className="relative my-3">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-white/20" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
-                            </div>
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-white/20" />
                         </div>
-                        <Button variant="outline" className="w-full text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                            Sign up with Google
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
+                        </div>
+                    </div>
+                    <Button variant="outline" className="w-full text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                        {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                        Sign in with Google
+                    </Button>
+                </CardContent>
+                <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
+                    <p className="mb-2">Don't have an account?{" "}
+                        <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
+                    </p>
+                      <p className="text-center text-xs text-white/60">
+                        Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
+                        TnC AI can make mistakes, so double-check it
+                    </p>
+                </CardFooter>
+            </div>
+
+            <div className={cn("transition-opacity duration-300", isLoginView && "hidden")}>
+                <CardHeader className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
+                            <Plane className="h-6 w-6" />
+                        </div>
+                    </div>
+                    <CardTitle className="text-2xl">Create an Account</CardTitle>
+                    <CardDescription className="text-white/80">Register to request access.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                      {error && (
+                        <Alert variant="destructive" className="mb-4">
+                            <AlertTitle>Signup Failed</AlertTitle>
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                    <form onSubmit={handleSignup} className="space-y-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="signup-name">Name</Label>
+                            <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="signup-email">Email</Label>
+                            <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="signup-password">Password</Label>
+                            <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                        </div>
+                        <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
                         </Button>
-                  </CardContent>
-                   <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
-                       <p className="mb-2">Already have an account?{" "}
-                          <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
-                      </p>
-                       <p className="text-center text-xs text-white/60">
-                          Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
-                          TnC AI can make mistakes, so double-check it
-                      </p>
-                  </CardFooter>
-              </div>
-          </div>
+                    </form>
+                    <div className="relative my-3">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-white/20" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
+                        </div>
+                    </div>
+                    <Button variant="outline" className="w-full text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                        {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                        Sign up with Google
+                    </Button>
+                </CardContent>
+                  <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
+                      <p className="mb-2">Already have an account?{" "}
+                        <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
+                    </p>
+                      <p className="text-center text-xs text-white/60">
+                        Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
+                        TnC AI can make mistakes, so double-check it
+                    </p>
+                </CardFooter>
+            </div>
         </Card>
         <StatusIndicator className="w-full max-w-sm" />
       </div>
