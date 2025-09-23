@@ -46,7 +46,7 @@ type ProjectTimelineProps = {
 
 type ViewMode = 'week' | 'day';
 
-const ROW_MIN_HEIGHT = 52; 
+const ROW_MIN_HEIGHT = 44; 
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
@@ -302,9 +302,9 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                   return (
                     <Tooltip key={task.id}>
                       <TooltipTrigger asChild>
-                        <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, width: `${width}px`, minHeight: '40px' }}>
-                          <div className={cn("h-full min-h-full w-full rounded-md text-white flex items-start justify-center gap-2 px-3 py-1 cursor-pointer shadow-sm overflow-hidden", statusConfig[task.status].color)}>
-                            <p className='text-xs font-bold text-white/90 text-center'>
+                        <div className="absolute group flex z-10 overflow-hidden" style={{ top: `${topPosition + 6}px`, left: `${left}px`, width: `${width}px`, minHeight: '32px' }}>
+                          <div className={cn("h-full min-h-full w-full rounded-md text-white flex items-start justify-center gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
+                            <p className='text-[10px] font-bold text-white/90 text-center'>
                                 {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
                             </p>
                           </div>
