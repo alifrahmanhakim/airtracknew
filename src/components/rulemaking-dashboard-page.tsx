@@ -156,7 +156,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                         <CardHeader>
                             <CardTitle className='flex items-center gap-2'><Flag className='text-red-500' /> High Priority Items</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-4">
                            {stats.highPriority.length > 0 ? stats.highPriority.map(p => (
                                <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`}>
                                 <div className='p-3 rounded-md bg-red-50 border border-red-200 hover:bg-red-100 cursor-pointer dark:bg-red-900/20 dark:border-red-500/30 dark:hover:bg-red-900/30 flex items-center gap-2'>
