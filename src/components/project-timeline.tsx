@@ -46,7 +46,7 @@ type ProjectTimelineProps = {
 
 type ViewMode = 'week' | 'day';
 
-const ROW_MIN_HEIGHT = 52;
+const ROW_MIN_HEIGHT = 52; // Consistent minimum height
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
@@ -67,8 +67,6 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
-  const taskRowRefs = React.useRef<(HTMLDivElement | null)[]>([]);
-  const [rowHeights, setRowHeights] = React.useState<number[]>([]);
   
   const flattenedTasks = React.useMemo(() => flattenTasks(tasks), [tasks]);
 
@@ -107,23 +105,6 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         totalWeeks: differenceInCalendarISOWeeks(tEnd, tStart) + 1
     };
   }, [flattenedTasks]);
-  
-  React.useEffect(() => {
-    const calculateRowHeights = () => {
-        const heights = taskRowRefs.current.map(el => Math.max(ROW_MIN_HEIGHT, el?.offsetHeight || 0));
-        setRowHeights(heights);
-    };
-
-    calculateRowHeights();
-    const resizeObserver = new ResizeObserver(calculateRowHeights);
-    taskRowRefs.current.forEach(el => {
-        if(el) resizeObserver.observe(el);
-    });
-    
-    return () => {
-        resizeObserver.disconnect();
-    };
-}, [sortedTasks.length]);
 
   React.useEffect(() => {
     if (todayRef.current && timelineContainerRef.current) {
@@ -148,7 +129,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
   const TASK_LIST_WIDTH = 200;
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
-  const totalTimelineHeight = rowHeights.reduce((acc, h) => acc + h, 0);
+  const totalTimelineHeight = sortedTasks.length * ROW_MIN_HEIGHT;
 
   if (tasks.length === 0) {
     return (
@@ -195,7 +176,6 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
               {sortedTasks.map((task, index) => (
                 <div 
                     key={task.id} 
-                    ref={el => taskRowRefs.current[index] = el}
                     className="flex flex-col justify-center px-2 py-2 border-b border-r" 
                     style={{ minHeight: `${ROW_MIN_HEIGHT}px`, width: `${TASK_LIST_WIDTH}px`, paddingLeft: `${(task.parentId ? 1.5 : 0) + 0.5}rem` }}
                 >
@@ -272,15 +252,11 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                         })
                     )}
                 </div>
-
-                {rowHeights.reduce<React.ReactNode[]>((acc, height, index) => {
-                    const top = index === 0 ? 0 : acc.reduce((sum, h, i) => i < index ? sum + (rowHeights[i] || 0) : sum, 0);
-                    acc.push(
-                        <div key={`h-line-${index}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${top + height -1}px`, height: '1px' }} />
-                    );
-                    return acc;
-                }, [])}
                 
+                {sortedTasks.map((_, index) => (
+                    <div key={`h-line-${index}`} className="absolute w-full border-b border-border/50 z-0" style={{ top: `${(index * ROW_MIN_HEIGHT) + ROW_MIN_HEIGHT - 1}px`, height: '1px' }} />
+                ))}
+
                 {(() => {
                     const today = startOfDay(new Date());
                     if(today < timelineStart || today > timelineEnd) return null;
@@ -321,13 +297,13 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                     width = duration * WEEK_WIDTH - 4;
                   }
                   
-                  const topPosition = rowHeights.slice(0, index).reduce((acc, h) => acc + h, 0);
-                  const height = rowHeights[index] || ROW_MIN_HEIGHT;
+                  const topPosition = index * ROW_MIN_HEIGHT;
+                  const height = ROW_MIN_HEIGHT;
 
                   return (
                     <Tooltip key={task.id}>
                       <TooltipTrigger asChild>
-                        <div className="absolute group flex items-start z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, height: `${height - 12}px`, width: `${width}px` }}>
+                        <div className="absolute group flex z-10" style={{ top: `${topPosition + 6}px`, left: `${left}px`, height: `${height - 12}px`, width: `${width}px` }}>
                           <div className={cn("h-full w-full rounded-md text-white flex items-start justify-start gap-2 px-3 py-1 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
                             {(width > 50) && <p className='text-xs font-bold whitespace-normal leading-tight text-white/90 overflow-hidden'>{task.title}</p>}
                           </div>
