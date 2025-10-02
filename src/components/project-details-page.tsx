@@ -84,7 +84,7 @@ function AssociatedGapAnalysisCard({
   
     return (
       <>
-        <Card className="lg:col-span-3">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GitCompareArrows /> Associated GAP Analysis
@@ -358,8 +358,69 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-3">
+      <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Project Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="font-medium text-muted-foreground">Progress</span>
+                        <span className="font-semibold">{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} />
+                </div>
+                 <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Status</span>
+                  <Badge variant="outline" className={cn("text-xs font-semibold", {
+                      'border-transparent bg-green-100 text-green-800': project.status === 'Completed',
+                      'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track',
+                      'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk',
+                      'border-transparent bg-red-100 text-red-800': project.status === 'Off Track',
+                  })}>{project.status}</Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Project Manager</span>
+                  <span className="font-medium">{projectManager?.name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Start</span>
+                  <span className="font-medium">{format(parseISO(project.startDate), 'PPP')}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">End</span>
+                  <span className="font-medium">{format(parseISO(project.endDate), 'PPP')}</span>
+                </div>
+              </CardContent>
+          </Card>
+          <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users /> Team Involved
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {project.team.map((user, index) => (
+                    <div key={`${user.id}-${index}`} className="flex items-center gap-4">
+                        <Avatar>
+                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
+                            <AvatarFallback>
+                              <UserIcon className="h-5 w-5" />
+                            </AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-medium">{user.name}</p>
+                            <p className="text-sm text-muted-foreground">{user.role}</p>
+                        </div>
+                    </div>
+                ))}
+              </CardContent>
+          </Card>
+        </div>
+
+        <Card>
           <CardHeader>
               <CardTitle className="flex items-center gap-2">
                   <GanttChartSquare /> Project Timeline
@@ -377,184 +438,85 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           </CardContent>
         </Card>
 
-        {project.projectType === 'Rulemaking' && <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />}
-
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-          <TasksTable 
-            projectId={project.id}
-            projectType={project.projectType}
-            tasks={tasks}
-            teamMembers={project.team}
-            onTasksChange={handleTaskDataChange}
-          />
-          
-          <Card>
-             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                    <Paperclip /> {documentsCardTitle}
-                </CardTitle>
-                <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
-             </CardHeader>
-             <CardContent>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {(documents || []).map((doc) => (
-                          <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
-                            {getDocumentIcon(doc.type)}
-                            <div className="flex-1 overflow-hidden">
-                                <p className="font-medium truncate">{doc.name}</p>
-                                {doc.uploadDate && <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
-                            </div>
-                            <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                                <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
-                                    <LinkIcon className="h-4 w-4" />
-                                </a>
-                            </Button>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => setDocToDelete(doc)} disabled={isDeletingDoc === doc.id} aria-label={`Delete document ${doc.name}`}>
-                                {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                             </Button>
-                          </div>
-                        ))}
-                    </div>
-                     {documents.length === 0 && (
-                        <p className="text-muted-foreground text-center py-4">No documents linked yet.</p>
-                    )}
-                </div>
-             </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                    <Folder /> Sub-Projects
-                </CardTitle>
-                <AddSubProjectDialog projectId={project.id} projectType={project.projectType} onSubProjectAdd={handleSubProjectAdd} />
-            </CardHeader>
-            <CardContent>
-              {subProjects.length > 0 ? (
-                <div className="space-y-4">
-                  {subProjects.map(sub => (
-                    <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-semibold">{sub.name}</p>
-                        <p className="text-sm text-muted-foreground">{sub.description}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <Badge variant="outline" className={cn("text-xs font-semibold", subProjectStatusStyles[sub.status])}>
-                            {sub.status}
-                        </Badge>
-                        <div className="print:hidden">
-                          <EditSubProjectDialog projectId={project.id} projectType={project.projectType} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">No sub-projects yet.</p>
-              )}
-            </CardContent>
-          </Card>
-
-        </div>
-
-        {/* Right Column */}
-        <div className="lg:col-span-1 space-y-6">
-          {project.projectType === 'Rulemaking' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>What's Next?</CardTitle>
-                <CardDescription>
-                  Guidance on the next steps based on the standard rulemaking process.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {currentTask ? (
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm font-semibold text-muted-foreground">CURRENT TASK</p>
-                      <p className="font-bold text-lg text-primary">{currentTask.label}</p>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-semibold text-muted-foreground">NEXT TASK</p>
-                        <p className="font-semibold">{nextTask ? nextTask.label : 'Project Finalization'}</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Flag className="h-5 w-5 text-green-600" />
-                    <p className="font-semibold text-green-600">All standard tasks completed!</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                      <span className="font-medium text-muted-foreground">Progress</span>
-                      <span className="font-semibold">{Math.round(progress)}%</span>
-                  </div>
-                  <Progress value={progress} />
-              </div>
-               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Status</span>
-                <Badge variant="outline" className={cn("text-xs font-semibold", {
-                    'border-transparent bg-green-100 text-green-800': project.status === 'Completed',
-                    'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track',
-                    'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk',
-                    'border-transparent bg-red-100 text-red-800': project.status === 'Off Track',
-                })}>{project.status}</Badge>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Project Manager</span>
-                <span className="font-medium">{projectManager?.name}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Start</span>
-                <span className="font-medium">{format(parseISO(project.startDate), 'PPP')}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">End</span>
-                <span className="font-medium">{format(parseISO(project.endDate), 'PPP')}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
+        {project.projectType === 'Rulemaking' && (
+          <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
+        )}
+        
+        <TasksTable 
+          projectId={project.id}
+          projectType={project.projectType}
+          tasks={tasks}
+          teamMembers={project.team}
+          onTasksChange={handleTaskDataChange}
+        />
+        
+        <Card>
+           <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <Users /> Team Involved
+                  <Paperclip /> {documentsCardTitle}
               </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {project.team.map((user, index) => (
-                  <div key={`${user.id}-${index}`} className="flex items-center gap-4">
-                      <Avatar>
-                          <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                          <AvatarFallback>
-                            <UserIcon className="h-5 w-5" />
-                          </AvatarFallback>
-                      </Avatar>
-                      <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">{user.role}</p>
-                      </div>
+              <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
+           </CardHeader>
+           <CardContent>
+              <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {(documents || []).map((doc) => (
+                        <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                          {getDocumentIcon(doc.type)}
+                          <div className="flex-1 overflow-hidden">
+                              <p className="font-medium truncate">{doc.name}</p>
+                              {doc.uploadDate && <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
+                          </div>
+                          <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                              <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
+                                  <LinkIcon className="h-4 w-4" />
+                              </a>
+                          </Button>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => setDocToDelete(doc)} disabled={isDeletingDoc === doc.id} aria-label={`Delete document ${doc.name}`}>
+                              {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                           </Button>
+                        </div>
+                      ))}
                   </div>
-              ))}
-            </CardContent>
-          </Card>
-          
-        </div>
+                   {documents.length === 0 && (
+                      <p className="text-muted-foreground text-center py-4">No documents linked yet.</p>
+                  )}
+              </div>
+           </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                  <Folder /> Sub-Projects
+              </CardTitle>
+              <AddSubProjectDialog projectId={project.id} projectType={project.projectType} onSubProjectAdd={handleSubProjectAdd} />
+          </CardHeader>
+          <CardContent>
+            {subProjects.length > 0 ? (
+              <div className="space-y-4">
+                {subProjects.map(sub => (
+                  <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg border">
+                    <div>
+                      <p className="font-semibold">{sub.name}</p>
+                      <p className="text-sm text-muted-foreground">{sub.description}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Badge variant="outline" className={cn("text-xs font-semibold", subProjectStatusStyles[sub.status])}>
+                          {sub.status}
+                      </Badge>
+                      <div className="print:hidden">
+                        <EditSubProjectDialog projectId={project.id} projectType={project.projectType} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">No sub-projects yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
