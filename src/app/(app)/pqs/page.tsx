@@ -359,7 +359,7 @@ export default function PqsPage() {
                             <div>
                                 <CardTitle>PQs Records</CardTitle>
                                 <CardDescription>
-                                    A list of all Protocol Questions records from Firestore.
+                                    A list of all Protocol Questions records from the database.
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
@@ -460,5 +460,7 @@ export default function PqsPage() {
     </div>
   );
 }
+
+    
 
     

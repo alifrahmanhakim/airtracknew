@@ -323,7 +323,7 @@ export default function CcefodPage() {
                     <CardHeader>
                     <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
                     <CardDescription>
-                        Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di Firestore.
+                        Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di database.
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -394,7 +394,7 @@ export default function CcefodPage() {
                             <div>
                                 <CardTitle>CC/EFOD Records</CardTitle>
                                 <CardDescription>
-                                    Berikut adalah daftar data yang telah dimasukkan dari Firestore.
+                                    Berikut adalah daftar data yang telah dimasukkan dari database.
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-2 print:hidden">
@@ -532,3 +532,5 @@ export default function CcefodPage() {
     </div>
   );
 }
+
+    

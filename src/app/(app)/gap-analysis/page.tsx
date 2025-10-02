@@ -183,7 +183,7 @@ export default function GapAnalysisPage() {
                     <CardHeader>
                         <CardTitle>GAP Analysis Records</CardTitle>
                         <CardDescription>
-                            A list of all GAP Analysis records from Firestore.
+                            A list of all GAP Analysis records from the database.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -241,3 +241,5 @@ export default function GapAnalysisPage() {
     </div>
   );
 }
+
+    
