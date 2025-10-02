@@ -138,9 +138,10 @@ type TaskRowProps = {
   onTaskDelete: (taskId: string) => void;
   onViewTask: (task: Task) => void;
   isDeleting: boolean;
+  taskNumber: string;
 };
 
-const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, onViewTask, isDeleting }: TaskRowProps) => {
+const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, onViewTask, isDeleting, taskNumber }: TaskRowProps) => {
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(true);
     
@@ -156,29 +157,32 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
     return (
         <React.Fragment>
             <TableRow className="border-b">
-                <TableCell style={{ paddingLeft: `${level * 1.5 + 0.5}rem` }} className="font-medium">
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(!isOpen)} disabled={!hasSubtasks}>
-                        {hasSubtasks ? (
-                            <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-90")} />
-                        ) : (
-                           <span className='w-4 h-4'></span>
-                        )}
-                    </Button>
-                    <div className="flex items-center gap-2">
-                        <span>{task.title}</span>
-                        {task.criticalIssue && (
-                             <Tooltip>
-                                <TooltipTrigger>
-                                    <AlertTriangle className="h-4 w-4 text-destructive" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p className="font-semibold">Critical Issue:</p>
-                                    <p>{task.criticalIssue}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        )}
+                 <TableCell>
+                    <div className="flex items-center" style={{ paddingLeft: `${level * 1.5}rem` }}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(!isOpen)} disabled={!hasSubtasks}>
+                            {hasSubtasks ? (
+                                <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-90")} />
+                            ) : (
+                            <span className='w-4 h-4'></span>
+                            )}
+                        </Button>
+                        <span>{taskNumber}</span>
                     </div>
+                </TableCell>
+                <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                    <span>{task.title}</span>
+                    {task.criticalIssue && (
+                            <Tooltip>
+                            <TooltipTrigger>
+                                <AlertTriangle className="h-4 w-4 text-destructive" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="font-semibold">Critical Issue:</p>
+                                <p>{task.criticalIssue}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
                 </div>
                 </TableCell>
                 <TableCell>{task.namaSurat}</TableCell>
@@ -231,7 +235,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     </Tooltip>
                 </TableCell>
             </TableRow>
-            {isOpen && hasSubtasks && task.subTasks.map(subTask => (
+            {isOpen && hasSubtasks && task.subTasks.map((subTask, subIndex) => (
                 <TaskRow
                     key={subTask.id}
                     task={subTask}
@@ -243,6 +247,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     onTaskDelete={onTaskDelete}
                     onViewTask={onViewTask}
                     isDeleting={isDeleting}
+                    taskNumber={`${taskNumber}.${subIndex + 1}`}
                 />
             ))}
             <AddTaskDialog 
@@ -448,6 +453,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         <Table className="min-w-[900px]">
                             <TableHeader>
                                 <TableRow>
+                                <TableHead className="w-[50px]">No.</TableHead>
                                 <TableHead className="w-[30%]" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
@@ -464,7 +470,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {sortedTasks.length > 0 ? sortedTasks.map((task) => (
+                                {sortedTasks.length > 0 ? sortedTasks.map((task, index) => (
                                     <TaskRow 
                                         key={task.id}
                                         task={task}
@@ -476,6 +482,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                         onTaskDelete={handleDeleteRequest}
                                         onViewTask={setTaskToView}
                                         isDeleting={isDeleting && taskToDelete?.id === task.id}
+                                        taskNumber={`${index + 1}`}
                                     />
                                 )) : (
                                 <TableRow>
