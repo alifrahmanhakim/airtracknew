@@ -359,66 +359,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Project Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                        <span className="font-medium text-muted-foreground">Progress</span>
-                        <span className="font-semibold">{Math.round(progress)}%</span>
-                    </div>
-                    <Progress value={progress} />
-                </div>
-                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge variant="outline" className={cn("text-xs font-semibold", {
-                      'border-transparent bg-green-100 text-green-800': project.status === 'Completed',
-                      'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track',
-                      'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk',
-                      'border-transparent bg-red-100 text-red-800': project.status === 'Off Track',
-                  })}>{project.status}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Project Manager</span>
-                  <span className="font-medium">{projectManager?.name}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Start</span>
-                  <span className="font-medium">{format(parseISO(project.startDate), 'PPP')}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">End</span>
-                  <span className="font-medium">{format(parseISO(project.endDate), 'PPP')}</span>
-                </div>
-              </CardContent>
-          </Card>
-          <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users /> Team Involved
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {project.team.map((user, index) => (
-                    <div key={`${user.id}-${index}`} className="flex items-center gap-4">
-                        <Avatar>
-                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                            <AvatarFallback>
-                              <UserIcon className="h-5 w-5" />
-                            </AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.role}</p>
-                        </div>
-                    </div>
-                ))}
-              </CardContent>
-          </Card>
-        </div>
 
         <Card>
           <CardHeader>
@@ -517,6 +457,67 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             )}
           </CardContent>
         </Card>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+              <CardHeader>
+                <CardTitle>Project Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="font-medium text-muted-foreground">Progress</span>
+                        <span className="font-semibold">{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} />
+                </div>
+                 <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Status</span>
+                  <Badge variant="outline" className={cn("text-xs font-semibold", {
+                      'border-transparent bg-green-100 text-green-800': project.status === 'Completed',
+                      'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track',
+                      'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk',
+                      'border-transparent bg-red-100 text-red-800': project.status === 'Off Track',
+                  })}>{project.status}</Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Project Manager</span>
+                  <span className="font-medium">{projectManager?.name}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Start</span>
+                  <span className="font-medium">{format(parseISO(project.startDate), 'PPP')}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">End</span>
+                  <span className="font-medium">{format(parseISO(project.endDate), 'PPP')}</span>
+                </div>
+              </CardContent>
+          </Card>
+          <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users /> Team Involved
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {project.team.map((user, index) => (
+                    <div key={`${user.id}-${index}`} className="flex items-center gap-4">
+                        <Avatar>
+                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
+                            <AvatarFallback>
+                              <UserIcon className="h-5 w-5" />
+                            </AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-medium">{user.name}</p>
+                            <p className="text-sm text-muted-foreground">{user.role}</p>
+                        </div>
+                    </div>
+                ))}
+              </CardContent>
+          </Card>
+        </div>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
