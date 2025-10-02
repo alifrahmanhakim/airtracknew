@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Task, User, Project } from '@/lib/types';
+import type { Task, User, Project, Attachment } from '@/lib/types';
 import { findUserById } from '@/lib/data-utils';
 import {
   Table,
@@ -144,7 +144,6 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(true);
     
-    const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean);
     const hasSubtasks = task.subTasks && task.subTasks.length > 0;
     
     const statusStyles: { [key in Task['status']]: string } = {
@@ -185,24 +184,18 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                 <TableCell>{task.namaSurat}</TableCell>
                 <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
-                    <div className="flex items-center -space-x-2">
-                        {assignees.map((assignee) => (
-                            assignee && (
-                            <Tooltip key={assignee.id}>
-                                <TooltipTrigger asChild>
-                                <Avatar className="h-6 w-6 border-2 border-background">
-                                    <AvatarImage src={assignee.avatarUrl} data-ai-hint="person portrait" />
-                                    <AvatarFallback>
-                                      <UserIcon className="h-3 w-3" />
-                                    </AvatarFallback>
-                                </Avatar>
-                                </TooltipTrigger>
-                                <TooltipContent>{assignee.name}</TooltipContent>
-                            </Tooltip>
-                            )
-                        ))}
-                        {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
-                    </div>
+                    {(task.attachments || []).length > 0 ? (
+                        <div className="flex flex-col gap-1 items-start">
+                            {(task.attachments || []).map(att => (
+                                <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline truncate">
+                                    <LinkIcon className="h-3 w-3" />
+                                    <span className="truncate">{att.name}</span>
+                                </a>
+                            ))}
+                        </div>
+                    ) : (
+                        <span className="text-xs text-muted-foreground">None</span>
+                    )}
                 </TableCell>
                 <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
@@ -266,7 +259,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
 };
 
 type SortDescriptor = {
-  column: keyof Task;
+  column: keyof Task | 'attachments';
   direction: 'asc' | 'desc';
 };
 
@@ -299,7 +292,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                 
                 const searchTermMatch = searchTerm ? task.title.toLowerCase().includes(searchTerm.toLowerCase()) : true;
                 const statusMatch = statusFilter === 'all' || task.status === statusFilter;
-                const assigneeMatch = assigneeFilter === 'all' || task.assigneeIds.includes(assigneeFilter);
+                const assigneeMatch = assigneeFilter === 'all' || (task.assigneeIds && task.assigneeIds.includes(assigneeFilter));
                 
                 const selfMatch = searchTermMatch && statusMatch && assigneeMatch;
 
@@ -316,8 +309,8 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const sortedTasks = React.useMemo(() => {
         const sortRecursively = (tasks: Task[]): Task[] => {
             tasks.sort((a, b) => {
-                const valA = a[sort.column];
-                const valB = b[sort.column];
+                const valA = a[sort.column as keyof Task];
+                const valB = b[sort.column as keyof Task];
                 if (valA === undefined) return 1;
                 if (valB === undefined) return -1;
                 
@@ -343,14 +336,14 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
 
     }, [filteredTasks, sort]);
 
-    const handleSort = (column: keyof Task) => {
+    const handleSort = (column: keyof Task | 'attachments') => {
         setSort(prev => ({
             column,
             direction: prev.column === column && prev.direction === 'asc' ? 'desc' : 'asc'
         }));
     };
 
-    const renderSortIcon = (column: keyof Task) => {
+    const renderSortIcon = (column: keyof Task | 'attachments') => {
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
     };
@@ -455,12 +448,12 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         <Table className="min-w-[900px]">
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[35%]" onClick={() => handleSort('title')}>
+                                <TableHead className="w-[30%]" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
                                 <TableHead>Nama Surat</TableHead>
                                 <TableHead>Tgl. Pelaksanaan</TableHead>
-                                <TableHead>Assignee</TableHead>
+                                <TableHead>Attachments</TableHead>
                                 <TableHead onClick={() => handleSort('dueDate')}>
                                     <div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div>
                                 </TableHead>
