@@ -457,9 +457,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             )}
           </CardContent>
         </Card>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
+            <Card>
               <CardHeader>
                 <CardTitle>Project Summary</CardTitle>
               </CardHeader>
@@ -503,7 +503,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               <CardContent className="space-y-4">
                 {project.team.map((user, index) => (
                     <div key={`${user.id}-${index}`} className="flex items-center gap-4">
-                        <Avatar>
+                        <Avatar className="h-10 w-10">
                             <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
                             <AvatarFallback>
                               <UserIcon className="h-5 w-5" />
