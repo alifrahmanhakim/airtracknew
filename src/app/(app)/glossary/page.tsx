@@ -236,7 +236,7 @@ export default function GlossaryPage() {
     }
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 print:hidden">
                 <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
                     <h1 className="text-3xl font-bold">Translation Analysis</h1>
                     <p className="text-muted-foreground">
@@ -255,7 +255,7 @@ export default function GlossaryPage() {
                 </div>
             </div>
             
-            <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
+            <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden', 'print:hidden')}>
                 <Card className="max-w-4xl mx-auto">
                     <CardHeader>
                     <CardTitle>Add New Translation Analysis</CardTitle>
@@ -269,9 +269,9 @@ export default function GlossaryPage() {
                 </Card>
             </TabsContent>
             
-            <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
+            <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden', 'print:!block')}>
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="print:hidden">
                       <div className="flex justify-between items-start">
                         <div>
                           <CardTitle>Translation Records</CardTitle>
@@ -306,7 +306,7 @@ export default function GlossaryPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex flex-col sm:flex-row gap-4 print:hidden">
                                 <div className="relative flex-grow">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input 
@@ -335,7 +335,7 @@ export default function GlossaryPage() {
                                 setSort={setSort}
                             />
                             
-                             <Pagination>
+                             <Pagination className="print:hidden">
                                 <PaginationContent>
                                 <PaginationItem>
                                     <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
@@ -355,7 +355,7 @@ export default function GlossaryPage() {
                 </Card>
             </TabsContent>
 
-            <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
+            <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden', 'print:hidden')}>
                 <Card>
                     <CardHeader>
                         <CardTitle>Analysis Analytics</CardTitle>
