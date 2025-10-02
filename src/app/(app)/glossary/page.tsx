@@ -15,7 +15,6 @@ import { deleteAllGlossaryRecords, deleteGlossaryRecord } from '@/lib/actions/gl
 import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, Printer, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import {
   AlertDialog,
@@ -332,21 +331,26 @@ export default function GlossaryPage() {
                                 setSort={setSort}
                             />
                             
-                             <Pagination className="print:hidden">
-                                <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <span className="px-4 py-2 text-sm">
-                                        Page {currentPage} of {totalPages}
-                                    </span>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
-                                </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
+                             <div className="flex items-center justify-between print:hidden">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing {paginatedRecords.length} of {filteredAndSortedRecords.length} records.
+                                </div>
+                                <Pagination>
+                                    <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <span className="px-4 py-2 text-sm">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
