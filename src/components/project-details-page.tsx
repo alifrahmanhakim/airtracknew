@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -163,6 +162,21 @@ type ProjectDetailsPageProps = {
   project: Project;
   users: User[];
   allGapAnalysisRecords: GapAnalysisRecord[];
+};
+
+type DetailRowProps = {
+  label: string;
+  value?: string | React.ReactNode;
+};
+
+const DetailRow = ({ label, value }: DetailRowProps) => {
+  if (!value && typeof value !== 'number') return null;
+  return (
+    <div className="flex justify-between items-center py-2 border-b">
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-semibold text-right">{value}</dd>
+    </div>
+  );
 };
 
 export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords: initialGapRecords }: ProjectDetailsPageProps) {
