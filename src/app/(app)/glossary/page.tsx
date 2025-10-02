@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllGlossaryRecords, deleteGlossaryRecord } from '@/lib/actions/glossary';
-import { Loader2, FileSpreadsheet, AlertTriangle, Trash2 } from 'lucide-react';
+import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, Printer, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Papa from 'papaparse';
@@ -26,6 +26,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
@@ -212,6 +218,10 @@ export default function GlossaryPage() {
     toast({ title: 'Export Started', description: 'Your glossary data is being downloaded.' });
   }
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   function renderContent() {
     if (isLoading) {
       return (
@@ -269,11 +279,24 @@ export default function GlossaryPage() {
                               Browse and manage the list of all translation analyses.
                           </CardDescription>
                         </div>
-                        <div className='flex items-center gap-2'>
-                          <Button variant="outline" onClick={handleExport} disabled={allRecords.length === 0}>
-                              <FileSpreadsheet className="mr-2 h-4 w-4" />
-                              Export CSV
-                          </Button>
+                        <div className='flex items-center gap-2 print:hidden'>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" disabled={allRecords.length === 0}>
+                                Export <ChevronDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={handleExport}>
+                                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                Export to CSV
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={handlePrint}>
+                                <Printer className="mr-2 h-4 w-4" />
+                                Print to PDF
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                            <Button variant="destructive" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete All
