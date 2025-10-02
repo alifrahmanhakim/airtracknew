@@ -38,7 +38,9 @@ export function Combobox({
       />
       <datalist id={dataListId}>
         {options.map((option) => (
-          <option key={option.value} value={option.value} />
+          <option key={option.label} value={option.value}>
+            {option.label}
+          </option>
         ))}
       </datalist>
     </>

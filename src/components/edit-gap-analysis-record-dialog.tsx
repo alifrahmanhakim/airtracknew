@@ -42,13 +42,21 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     const fetchProjects = async () => {
         const projectsSnapshot = await getDocs(collection(db, "rulemakingProjects"));
         const projectsFromDb = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
-        const options = projectsFromDb
-            .filter(p => p.casr)
-            .map(p => ({
-                value: `CASR ${p.casr}`,
-                label: `CASR ${p.casr} - ${p.name}`
-            }));
-        setCasrOptions(options);
+        
+        const uniqueCasrMap = new Map<string, { label: string; value: string }>();
+        projectsFromDb.forEach(p => {
+          if (p.casr) {
+            const value = `CASR ${p.casr}`;
+            if (!uniqueCasrMap.has(value)) {
+              uniqueCasrMap.set(value, {
+                value: value,
+                label: `${value} - ${p.name}`
+              });
+            }
+          }
+        });
+        
+        setCasrOptions(Array.from(uniqueCasrMap.values()));
     };
     fetchProjects();
   }, []);
