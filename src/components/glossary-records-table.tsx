@@ -69,16 +69,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
   return (
     <TooltipProvider>
         <div className="border rounded-md">
-          <Table className="table-fixed">
-            <colgroup>
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '10%' }} />
-              <col style={{ width: '15%' }} />
-            </colgroup>
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="cursor-pointer" onClick={() => handleSort('tsu')}>
@@ -97,13 +88,13 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
             </TableHeader>
             <TableBody>
               {records.map((record) => (
-                <TableRow key={record.id} className="cursor-pointer" onClick={() => setRecordToView(record)}>
-                    <TableCell className="font-semibold max-w-xs truncate">{record.tsu}</TableCell>
-                    <TableCell className="max-w-xs truncate">{record.tsa}</TableCell>
-                    <TableCell className="max-w-xs truncate">{record.editing}</TableCell>
-                    <TableCell className="max-w-xs truncate">{record.makna}</TableCell>
-                    <TableCell className="max-w-xs truncate">{record.keterangan}</TableCell>
-                    <TableCell className="max-w-xs truncate">{record.referensi}</TableCell>
+                <TableRow key={record.id} className="cursor-pointer align-top" onClick={() => setRecordToView(record)}>
+                    <TableCell className="font-semibold whitespace-normal">{record.tsu}</TableCell>
+                    <TableCell className="whitespace-normal">{record.tsa}</TableCell>
+                    <TableCell className="whitespace-normal">{record.editing}</TableCell>
+                    <TableCell className="whitespace-normal">{record.makna}</TableCell>
+                    <TableCell className="whitespace-normal">{record.keterangan}</TableCell>
+                    <TableCell className="whitespace-normal">{record.referensi}</TableCell>
                     <TableCell>
                         <Badge
                             variant={record.status === 'Final' ? 'default' : 'secondary'}
