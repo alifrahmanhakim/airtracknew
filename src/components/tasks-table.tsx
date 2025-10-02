@@ -46,6 +46,7 @@ import {
   ArrowUpDown,
   Search,
   RotateCcw,
+  ChevronDown,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -60,6 +61,8 @@ import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+
 
 const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
     if (!value) return null;
@@ -139,9 +142,10 @@ type TaskRowProps = {
   onViewTask: (task: Task) => void;
   isDeleting: boolean;
   taskNumber: string;
+  visibleColumns: Record<string, boolean>;
 };
 
-const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, onViewTask, isDeleting, taskNumber }: TaskRowProps) => {
+const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, onViewTask, isDeleting, taskNumber, visibleColumns }: TaskRowProps) => {
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(true);
     
@@ -185,9 +189,9 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     )}
                 </div>
                 </TableCell>
-                <TableCell>{task.namaSurat}</TableCell>
-                <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : 'N/A'}</TableCell>
-                <TableCell>
+                {visibleColumns.namaSurat && <TableCell>{task.namaSurat || 'N/A'}</TableCell>}
+                {visibleColumns.tanggalPelaksanaan && <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : 'N/A'}</TableCell>}
+                {visibleColumns.attachments && <TableCell>
                     {(task.attachments || []).length > 0 ? (
                         <div className="flex flex-col gap-1 items-start">
                             {(task.attachments || []).map(att => (
@@ -200,8 +204,8 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     ) : (
                         <span className="text-xs text-muted-foreground">None</span>
                     )}
-                </TableCell>
-                <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>
+                </TableCell>}
+                {visibleColumns.dueDate && <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>}
                 <TableCell>
                     <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                         {task.status}
@@ -248,6 +252,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     onViewTask={onViewTask}
                     isDeleting={isDeleting}
                     taskNumber={`${taskNumber}.${subIndex + 1}`}
+                    visibleColumns={visibleColumns}
                 />
             ))}
             <AddTaskDialog 
@@ -287,6 +292,29 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const [statusFilter, setStatusFilter] = React.useState('all');
     const [assigneeFilter, setAssigneeFilter] = React.useState('all');
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'dueDate', direction: 'asc' });
+
+    const [columnVisibility, setColumnVisibility] = React.useState<Record<string, boolean>>({
+        no: true,
+        task: true,
+        namaSurat: false,
+        tanggalPelaksanaan: false,
+        attachments: true,
+        dueDate: false,
+        status: true,
+        actions: true,
+    });
+    
+    const columnDefs: { key: keyof Task | 'no' | 'actions' | 'attachments' | 'namaSurat' | 'tanggalPelaksanaan'; header: string }[] = [
+        { key: 'no', header: 'No.' },
+        { key: 'title', header: 'Task' },
+        { key: 'namaSurat', header: 'Nama Surat' },
+        { key: 'tanggalPelaksanaan', header: 'Tgl. Pelaksanaan' },
+        { key: 'attachments', header: 'Attachments' },
+        { key: 'dueDate', header: 'Due Date' },
+        { key: 'status', header: 'Status' },
+        { key: 'actions', header: 'Actions' },
+    ];
+
 
     const filteredTasks = React.useMemo(() => {
         let filtered = [...tasks];
@@ -435,6 +463,27 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 ))}
                             </SelectContent>
                         </Select>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="w-full sm:w-auto">
+                                    Columns <ChevronDown className="ml-2 h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {columnDefs.filter(c => c.key !== 'actions' && c.key !== 'no' && c.key !== 'title' && c.key !== 'status').map(col => (
+                                    <DropdownMenuCheckboxItem
+                                        key={col.key}
+                                        className="capitalize"
+                                        checked={columnVisibility[col.key]}
+                                        onCheckedChange={value => setColumnVisibility(prev => ({ ...prev, [col.key]: !!value }))}
+                                    >
+                                        {col.header}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         {(searchTerm || statusFilter !== 'all' || assigneeFilter !== 'all') && (
                             <Button variant="ghost" onClick={resetFilters}>
                                 <RotateCcw className="mr-2 h-4 w-4" /> Reset
@@ -457,12 +506,12 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 <TableHead className="w-[30%]" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
-                                <TableHead>Nama Surat</TableHead>
-                                <TableHead>Tgl. Pelaksanaan</TableHead>
-                                <TableHead>Attachments</TableHead>
-                                <TableHead onClick={() => handleSort('dueDate')}>
+                                {columnVisibility.namaSurat && <TableHead>Nama Surat</TableHead>}
+                                {columnVisibility.tanggalPelaksanaan && <TableHead>Tgl. Pelaksanaan</TableHead>}
+                                {columnVisibility.attachments && <TableHead>Attachments</TableHead>}
+                                {columnVisibility.dueDate && <TableHead onClick={() => handleSort('dueDate')}>
                                     <div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div>
-                                </TableHead>
+                                </TableHead>}
                                 <TableHead onClick={() => handleSort('status')}>
                                     <div className="flex items-center cursor-pointer">Status {renderSortIcon('status')}</div>
                                 </TableHead>
@@ -483,10 +532,11 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                         onViewTask={setTaskToView}
                                         isDeleting={isDeleting && taskToDelete?.id === task.id}
                                         taskNumber={`${index + 1}`}
+                                        visibleColumns={columnVisibility}
                                     />
                                 )) : (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="text-center text-muted-foreground h-24">No tasks match your criteria.</TableCell>
+                                    <TableCell colSpan={Object.values(columnVisibility).filter(v => v).length} className="text-center text-muted-foreground h-24">No tasks match your criteria.</TableCell>
                                 </TableRow>
                                 )}
                             </TableBody>
