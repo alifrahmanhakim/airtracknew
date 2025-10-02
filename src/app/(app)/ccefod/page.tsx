@@ -460,21 +460,26 @@ export default function CcefodPage() {
                                 setSort={setSort}
                                 searchTerm={searchTerm}
                             />
-                             <Pagination>
-                                <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <span className="px-4 py-2 text-sm">
-                                        Page {currentPage} of {totalPages}
-                                    </span>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
-                                </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
+                             <div className="flex items-center justify-between">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing {paginatedRecords.length} of {filteredRecords.length} records.
+                                </div>
+                                <Pagination>
+                                    <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <span className="px-4 py-2 text-sm">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
