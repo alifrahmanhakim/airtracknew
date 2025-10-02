@@ -23,6 +23,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -35,6 +42,7 @@ import {
   Network,
   Link as LinkIcon,
   User as UserIcon,
+  Eye,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -46,6 +54,75 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import Link from 'next/link';
 import { ScrollArea } from './ui/scroll-area';
+import { Separator } from './ui/separator';
+
+const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
+    if (!value) return null;
+    return (
+        <div className="grid grid-cols-3 gap-2 py-2 border-b">
+            <dt className="font-semibold text-muted-foreground">{label}</dt>
+            <dd className="col-span-2 text-sm">{value}</dd>
+        </div>
+    );
+};
+
+const TaskDetailDialog = ({ task, teamMembers, open, onOpenChange }: { task: Task | null; teamMembers: User[]; open: boolean; onOpenChange: (open: boolean) => void; }) => {
+    if (!task) return null;
+
+    const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean) as User[];
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Task Details</DialogTitle>
+                    <DialogDescription>{task.title}</DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] pr-4">
+                    <dl className="space-y-2">
+                        <DetailRow label="Nama Surat" value={task.namaSurat || '-'} />
+                        <DetailRow label="Perihal Surat" value={task.perihalSurat || '-'} />
+                        <DetailRow label="Tanggal Pelaksanaan" value={task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : '-'} />
+                        <Separator className="my-2" />
+                        <DetailRow label="Assignees" value={
+                            assignees.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {assignees.map(a => (
+                                        <Badge key={a.id} variant="secondary" className="gap-2">
+                                            <Avatar className="h-4 w-4">
+                                                <AvatarImage src={a.avatarUrl} />
+                                                <AvatarFallback><UserIcon className="h-3 w-3" /></AvatarFallback>
+                                            </Avatar>
+                                            {a.name}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            ) : <span className="text-muted-foreground">Unassigned</span>
+                        } />
+                        <DetailRow label="Start Date" value={task.startDate ? format(parseISO(task.startDate), 'PPP') : 'N/A'} />
+                        <DetailRow label="Due Date" value={task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'} />
+                        <DetailRow label="Status" value={<Badge variant="outline" className={cn({ 'border-transparent bg-green-100 text-green-800': task.status === 'Done', 'border-transparent bg-blue-100 text-blue-800': task.status === 'In Progress', 'border-transparent bg-gray-100 text-gray-800': task.status === 'To Do', 'border-transparent bg-red-100 text-red-800': task.status === 'Blocked' })}>{task.status}</Badge>} />
+                         {task.doneDate && <DetailRow label="Completed On" value={format(parseISO(task.doneDate), 'PPP')} />}
+                         {task.criticalIssue && <DetailRow label="Critical Issue" value={<span className="text-destructive font-semibold">{task.criticalIssue}</span>} />}
+                        <Separator className="my-2" />
+                        <DetailRow label="Attachments" value={
+                            (task.attachments || []).length > 0 ? (
+                                <div className="flex flex-col gap-2">
+                                    {(task.attachments || []).map(att => (
+                                        <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                                            <LinkIcon className="h-4 w-4" /> {att.name}
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : <span className="text-muted-foreground">No attachments</span>
+                        } />
+                    </dl>
+                </ScrollArea>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 type TaskRowProps = {
   task: Task;
@@ -55,10 +132,11 @@ type TaskRowProps = {
   projectType: Project['projectType'];
   onTaskUpdate: (tasks: Task[]) => void;
   onTaskDelete: (taskId: string) => void;
+  onViewTask: (task: Task) => void;
   isDeleting: boolean;
 };
 
-const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting }: TaskRowProps) => {
+const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, onViewTask, isDeleting }: TaskRowProps) => {
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(true);
     
@@ -84,12 +162,22 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                            <span className='w-4 h-4'></span>
                         )}
                     </Button>
-                    <span>{task.title}</span>
+                    <div className="flex items-center gap-2">
+                        <span>{task.title}</span>
+                        {task.criticalIssue && (
+                             <Tooltip>
+                                <TooltipTrigger>
+                                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="font-semibold">Critical Issue:</p>
+                                    <p>{task.criticalIssue}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
+                    </div>
                 </div>
                 </TableCell>
-                <TableCell>{task.namaSurat || '-'}</TableCell>
-                <TableCell>{task.perihalSurat || '-'}</TableCell>
-                <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : '-'}</TableCell>
                 <TableCell>
                     <div className="flex items-center -space-x-2">
                         {assignees.map((assignee) => (
@@ -110,29 +198,21 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                         {assignees.length === 0 && <span className="text-sm text-muted-foreground">Unassigned</span>}
                     </div>
                 </TableCell>
-                <TableCell>{task.startDate ? format(parseISO(task.startDate), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
                     <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                         {task.status}
                     </Badge>
                 </TableCell>
-                <TableCell>
-                    <div className="flex flex-col gap-1">
-                        {(task.attachments || []).map(att => (
-                            <Tooltip key={att.id}>
-                                <TooltipTrigger asChild>
-                                    <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary hover:underline">
-                                        <LinkIcon className="h-3 w-3" />
-                                        <span className="truncate">{att.name}</span>
-                                    </a>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{att.url}</p></TooltipContent>
-                            </Tooltip>
-                        ))}
-                    </div>
-                </TableCell>
                 <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onViewTask(task)}>
+                                <Eye className="h-4 w-4"/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>View Details</TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsSubtaskDialogOpen(true)}>
@@ -162,6 +242,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     projectType={projectType}
                     onTaskUpdate={onTaskUpdate}
                     onTaskDelete={onTaskDelete}
+                    onViewTask={onViewTask}
                     isDeleting={isDeleting}
                 />
             ))}
@@ -191,6 +272,8 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState(false);
     const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
+    const [taskToView, setTaskToView] = React.useState<Task | null>(null);
+
 
     const handleDeleteRequest = (taskId: string) => {
         const findTask = (tasks: Task[], id: string): Task | null => {
@@ -246,18 +329,13 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                 </CardHeader>
                 <CardContent className="pt-0">
                     <div className="w-full overflow-x-auto">
-                        <Table className="min-w-[1200px]">
+                        <Table className="min-w-[900px]">
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[30%]">Task</TableHead>
-                                <TableHead>Nama Surat</TableHead>
-                                <TableHead>Perihal Surat</TableHead>
-                                <TableHead>Tgl. Pelaksanaan</TableHead>
+                                <TableHead className="w-[40%]">Task</TableHead>
                                 <TableHead>Assignee</TableHead>
-                                <TableHead>Start Date</TableHead>
                                 <TableHead>Due Date</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Attachments</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -272,6 +350,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                         projectType={projectType}
                                         onTaskUpdate={onTasksChange}
                                         onTaskDelete={handleDeleteRequest}
+                                        onViewTask={setTaskToView}
                                         isDeleting={isDeleting && taskToDelete?.id === task.id}
                                     />
                                 )) : (
@@ -284,6 +363,14 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                     </div>
                 </CardContent>
             </Card>
+
+            <TaskDetailDialog 
+                task={taskToView}
+                teamMembers={teamMembers}
+                open={!!taskToView}
+                onOpenChange={(open) => !open && setTaskToView(null)}
+            />
+
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader className="text-center items-center">
