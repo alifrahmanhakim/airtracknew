@@ -47,6 +47,7 @@ import {
   Search,
   RotateCcw,
   ChevronDown,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -62,7 +63,7 @@ import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-
+import * as XLSX from 'xlsx';
 
 const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
     if (!value) return null;
@@ -347,7 +348,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                 if (valA === undefined) return 1;
                 if (valB === undefined) return -1;
                 
-                if (sort.column === 'dueDate') {
+                if (sort.column === 'dueDate' || sort.column === 'startDate' || sort.column === 'doneDate' || sort.column === 'tanggalPelaksanaan') {
                     const dateA = valA ? parseISO(valA as string).getTime() : 0;
                     const dateB = valB ? parseISO(valB as string).getTime() : 0;
                     return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
@@ -424,6 +425,52 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         setStatusFilter('all');
         setAssigneeFilter('all');
     };
+    
+    const flattenTasksForExport = (tasks: Task[], parentNumber = ''): any[] => {
+        let flatList: any[] = [];
+        tasks.forEach((task, index) => {
+            const taskNumber = parentNumber ? `${parentNumber}.${index + 1}` : `${index + 1}`;
+            const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)?.name).filter(Boolean).join(', ');
+            flatList.push({
+                'No.': taskNumber,
+                'Task': task.title,
+                'Nama Surat': task.namaSurat || '',
+                'Tanggal Pelaksanaan': task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'yyyy-MM-dd') : '',
+                'Assignees': assignees,
+                'Start Date': task.startDate ? format(parseISO(task.startDate), 'yyyy-MM-dd') : '',
+                'Due Date': task.dueDate ? format(parseISO(task.dueDate), 'yyyy-MM-dd') : '',
+                'Status': task.status,
+                'Attachments': (task.attachments || []).map(att => att.url).join(', '),
+                'Critical Issue': task.criticalIssue || '',
+            });
+            if (task.subTasks) {
+                flatList = flatList.concat(flattenTasksForExport(task.subTasks, taskNumber));
+            }
+        });
+        return flatList;
+    };
+
+
+    const handleExportExcel = () => {
+        const dataToExport = flattenTasksForExport(sortedTasks);
+        if (dataToExport.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no tasks to export.',
+            });
+            return;
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Tasks');
+        XLSX.writeFile(workbook, `${projectId}_tasks.xlsx`);
+        toast({
+            title: 'Export Successful',
+            description: 'Tasks have been exported to an Excel file.',
+        });
+    };
 
     return (
         <TooltipProvider>
@@ -489,6 +536,10 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 <RotateCcw className="mr-2 h-4 w-4" /> Reset
                             </Button>
                         )}
+                        <Button variant="outline" onClick={handleExportExcel}>
+                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                            Export
+                        </Button>
                         <AddTaskDialog 
                             projectId={projectId}
                             projectType={projectType}
@@ -506,8 +557,8 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 <TableHead className="w-[30%]" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
-                                {columnVisibility.namaSurat && <TableHead>Nama Surat</TableHead>}
-                                {columnVisibility.tanggalPelaksanaan && <TableHead>Tgl. Pelaksanaan</TableHead>}
+                                {columnVisibility.namaSurat && <TableHead onClick={() => handleSort('namaSurat')}><div className="flex items-center cursor-pointer">Nama Surat {renderSortIcon('namaSurat')}</div></TableHead>}
+                                {columnVisibility.tanggalPelaksanaan && <TableHead onClick={() => handleSort('tanggalPelaksanaan')}><div className="flex items-center cursor-pointer">Tgl. Pelaksanaan {renderSortIcon('tanggalPelaksanaan')}</div></TableHead>}
                                 {columnVisibility.attachments && <TableHead onClick={() => handleSort('attachments')}><div className="flex items-center cursor-pointer">Attachments {renderSortIcon('attachments')}</div></TableHead>}
                                 {columnVisibility.dueDate && <TableHead onClick={() => handleSort('dueDate')}>
                                     <div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div>
