@@ -86,7 +86,6 @@ const TaskDetailDialog = ({ task, teamMembers, open, onOpenChange }: { task: Tas
                 <ScrollArea className="max-h-[60vh] pr-4">
                     <dl className="space-y-2">
                         <DetailRow label="Nama Surat" value={task.namaSurat || '-'} />
-                        <DetailRow label="Perihal Surat" value={task.perihalSurat || '-'} />
                         <DetailRow label="Tanggal Pelaksanaan" value={task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : '-'} />
                         <Separator className="my-2" />
                         <DetailRow label="Assignees" value={
@@ -183,6 +182,8 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     </div>
                 </div>
                 </TableCell>
+                <TableCell>{task.namaSurat}</TableCell>
+                <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : 'N/A'}</TableCell>
                 <TableCell>
                     <div className="flex items-center -space-x-2">
                         {assignees.map((assignee) => (
@@ -454,9 +455,11 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         <Table className="min-w-[900px]">
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[40%]" onClick={() => handleSort('title')}>
+                                <TableHead className="w-[35%]" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
+                                <TableHead>Nama Surat</TableHead>
+                                <TableHead>Tgl. Pelaksanaan</TableHead>
                                 <TableHead>Assignee</TableHead>
                                 <TableHead onClick={() => handleSort('dueDate')}>
                                     <div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div>

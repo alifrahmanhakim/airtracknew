@@ -44,7 +44,6 @@ const taskSchema = z.object({
   startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
   namaSurat: z.string().optional(),
-  perihalSurat: z.string().optional(),
   tanggalPelaksanaan: z.date().optional(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
@@ -78,7 +77,6 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
       title: '',
       assigneeIds: [],
       namaSurat: '',
-      perihalSurat: '',
     },
   });
 
@@ -94,7 +92,6 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
       parentId: parentId,
       subTasks: [],
       namaSurat: data.namaSurat,
-      perihalSurat: data.perihalSurat,
       tanggalPelaksanaan: data.tanggalPelaksanaan ? format(data.tanggalPelaksanaan, 'yyyy-MM-dd') : undefined,
     };
     
@@ -265,19 +262,6 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
                         <FormLabel>Nama Surat</FormLabel>
                         <FormControl>
                             <Input placeholder="e.g., Undangan Rapat..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                <FormField
-                    control={form.control}
-                    name="perihalSurat"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Perihal Surat</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., Pembahasan Draft..." {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>

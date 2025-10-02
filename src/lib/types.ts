@@ -48,7 +48,6 @@ export type Task = {
   subTasks?: Task[];
   criticalIssue?: string;
   namaSurat?: string;
-  perihalSurat?: string;
   tanggalPelaksanaan?: string;
 };
 

@@ -62,7 +62,6 @@ const taskSchema = z.object({
   isCritical: z.boolean().default(false),
   criticalIssue: z.string().optional(),
   namaSurat: z.string().optional(),
-  perihalSurat: z.string().optional(),
   tanggalPelaksanaan: z.date().optional().nullable(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
@@ -106,7 +105,6 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
       isCritical: !!task.criticalIssue,
       criticalIssue: task.criticalIssue || '',
       namaSurat: task.namaSurat || '',
-      perihalSurat: task.perihalSurat || '',
       tanggalPelaksanaan: task.tanggalPelaksanaan ? parseISO(task.tanggalPelaksanaan) : null,
     },
   });
@@ -140,7 +138,6 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
         attachments: data.attachments || [],
         criticalIssue: data.isCritical ? data.criticalIssue : '',
         namaSurat: data.namaSurat,
-        perihalSurat: data.perihalSurat,
         tanggalPelaksanaan: data.tanggalPelaksanaan ? format(data.tanggalPelaksanaan, 'yyyy-MM-dd') : undefined,
     };
     
@@ -400,19 +397,6 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                         <FormLabel>Nama Surat</FormLabel>
                         <FormControl>
                             <Input placeholder="e.g., Undangan Rapat..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                <FormField
-                    control={form.control}
-                    name="perihalSurat"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Perihal Surat</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., Pembahasan Draft..." {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
