@@ -48,6 +48,7 @@ import {
   AlertTriangle,
   User as UserIcon,
   CalendarDays,
+  Search,
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -67,20 +68,16 @@ import { RulemakingAnalytics } from './rulemaking-analytics';
 import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
 import { TasksTable } from './tasks-table';
 import { ScrollArea } from './ui/scroll-area';
+import { Input } from './ui/input';
 
-type DetailRowProps = {
-  label: string;
-  value?: string | React.ReactNode;
-};
-
-const DetailRow = ({ label, value }: DetailRowProps) => {
-  if (!value && typeof value !== 'number') return null;
-  return (
-    <div className="flex justify-between items-center py-2 border-b">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-semibold text-right">{value}</dd>
-    </div>
-  );
+const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
+    if (!value && typeof value !== 'number') return null;
+    return (
+      <div className="flex justify-between items-start py-2 border-b last:border-b-0">
+        <dt className="text-sm text-muted-foreground whitespace-nowrap pr-4">{label}</dt>
+        <dd className="text-sm font-semibold text-right">{value}</dd>
+      </div>
+    );
 };
 
 
@@ -195,6 +192,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [docToDelete, setDocToDelete] = useState<ProjectDocument | Attachment | null>(null);
   const [gapRecordToDelete, setGapRecordToDelete] = useState<GapAnalysisRecord | null>(null);
+
+  const [documentSearch, setDocumentSearch] = useState('');
 
   const router = useRouter();
   const { toast } = useToast();
@@ -373,6 +372,16 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     return [...projDocs, ...taskAttachments];
   }, [project.documents, project.tasks]);
 
+  const filteredDocuments = React.useMemo(() => {
+    if (!documentSearch) return allDocuments;
+    const lowercasedSearch = documentSearch.toLowerCase();
+    return allDocuments.filter(doc =>
+      doc.name.toLowerCase().includes(lowercasedSearch) ||
+      ('taskTitle' in doc && doc.taskTitle?.toLowerCase().includes(lowercasedSearch))
+    );
+  }, [allDocuments, documentSearch]);
+
+
   return (
     <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -511,16 +520,29 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         />
         
         <Card>
-           <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                  <Paperclip /> {documentsCardTitle}
-              </CardTitle>
-              <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
+           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <CardTitle className="flex items-center gap-2">
+                    <Paperclip /> {documentsCardTitle}
+                </CardTitle>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <div className="relative w-full sm:w-auto">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search documents..."
+                    value={documentSearch}
+                    onChange={(e) => setDocumentSearch(e.target.value)}
+                    className="pl-9 w-full sm:w-[200px]"
+                  />
+                </div>
+                <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
+              </div>
            </CardHeader>
            <CardContent>
               <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {allDocuments.map((doc) => (
+                      {filteredDocuments.map((doc) => (
                         <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
                           {getDocumentIcon(doc.name)}
                           <div className="flex-1 overflow-hidden">
@@ -542,8 +564,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                         </div>
                       ))}
                   </div>
-                   {allDocuments.length === 0 && (
-                      <p className="text-muted-foreground text-center py-4">No documents linked yet.</p>
+                   {filteredDocuments.length === 0 && (
+                      <p className="text-muted-foreground text-center py-4">No documents {documentSearch ? 'match your search' : 'linked yet'}.</p>
                   )}
               </div>
            </CardContent>
@@ -582,40 +604,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           </CardContent>
         </Card>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-                <CardHeader><CardTitle>Project Summary</CardTitle></CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        <DetailRow label="Progress" value={`${Math.round(progress)}%`} />
-                        <DetailRow label="Status" value={project.status} />
-                        <DetailRow label="Project Manager" value={projectManager?.name} />
-                        <DetailRow label="Start" value={format(parseISO(project.startDate), 'PPP')} />
-                        <DetailRow label="End" value={format(parseISO(project.endDate), 'PPP')} />
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader><CardTitle>Team Involved</CardTitle></CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {project.team.map((user) => (
-                            <div key={user.id} className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">{user.name}</p>
-                                    <p className="text-sm text-muted-foreground">{user.role}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
