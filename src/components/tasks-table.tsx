@@ -43,6 +43,9 @@ import {
   Link as LinkIcon,
   User as UserIcon,
   Eye,
+  ArrowUpDown,
+  Search,
+  RotateCcw,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -55,6 +58,8 @@ import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import Link from 'next/link';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
     if (!value) return null;
@@ -259,6 +264,10 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
     );
 };
 
+type SortDescriptor = {
+  column: keyof Task;
+  direction: 'asc' | 'desc';
+};
 
 type TasksTableProps = {
     projectId: string;
@@ -274,6 +283,76 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
     const [taskToView, setTaskToView] = React.useState<Task | null>(null);
 
+    // Filter and sort state
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const [statusFilter, setStatusFilter] = React.useState('all');
+    const [assigneeFilter, setAssigneeFilter] = React.useState('all');
+    const [sort, setSort] = React.useState<SortDescriptor>({ column: 'dueDate', direction: 'asc' });
+
+    const filteredTasks = React.useMemo(() => {
+        let filtered = [...tasks];
+
+        const filterRecursively = (tasks: Task[]): Task[] => {
+            return tasks.map(task => {
+                const subTasks = task.subTasks ? filterRecursively(task.subTasks) : [];
+                
+                const searchTermMatch = searchTerm ? task.title.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+                const statusMatch = statusFilter === 'all' || task.status === statusFilter;
+                const assigneeMatch = assigneeFilter === 'all' || task.assigneeIds.includes(assigneeFilter);
+                
+                const selfMatch = searchTermMatch && statusMatch && assigneeMatch;
+
+                if (selfMatch || subTasks.length > 0) {
+                    return { ...task, subTasks };
+                }
+                return null;
+            }).filter((task): task is Task => task !== null);
+        };
+
+        return filterRecursively(filtered);
+    }, [tasks, searchTerm, statusFilter, assigneeFilter]);
+    
+    const sortedTasks = React.useMemo(() => {
+        const sortRecursively = (tasks: Task[]): Task[] => {
+            tasks.sort((a, b) => {
+                const valA = a[sort.column];
+                const valB = b[sort.column];
+                if (valA === undefined) return 1;
+                if (valB === undefined) return -1;
+                
+                if (sort.column === 'dueDate') {
+                    const dateA = valA ? parseISO(valA as string).getTime() : 0;
+                    const dateB = valB ? parseISO(valB as string).getTime() : 0;
+                    return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
+                }
+                
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    return sort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+                return 0;
+            });
+            tasks.forEach(task => {
+                if (task.subTasks) {
+                    task.subTasks = sortRecursively(task.subTasks);
+                }
+            });
+            return tasks;
+        }
+        return sortRecursively([...filteredTasks]);
+
+    }, [filteredTasks, sort]);
+
+    const handleSort = (column: keyof Task) => {
+        setSort(prev => ({
+            column,
+            direction: prev.column === column && prev.direction === 'asc' ? 'desc' : 'asc'
+        }));
+    };
+
+    const renderSortIcon = (column: keyof Task) => {
+      if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
+      return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
+    };
 
     const handleDeleteRequest = (taskId: string) => {
         const findTask = (tasks: Task[], id: string): Task | null => {
@@ -312,35 +391,84 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         setTaskToDelete(null);
         setIsDeleting(false);
       }
+      
+    const resetFilters = () => {
+        setSearchTerm('');
+        setStatusFilter('all');
+        setAssigneeFilter('all');
+    };
 
     return (
         <TooltipProvider>
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                        <ClipboardList /> Tasks
-                    </CardTitle>
-                    <AddTaskDialog 
-                        projectId={projectId}
-                        projectType={projectType}
-                        teamMembers={teamMembers}
-                        onTasksChange={onTasksChange}
-                    />
+                <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className='flex-1'>
+                        <CardTitle className="flex items-center gap-2">
+                            <ClipboardList /> Tasks
+                        </CardTitle>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                        <div className="relative w-full sm:w-auto">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                                placeholder="Search tasks..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-9 w-full sm:w-[180px] lg:w-[250px]"
+                            />
+                        </div>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-full sm:w-auto"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                <SelectItem value="To Do">To Do</SelectItem>
+                                <SelectItem value="In Progress">In Progress</SelectItem>
+                                <SelectItem value="Done">Done</SelectItem>
+                                <SelectItem value="Blocked">Blocked</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+                            <SelectTrigger className="w-full sm:w-auto"><SelectValue placeholder="Filter by assignee..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Assignees</SelectItem>
+                                {teamMembers.map(member => (
+                                    <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {(searchTerm || statusFilter !== 'all' || assigneeFilter !== 'all') && (
+                            <Button variant="ghost" onClick={resetFilters}>
+                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                            </Button>
+                        )}
+                        <AddTaskDialog 
+                            projectId={projectId}
+                            projectType={projectType}
+                            teamMembers={teamMembers}
+                            onTasksChange={onTasksChange}
+                        />
+                    </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                     <div className="w-full overflow-x-auto">
                         <Table className="min-w-[900px]">
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[40%]">Task</TableHead>
+                                <TableHead className="w-[40%]" onClick={() => handleSort('title')}>
+                                    <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
+                                </TableHead>
                                 <TableHead>Assignee</TableHead>
-                                <TableHead>Due Date</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead onClick={() => handleSort('dueDate')}>
+                                    <div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div>
+                                </TableHead>
+                                <TableHead onClick={() => handleSort('status')}>
+                                    <div className="flex items-center cursor-pointer">Status {renderSortIcon('status')}</div>
+                                </TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {tasks.length > 0 ? tasks.map((task) => (
+                                {sortedTasks.length > 0 ? sortedTasks.map((task) => (
                                     <TaskRow 
                                         key={task.id}
                                         task={task}
@@ -355,7 +483,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                     />
                                 )) : (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="text-center text-muted-foreground h-24">No tasks yet.</TableCell>
+                                    <TableCell colSpan={10} className="text-center text-muted-foreground h-24">No tasks match your criteria.</TableCell>
                                 </TableRow>
                                 )}
                             </TableBody>
