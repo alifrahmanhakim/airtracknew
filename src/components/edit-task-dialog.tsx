@@ -61,6 +61,9 @@ const taskSchema = z.object({
   attachments: z.array(attachmentSchema).optional(),
   isCritical: z.boolean().default(false),
   criticalIssue: z.string().optional(),
+  namaSurat: z.string().optional(),
+  perihalSurat: z.string().optional(),
+  tanggalPelaksanaan: z.date().optional().nullable(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
   path: ["dueDate"],
@@ -102,6 +105,9 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
       attachments: task.attachments || [],
       isCritical: !!task.criticalIssue,
       criticalIssue: task.criticalIssue || '',
+      namaSurat: task.namaSurat || '',
+      perihalSurat: task.perihalSurat || '',
+      tanggalPelaksanaan: task.tanggalPelaksanaan ? parseISO(task.tanggalPelaksanaan) : null,
     },
   });
 
@@ -133,6 +139,9 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
         doneDate: data.doneDate ? format(data.doneDate, 'yyyy-MM-dd') : undefined,
         attachments: data.attachments || [],
         criticalIssue: data.isCritical ? data.criticalIssue : '',
+        namaSurat: data.namaSurat,
+        perihalSurat: data.perihalSurat,
+        tanggalPelaksanaan: data.tanggalPelaksanaan ? format(data.tanggalPelaksanaan, 'yyyy-MM-dd') : undefined,
     };
     
     const result = await updateTask(projectId, updatedTaskData, projectType);
@@ -378,6 +387,76 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                 </FormItem>
               )}
             />
+
+            <Separator />
+            
+            <div className="space-y-4">
+                 <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
+                 <FormField
+                    control={form.control}
+                    name="namaSurat"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Nama Surat</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., Undangan Rapat..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <FormField
+                    control={form.control}
+                    name="perihalSurat"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Perihal Surat</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., Pembahasan Draft..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <FormField
+                    control={form.control}
+                    name="tanggalPelaksanaan"
+                    render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                        <FormLabel>Tanggal Pelaksanaan</FormLabel>
+                        <Popover modal={false}>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                            <Button
+                                variant={'outline'}
+                                className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                                )}
+                            >
+                                {field.value ? (
+                                format(field.value, 'PPP')
+                                ) : (
+                                <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                            />
+                        </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+            </div>
 
             <Separator />
 

@@ -35,12 +35,17 @@ import { addTask } from '@/lib/actions/project';
 import { Combobox } from './ui/combobox';
 import { rulemakingTaskOptions, timKerjaTaskOptions } from '@/lib/data';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
+import { Input } from './ui/input';
+import { Separator } from './ui/separator';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
   assigneeIds: z.array(z.string()).min(1, 'At least one assignee is required.'),
   startDate: z.date({ required_error: "Start date is required." }),
   dueDate: z.date({ required_error: "Due date is required." }),
+  namaSurat: z.string().optional(),
+  perihalSurat: z.string().optional(),
+  tanggalPelaksanaan: z.date().optional(),
 }).refine(data => data.dueDate >= data.startDate, {
   message: "End date cannot be earlier than start date.",
   path: ["dueDate"],
@@ -72,6 +77,8 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
     defaultValues: {
       title: '',
       assigneeIds: [],
+      namaSurat: '',
+      perihalSurat: '',
     },
   });
 
@@ -86,6 +93,9 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
       status: 'To Do',
       parentId: parentId,
       subTasks: [],
+      namaSurat: data.namaSurat,
+      perihalSurat: data.perihalSurat,
+      tanggalPelaksanaan: data.tanggalPelaksanaan ? format(data.tanggalPelaksanaan, 'yyyy-MM-dd') : undefined,
     };
     
     const result = await addTask(projectId, newTask, projectType, parentId);
@@ -244,6 +254,74 @@ export function AddTaskDialog({ projectId, projectType, onTasksChange, teamMembe
                   </FormItem>
                 )}
               />
+              <Separator />
+              <div className="space-y-4">
+                 <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
+                 <FormField
+                    control={form.control}
+                    name="namaSurat"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Nama Surat</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., Undangan Rapat..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <FormField
+                    control={form.control}
+                    name="perihalSurat"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Perihal Surat</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., Pembahasan Draft..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <FormField
+                    control={form.control}
+                    name="tanggalPelaksanaan"
+                    render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                        <FormLabel>Tanggal Pelaksanaan</FormLabel>
+                        <Popover modal={false}>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                            <Button
+                                variant={'outline'}
+                                className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                                )}
+                            >
+                                {field.value ? (
+                                format(field.value, 'PPP')
+                                ) : (
+                                <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                            />
+                        </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

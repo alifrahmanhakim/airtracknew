@@ -47,6 +47,9 @@ export type Task = {
   parentId?: string | null;
   subTasks?: Task[];
   criticalIssue?: string;
+  namaSurat?: string;
+  perihalSurat?: string;
+  tanggalPelaksanaan?: string;
 };
 
 export type SubProject = {

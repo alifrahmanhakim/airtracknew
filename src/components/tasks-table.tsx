@@ -60,7 +60,7 @@ type TaskRowProps = {
 
 const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting }: TaskRowProps) => {
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = React.useState(true);
     
     const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean);
     const hasSubtasks = task.subTasks && task.subTasks.length > 0;
@@ -87,6 +87,9 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     <span>{task.title}</span>
                 </div>
                 </TableCell>
+                <TableCell>{task.namaSurat || '-'}</TableCell>
+                <TableCell>{task.perihalSurat || '-'}</TableCell>
+                <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : '-'}</TableCell>
                 <TableCell>
                     <div className="flex items-center -space-x-2">
                         {assignees.map((assignee) => (
@@ -243,10 +246,13 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                 </CardHeader>
                 <CardContent className="pt-0">
                     <div className="w-full overflow-x-auto">
-                        <Table className="min-w-[800px]">
+                        <Table className="min-w-[1200px]">
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[40%]">Task</TableHead>
+                                <TableHead className="w-[30%]">Task</TableHead>
+                                <TableHead>Nama Surat</TableHead>
+                                <TableHead>Perihal Surat</TableHead>
+                                <TableHead>Tgl. Pelaksanaan</TableHead>
                                 <TableHead>Assignee</TableHead>
                                 <TableHead>Start Date</TableHead>
                                 <TableHead>Due Date</TableHead>
@@ -270,7 +276,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                     />
                                 )) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center text-muted-foreground h-24">No tasks yet.</TableCell>
+                                    <TableCell colSpan={10} className="text-center text-muted-foreground h-24">No tasks yet.</TableCell>
                                 </TableRow>
                                 )}
                             </TableBody>
