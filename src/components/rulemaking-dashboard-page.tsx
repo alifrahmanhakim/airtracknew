@@ -145,7 +145,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                 {stats.distribution.map(item => (
                                     <div key={item.name} className="flex items-center gap-2">
                                         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                                        <span>{item.name}</span>
+                                        <span>{item.name} ({stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(0) : 0}%)</span>
                                     </div>
                                 ))}
                             </div>
