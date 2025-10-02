@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
-import type { Project, Task, User, SubProject, Document as ProjectDocument, GapAnalysisRecord } from '@/lib/types';
+import type { Project, Task, User, SubProject, Document as ProjectDocument, GapAnalysisRecord, Attachment } from '@/lib/types';
 import { rulemakingTaskOptions } from '@/lib/data';
 import { findUserById } from '@/lib/data-utils';
 import {
@@ -66,6 +67,22 @@ import { RulemakingAnalytics } from './rulemaking-analytics';
 import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
 import { TasksTable } from './tasks-table';
 import { ScrollArea } from './ui/scroll-area';
+
+type DetailRowProps = {
+  label: string;
+  value?: string | React.ReactNode;
+};
+
+const DetailRow = ({ label, value }: DetailRowProps) => {
+  if (!value && typeof value !== 'number') return null;
+  return (
+    <div className="flex justify-between items-center py-2 border-b">
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-semibold text-right">{value}</dd>
+    </div>
+  );
+};
+
 
 function AssociatedGapAnalysisCard({ 
     records, 
@@ -164,20 +181,7 @@ type ProjectDetailsPageProps = {
   allGapAnalysisRecords: GapAnalysisRecord[];
 };
 
-type DetailRowProps = {
-  label: string;
-  value?: string | React.ReactNode;
-};
 
-const DetailRow = ({ label, value }: DetailRowProps) => {
-  if (!value && typeof value !== 'number') return null;
-  return (
-    <div className="flex justify-between items-center py-2 border-b">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-semibold text-right">{value}</dd>
-    </div>
-  );
-};
 
 export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords: initialGapRecords }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
@@ -189,7 +193,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const [isDeletingGapRecord, setIsDeletingGapRecord] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
-  const [docToDelete, setDocToDelete] = useState<ProjectDocument | null>(null);
+  const [docToDelete, setDocToDelete] = useState<ProjectDocument | Attachment | null>(null);
   const [gapRecordToDelete, setGapRecordToDelete] = useState<GapAnalysisRecord | null>(null);
 
   const router = useRouter();
@@ -239,6 +243,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     if (!docToDelete) return;
 
     setIsDeletingDoc(docToDelete.id);
+    // Note: Deleting attachments from tasks is more complex as they are nested.
+    // This implementation focuses on project-level documents.
+    // A more robust solution would handle task attachments separately.
     const result = await deleteDocument(project.id, docToDelete.id, project.projectType);
     setIsDeletingDoc(null);
 
@@ -307,19 +314,13 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   };
 
 
-  const getDocumentIcon = (type: ProjectDocument['type']) => {
-    switch (type) {
-      case 'PDF':
-        return <FileText className="h-6 w-6 text-red-600" />;
-      case 'Word':
-        return <File className="h-6 w-6 text-blue-600" />;
-      case 'Excel':
-        return <FileSpreadsheet className="h-6 w-6 text-green-600" />;
-      case 'Image':
-        return <FileImage className="h-6 w-6 text-purple-600" />;
-      default:
-        return <FileQuestion className="h-6 w-6 text-gray-500" />;
-    }
+  const getDocumentIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    if (extension === 'pdf') return <FileText className="h-6 w-6 text-red-600" />;
+    if (['doc', 'docx'].includes(extension || '')) return <File className="h-6 w-6 text-blue-600" />;
+    if (['xls', 'xlsx', 'csv'].includes(extension || '')) return <FileSpreadsheet className="h-6 w-6 text-green-600" />;
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension || '')) return <FileImage className="h-6 w-6 text-purple-600" />;
+    return <FileQuestion className="h-6 w-6 text-gray-500" />;
   };
   
   const subProjectStatusStyles: { [key in SubProject['status']]: string } = {
@@ -331,7 +332,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
   const projectManager = findUserById(project.ownerId || users[0].id, users);
   const tasks = project.tasks || [];
-  const documents = project.documents || [];
+  const projectDocuments = project.documents || [];
   const subProjects = project.subProjects || [];
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
@@ -350,6 +351,27 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   
   const canDeleteProject = currentUser && (currentUser.role === 'Sub-Directorate Head' || currentUser.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser.id === project.ownerId || currentUser?.email === 'rizkywirapratama434@gmail.com');
   const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
+
+  const allDocuments = React.useMemo(() => {
+    const projDocs = (project.documents || []).map(doc => ({ ...doc, source: 'Project' }));
+    
+    const taskAttachments: (Attachment & { source: string; taskTitle: string })[] = [];
+    const collectAttachments = (tasks: Task[]) => {
+      tasks.forEach(task => {
+        if (task.attachments) {
+          task.attachments.forEach(att => {
+            taskAttachments.push({ ...att, source: 'Task', taskTitle: task.title });
+          });
+        }
+        if (task.subTasks) {
+          collectAttachments(task.subTasks);
+        }
+      });
+    };
+    collectAttachments(project.tasks || []);
+
+    return [...projDocs, ...taskAttachments];
+  }, [project.documents, project.tasks]);
 
   return (
     <TooltipProvider>
@@ -498,25 +520,29 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
            <CardContent>
               <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {(documents || []).map((doc) => (
+                      {allDocuments.map((doc) => (
                         <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
-                          {getDocumentIcon(doc.type)}
+                          {getDocumentIcon(doc.name)}
                           <div className="flex-1 overflow-hidden">
                               <p className="font-medium truncate">{doc.name}</p>
-                              {doc.uploadDate && <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>}
+                              {'taskTitle' in doc && doc.taskTitle ? (
+                                <p className="text-xs text-muted-foreground">From task: {doc.taskTitle}</p>
+                              ) : ('uploadDate' in doc && doc.uploadDate) && (
+                                <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>
+                              )}
                           </div>
                           <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                               <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
                                   <LinkIcon className="h-4 w-4" />
                               </a>
                           </Button>
-                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => setDocToDelete(doc)} disabled={isDeletingDoc === doc.id} aria-label={`Delete document ${doc.name}`}>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => 'uploadDate' in doc && setDocToDelete(doc)} disabled={isDeletingDoc === doc.id || !('uploadDate' in doc)}>
                               {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                            </Button>
                         </div>
                       ))}
                   </div>
-                   {documents.length === 0 && (
+                   {allDocuments.length === 0 && (
                       <p className="text-muted-foreground text-center py-4">No documents linked yet.</p>
                   )}
               </div>
@@ -556,6 +582,40 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           </CardContent>
         </Card>
         
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader><CardTitle>Project Summary</CardTitle></CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <DetailRow label="Progress" value={`${Math.round(progress)}%`} />
+                        <DetailRow label="Status" value={project.status} />
+                        <DetailRow label="Project Manager" value={projectManager?.name} />
+                        <DetailRow label="Start" value={format(parseISO(project.startDate), 'PPP')} />
+                        <DetailRow label="End" value={format(parseISO(project.endDate), 'PPP')} />
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader><CardTitle>Team Involved</CardTitle></CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {project.team.map((user) => (
+                            <div key={user.id} className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
+                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="font-medium">{user.name}</p>
+                                    <p className="text-sm text-muted-foreground">{user.role}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
