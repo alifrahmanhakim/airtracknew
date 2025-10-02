@@ -16,6 +16,7 @@ import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, Printer, ChevronDown }
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -202,21 +203,17 @@ export default function GlossaryPage() {
   };
 
 
-  const handleExport = () => {
+  const handleExportExcel = () => {
     if (allRecords.length === 0) {
       toast({ variant: 'destructive', title: 'No Data', description: 'There are no records to export.' });
       return;
     }
-    const csv = Papa.unparse(allRecords);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', 'glossary_export.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast({ title: 'Export Started', description: 'Your glossary data is being downloaded.' });
-  }
+    const worksheet = XLSX.utils.json_to_sheet(allRecords);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Glossary');
+    XLSX.writeFile(workbook, 'glossary_export.xlsx');
+    toast({ title: 'Export Started', description: 'Your Excel file is being downloaded.' });
+  };
 
   const handlePrint = () => {
     window.print();
@@ -287,9 +284,9 @@ export default function GlossaryPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={handleExport}>
+                              <DropdownMenuItem onClick={handleExportExcel}>
                                 <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                Export to CSV
+                                Export to Excel
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={handlePrint}>
                                 <Printer className="mr-2 h-4 w-4" />
