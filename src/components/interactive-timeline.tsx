@@ -195,7 +195,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                  {sortedTasks.map((task, index) => (
                     <div 
                         key={task.id} 
-                        className="sticky left-0 bg-card flex flex-col justify-center px-2 py-2 border-b border-r" 
+                        className="sticky left-0 bg-card flex flex-col justify-center px-2 py-2 border-b border-r z-20" 
                         style={{ gridColumn: 1, gridRow: index + 2, minHeight: `${ROW_MIN_HEIGHT}px` }}
                     >
                       <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
