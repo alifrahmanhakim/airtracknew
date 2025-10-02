@@ -170,12 +170,9 @@ export default function CcefodPage() {
     setRecordToDelete(record);
   };
 
-  const handleRecordUpdate = (updatedRecord: CcefodRecord) => {
-    setAllRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
-  };
-
   const handleRecordAdd = (newRecord: CcefodRecord) => {
-    setAllRecords(prev => [...prev, newRecord]);
+    // The onSnapshot listener will automatically handle adding the record to the state.
+    // We just switch the tab.
     setActiveTab('records');
   };
   
@@ -272,15 +269,8 @@ export default function CcefodPage() {
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
 
         const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-        for (let R = range.s.r; R <= range.e.r; ++R) {
-            for (let C = range.s.c; C <= range.e.c; ++C) {
-                const cell_address = { c: C, r: R };
-                const cell_ref = XLSX.utils.encode_cell(cell_address);
-                if (!worksheet[cell_ref]) continue;
-                worksheet[cell_ref].s = { alignment: { wrapText: true, vertical: 'top' } };
-            }
-        }
         
+        // Define column widths
         worksheet['!cols'] = [
             { wch: 10 }, // id
             { wch: 20 }, // createdAt
@@ -297,6 +287,17 @@ export default function CcefodPage() {
             { wch: 50 }, // remarks
             { wch: 15 }, // status
         ];
+        
+        // Apply wrap text to all cells
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell_address = { c: C, r: R };
+                const cell_ref = XLSX.utils.encode_cell(cell_address);
+                if (!worksheet[cell_ref]) continue;
+                if (!worksheet[cell_ref].s) worksheet[cell_ref].s = {};
+                 worksheet[cell_ref].s.alignment = { wrapText: true, vertical: 'top' };
+            }
+        }
 
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'CCEFOD Records');
@@ -475,7 +476,7 @@ export default function CcefodPage() {
                                 <CcefodRecordsTable 
                                     records={paginatedRecords} 
                                     onDelete={handleDeleteRequest} 
-                                    onUpdate={handleRecordUpdate}
+                                    onUpdate={() => {}}
                                     sort={sort}
                                     setSort={setSort}
                                     searchTerm={searchTerm}
