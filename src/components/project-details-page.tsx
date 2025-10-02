@@ -456,7 +456,19 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                                 <p className="font-semibold">{projectManager?.name}</p>
                             </div>
                         </div>
-                        <Separator />
+                        <div className="flex items-start gap-3">
+                            <CalendarDays className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Timeline</p>
+                                <p className="font-semibold">{format(parseISO(project.startDate), 'dd MMM')} - {format(parseISO(project.endDate), 'dd MMM yyyy')}</p>
+                                <p className={cn("text-xs", daysLeft < 0 ? "text-destructive" : "text-muted-foreground")}>
+                                    {daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                     <div className="space-y-4">
+                        <h4 className="font-semibold">Task Breakdown</h4>
                         <div className="space-y-2">
                            <div className="flex items-center gap-2 text-sm">
                                <ListTodo className="h-4 w-4 text-muted-foreground" />
@@ -464,51 +476,26 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                                <span className="font-bold ml-auto">{taskStatusCounts['To Do']}</span>
                            </div>
                            <div className="flex items-center gap-2 text-sm">
-                               <Clock className="h-4 w-4 text-muted-foreground" />
-                               <span>In Progress:</span>
-                               <span className="font-bold ml-auto">{taskStatusCounts['In Progress']}</span>
+                               <Clock className="h-4 w-4 text-blue-500" />
+                               <span className='text-blue-500'>In Progress:</span>
+                               <span className="font-bold ml-auto text-blue-500">{taskStatusCounts['In Progress']}</span>
                            </div>
                            <div className="flex items-center gap-2 text-sm">
-                               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                               <span>Blocked:</span>
-                               <span className="font-bold ml-auto">{taskStatusCounts['Blocked']}</span>
+                               <AlertTriangle className="h-4 w-4 text-destructive" />
+                               <span className='text-destructive'>Blocked:</span>
+                               <span className="font-bold ml-auto text-destructive">{taskStatusCounts['Blocked']}</span>
                            </div>
                            <div className="flex items-center gap-2 text-sm">
-                               <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                               <span>Done:</span>
-                               <span className="font-bold ml-auto">{taskStatusCounts['Done']}</span>
+                               <CheckCircle className="h-4 w-4 text-green-500" />
+                               <span className='text-green-500'>Done:</span>
+                               <span className="font-bold ml-auto text-green-500">{taskStatusCounts['Done']}</span>
                            </div>
-                        </div>
-                    </div>
-                     <div className="space-y-4">
-                        <div className="flex items-start gap-3">
-                            <CalendarDays className="h-5 w-5 text-muted-foreground mt-1" />
-                            <div>
-                                <p className="text-sm text-muted-foreground">Start Date</p>
-                                <p className="font-semibold">{format(parseISO(project.startDate), 'PPP')}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <CalendarDays className="h-5 w-5 text-muted-foreground mt-1" />
-                            <div>
-                                <p className="text-sm text-muted-foreground">End Date</p>
-                                <p className="font-semibold">{format(parseISO(project.endDate), 'PPP')}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <CalendarDays className="h-5 w-5 text-muted-foreground mt-1" />
-                            <div>
-                                <p className="text-sm text-muted-foreground">Days Left</p>
-                                <p className={cn("font-semibold", daysLeft < 0 ? "text-destructive" : "")}>
-                                    {daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`}
-                                </p>
-                            </div>
                         </div>
                     </div>
 
                     <div className="lg:col-span-1">
                         <h4 className="font-semibold mb-2 flex items-center gap-2"><Users className="h-5 w-5" /> Team</h4>
-                        <ScrollArea className="h-40">
+                        <ScrollArea className="h-[150px]">
                              <div className="space-y-3">
                                 {project.team.map((user, index) => (
                                     <div key={`${user.id}-${index}`} className="flex items-center gap-3">
@@ -717,3 +704,4 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </TooltipProvider>
   );
 }
+
