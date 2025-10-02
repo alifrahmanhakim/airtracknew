@@ -263,7 +263,6 @@ export default function CcefodPage() {
     });
 
     setTimeout(() => {
-        // Remove HTML tags from standardPractice before exporting
         const dataToExport = allRecords.map(r => {
             const { standardPractice, ...rest } = r;
             const cleanStandardPractice = (standardPractice || '').replace(/<[^>]+>/g, '');
@@ -272,20 +271,33 @@ export default function CcefodPage() {
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
 
-        // Auto-fit column widths
-        const colWidths = dataToExport.reduce((acc, row) => {
-            Object.keys(row).forEach((key, i) => {
-                const value = (row as any)[key];
-                const contentLength = value ? String(value).length : 10;
-                if (!acc[i] || acc[i].wch < contentLength) {
-                    acc[i] = { wch: contentLength };
-                }
-            });
-            return acc;
-        }, [] as {wch: number}[]);
-
-        worksheet['!cols'] = colWidths;
+        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell_address = { c: C, r: R };
+                const cell_ref = XLSX.utils.encode_cell(cell_address);
+                if (!worksheet[cell_ref]) continue;
+                worksheet[cell_ref].s = { alignment: { wrapText: true, vertical: 'top' } };
+            }
+        }
         
+        worksheet['!cols'] = [
+            { wch: 10 }, // id
+            { wch: 20 }, // createdAt
+            { wch: 15 }, // adaPerubahan
+            { wch: 30 }, // usulanPerubahan
+            { wch: 50 }, // isiUsulan
+            { wch: 40 }, // annex
+            { wch: 20 }, // annexReference
+            { wch: 60 }, // standardPractice
+            { wch: 40 }, // legislationReference
+            { wch: 40 }, // implementationLevel
+            { wch: 50 }, // differenceText
+            { wch: 50 }, // differenceReason
+            { wch: 50 }, // remarks
+            { wch: 15 }, // status
+        ];
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'CCEFOD Records');
         XLSX.writeFile(workbook, 'ccefod_records_export.xlsx');
