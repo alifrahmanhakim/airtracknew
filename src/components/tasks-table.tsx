@@ -296,8 +296,8 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const [columnVisibility, setColumnVisibility] = React.useState<Record<string, boolean>>({
         no: true,
         task: true,
-        namaSurat: false,
-        tanggalPelaksanaan: false,
+        namaSurat: true,
+        tanggalPelaksanaan: true,
         attachments: true,
         dueDate: false,
         status: true,
@@ -508,7 +508,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 </TableHead>
                                 {columnVisibility.namaSurat && <TableHead>Nama Surat</TableHead>}
                                 {columnVisibility.tanggalPelaksanaan && <TableHead>Tgl. Pelaksanaan</TableHead>}
-                                {columnVisibility.attachments && <TableHead>Attachments</TableHead>}
+                                {columnVisibility.attachments && <TableHead onClick={() => handleSort('attachments')}><div className="flex items-center cursor-pointer">Attachments {renderSortIcon('attachments')}</div></TableHead>}
                                 {columnVisibility.dueDate && <TableHead onClick={() => handleSort('dueDate')}>
                                     <div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div>
                                 </TableHead>}
