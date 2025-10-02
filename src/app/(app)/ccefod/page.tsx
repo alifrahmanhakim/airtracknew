@@ -298,6 +298,7 @@ export default function CcefodPage() {
       );
     }
     return (
+        <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                 <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
@@ -485,6 +486,7 @@ export default function CcefodPage() {
                 </Card>
             </TabsContent>
         </Tabs>
+        </div>
     );
   }
 
@@ -539,3 +541,6 @@ export default function CcefodPage() {
 }
 
     
+
+    
+
