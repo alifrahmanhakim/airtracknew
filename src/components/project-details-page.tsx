@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -46,8 +47,9 @@ import {
   Printer,
   AlertTriangle,
   User as UserIcon,
+  CalendarDays,
 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Progress } from './ui/progress';
 import { EditProjectDialog } from './edit-project-dialog';
@@ -334,6 +336,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   };
   
   const canDeleteProject = currentUser && (currentUser.role === 'Sub-Directorate Head' || currentUser.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser.id === project.ownerId || currentUser?.email === 'rizkywirapratama434@gmail.com');
+  const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
 
   return (
     <TooltipProvider>
@@ -359,6 +362,88 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       </div>
 
       <div className="grid grid-cols-1 gap-6">
+        
+        <Card>
+            <CardHeader><CardTitle>Project Dashboard</CardTitle></CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="flex items-center justify-center">
+                         <div className="relative h-40 w-40">
+                            <svg className="h-full w-full" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" className="text-muted/20" fill="none" stroke="currentColor" strokeWidth="3" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" className="text-primary" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray={`${progress}, 100`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-4xl font-bold">{Math.round(progress)}%</span>
+                                <span className="text-sm text-muted-foreground">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                            <Flag className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Status</p>
+                                <Badge variant="outline" className={cn("text-sm font-semibold", { 'border-transparent bg-green-100 text-green-800': project.status === 'Completed', 'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track', 'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk', 'border-transparent bg-red-100 text-red-800': project.status === 'Off Track' })}>{project.status}</Badge>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <UserIcon className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Project Manager</p>
+                                <p className="font-semibold">{projectManager?.name}</p>
+                            </div>
+                        </div>
+                    </div>
+                     <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                            <CalendarDays className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Start Date</p>
+                                <p className="font-semibold">{format(parseISO(project.startDate), 'PPP')}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <CalendarDays className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">End Date</p>
+                                <p className="font-semibold">{format(parseISO(project.endDate), 'PPP')}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <CalendarDays className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Days Left</p>
+                                <p className={cn("font-semibold", daysLeft < 0 ? "text-destructive" : "")}>
+                                    {daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-1">
+                        <h4 className="font-semibold mb-2 flex items-center gap-2"><Users className="h-5 w-5" /> Team</h4>
+                        <ScrollArea className="h-40">
+                             <div className="space-y-3">
+                                {project.team.map((user, index) => (
+                                    <div key={`${user.id}-${index}`} className="flex items-center gap-3">
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
+                                            <AvatarFallback><UserIcon className="h-5 w-5" /></AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="font-medium text-sm">{user.name}</p>
+                                            <p className="text-xs text-muted-foreground">{user.role}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -458,66 +543,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                        <span className="font-medium text-muted-foreground">Progress</span>
-                        <span className="font-semibold">{Math.round(progress)}%</span>
-                    </div>
-                    <Progress value={progress} />
-                </div>
-                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge variant="outline" className={cn("text-xs font-semibold", {
-                      'border-transparent bg-green-100 text-green-800': project.status === 'Completed',
-                      'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track',
-                      'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk',
-                      'border-transparent bg-red-100 text-red-800': project.status === 'Off Track',
-                  })}>{project.status}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Project Manager</span>
-                  <span className="font-medium">{projectManager?.name}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Start</span>
-                  <span className="font-medium">{format(parseISO(project.startDate), 'PPP')}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">End</span>
-                  <span className="font-medium">{format(parseISO(project.endDate), 'PPP')}</span>
-                </div>
-              </CardContent>
-          </Card>
-          <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users /> Team Involved
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {project.team.map((user, index) => (
-                    <div key={`${user.id}-${index}`} className="flex items-center gap-4">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                            <AvatarFallback>
-                              <UserIcon className="h-5 w-5" />
-                            </AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.role}</p>
-                        </div>
-                    </div>
-                ))}
-              </CardContent>
-          </Card>
-        </div>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
@@ -591,3 +616,4 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </TooltipProvider>
   );
 }
+
