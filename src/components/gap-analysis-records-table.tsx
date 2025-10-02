@@ -83,10 +83,12 @@ export function GapAnalysisRecordsTable({
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     slReferenceNumber: true,
+    letterName: true,
     subject: true,
-    typeOfStateLetter: true,
+    typeOfStateLetter: false,
     statusItem: true,
-    dateOfEvaluation: true,
+    dateOfEvaluation: false,
+    implementationDate: true,
     annex: true,
   });
   
@@ -123,10 +125,12 @@ export function GapAnalysisRecordsTable({
   
   const columnDefs: { key: keyof GapAnalysisRecord; header: string; width?: string }[] = [
     { key: 'slReferenceNumber', header: 'SL Ref. Number' },
+    { key: 'letterName', header: 'Nama Surat' },
     { key: 'subject', header: 'Subject' },
     { key: 'typeOfStateLetter', header: 'Type' },
     { key: 'statusItem', header: 'Status' },
     { key: 'dateOfEvaluation', header: 'Evaluation Date' },
+    { key: 'implementationDate', header: 'Tanggal Pelaksanaan' },
     { key: 'annex', header: 'Annex' },
   ];
   
@@ -249,10 +253,10 @@ export function GapAnalysisRecordsTable({
                                         </Badge>
                                     );
                                 }
-                                if (col.key === 'dateOfEvaluation' && value) {
+                                if ((col.key === 'dateOfEvaluation' || col.key === 'implementationDate') && value) {
                                     return format(parseISO(value), 'PPP');
                                 }
-                                return <div>{value || 'N/A'}</div>;
+                                return <div className='max-w-xs truncate'>{value || 'N/A'}</div>;
                             })()}
                         </TableCell>
                     ))}
@@ -273,7 +277,7 @@ export function GapAnalysisRecordsTable({
               ))}
             </TableBody>
           </Table>
-          {processedRecords.length === 0 && (
+          {processedRecords.length === 0 && areFiltersActive && (
             <div className="text-center p-6 text-muted-foreground">
                 <p>No matching records found.</p>
             </div>

@@ -96,8 +96,43 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 </FormItem>
               )}
             />
+            <FormField control={form.control} name="letterName" render={({ field }) => ( <FormItem> <FormLabel>Nama Surat</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField
+              control={form.control}
+              name="implementationDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Tanggal Pelaksanaan</FormLabel>
+                   <Popover modal={false}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                      </PopoverContent>
+                    </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="letterSubject" render={({ field }) => ( <FormItem> <FormLabel>Perihal Surat</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <FormField control={form.control} name="actionRequired" render={({ field }) => ( <FormItem> <FormLabel>Action required</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium px-1">Standardization Process</legend>

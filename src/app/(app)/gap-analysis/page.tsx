@@ -113,6 +113,11 @@ export default function GapAnalysisPage() {
     setRecordToDelete(record);
   };
   
+  const handleRecordAdd = (newRecord: GapAnalysisRecord) => {
+    setRecords(prev => [...prev, newRecord]);
+    setActiveTab('records');
+  };
+  
   const handleRecordUpdate = (updatedRecord: GapAnalysisRecord) => {
     setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
   };
@@ -168,7 +173,7 @@ export default function GapAnalysisPage() {
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <GapAnalysisForm onFormSubmit={() => {}} rulemakingProjects={rulemakingProjects} />
+                      <GapAnalysisForm onFormSubmit={handleRecordAdd} rulemakingProjects={rulemakingProjects} />
                     </CardContent>
                 </Card>
             </TabsContent>

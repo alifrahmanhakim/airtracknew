@@ -25,7 +25,7 @@ type DetailRowProps = {
 };
 
 const DetailRow = ({ label, value, isLongText = false }: DetailRowProps) => {
-  if (!value) return null;
+  if (!value && typeof value !== 'number') return null;
   return (
     <div className={`grid grid-cols-1 ${isLongText ? '' : 'sm:grid-cols-3'} gap-1 sm:gap-4 py-3 border-b`}>
       <dt className="font-semibold text-muted-foreground">{label}</dt>
@@ -80,12 +80,15 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 <DetailRow label="SL Reference Number" value={record.slReferenceNumber} />
                 <DetailRow label="Annex" value={record.annex} />
                 <DetailRow label="Type of State Letter" value={record.typeOfStateLetter} />
-                <DetailRow label="Date of Evaluation" value={format(parseISO(record.dateOfEvaluation), 'PPP')} />
+                <DetailRow label="Date of Evaluation" value={record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'} />
                 <DetailRow label="Subject" value={record.subject} isLongText />
+                <DetailRow label="Nama Surat" value={record.letterName} />
+                <DetailRow label="Perihal Surat" value={record.letterSubject} isLongText />
+                <DetailRow label="Tanggal Pelaksanaan" value={record.implementationDate ? format(parseISO(record.implementationDate), 'PPP') : 'N/A'} />
                 <DetailRow label="Action Required" value={record.actionRequired} isLongText />
-                <DetailRow label="Effective Date" value={format(parseISO(record.effectiveDate), 'PPP')} />
-                <DetailRow label="Applicability Date" value={format(parseISO(record.applicabilityDate), 'PPP')} />
-                <DetailRow label="Embedded Applicability Date" value={format(parseISO(record.embeddedApplicabilityDate), 'PPP')} />
+                <DetailRow label="Effective Date" value={record.effectiveDate ? format(parseISO(record.effectiveDate), 'PPP') : 'N/A'} />
+                <DetailRow label="Applicability Date" value={record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'} />
+                <DetailRow label="Embedded Applicability Date" value={record.embeddedApplicabilityDate ? format(parseISO(record.embeddedApplicabilityDate), 'PPP') : 'N/A'} />
                 
                 <Separator className="my-4" />
                 

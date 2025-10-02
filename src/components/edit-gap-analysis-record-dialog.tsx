@@ -60,6 +60,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
       dateOfEvaluation: record.dateOfEvaluation ? parseISO(record.dateOfEvaluation) : undefined,
       effectiveDate: record.effectiveDate ? parseISO(record.effectiveDate) : undefined,
       applicabilityDate: record.applicabilityDate ? parseISO(record.applicabilityDate) : undefined,
+      implementationDate: record.implementationDate ? parseISO(record.implementationDate) : undefined,
       embeddedApplicabilityDate: record.embeddedApplicabilityDate ? parseISO(record.embeddedApplicabilityDate) : new Date(),
       inspectors: record.inspectors || [],
     },

@@ -16,6 +16,7 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
           dateOfEvaluation: data.dateOfEvaluation ? format(data.dateOfEvaluation, 'yyyy-MM-dd') : null,
           effectiveDate: data.effectiveDate ? format(data.effectiveDate, 'yyyy-MM-dd') : null,
           applicabilityDate: data.applicabilityDate ? format(data.applicabilityDate, 'yyyy-MM-dd') : null,
+          implementationDate: data.implementationDate ? format(data.implementationDate, 'yyyy-MM-dd') : null,
           embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
         };
 
@@ -45,6 +46,7 @@ export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof g
           dateOfEvaluation: data.dateOfEvaluation ? format(data.dateOfEvaluation, 'yyyy-MM-dd') : null,
           effectiveDate: data.effectiveDate ? format(data.effectiveDate, 'yyyy-MM-dd') : null,
           applicabilityDate: data.applicabilityDate ? format(data.applicabilityDate, 'yyyy-MM-dd') : null,
+          implementationDate: data.implementationDate ? format(data.implementationDate, 'yyyy-MM-dd') : null,
           embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
         };
 
