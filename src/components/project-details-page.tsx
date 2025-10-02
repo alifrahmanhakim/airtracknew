@@ -49,6 +49,9 @@ import {
   User as UserIcon,
   CalendarDays,
   Search,
+  ListTodo,
+  Clock,
+  CheckCircle,
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -69,6 +72,7 @@ import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
 import { TasksTable } from './tasks-table';
 import { ScrollArea } from './ui/scroll-area';
 import { Input } from './ui/input';
+import { Separator } from './ui/separator';
 
 const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
     if (!value && typeof value !== 'number') return null;
@@ -380,6 +384,19 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       ('taskTitle' in doc && doc.taskTitle?.toLowerCase().includes(lowercasedSearch))
     );
   }, [allDocuments, documentSearch]);
+  
+  const taskStatusCounts = React.useMemo(() => {
+    const counts = {
+      'To Do': 0,
+      'In Progress': 0,
+      'Blocked': 0,
+      'Done': 0,
+    };
+    tasks.forEach(task => {
+      counts[task.status]++;
+    });
+    return counts;
+  }, [tasks]);
 
 
   return (
@@ -438,6 +455,29 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                                 <p className="text-sm text-muted-foreground">Project Manager</p>
                                 <p className="font-semibold">{projectManager?.name}</p>
                             </div>
+                        </div>
+                        <Separator />
+                        <div className="space-y-2">
+                           <div className="flex items-center gap-2 text-sm">
+                               <ListTodo className="h-4 w-4 text-muted-foreground" />
+                               <span>To Do:</span>
+                               <span className="font-bold ml-auto">{taskStatusCounts['To Do']}</span>
+                           </div>
+                           <div className="flex items-center gap-2 text-sm">
+                               <Clock className="h-4 w-4 text-muted-foreground" />
+                               <span>In Progress:</span>
+                               <span className="font-bold ml-auto">{taskStatusCounts['In Progress']}</span>
+                           </div>
+                           <div className="flex items-center gap-2 text-sm">
+                               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                               <span>Blocked:</span>
+                               <span className="font-bold ml-auto">{taskStatusCounts['Blocked']}</span>
+                           </div>
+                           <div className="flex items-center gap-2 text-sm">
+                               <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                               <span>Done:</span>
+                               <span className="font-bold ml-auto">{taskStatusCounts['Done']}</span>
+                           </div>
                         </div>
                     </div>
                      <div className="space-y-4">
