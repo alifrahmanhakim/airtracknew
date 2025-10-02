@@ -212,7 +212,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                {sortedTasks.map((task, index) => (
                 <div 
                     key={task.id} 
-                    className="sticky left-0 bg-card flex flex-col justify-center px-2 py-2 border-b border-r" 
+                    className="sticky left-0 bg-card flex flex-col justify-center px-2 py-2 border-b border-r z-30" 
                     style={{ gridColumn: 1, gridRow: index + 2, minHeight: `${ROW_MIN_HEIGHT}px`, paddingLeft: `${(task.parentId ? 1.5 : 0) + 0.5}rem` }}
                 >
                   <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
