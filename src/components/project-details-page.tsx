@@ -51,15 +51,13 @@ import {
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Progress } from './ui/progress';
 import { EditProjectDialog } from './edit-project-dialog';
-import { AddTaskDialog } from './add-task-dialog';
 import { AddSubProjectDialog } from './add-subproject-dialog';
 import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
-import { deleteDocument, deleteTask, deleteProject } from '@/lib/actions/project';
+import { deleteDocument, deleteProject } from '@/lib/actions/project';
 import { deleteGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectTimeline } from './project-timeline';
@@ -68,6 +66,7 @@ import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dial
 import { RulemakingAnalytics } from './rulemaking-analytics';
 import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
 import { TasksTable } from './tasks-table';
+import { ScrollArea } from './ui/scroll-area';
 
 function AssociatedGapAnalysisCard({ 
     records, 
@@ -542,7 +541,47 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             )}
           </CardContent>
         </Card>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Project Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <DetailRow label="Progress" value={`${Math.round(progress)}%`} />
+                        <DetailRow label="Status" value={project.status} />
+                        <DetailRow label="Project Manager" value={projectManager?.name} />
+                        <DetailRow label="Start" value={format(parseISO(project.startDate), 'PPP')} />
+                        <DetailRow label="End" value={format(parseISO(project.endDate), 'PPP')} />
+                    </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardHeader>
+                    <CardTitle>Team Involved</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-48">
+                        <div className="space-y-4">
+                            {project.team.map((user, index) => (
+                                <div key={`${user.id}-${index}`} className="flex items-center gap-3">
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
+                                        <AvatarFallback><UserIcon className="h-5 w-5" /></AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-medium text-sm">{user.name}</p>
+                                        <p className="text-xs text-muted-foreground">{user.role}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+        </div>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
@@ -616,4 +655,3 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </TooltipProvider>
   );
 }
-
