@@ -23,7 +23,7 @@ import {
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
-import { ListTodo } from 'lucide-react';
+import { ListTodo, Search, RotateCcw } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -32,6 +32,9 @@ import {
 } from './ui/tooltip';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Button } from './ui/button';
 
 type ProjectTimelineProps = {
   projectId: string;
@@ -68,13 +71,23 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [assigneeFilter, setAssigneeFilter] = React.useState('all');
   
   const flattenedTasks = React.useMemo(() => flattenTasks(tasks), [tasks]);
 
   const { sortedTasks, months, days, weeks, timelineStart, timelineEnd, totalDays, totalWeeks } = React.useMemo(() => {
-    const validTasks = flattenedTasks?.filter(t => t.startDate && t.dueDate) || [];
+    let filtered = flattenedTasks.filter(t => t.startDate && t.dueDate);
+
+    if (searchTerm) {
+        filtered = filtered.filter(t => t.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    if (assigneeFilter !== 'all') {
+        filtered = filtered.filter(t => t.assigneeIds?.includes(assigneeFilter));
+    }
     
-    const sorted = [...validTasks].sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
         const dateA = parseISO(a.startDate).getTime();
         const dateB = parseISO(b.startDate).getTime();
         if (dateA === dateB) {
@@ -87,8 +100,8 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
     let tStart = startOfISOWeek(addMonths(now, -1));
     let tEnd = endOfISOWeek(addMonths(now, 2));
 
-    if (validTasks.length > 0) {
-      const allDates = validTasks.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
+    if (filtered.length > 0) {
+      const allDates = filtered.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
       const earliestDate = min(allDates);
       const latestDate = max(allDates);
       tStart = min([startOfISOWeek(addMonths(earliestDate, -1)), tStart]);
@@ -102,10 +115,10 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         weeks: eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 }),
         timelineStart: tStart, 
         timelineEnd: tEnd, 
-        totalDays: differenceInDays(tEnd, tStart) + 1,
+        totalDays: differenceInDays(tStart, tEnd) + 1,
         totalWeeks: differenceInCalendarISOWeeks(tEnd, tStart) + 1
     };
-  }, [flattenedTasks]);
+  }, [flattenedTasks, searchTerm, assigneeFilter]);
 
   React.useEffect(() => {
     if (todayRef.current && timelineContainerRef.current) {
@@ -116,7 +129,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
         behavior: 'smooth',
       });
     }
-  }, [viewMode, weeks, days]);
+  }, [viewMode, weeks, days, sortedTasks]);
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
@@ -127,6 +140,13 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
   
   const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
   const totalGridWidth = viewMode === 'day' ? totalDays * dayWidth : totalWeeks * WEEK_WIDTH;
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setAssigneeFilter('all');
+  };
+
+  const areFiltersActive = searchTerm !== '' || assigneeFilter !== 'all';
 
   if (tasks.length === 0) {
     return (
@@ -140,17 +160,42 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
 
   return (
     <TooltipProvider>
-      <div className="p-4 border-t flex justify-between items-center">
-        <RadioGroup defaultValue={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="flex items-center gap-4">
-          <div>
-            <RadioGroupItem value="week" id="r-week-project" className="peer sr-only" />
-            <Label htmlFor="r-week-project" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">Week View</Label>
-          </div>
-          <div>
-            <RadioGroupItem value="day" id="r-day-project" className="peer sr-only" />
-            <Label htmlFor="r-day-project" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">Day View</Label>
-          </div>
-        </RadioGroup>
+      <div className="p-4 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <RadioGroup defaultValue={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="flex items-center gap-2">
+              <div>
+                <RadioGroupItem value="week" id="r-week-project" className="peer sr-only" />
+                <Label htmlFor="r-week-project" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover px-3 py-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer text-sm">Week View</Label>
+              </div>
+              <div>
+                <RadioGroupItem value="day" id="r-day-project" className="peer sr-only" />
+                <Label htmlFor="r-day-project" className="flex items-center justify-between rounded-md border-2 border-muted bg-popover px-3 py-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer text-sm">Day View</Label>
+              </div>
+            </RadioGroup>
+            <div className="relative w-full sm:w-auto">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Search tasks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 w-full sm:w-[180px]"
+                />
+            </div>
+            <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by assignee..." /></SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Assignees</SelectItem>
+                    {teamMembers.map(member => (
+                        <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {areFiltersActive && (
+                <Button variant="ghost" onClick={resetFilters} className="w-full sm:w-auto">
+                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                </Button>
+            )}
+        </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 items-center text-xs">
           <span className="text-sm font-semibold">Legend:</span>
           {Object.entries(statusConfig).map(([status, { color, label }]) => (
@@ -165,7 +210,8 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
           ref={timelineContainerRef} 
           className="w-full border-t overflow-auto relative max-h-[70vh]"
         >
-          <div className="grid" style={{ width: 'min-content', gridTemplateColumns: `${TASK_LIST_WIDTH}px 1fr`, gridTemplateRows: `${HEADER_HEIGHT}px repeat(${sortedTasks.length}, auto)` }}>
+          {sortedTasks.length > 0 ? (
+            <div className="grid" style={{ width: 'min-content', gridTemplateColumns: `${TASK_LIST_WIDTH}px 1fr`, gridTemplateRows: `${HEADER_HEIGHT}px repeat(${sortedTasks.length}, auto)` }}>
              {/* Header for Task List */}
              <div className="sticky left-0 z-40 bg-card border-b border-r flex items-center px-4 font-semibold" style={{gridColumn: 1, gridRow: 1}}>
                 Tasks
@@ -315,6 +361,13 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                     </div>
               </div>
           </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-center py-10 text-muted-foreground">
+              <ListTodo className="h-12 w-12 mb-4" />
+              <p className="font-semibold">No Tasks Found</p>
+              <p className="text-sm">No tasks match the current filter criteria.</p>
+            </div>
+          )}
         </div>
     </TooltipProvider>
   );
