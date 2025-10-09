@@ -14,42 +14,35 @@ export function AnimatedCounter({ endValue, duration = 1500, className, decimals
   const [count, setCount] = useState(0);
   const frameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
-  const startValueRef = useRef(0); // Start from 0
 
   useEffect(() => {
-    startValueRef.current = 0; // Reset start value on re-render if needed
-    startTimeRef.current = null; // Reset start time
+    // Reset start time whenever the endValue changes to restart animation
+    startTimeRef.current = null;
+    
+    const easeOutQuad = (t: number) => t * (2 - t);
 
     const animate = (timestamp: number) => {
-      if (startTimeRef.current === null) {
+      if (!startTimeRef.current) {
         startTimeRef.current = timestamp;
       }
-      
+
       const progress = timestamp - startTimeRef.current;
       const progressFraction = Math.min(progress / duration, 1);
-      
-      // Ease-out quad function for smoother animation
-      const easedProgress = progressFraction * (2 - progressFraction);
-      const currentValue = startValueRef.current + (endValue - startValueRef.current) * easedProgress;
+      const easedProgress = easeOutQuad(progressFraction);
 
-      // Stop the animation exactly at the end value
-      if (progressFraction >= 1) {
-        setCount(endValue);
-        if (frameRef.current) {
-          cancelAnimationFrame(frameRef.current);
-        }
-        return;
-      }
-      
-      setCount(currentValue);
+      const currentValue = easedProgress * endValue;
 
-      if (progress < duration) {
+      if (progressFraction < 1) {
+        setCount(currentValue);
         frameRef.current = requestAnimationFrame(animate);
+      } else {
+        setCount(endValue); // Ensure it ends exactly on the end value
       }
     };
 
     frameRef.current = requestAnimationFrame(animate);
 
+    // Cleanup function to cancel the animation frame when the component unmounts or re-renders
     return () => {
       if (frameRef.current) {
         cancelAnimationFrame(frameRef.current);
