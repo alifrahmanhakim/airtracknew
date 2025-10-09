@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -41,6 +40,15 @@ export function EditTindakLanjutDgcaDialog({ record, onRecordUpdate }: EditTinda
     resolver: zodResolver(tindakLanjutDgcaFormSchema),
     defaultValues: {
       ...record,
+      judulLaporan: record.judulLaporan || '',
+      nomorLaporan: record.nomorLaporan || '',
+      operator: record.operator || '',
+      tipePesawat: record.tipePesawat || '',
+      registrasi: record.registrasi || '',
+      lokasi: record.lokasi || '',
+      rekomendasiKeDgca: record.rekomendasiKeDgca || '',
+      nomorRekomendasi: record.nomorRekomendasi || '',
+      tindakLanjutDkppu: record.tindakLanjutDkppu || '',
       tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
       tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
     },
