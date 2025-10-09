@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -13,21 +14,14 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
     try {
         const dataToSubmit = {
           ...data,
-          dateOfEvaluation: data.dateOfEvaluation ? format(data.dateOfEvaluation, 'yyyy-MM-dd') : null,
-          effectiveDate: data.effectiveDate ? format(data.effectiveDate, 'yyyy-MM-dd') : null,
-          applicabilityDate: data.applicabilityDate ? format(data.applicabilityDate, 'yyyy-MM-dd') : null,
-          implementationDate: data.implementationDate ? format(data.implementationDate, 'yyyy-MM-dd') : null,
-          embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
+          createdAt: new Date().toISOString(),
         };
 
-        const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), {
-            ...dataToSubmit,
-            createdAt: new Date().toISOString(),
-        });
+        const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), dataToSubmit);
 
         const newRecord: GapAnalysisRecord = {
             id: docRef.id,
-            ...data, // use original data with Date objects for client
+            ...data, // use original data for client
             createdAt: new Date().toISOString(),
         };
         return { success: true, data: newRecord };
@@ -41,20 +35,11 @@ export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof g
     try {
         const docRef = doc(db, 'gapAnalysisRecords', id);
         
-        const dataToSubmit = {
-          ...data,
-          dateOfEvaluation: data.dateOfEvaluation ? format(data.dateOfEvaluation, 'yyyy-MM-dd') : null,
-          effectiveDate: data.effectiveDate ? format(data.effectiveDate, 'yyyy-MM-dd') : null,
-          applicabilityDate: data.applicabilityDate ? format(data.applicabilityDate, 'yyyy-MM-dd') : null,
-          implementationDate: data.implementationDate ? format(data.implementationDate, 'yyyy-MM-dd') : null,
-          embeddedApplicabilityDate: format(data.embeddedApplicabilityDate, 'yyyy-MM-dd'),
-        };
-
-        await updateDoc(docRef, dataToSubmit);
+        await updateDoc(docRef, data);
 
         const updatedRecord: GapAnalysisRecord = {
             id,
-            ...data, // use original data with Date objects for client
+            ...data, // use original data for client
             createdAt: new Date().toISOString() // This might not be accurate, but it's a placeholder
         };
         return { success: true, data: updatedRecord };

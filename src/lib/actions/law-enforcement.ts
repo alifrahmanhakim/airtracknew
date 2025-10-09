@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -17,10 +18,6 @@ export async function addLawEnforcementRecord(data: z.infer<typeof lawEnforcemen
     try {
         const dataToSubmit = {
             ...parsed.data,
-            references: parsed.data.references.map(ref => ({
-                ...ref,
-                dateLetter: format(ref.dateLetter, 'yyyy-MM-dd')
-            })),
             createdAt: serverTimestamp(),
         };
         const docRef = await addDoc(collection(db, 'lawEnforcementRecords'), dataToSubmit);
@@ -41,24 +38,12 @@ export async function updateLawEnforcementRecord(id: string, data: z.infer<typeo
 
     try {
         const docRef = doc(db, 'lawEnforcementRecords', id);
-        const dataToSubmit = {
-            ...parsed.data,
-            references: parsed.data.references.map(ref => ({
-                ...ref,
-                dateLetter: format(ref.dateLetter, 'yyyy-MM-dd')
-            })),
-        };
-        await updateDoc(docRef, dataToSubmit);
+        
+        await updateDoc(docRef, parsed.data);
        
-        // We'll return the submitted data, but with dates as ISO strings
-        // to maintain consistency on the client-side without a full re-fetch.
         const updatedRecord = {
             id,
             ...parsed.data,
-            references: parsed.data.references.map(ref => ({
-                ...ref,
-                dateLetter: ref.dateLetter.toISOString()
-            })),
             createdAt: new Date().toISOString(), // Placeholder, not the real server time
         } as LawEnforcementRecord;
         

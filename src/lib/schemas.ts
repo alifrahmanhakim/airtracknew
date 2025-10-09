@@ -54,15 +54,15 @@ export const gapAnalysisFormSchema = z.object({
   slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
   annex: z.string().min(1, 'Annex is required'),
   typeOfStateLetter: z.string().min(1, 'Type of State Letter is required'),
-  dateOfEvaluation: z.date().optional(),
+  dateOfEvaluation: z.string().optional(),
   subject: z.string().min(1, 'Subject is required'),
   letterName: z.string().optional(),
   letterSubject: z.string().optional(),
-  implementationDate: z.date().optional(),
+  implementationDate: z.string().optional(),
   actionRequired: z.string().min(1, 'Action Required is required'),
-  effectiveDate: z.date().optional(),
-  applicabilityDate: z.date().optional(),
-  embeddedApplicabilityDate: z.date({ required_error: 'Embedded applicability date is required.' }),
+  effectiveDate: z.string().optional(),
+  applicabilityDate: z.string().optional(),
+  embeddedApplicabilityDate: z.string({ required_error: 'Embedded applicability date is required.' }),
   evaluations: z.array(z.object({
     id: z.string(),
     icaoSarp: z.string().min(1, 'ICAO SARP is required'),
@@ -92,7 +92,7 @@ export const glossaryFormSchema = z.object({
 });
 
 export const accidentIncidentFormSchema = z.object({
-  tanggal: z.date({ required_error: "Tanggal is required." }),
+  tanggal: z.string({ required_error: "Tanggal is required." }),
   kategori: z.enum(['Accident (A)', 'Serious Incident (SI)'], { required_error: "Kategori is required." }),
   aoc: z.string().min(1, 'AOC is required.'),
   registrasiPesawat: z.string().min(1, 'Registrasi Pesawat is required.'),
@@ -118,7 +118,7 @@ export const pemeriksaanFormSchema = z.object({
     registrasi: z.string().min(1, 'Registrasi is required.'),
     tahunPembuatan: z.string().min(1, 'Tahun Pembuatan is required.'),
     operator: z.string().min(1, 'Operator is required.'),
-    tanggal: z.date({ required_error: "Tanggal is required." }),
+    tanggal: z.string({ required_error: "Tanggal is required." }),
     lokasi: z.string().min(1, 'Lokasi is required.'),
     korban: z.string().min(1, 'Korban is required.'),
     ringkasanKejadian: z.string().min(1, 'Ringkasan Kejadian is required.'),
@@ -128,7 +128,7 @@ export const pemeriksaanFormSchema = z.object({
 });
 
 export const knktReportFormSchema = z.object({
-  tanggal_diterbitkan: z.date({ required_error: 'Tanggal is required.' }),
+  tanggal_diterbitkan: z.string({ required_error: 'Tanggal is required.' }),
   nomor_laporan: z.string().min(1, 'Nomor Laporan is required.'),
   status: z.enum(['Final', 'Preliminary', 'Interim Statement', 'Draft Final']),
   operator: z.string().min(1, 'Operator is required.'),
@@ -148,10 +148,10 @@ export const rekomendasiKeselamatanSchema = z.object({
 export const tindakLanjutFormSchema = z.object({
     judulLaporan: z.string().min(1, 'Judul Laporan is required.'),
     nomorLaporan: z.string().min(1, 'Nomor Laporan is required.'),
-    tanggalKejadian: z.date({ required_error: "Tanggal Kejadian is required." }),
+    tanggalKejadian: z.string({ required_error: "Tanggal Kejadian is required." }),
     penerimaRekomendasi: z.string().min(1, 'Penerima Rekomendasi is required.'),
     status: z.enum(['Draft', 'Final', 'Preliminary', 'Interim Statement']),
-    tanggalTerbit: z.date().optional(),
+    tanggalTerbit: z.string().optional(),
     rekomendasi: z.array(rekomendasiKeselamatanSchema).optional(),
     tindakLanjutDkppu: z.string().optional(),
     tindakLanjutOperator: z.string().optional(),
@@ -161,8 +161,8 @@ export const tindakLanjutDgcaFormSchema = z.object({
   judulLaporan: z.string().min(1, 'Judul Laporan is required.'),
   nomorLaporan: z.string().min(1, 'Nomor Laporan is required.'),
   operator: z.string().min(1, 'Operator is required.'),
-  tanggalKejadian: z.date({ required_error: "Tanggal Kejadian is required." }),
-  tanggalTerbit: z.date().optional(),
+  tanggalKejadian: z.string({ required_error: "Tanggal Kejadian is required." }),
+  tanggalTerbit: z.string().optional(),
   rekomendasiKeDgca: z.string().min(1, 'Rekomendasi Keselamatan Ke DGCA is required.'),
   nomorRekomendasi: z.string().min(1, 'Nomor Rekomendasi Keselamatan is required.'),
   tindakLanjutDkppu: z.string().min(1, 'Tindak lanjut DKPPU is required.'),
@@ -178,7 +178,7 @@ export const lawEnforcementFormSchema = z.object({
     id: z.string(),
     sanctionType: z.string().min(1, "Sanction type is required."),
     refLetter: z.string().min(1, "Reference letter is required."),
-    dateLetter: z.date({ required_error: "Date letter is required." }),
+    dateLetter: z.string({ required_error: "Date letter is required." }),
   })).min(1, "At least one reference is required."),
 }).superRefine((data, ctx) => {
     if (data.impositionType === 'aoc' && (!data.sanctionedAoc || data.sanctionedAoc.length === 0 || data.sanctionedAoc.some(p => !p.value))) {

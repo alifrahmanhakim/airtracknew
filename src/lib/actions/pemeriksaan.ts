@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -17,7 +18,6 @@ export async function addPemeriksaanRecord(data: z.infer<typeof pemeriksaanFormS
     try {
         const dataToSubmit = {
             ...parsed.data,
-            tanggal: format(parsed.data.tanggal, 'yyyy-MM-dd'),
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'pemeriksaanRecords'), dataToSubmit);
@@ -36,15 +36,12 @@ export async function updatePemeriksaanRecord(id: string, data: z.infer<typeof p
 
     try {
         const docRef = doc(db, 'pemeriksaanRecords', id);
-        const dataToSubmit = {
-            ...parsed.data,
-            tanggal: format(parsed.data.tanggal, 'yyyy-MM-dd'),
-        };
-        await updateDoc(docRef, dataToSubmit);
+        
+        await updateDoc(docRef, parsed.data);
         
         const updatedRecord = {
             id,
-            ...dataToSubmit,
+            ...data,
             createdAt: new Date().toISOString(),
         } as PemeriksaanRecord
         

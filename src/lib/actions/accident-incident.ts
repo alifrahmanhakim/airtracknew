@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -24,7 +25,6 @@ export async function addAccidentIncidentRecord(data: z.infer<typeof accidentInc
         const dataToSubmit = {
             ...restOfData,
             korbanJiwa: korbanJiwaString,
-            tanggal: format(parsed.data.tanggal, 'yyyy-MM-dd'),
             createdAt: serverTimestamp(),
         };
         const docRef = await addDoc(collection(db, 'accidentIncidentRecords'), dataToSubmit);
@@ -52,11 +52,10 @@ export async function updateAccidentIncidentRecord(id: string, data: z.infer<typ
         const dataToSubmit = {
             ...restOfData,
             korbanJiwa: korbanJiwaString,
-            tanggal: format(parsed.data.tanggal, 'yyyy-MM-dd'),
         };
         await updateDoc(docRef, dataToSubmit);
        
-        return { success: true, data: { id, ...data, tanggal: format(data.tanggal, 'yyyy-MM-dd'), korbanJiwa: korbanJiwaString, createdAt: new Date().toISOString() } };
+        return { success: true, data: { id, ...data, korbanJiwa: korbanJiwaString, createdAt: new Date().toISOString() } };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }

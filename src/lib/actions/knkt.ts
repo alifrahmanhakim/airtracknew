@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -17,7 +18,6 @@ export async function addKnktReport(data: z.infer<typeof knktReportFormSchema>) 
     try {
         const dataToSubmit = {
             ...parsed.data,
-            tanggal_diterbitkan: format(parsed.data.tanggal_diterbitkan, 'yyyy-MM-dd'),
             createdAt: serverTimestamp(),
         };
         const docRef = await addDoc(collection(db, 'knktReports'), dataToSubmit);
@@ -36,15 +36,11 @@ export async function updateKnktReport(id: string, data: z.infer<typeof knktRepo
 
     try {
         const docRef = doc(db, 'knktReports', id);
-        const dataToSubmit = {
-            ...parsed.data,
-            tanggal_diterbitkan: format(parsed.data.tanggal_diterbitkan, 'yyyy-MM-dd'),
-        };
-        await updateDoc(docRef, dataToSubmit);
+        await updateDoc(docRef, parsed.data);
         
         const updatedRecord: KnktReport = {
             id,
-            ...dataToSubmit,
+            ...data,
             createdAt: new Date().toISOString(),
         }
         

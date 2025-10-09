@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -16,8 +17,6 @@ export async function addTindakLanjutDgcaRecord(data: z.infer<typeof tindakLanju
     try {
         const dataToSubmit = {
             ...parsed.data,
-            tanggalKejadian: format(parsed.data.tanggalKejadian, 'yyyy-MM-dd'),
-            tanggalTerbit: parsed.data.tanggalTerbit ? format(parsed.data.tanggalTerbit, 'yyyy-MM-dd') : null,
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'tindakLanjutDgcaRecords'), dataToSubmit);
@@ -36,19 +35,12 @@ export async function updateTindakLanjutDgcaRecord(id: string, data: z.infer<typ
 
     try {
         const docRef = doc(db, 'tindakLanjutDgcaRecords', id);
-        const dataToSubmit = {
-            ...parsed.data,
-            tanggalKejadian: format(parsed.data.tanggalKejadian, 'yyyy-MM-dd'),
-            tanggalTerbit: parsed.data.tanggalTerbit ? format(parsed.data.tanggalTerbit, 'yyyy-MM-dd') : null,
-        };
-        await updateDoc(docRef, dataToSubmit);
+        
+        await updateDoc(docRef, parsed.data);
         
         const updatedRecord = {
             id,
             ...data,
-            // Re-format dates for client consistency if needed, but not strictly necessary as client parses ISO
-            tanggalKejadian: data.tanggalKejadian.toISOString(),
-            tanggalTerbit: data.tanggalTerbit?.toISOString(),
             createdAt: new Date().toISOString(),
         }
         
