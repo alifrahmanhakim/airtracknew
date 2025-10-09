@@ -106,7 +106,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'gradient-move': 'gradient-move 4s linear infinite',
       },
-      backgroundSize: {
+       backgroundSize: {
         '400%': '400% 400%',
       }
     },
