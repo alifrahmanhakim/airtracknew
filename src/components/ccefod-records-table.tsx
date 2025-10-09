@@ -179,11 +179,13 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
                                     }
                                     
                                     if (col.key === 'status') {
-                                        return <Badge className={cn({
+                                        return (<Badge className={cn({
                                             'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
                                             'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
                                             'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                        })}><Highlight text={value} query={searchTerm} /></Badge>;
+                                        })}>
+                                            <Highlight text={value} query={searchTerm} />
+                                        </Badge>);
                                     }
                                     
                                     return <Highlight text={value} query={searchTerm} />;
