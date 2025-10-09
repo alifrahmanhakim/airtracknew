@@ -96,6 +96,10 @@ export default function DataAccidentIncidentPage() {
     const handleFormSubmitSuccess = () => {
         setActiveTab('records');
     };
+    
+    const handleRecordUpdate = (updatedRecord: AccidentIncidentRecord) => {
+        setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    };
 
     const resetTableFilters = () => {
         setSearchTerm('');
@@ -221,7 +225,7 @@ export default function DataAccidentIncidentPage() {
                                         </Button>
                                     )}
                                 </div>
-                                <AccidentIncidentTable records={filteredTableRecords} />
+                                <AccidentIncidentTable records={filteredTableRecords} onUpdate={handleRecordUpdate} />
                                 </>
                             )}
                         </CardContent>

@@ -28,9 +28,11 @@ import {
 import { format, parseISO } from 'date-fns';
 import { Input } from '../ui/input';
 import { deleteAccidentIncidentRecord } from '@/lib/actions/accident-incident';
+import { EditAccidentIncidentRecordDialog } from './edit-accident-incident-dialog';
 
 type AccidentIncidentTableProps = {
   records: AccidentIncidentRecord[];
+  onUpdate: (record: AccidentIncidentRecord) => void;
 };
 
 type SortDescriptor = {
@@ -38,7 +40,7 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
+export function AccidentIncidentTable({ records, onUpdate }: AccidentIncidentTableProps) {
     const { toast } = useToast();
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<AccidentIncidentRecord | null>(null);
@@ -132,9 +134,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                                 <TableCell className="max-w-xs truncate">{record.keteranganKejadian}</TableCell>
                                 <TableCell>{record.korbanJiwa}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" disabled>
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
+                                    <EditAccidentIncidentRecordDialog record={record} onRecordUpdate={onUpdate} />
                                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteRequest(record)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>

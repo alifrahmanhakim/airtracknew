@@ -56,7 +56,7 @@ export async function updateAccidentIncidentRecord(id: string, data: z.infer<typ
         };
         await updateDoc(docRef, dataToSubmit);
        
-        return { success: true };
+        return { success: true, data: { id, ...data, tanggal: format(data.tanggal, 'yyyy-MM-dd'), korbanJiwa: korbanJiwaString, createdAt: new Date().toISOString() } };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
