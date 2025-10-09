@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, Info } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
 import { EditTindakLanjutDgcaDialog } from './edit-tindak-lanjut-dgca-dialog';
+import { format, parseISO } from 'date-fns';
 
 type TindakLanjutDgcaTableProps = {
   records: TindakLanjutDgcaRecord[];
@@ -45,7 +46,7 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm 
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[50px]">No</TableHead>
-                        <TableHead className="min-w-[300px]">Laporan Investigasi KNKT</TableHead>
+                        <TableHead className="min-w-[250px]">Laporan Investigasi KNKT</TableHead>
                         <TableHead className="min-w-[200px]">Rekomendasi Keselamatan Ke DGCA</TableHead>
                         <TableHead className="min-w-[200px]">Nomor Rekomendasi Keselamatan</TableHead>
                         <TableHead className="min-w-[300px]">Tindak lanjut DKPPU</TableHead>
@@ -56,7 +57,12 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm 
                     {records.map((record, index) => (
                         <TableRow key={record.id}>
                             <TableCell>{index + 1}</TableCell>
-                            <TableCell className="align-top"><BulletList text={record.laporanInvestigasi} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top">
+                                <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
+                                <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Terbit: <Highlight text={record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'dd MMM yyyy') : 'N/A'} query={searchTerm} /></p>
+                            </TableCell>
                             <TableCell className="align-top"><BulletList text={record.rekomendasiKeDgca} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.nomorRekomendasi} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>

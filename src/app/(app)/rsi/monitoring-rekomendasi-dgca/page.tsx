@@ -79,7 +79,8 @@ export default function MonitoringRekomendasiDgcaPage() {
     const form = useForm<TindakLanjutDgcaFormValues>({
         resolver: zodResolver(tindakLanjutDgcaFormSchema),
         defaultValues: {
-            laporanInvestigasi: '',
+            judulLaporan: '',
+            nomorLaporan: '',
             rekomendasiKeDgca: '',
             nomorRekomendasi: '',
             tindakLanjutDkppu: '',

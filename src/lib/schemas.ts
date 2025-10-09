@@ -141,8 +141,8 @@ export const knktReportFormSchema = z.object({
 
 export const rekomendasiKeselamatanSchema = z.object({
     id: z.string(),
-    nomor: z.string(),
-    deskripsi: z.string(),
+    nomor: z.string().optional(),
+    deskripsi: z.string().optional(),
 });
 
 export const tindakLanjutFormSchema = z.object({
@@ -158,7 +158,10 @@ export const tindakLanjutFormSchema = z.object({
 });
 
 export const tindakLanjutDgcaFormSchema = z.object({
-  laporanInvestigasi: z.string().min(1, 'Laporan Investigasi KNKT is required.'),
+  judulLaporan: z.string().min(1, 'Judul Laporan is required.'),
+  nomorLaporan: z.string().min(1, 'Nomor Laporan is required.'),
+  tanggalKejadian: z.date({ required_error: "Tanggal Kejadian is required." }),
+  tanggalTerbit: z.date().optional(),
   rekomendasiKeDgca: z.string().min(1, 'Rekomendasi Keselamatan Ke DGCA is required.'),
   nomorRekomendasi: z.string().min(1, 'Nomor Rekomendasi Keselamatan is required.'),
   tindakLanjutDkppu: z.string().min(1, 'Tindak lanjut DKPPU is required.'),

@@ -22,6 +22,7 @@ import { updateTindakLanjutDgcaRecord } from '@/lib/actions/tindak-lanjut-dgca';
 import { tindakLanjutDgcaFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { ScrollArea } from '../ui/scroll-area';
+import { parseISO } from 'date-fns';
 
 type TindakLanjutDgcaFormValues = z.infer<typeof tindakLanjutDgcaFormSchema>;
 
@@ -37,7 +38,11 @@ export function EditTindakLanjutDgcaDialog({ record, onRecordUpdate }: EditTinda
 
   const form = useForm<TindakLanjutDgcaFormValues>({
     resolver: zodResolver(tindakLanjutDgcaFormSchema),
-    defaultValues: { ...record },
+    defaultValues: {
+      ...record,
+      tanggalKejadian: record.tanggalKejadian ? parseISO(record.tanggalKejadian) : new Date(),
+      tanggalTerbit: record.tanggalTerbit ? parseISO(record.tanggalTerbit) : undefined,
+    },
   });
 
   const onSubmit = async (data: TindakLanjutDgcaFormValues) => {

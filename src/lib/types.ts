@@ -223,20 +223,23 @@ export type TindakLanjutRecord = {
     id: string;
     judulLaporan: string;
     nomorLaporan: string;
-    tanggalTerbit: string;
+    tanggalTerbit?: string;
     tanggalKejadian: string;
     status: 'Draft' | 'Final' | 'Preliminary' | 'Interim Statement';
     penerimaRekomendasi: string;
     rekomendasi: RekomendasiKeselamatan[];
-    tindakLanjutDkppu: string;
-    tindakLanjutOperator: string;
+    tindakLanjutDkppu?: string;
+    tindakLanjutOperator?: string;
     tahun: number;
     createdAt: string;
 };
 
 export type TindakLanjutDgcaRecord = {
   id: string;
-  laporanInvestigasi: string;
+  judulLaporan: string;
+  nomorLaporan: string;
+  tanggalKejadian: string;
+  tanggalTerbit?: string;
   rekomendasiKeDgca: string;
   nomorRekomendasi: string;
   tindakLanjutDkppu: string;

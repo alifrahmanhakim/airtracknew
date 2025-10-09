@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { tindakLanjutDgcaFormSchema } from '../schemas';
+import { format } from 'date-fns';
 
 export async function addTindakLanjutDgcaRecord(data: z.infer<typeof tindakLanjutDgcaFormSchema>) {
     const parsed = tindakLanjutDgcaFormSchema.safeParse(data);
@@ -15,6 +16,8 @@ export async function addTindakLanjutDgcaRecord(data: z.infer<typeof tindakLanju
     try {
         const dataToSubmit = {
             ...parsed.data,
+            tanggalKejadian: format(parsed.data.tanggalKejadian, 'yyyy-MM-dd'),
+            tanggalTerbit: parsed.data.tanggalTerbit ? format(parsed.data.tanggalTerbit, 'yyyy-MM-dd') : null,
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'tindakLanjutDgcaRecords'), dataToSubmit);
@@ -33,7 +36,12 @@ export async function updateTindakLanjutDgcaRecord(id: string, data: z.infer<typ
 
     try {
         const docRef = doc(db, 'tindakLanjutDgcaRecords', id);
-        await updateDoc(docRef, data);
+        const dataToSubmit = {
+            ...parsed.data,
+            tanggalKejadian: format(parsed.data.tanggalKejadian, 'yyyy-MM-dd'),
+            tanggalTerbit: parsed.data.tanggalTerbit ? format(parsed.data.tanggalTerbit, 'yyyy-MM-dd') : null,
+        };
+        await updateDoc(docRef, dataToSubmit);
         
         const updatedRecord = {
             id,
