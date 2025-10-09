@@ -63,6 +63,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                         <TableHead className="min-w-[300px]">Tindak Lanjut/Respon DKPPU</TableHead>
                         <TableHead className="min-w-[300px]">Tindak Lanjut Operator/Pihak Terkait</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>File</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -83,13 +84,6 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                     {record.registrasiPesawat && <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasiPesawat} query={searchTerm} /></p>}
                                     {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
                                     {record.lokasiKejadian && <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasiKejadian} query={searchTerm} /></p>}
-                                    {record.fileUrl && (
-                                        <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                                            <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
-                                                <LinkIcon className="mr-1 h-3 w-3" /> View File
-                                            </a>
-                                        </Button>
-                                    )}
                                 </TableCell>
                                 <TableCell className="align-top">
                                     <div className="flex flex-wrap gap-1">
@@ -121,6 +115,17 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                     >
                                         {record.status || 'N/A'}
                                     </Badge>
+                                </TableCell>
+                                <TableCell className="align-top">
+                                  {record.fileUrl ? (
+                                      <Button asChild variant="ghost" size="icon">
+                                          <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
+                                              <LinkIcon className="h-4 w-4" />
+                                          </a>
+                                      </Button>
+                                  ) : (
+                                      <span className="text-xs text-muted-foreground">None</span>
+                                  )}
                                 </TableCell>
                                 <TableCell className="text-right align-top">
                                     <EditTindakLanjutRecordDialog record={record} onRecordUpdate={onUpdate} />
