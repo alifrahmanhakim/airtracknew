@@ -9,6 +9,7 @@ import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, PieCha
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '../ui/chart';
 import { getYear, parseISO } from 'date-fns';
 import { AnimatedCounter } from '../ui/animated-counter';
+import { cn } from '@/lib/utils';
 
 type AnalyticsProps = {
   allRecords: LawEnforcementRecord[];
@@ -98,37 +99,49 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
     return (
         <div className="space-y-6">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Gavel /> Total Sanctions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalRecords} /></p>
-                    </CardContent>
+                <Card className="relative group overflow-hidden">
+                     <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-[spin_4s_linear_infinite]"></div>
+                     <div className="relative bg-card/80 backdrop-blur-sm rounded-lg h-full">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Gavel /> Total Sanctions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalRecords} /></p>
+                        </CardContent>
+                    </div>
                 </Card>
-                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned AOCs</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalAoc} /></p>
-                    </CardContent>
+                <Card className="relative group overflow-hidden">
+                     <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-[spin_4s_linear_infinite]"></div>
+                     <div className="relative bg-card/80 backdrop-blur-sm rounded-lg h-full">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned AOCs</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalAoc} /></p>
+                        </CardContent>
+                    </div>
                 </Card>
-                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><User /> Sanctioned Personnel</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalPersonnel} /></p>
-                    </CardContent>
+                <Card className="relative group overflow-hidden">
+                     <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-[spin_4s_linear_infinite]"></div>
+                     <div className="relative bg-card/80 backdrop-blur-sm rounded-lg h-full">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><User /> Sanctioned Personnel</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalPersonnel} /></p>
+                        </CardContent>
+                    </div>
                 </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned Orgs</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalOrganization} /></p>
-                    </CardContent>
+                <Card className="relative group overflow-hidden">
+                     <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-[spin_4s_linear_infinite]"></div>
+                     <div className="relative bg-card/80 backdrop-blur-sm rounded-lg h-full">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned Orgs</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalOrganization} /></p>
+                        </CardContent>
+                    </div>
                 </Card>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
