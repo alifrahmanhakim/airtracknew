@@ -32,10 +32,16 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
             return acc;
         }, {} as Record<string, number>);
         
-        const impositionTypeData = Object.entries(sanctionsByType).map(([name, value]) => ({name: name, value}));
+        const totalImpositions = Object.values(sanctionsByType).reduce((a, b) => a + b, 0);
+        const impositionTypeData = Object.entries(sanctionsByType).map(([name, value]) => ({
+            name: `${name} (${value}) - ${totalImpositions > 0 ? ((value / totalImpositions) * 100).toFixed(1) : 0}%`,
+            value,
+            originalName: name,
+        }));
+
 
         const sanctionsByYear = allRecords.reduce((acc, record) => {
-            if (record.references && record.references.length > 0) {
+            if (record.references && record.references.length > 0 && record.references[0].dateLetter) {
                 const year = getYear(parseISO(record.references[0].dateLetter));
                 acc[year] = (acc[year] || 0) + 1;
             }
@@ -47,7 +53,9 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
         const sanctionsBySanctionType = allRecords.reduce((acc, record) => {
             if (record.references && record.references.length > 0) {
                 record.references.forEach(ref => {
-                    acc[ref.sanctionType] = (acc[ref.sanctionType] || 0) + 1;
+                   if(ref.sanctionType) {
+                     acc[ref.sanctionType] = (acc[ref.sanctionType] || 0) + 1;
+                   }
                 })
             }
             return acc;
@@ -74,13 +82,15 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
         );
     }
     
-    const chartConfig = (data: {name: string, value: number}[]) => ({
+    const chartConfig = (data: {name: string, value: number, originalName?: string}[]) => ({
         value: { label: 'Count' },
         ...data.reduce((acc, item, index) => {
-            acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
+            const key = item.originalName || item.name;
+            acc[key] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
             return acc;
         }, {} as any)
     });
+
 
     return (
         <div className="space-y-6">
@@ -98,7 +108,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned AOCs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.name === 'aoc')?.value || 0} /></p>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.originalName === 'aoc')?.value || 0} /></p>
                     </CardContent>
                 </Card>
                  <Card>
@@ -106,7 +116,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><User /> Sanctioned Personnel</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.name === 'personnel')?.value || 0} /></p>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.originalName === 'personnel')?.value || 0} /></p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -114,7 +124,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned Orgs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.name === 'organization')?.value || 0} /></p>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.originalName === 'organization')?.value || 0} /></p>
                     </CardContent>
                 </Card>
             </div>
@@ -141,12 +151,12 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle>Imposition by Type</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="h-[300px] w-full aspect-square">
+                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="h-[300px] flex items-center justify-center">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                <Pie data={analyticsData.impositionTypeData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                <Pie data={analyticsData.impositionTypeData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
                                     {analyticsData.impositionTypeData.map((entry) => (
-                                        <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.impositionTypeData)[entry.name].color} />
+                                        <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.impositionTypeData)[entry.originalName].color} />
                                     ))}
                                 </Pie>
                                 <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
@@ -162,8 +172,8 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                 <CardContent>
                      <ChartContainer config={chartConfig(analyticsData.sanctionTypeData)} className="h-[400px] w-full">
                         <ResponsiveContainer>
-                            <BarChart data={analyticsData.sanctionTypeData} layout="vertical" margin={{ left: 50, right: 30 }}>
-                                <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                            <BarChart data={analyticsData.sanctionTypeData} layout="vertical" margin={{ left: 100, right: 30 }}>
+                                <YAxis dataKey="name" type="category" width={200} interval={0} tick={{ fontSize: 12 }} />
                                 <XAxis type="number" allowDecimals={false} />
                                 <Tooltip content={<ChartTooltipContent />} />
                                 <Bar dataKey="value" radius={[0, 4, 4, 0]}>
