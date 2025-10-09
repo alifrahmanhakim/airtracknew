@@ -64,9 +64,7 @@ export default function RulemakingDashboard() {
             <div className='flex justify-between items-center mb-6'>
                 <Skeleton className="h-10 w-1/3" />
                 <div className='flex gap-2'>
-                    <Skeleton className="h-10 w-24" />
-                    <Skeleton className="h-10 w-24" />
-                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-32" />
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
