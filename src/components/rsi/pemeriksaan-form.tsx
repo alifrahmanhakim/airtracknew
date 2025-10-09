@@ -19,9 +19,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
+import { Combobox } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { aocOptions, indonesianAircraftTypes } from '@/lib/data';
 
 type PemeriksaanFormValues = z.infer<typeof pemeriksaanFormSchema>;
 
@@ -40,11 +43,45 @@ export function PemeriksaanForm({ form }: PemeriksaanFormProps) {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="kategori" render={({ field }) => (<FormItem><FormLabel>Kategori</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                    <FormField control={form.control} name="jenisPesawat" render={({ field }) => (<FormItem><FormLabel>Jenis Pesawat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="kategori" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Kategori</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Pilih kategori..." /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Accident (A)">Accident (A)</SelectItem>
+                                    <SelectItem value="Serious Incident (SI)">Serious Incident (SI)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
+                    <FormField control={form.control} name="jenisPesawat" render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Jenis Pesawat</FormLabel>
+                            <Combobox 
+                                options={indonesianAircraftTypes}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Pilih atau ketik jenis pesawat..."
+                            />
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
                     <FormField control={form.control} name="registrasi" render={({ field }) => (<FormItem><FormLabel>Registrasi</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                     <FormField control={form.control} name="tahunPembuatan" render={({ field }) => (<FormItem><FormLabel>Tahun Pembuatan</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                    <FormField control={form.control} name="operator" render={({ field }) => (<FormItem><FormLabel>Operator</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                     <FormField control={form.control} name="operator" render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Operator</FormLabel>
+                             <Combobox 
+                                options={aocOptions}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Pilih atau ketik operator..."
+                            />
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
                     <FormField control={form.control} name="tanggal" render={({ field }) => (
                         <FormItem className="flex flex-col">
                             <FormLabel>Tanggal</FormLabel>

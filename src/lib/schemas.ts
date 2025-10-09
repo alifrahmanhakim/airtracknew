@@ -112,7 +112,7 @@ export const accidentIncidentFormSchema = z.object({
 });
 
 export const pemeriksaanFormSchema = z.object({
-    kategori: z.string().min(1, 'Kategori is required.'),
+    kategori: z.enum(['Accident (A)', 'Serious Incident (SI)']),
     jenisPesawat: z.string().min(1, 'Jenis Pesawat is required.'),
     registrasi: z.string().min(1, 'Registrasi is required.'),
     tahunPembuatan: z.string().min(1, 'Tahun Pembuatan is required.'),
