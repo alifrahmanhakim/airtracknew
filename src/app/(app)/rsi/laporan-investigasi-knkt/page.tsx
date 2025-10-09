@@ -88,7 +88,7 @@ export default function LaporanInvestigasiKnktPage() {
         <main className="p-4 md:p-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Laporan Investigasi KNKT</CardTitle>
+                    <CardTitle>LAPORAN INVESTIGASI DAN REKOMENDASI KNKT</CardTitle>
                     <CardDescription>
                         Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
                     </CardDescription>
