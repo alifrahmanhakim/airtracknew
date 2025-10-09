@@ -360,13 +360,13 @@ export default function MyDashboardPage() {
         {/* Sidebar */}
         <aside className="lg:col-span-1 xl:col-span-1 space-y-6 mt-14">
             <div className="grid grid-cols-2 gap-4">
-                <Card>
+                <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><FolderKanban className="h-4 w-4" /> My Projects</CardTitle>
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold"><AnimatedCounter endValue={myProjects.length} /></div></CardContent>
                 </Card>
-                 <Card>
+                 <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><ListTodo className="h-4 w-4" /> Task Completion</CardTitle>
                     </CardHeader>
@@ -375,13 +375,13 @@ export default function MyDashboardPage() {
                         <p className="text-xs text-muted-foreground">{openTasksCount} of {totalTasks} tasks open</p>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-yellow-500" /> Projects at Risk</CardTitle>
                     </CardHeader>
                     <CardContent><div className="text-3xl font-bold text-yellow-500"><AnimatedCounter endValue={atRiskProjectsCount} /></div></CardContent>
                 </Card>
-                 <Card>
+                 <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-red-500" /> Projects Off Track</CardTitle>
                     </CardHeader>
@@ -389,7 +389,7 @@ export default function MyDashboardPage() {
                       <div className="text-3xl font-bold text-red-500"><AnimatedCounter endValue={offTrackProjectsCount} /></div>
                     </CardContent>
                 </Card>
-                <Card className="col-span-2">
+                <Card className="col-span-2 transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-orange-500" /> Critical Issues</CardTitle>
                     </CardHeader>
