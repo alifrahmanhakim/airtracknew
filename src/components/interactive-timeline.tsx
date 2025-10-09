@@ -20,6 +20,7 @@ import {
   eachWeekOfInterval,
   getISOWeek,
   differenceInCalendarISOWeeks,
+  isWithinInterval,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
@@ -88,16 +89,34 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   }, [tasks]);
 
   React.useEffect(() => {
-    if (todayRef.current && timelineContainerRef.current) {
-      const container = timelineContainerRef.current;
-      const todayPosition = todayRef.current.offsetLeft;
-      // Scroll to the "Today" marker, positioning it roughly one-third of the way into the view
-      container.scrollTo({
-        left: todayPosition - container.offsetWidth / 3,
-        behavior: 'auto', // Use 'auto' for initial load for instant positioning
-      });
+    const container = timelineContainerRef.current;
+    const todayMarker = todayRef.current;
+    if (!container || !todayMarker) return;
+  
+    // --- Vertical Scroll ---
+    const today = startOfDay(new Date());
+    const firstActiveTaskIndex = sortedTasks.findIndex(task => 
+      isWithinInterval(today, { start: parseISO(task.startDate), end: parseISO(task.dueDate) })
+    );
+  
+    let verticalScrollPosition = 0;
+    if (firstActiveTaskIndex !== -1) {
+      // Calculate scroll position to bring the task into view
+      const taskTop = firstActiveTaskIndex * ROW_MIN_HEIGHT;
+      verticalScrollPosition = taskTop - container.offsetHeight / 4; // Center it a bit
     }
-  }, [sortedTasks]); // Reruns when tasks are filtered/sorted
+  
+    // --- Horizontal Scroll ---
+    const todayPosition = todayMarker.offsetLeft;
+    const horizontalScrollPosition = todayPosition - container.offsetWidth / 3;
+  
+    // --- Execute Scroll ---
+    container.scrollTo({
+      top: verticalScrollPosition,
+      left: horizontalScrollPosition,
+      behavior: 'auto',
+    });
+  }, [sortedTasks]);
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
