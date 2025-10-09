@@ -18,17 +18,7 @@ const firebaseConfig = {
 };
 
 
-// These are the static users from src/lib/data.ts
-const users = [
-    { id: 'admin-00', name: 'Admin User', email: 'admin@admin2023.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head', isApproved: true },
-    { id: 'admin-01', name: 'Hakim Alif Rahman', email: 'hakimalifrahman@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head', isApproved: true },
-    { id: 'rizkywirapratama434', name: 'Rizky Wirapratama', email: 'rizkywirapratama434@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head', isApproved: true },
-    { id: '8aOs7OSaL8XFXLq7DxzbnuXN5eC3', name: 'Chewy Sihusky', email: 'chewysihusky@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
-    { id: 'user-1', name: 'Alex Johnson', email: 'alex.johnson@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
-    { id: 'user-2', name: 'Maria Garcia', email: 'maria.garcia@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC' },
-    { id: 'user-3', name: 'James Smith', email: 'james.smith@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC Assistant' },
-    { id: 'user-4', name: 'Patricia Williams', email: 'patricia.williams@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
-];
+
 
 const accidentIncidentRecords = [
     { tanggal: '2022-02-24', kategori: 'Serious Incident (SI)', operator: 'PT. Ekspres Transportasi Antarbenua', aoc: 'AOC 135', registrasiPesawat: 'PK-RJH', tipePesawat: 'Eurocopter EC135P2', lokasi: 'Seletar Airport', wilayah: 'Singapura', taxonomy: 'Runway Incursion' },
@@ -99,19 +89,6 @@ async function seedDatabase() {
         const db = getFirestore(app);
         console.log('Firebase initialized.');
 
-        console.log('Starting to seed users...');
-        const usersCollection = collection(db, 'users');
-        
-        const userPromises = users.map(user => {
-            const userRef = doc(usersCollection, user.id);
-            const { id, ...userData } = user;
-            console.log(`Preparing to set user: ${user.email} with ID: ${user.id}`);
-            return setDoc(userRef, userData, { merge: true });
-        });
-
-        await Promise.all(userPromises);
-        console.log(`${users.length} users have been added or updated.`);
-
         console.log('Starting to seed accident/incident records...');
         const accidentIncidentCollection = collection(db, 'accidentIncidentRecords');
         const accidentPromises = accidentIncidentRecords.map((record, index) => {
@@ -153,3 +130,5 @@ seedDatabase().then(() => {
 }).catch(() => {
     setTimeout(() => process.exit(1), 1000);
 });
+
+    
