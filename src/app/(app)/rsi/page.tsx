@@ -116,8 +116,9 @@ export default function RsiPage() {
               </div>
             </CardContent>
             <CardFooter className="bg-muted/50 p-4 mt-auto">
-                <Link href={module.href} className="flex items-center text-sm text-primary font-semibold w-full">
-                    Open Module <ArrowRight className="ml-auto h-4 w-4" />
+                <Link href={module.href} className="group flex items-center text-sm text-primary font-semibold w-full">
+                    <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-all duration-300 ease-in-out bg-left-bottom bg-no-repeat bg-[length:0%_2px] group-hover:bg-[length:100%_2px]">Open Module</span>
+                    <ArrowRight className="ml-auto h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
             </CardFooter>
           </Card>
