@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -45,6 +46,7 @@ const statusConfig: { [key in Project['status']]: { icon: React.ElementType, sty
 };
 
 export function RulemakingTable({ projects, sort, setSort }: RulemakingTableProps) {
+  const router = useRouter();
 
   const handleSort = (column: keyof Project | 'progress') => {
     setSort(prevSort => {
@@ -118,16 +120,16 @@ export function RulemakingTable({ projects, sort, setSort }: RulemakingTableProp
               const currentStatus = statusConfig[project.status];
 
               return (
-                <TableRow key={project.id}>
+                <TableRow 
+                  key={project.id} 
+                  onClick={() => router.push(`/projects/${project.id}?type=rulemaking`)}
+                  className="cursor-pointer"
+                >
                   <TableCell className="font-bold">
-                     <Link href={`/projects/${project.id}?type=rulemaking`} className="hover:underline">
-                        {project.casr}
-                     </Link>
+                    {project.casr}
                   </TableCell>
                   <TableCell className="font-medium">
-                     <Link href={`/projects/${project.id}?type=rulemaking`} className="hover:underline">
-                        {project.name}
-                     </Link>
+                    {project.name}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn("text-xs font-semibold gap-1.5 pl-1.5", currentStatus.style)}>
