@@ -35,7 +35,7 @@ type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 export default function LawEnforcementPage() {
     const [records, setRecords] = React.useState<LawEnforcementRecord[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('form');
+    const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
