@@ -19,7 +19,7 @@ const rsiModules = [
     href: '/rsi/pemeriksaan',
   },
   {
-    title: 'LAPORAN INVESTIGASI DAN REKOMENDASI KNKT',
+    title: 'Laporan Investigasi dan Rekomendasi KNKT',
     description: 'Access and manage NTSC investigation reports.',
     icon: <FileSearch className="h-8 w-8 text-yellow-500" />,
     href: '/rsi/laporan-investigasi-knkt',
