@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm, type UseFormReturn, useFieldArray } from 'react-hook-form';
+import { useFieldArray, type UseFormReturn } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -18,16 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarIcon, Plus, Trash2, Check, ChevronsUpDown } from 'lucide-react';
-import { lawEnforcementFormSchema } from '@/lib/schemas';
+import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
 import type { z } from 'zod';
+import { lawEnforcementFormSchema } from '@/lib/schemas';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { aocOptions } from '@/lib/data';
 import { Button } from '../ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 
@@ -101,58 +100,22 @@ export function LawEnforcementForm({ form }: LawEnforcementFormProps) {
             control={form.control}
             name="sanctionedAoc"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel>AOC</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value
-                          ? aocOptions.find(
-                              (option) => option.value === field.value
-                            )?.label
-                          : "Select AOC"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select an AOC" />
+                        </SelectTrigger>
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                    <Command>
-                      <CommandInput placeholder="Search AOC..." />
-                      <CommandList>
-                        <CommandEmpty>No AOC found.</CommandEmpty>
-                        <CommandGroup>
-                          {aocOptions.map((option) => (
-                            <CommandItem
-                              value={option.label}
-                              key={option.value}
-                              onSelect={() => {
-                                form.setValue("sanctionedAoc", option.value)
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  option.value === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {option.label}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                    <SelectContent>
+                        {aocOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
