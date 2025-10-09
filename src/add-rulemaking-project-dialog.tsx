@@ -33,7 +33,7 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
-import { addRulemakingProject } from '@/lib/actions';
+import { addRulemakingProject } from '@/lib/actions/project';
 import { Checkbox } from './ui/checkbox';
 import { z } from 'zod';
 
