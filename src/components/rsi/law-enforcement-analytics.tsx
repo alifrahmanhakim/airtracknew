@@ -34,7 +34,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
         
         const totalImpositions = Object.values(sanctionsByType).reduce((a, b) => a + b, 0);
         const impositionTypeData = Object.entries(sanctionsByType).map(([name, value]) => ({
-            name: `${name} (${value}) - ${totalImpositions > 0 ? ((value / totalImpositions) * 100).toFixed(1) : 0}%`,
+            name: `${name.charAt(0).toUpperCase() + name.slice(1)} (${value}) - ${totalImpositions > 0 ? ((value / totalImpositions) * 100).toFixed(1) : 0}%`,
             value,
             originalName: name,
         }));
@@ -151,7 +151,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle>Imposition by Type</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="h-[300px] flex items-center justify-center">
+                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="mx-auto aspect-square h-[300px]">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                 <Pie data={analyticsData.impositionTypeData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
