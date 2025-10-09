@@ -4,11 +4,15 @@
 import * as React from 'react';
 
 type HighlightProps = {
-  text: string;
+  text: string | null | undefined;
   query: string;
 };
 
 export const Highlight: React.FC<HighlightProps> = ({ text, query }) => {
+  if (!text) {
+    return null; // Return null if text is not valid
+  }
+
   if (!query) {
     return <span>{text}</span>;
   }
@@ -30,5 +34,3 @@ export const Highlight: React.FC<HighlightProps> = ({ text, query }) => {
     </span>
   );
 };
-
-    
