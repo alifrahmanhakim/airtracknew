@@ -129,7 +129,7 @@ export default function LawEnforcementPage() {
 
                 <TabsContent value="form">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onFormSubmit)} id="law-enforcement-form">
+                        <form onSubmit={form.handleSubmit(onFormSubmit)}>
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Add New Sanction</CardTitle>
