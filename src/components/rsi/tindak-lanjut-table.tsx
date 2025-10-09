@@ -74,11 +74,11 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
 
                         return (
                             <TableRow key={record.id}>
-                                <TableCell>{index + 1}</TableCell>
+                                <TableCell className="align-top">{index + 1}</TableCell>
                                 <TableCell className="align-top">
                                     <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
                                     <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
-                                    <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
+                                    <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'dd MMM yyyy') : 'N/A'} query={searchTerm} /></p>
                                     {record.tanggalTerbit && <p className="text-sm text-muted-foreground">Terbit: <Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>}
                                     {record.registrasiPesawat && <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasiPesawat} query={searchTerm} /></p>}
                                     {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
