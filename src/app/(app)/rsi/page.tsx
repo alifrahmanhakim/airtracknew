@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, ShieldQuestion, FileWarning, Search, Gavel } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search } from 'lucide-react';
 import Link from 'next/link';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -95,7 +95,7 @@ export default function RsiPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {rsiModules.map((module) => (
-          <Card key={module.title} className="flex flex-col hover:shadow-lg hover:border-primary transition-all">
+          <Card key={module.title} className="flex flex-col hover:shadow-lg hover:border-primary transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
             <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
               {module.icon}
               <CardTitle>{module.title}</CardTitle>
