@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -187,12 +188,7 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                 )}
             </div>
         </div>
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Submit Record
-          </Button>
-        </div>
+        
       </form>
     </Form>
   );
