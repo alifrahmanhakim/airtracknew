@@ -87,6 +87,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete }: KnktReportsTab
                         <TableHead>Registrasi</TableHead>
                         <TableHead>Tipe Pesawat</TableHead>
                         <TableHead>Lokasi</TableHead>
+                        <TableHead>Keterangan</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -106,6 +107,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete }: KnktReportsTab
                             <TableCell>{record.registrasi}</TableCell>
                             <TableCell>{record.tipe_pesawat}</TableCell>
                             <TableCell>{record.lokasi}</TableCell>
+                            <TableCell className="whitespace-normal">{record.keterangan || '-'}</TableCell>
                             <TableCell className="text-right">
                                 <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
@@ -115,7 +117,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete }: KnktReportsTab
                         </TableRow>
                     )) : (
                         <TableRow>
-                            <TableCell colSpan={8} className="text-center h-24">
+                            <TableCell colSpan={9} className="text-center h-24">
                                 <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                 No records found for the current filters.
                             </TableCell>
