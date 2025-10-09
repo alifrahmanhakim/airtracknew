@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Project, Task, User, SubProject, Document as ProjectDocument, GapAnalysisRecord, Attachment } from '@/lib/types';
 import { rulemakingTaskOptions } from '@/lib/data';
 import { findUserById } from '@/lib/data-utils';
@@ -197,6 +197,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const [gapRecordToDelete, setGapRecordToDelete] = useState<GapAnalysisRecord | null>(null);
 
   const [documentSearch, setDocumentSearch] = useState('');
+  
+  const [animatedAttachmentCompletion, setAnimatedAttachmentCompletion] = useState(0);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -372,6 +374,13 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       
       return { tasksWithoutAttachments: missing, attachmentCompletion: completion };
   }, [project.tasks]);
+
+  useEffect(() => {
+    const animation = requestAnimationFrame(() => {
+      setAnimatedAttachmentCompletion(attachmentCompletion);
+    });
+    return () => cancelAnimationFrame(animation);
+  }, [attachmentCompletion]);
 
   const filteredDocuments = React.useMemo(() => {
     if (!documentSearch) return allDocuments;
@@ -607,14 +616,19 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             <CardContent>
                 <div className="flex flex-col md:flex-row gap-4 md:gap-8">
                     <div className="flex-1 space-y-2">
-                        <p className="font-semibold text-yellow-900 dark:text-yellow-200">
-                            {tasksWithoutAttachments.length} of {tasks.length} tasks are missing attachments.
-                        </p>
+                         <div className="flex justify-between items-baseline">
+                            <p className="font-semibold text-yellow-900 dark:text-yellow-200">
+                                {tasksWithoutAttachments.length} of {tasks.length} tasks are missing attachments.
+                            </p>
+                            <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+                                {Math.round(animatedAttachmentCompletion)}%
+                            </p>
+                        </div>
                         <p className="text-sm text-yellow-800/80 dark:text-yellow-400/80">
                             Ensure all tasks have necessary documentation for compliance and record-keeping.
                         </p>
                         <div className="pt-2">
-                            <Progress value={attachmentCompletion} indicatorClassName="bg-yellow-500" className="h-2 bg-yellow-200 dark:bg-yellow-800/50" />
+                            <Progress value={animatedAttachmentCompletion} indicatorClassName="bg-yellow-500" className="h-2 bg-yellow-200 dark:bg-yellow-800/50" />
                         </div>
                     </div>
                     <div className="md:w-1/2">
