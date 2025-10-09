@@ -125,7 +125,7 @@ export default function PemeriksaanPage() {
 
     const operatorOptions = React.useMemo(() => {
         const operators = [...new Set(records.map(r => r.operator))];
-        return ['all', ...operators.sort()];
+        return [...operators.sort()];
     }, [records]);
 
     const filteredRecords = React.useMemo(() => {
