@@ -71,6 +71,7 @@ import { TasksTable } from './tasks-table';
 import { ScrollArea } from './ui/scroll-area';
 import { Input } from './ui/input';
 import { Separator } from './ui/separator';
+import { Progress } from './ui/progress';
 
 const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
     if (!value && typeof value !== 'number') return null;
@@ -354,20 +355,22 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     return [...projDocs, ...taskAttachments];
   }, [project.documents, project.tasks]);
   
-  const tasksWithoutAttachments = React.useMemo(() => {
-    const tasksToCheck = (tasks: Task[]): Task[] => {
-      let result: Task[] = [];
-      tasks.forEach(task => {
-        if (!task.attachments || task.attachments.length === 0) {
-          result.push(task);
-        }
-        if (task.subTasks) {
-          result = result.concat(tasksToCheck(task.subTasks));
-        }
-      });
-      return result;
-    };
-    return tasksToCheck(project.tasks || []);
+  const { tasksWithoutAttachments, attachmentCompletion } = React.useMemo(() => {
+      const allFlattenedTasks = (function flatten(tasks: Task[]): Task[] {
+          return tasks.reduce((acc: Task[], task) => {
+              acc.push(task);
+              if (task.subTasks) {
+                  acc.push(...flatten(task.subTasks));
+              }
+              return acc;
+          }, []);
+      })(project.tasks || []);
+      
+      const missing = allFlattenedTasks.filter(task => !task.attachments || task.attachments.length === 0);
+      const total = allFlattenedTasks.length;
+      const completion = total > 0 ? ((total - missing.length) / total) * 100 : 100;
+      
+      return { tasksWithoutAttachments: missing, attachmentCompletion: completion };
   }, [project.tasks]);
 
   const filteredDocuments = React.useMemo(() => {
@@ -595,21 +598,36 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </Card>
         
         {tasksWithoutAttachments.length > 0 && (
-          <Card className="border-yellow-500/50 bg-yellow-500/5">
+          <Card className="border-yellow-300 bg-yellow-100 dark:bg-yellow-950 dark:border-yellow-800/80">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
-                <AlertTriangle /> Attachment Alert
-              </CardTitle>
-              <CardDescription>
-                The following tasks are missing attachments. Please upload the necessary files.
-              </CardDescription>
+                <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                    <AlertTriangle /> Attachment Alert
+                </CardTitle>
             </CardHeader>
             <CardContent>
-                <ul className="list-disc pl-5 space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
-                    {tasksWithoutAttachments.map(task => (
-                        <li key={task.id}>{task.title}</li>
-                    ))}
-                </ul>
+                <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+                    <div className="flex-1 space-y-2">
+                        <p className="font-semibold text-yellow-900 dark:text-yellow-200">
+                            {tasksWithoutAttachments.length} of {tasks.length} tasks are missing attachments.
+                        </p>
+                        <p className="text-sm text-yellow-800/80 dark:text-yellow-400/80">
+                            Ensure all tasks have necessary documentation for compliance and record-keeping.
+                        </p>
+                        <div className="pt-2">
+                            <Progress value={attachmentCompletion} indicatorClassName="bg-yellow-500" className="h-2 bg-yellow-200 dark:bg-yellow-800/50" />
+                        </div>
+                    </div>
+                    <div className="md:w-1/2">
+                         <h4 className="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">Tasks to review:</h4>
+                         <ScrollArea className="h-32">
+                             <ul className="list-disc pl-5 space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
+                                {tasksWithoutAttachments.map(task => (
+                                    <li key={task.id}>{task.title}</li>
+                                ))}
+                            </ul>
+                         </ScrollArea>
+                    </div>
+                </div>
             </CardContent>
           </Card>
         )}
