@@ -84,7 +84,7 @@ export default function MonitoringRekomendasiDgcaPage() {
             nomorLaporan: '',
             operator: '',
             tipePesawat: '',
-            tanggalKejadian: new Date().toISOString().split('T')[0],
+            tanggalKejadian: '',
             rekomendasiKeDgca: '',
             nomorRekomendasi: '',
             tindakLanjutDkppu: '',
