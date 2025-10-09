@@ -152,7 +152,7 @@ export const tindakLanjutFormSchema = z.object({
     tanggalKejadian: z.string({ required_error: "Tanggal Kejadian is required." }),
     penerimaRekomendasi: z.array(z.string()).min(1, 'Penerima Rekomendasi is required.'),
     status: z.enum(['Draft', 'Final', 'Preliminary', 'Interim Statement', 'Draft Final']),
-    tanggalTerbit: z.string().optional(),
+    tanggalTerbit: z.string().optional().or(z.literal('')),
     rekomendasi: z.array(rekomendasiKeselamatanSchema).optional(),
     tindakLanjutDkppu: z.string().optional(),
     tindakLanjutOperator: z.string().optional(),

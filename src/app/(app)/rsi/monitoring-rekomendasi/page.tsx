@@ -88,7 +88,8 @@ export default function MonitoringRekomendasiPage() {
         defaultValues: {
             judulLaporan: '',
             nomorLaporan: '',
-            penerimaRekomendasi: '',
+            tanggalKejadian: '',
+            penerimaRekomendasi: [],
             rekomendasi: [{ id: 'rec-1', nomor: '', deskripsi: '' }],
             tindakLanjutDkppu: '',
             tindakLanjutOperator: '',
@@ -136,16 +137,28 @@ export default function MonitoringRekomendasiPage() {
     };
 
     const yearOptions = React.useMemo(() => ['all', ...[...new Set(records.map(r => r.tahun))].sort((a,b) => b - a)], [records]);
-    const penerimaOptions = React.useMemo(() => ['all', ...Array.from(new Set(records.map(r => r.penerimaRekomendasi || ''))).sort(), ...aocOptions.map(a => a.value)], [records]);
+    const penerimaOptions = React.useMemo(() => {
+        const allPenerima = new Set(records.flatMap(r => r.penerimaRekomendasi || []));
+        return ['all', ...Array.from(allPenerima).sort()];
+    }, [records]);
 
 
     const filteredRecords = React.useMemo(() => {
         return records.filter(record => {
-            const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
-                typeof value === 'string' && String(value).toLowerCase().includes(searchTerm.toLowerCase())
-            ) || record.rekomendasi.some(r => r.deskripsi.toLowerCase().includes(searchTerm.toLowerCase()));
+            const searchTermMatch = searchTerm === '' || Object.values(record).some(value => {
+                if (typeof value === 'string') {
+                    return String(value).toLowerCase().includes(searchTerm.toLowerCase())
+                }
+                if (Array.isArray(value)) {
+                    return value.some(item => 
+                        (typeof item === 'string' && item.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                        (typeof item === 'object' && item !== null && Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase())))
+                    );
+                }
+                return false;
+            });
             
-            const penerimaMatch = penerimaFilter === 'all' || record.penerimaRekomendasi === penerimaFilter;
+            const penerimaMatch = penerimaFilter === 'all' || (record.penerimaRekomendasi && record.penerimaRekomendasi.includes(penerimaFilter));
             const yearMatch = yearFilter === 'all' || record.tahun === parseInt(yearFilter, 10);
             
             return searchTermMatch && penerimaMatch && yearMatch;
