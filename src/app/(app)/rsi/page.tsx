@@ -25,13 +25,13 @@ const rsiModules = [
     href: '/rsi/laporan-investigasi-knkt',
   },
   {
-    title: 'Monitoring Tindak Lanjut Rekomendasi Keselamatan KNKT',
+    title: 'Monitoring Tindak Lanjut Rekomendasi KNKT',
     description: 'Track follow-ups on NTSC safety recommendations.',
     icon: <BarChart className="h-8 w-8 text-green-500" />,
-    href: '#',
+    href: '/rsi/monitoring-rekomendasi',
   },
   {
-    title: 'Monitoring Tindak Lanjut Rekomendasi Keselamatan KNKT ke DGCA',
+    title: 'Monitoring Tindak Lanjut Rekomendasi KNKT ke DGCA',
     description: 'Track follow-ups on NTSC recommendations to the DGCA.',
     icon: <ShieldQuestion className="h-8 w-8 text-purple-500" />,
     href: '#',
