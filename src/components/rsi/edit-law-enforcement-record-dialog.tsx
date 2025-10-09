@@ -20,7 +20,7 @@ import type { LawEnforcementRecord } from '@/lib/types';
 import { LawEnforcementForm } from './law-enforcement-form';
 import { updateLawEnforcementRecord } from '@/lib/actions/law-enforcement';
 import { lawEnforcementFormSchema } from '@/lib/schemas';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import type { z } from 'zod';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
@@ -39,7 +39,7 @@ export function EditLawEnforcementRecordDialog({ record, onRecordUpdate }: EditL
     resolver: zodResolver(lawEnforcementFormSchema),
     defaultValues: {
       ...record,
-      references: record.references?.map(ref => ({...ref, dateLetter: parseISO(ref.dateLetter)})) || []
+      references: record.references?.map(ref => ({...ref, dateLetter: ref.dateLetter ? format(parseISO(ref.dateLetter), 'yyyy-MM-dd') : ''})) || []
     },
   });
 

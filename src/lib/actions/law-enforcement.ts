@@ -5,7 +5,7 @@
 import { z } from 'zod';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { lawEnforcementFormSchema } from '../schemas';
 import type { LawEnforcementRecord } from '../types';
 
@@ -18,6 +18,10 @@ export async function addLawEnforcementRecord(data: z.infer<typeof lawEnforcemen
     try {
         const dataToSubmit = {
             ...parsed.data,
+            references: parsed.data.references.map(ref => ({
+                ...ref,
+                dateLetter: ref.dateLetter // Already a string
+            })),
             createdAt: serverTimestamp(),
         };
         const docRef = await addDoc(collection(db, 'lawEnforcementRecords'), dataToSubmit);
@@ -39,7 +43,15 @@ export async function updateLawEnforcementRecord(id: string, data: z.infer<typeo
     try {
         const docRef = doc(db, 'lawEnforcementRecords', id);
         
-        await updateDoc(docRef, parsed.data);
+        const dataToSubmit = {
+            ...parsed.data,
+             references: parsed.data.references.map(ref => ({
+                ...ref,
+                dateLetter: ref.dateLetter // Already a string
+            })),
+        };
+        
+        await updateDoc(docRef, dataToSubmit);
        
         const updatedRecord = {
             id,

@@ -26,7 +26,7 @@ import { lawEnforcementFormSchema } from '@/lib/schemas';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Button } from '../ui/button';
 import { aocOptions } from '@/lib/data';
@@ -137,7 +137,7 @@ export function LawEnforcementForm({ form, isSubmitting }: LawEnforcementFormPro
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => appendReference({ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() })}
+                        onClick={() => appendReference({ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: format(new Date(), 'yyyy-MM-dd') })}
                         disabled={isSubmitting}
                         >
                         <Plus className="mr-2 h-4 w-4" /> Add Reference
@@ -153,19 +153,9 @@ export function LawEnforcementForm({ form, isSubmitting }: LawEnforcementFormPro
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
                                     <FormLabel>Date Letter</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSubmitting}>
-                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                                        </PopoverContent>
-                                    </Popover>
+                                     <FormControl>
+                                        <Input type="date" {...field} disabled={isSubmitting} />
+                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )}
