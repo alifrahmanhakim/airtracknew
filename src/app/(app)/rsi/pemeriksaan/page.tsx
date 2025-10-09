@@ -10,10 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PemeriksaanRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { pemeriksaanFormSchema } from '@/lib/schemas';
@@ -69,10 +67,14 @@ export default function PemeriksaanPage() {
         setActiveTab('records');
     };
     
+    const handleRecordUpdate = (updatedRecord: PemeriksaanRecord) => {
+        setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    };
+
     const form = useForm<PemeriksaanFormValues>({
         resolver: zodResolver(pemeriksaanFormSchema),
         defaultValues: {
-            kategori: '',
+            kategori: 'Accident (A)',
             jenisPesawat: '',
             registrasi: '',
             tahunPembuatan: '',
@@ -151,7 +153,7 @@ export default function PemeriksaanPage() {
                             {isLoading ? (
                                 <Skeleton className="h-[600px] w-full" />
                             ) : (
-                                <PemeriksaanTable records={records} />
+                                <PemeriksaanTable records={records} onUpdate={handleRecordUpdate} />
                             )}
                         </CardContent>
                     </Card>

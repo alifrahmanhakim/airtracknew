@@ -26,9 +26,11 @@ import {
 } from "@/components/ui/alert-dialog"
 import { format, parseISO } from 'date-fns';
 import { deletePemeriksaanRecord } from '@/lib/actions/pemeriksaan';
+import { EditPemeriksaanRecordDialog } from './edit-pemeriksaan-record-dialog';
 
 type PemeriksaanTableProps = {
   records: PemeriksaanRecord[];
+  onUpdate: (record: PemeriksaanRecord) => void;
 };
 
 type SortDescriptor = {
@@ -48,7 +50,7 @@ const BulletList = ({ text }: { text: string }) => {
     );
 };
 
-export function PemeriksaanTable({ records }: PemeriksaanTableProps) {
+export function PemeriksaanTable({ records, onUpdate }: PemeriksaanTableProps) {
     const { toast } = useToast();
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<PemeriksaanRecord | null>(null);
@@ -153,9 +155,7 @@ export function PemeriksaanTable({ records }: PemeriksaanTableProps) {
                                     )}
                                 </TableCell>
                                 <TableCell className="text-right align-top">
-                                    <Button variant="ghost" size="icon" disabled>
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
+                                    <EditPemeriksaanRecordDialog record={record} onRecordUpdate={onUpdate} />
                                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteRequest(record)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
