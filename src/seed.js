@@ -8,13 +8,13 @@ const { getFirestore, collection, doc, setDoc } = require('firebase/firestore');
 
 // IMPORTANT: This configuration is now aligned with your actual Firebase config from src/lib/firebase.ts
 const firebaseConfig = {
-    apiKey: "AIzaSyCqr_jQW1ZxMuBjLDmDsoSZA8RKF-kjHO0",
-    authDomain: "airtrack-c7979.firebaseapp.com",
-    projectId: "airtrack-c7979",
-    storageBucket: "airtrack-c7979.appspot.com",
-    messagingSenderId: "1090515897511",
-    appId: "1:1090515897511:web:40a0425c8ce80d70599f82",
-    measurementId: "G-DFBV3WYJ6M"
+  apiKey: "AIzaSyCqr_jQW1ZxMuBjLDmDsoSZA8RKF-kjHO0",
+  authDomain: "airtrack-c7979.firebaseapp.com",
+  projectId: "airtrack-c7979",
+  storageBucket: "airtrack-c7979.appspot.com",
+  messagingSenderId: "1090515897511",
+  appId: "1:1090515897511:web:40a0425c8ce80d70599f82",
+  measurementId: "G-DFBV3WYJ6M"
 };
 
 
