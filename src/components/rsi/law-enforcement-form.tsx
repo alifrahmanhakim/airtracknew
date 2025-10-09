@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useForm, useFieldArray, type UseFormReturn } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
@@ -34,11 +34,7 @@ import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 
-interface LawEnforcementFormProps {
-  onFormSubmit: () => void;
-}
-
-export function LawEnforcementForm({ onFormSubmit }: LawEnforcementFormProps) {
+export function LawEnforcementForm() {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -46,18 +42,29 @@ export function LawEnforcementForm({ onFormSubmit }: LawEnforcementFormProps) {
         resolver: zodResolver(lawEnforcementFormSchema),
         defaultValues: {
             impositionType: 'aoc',
-            sanctionedAoc: '',
+            sanctionedAoc: [{ value: "" }],
             sanctionedPersonnel: [{ value: "" }],
-            sanctionedOrganization: '',
+            sanctionedOrganization: [{ value: "" }],
             sanctionType: '',
             refLetter: '',
         },
     });
     
     const impositionType = form.watch('impositionType');
-    const { fields, append, remove } = useFieldArray({
+    
+    const { fields: aocFields, append: appendAoc, remove: removeAoc } = useFieldArray({
+      control: form.control,
+      name: "sanctionedAoc",
+    });
+
+    const { fields: personnelFields, append: appendPersonnel, remove: removePersonnel } = useFieldArray({
       control: form.control,
       name: "sanctionedPersonnel",
+    });
+
+    const { fields: orgFields, append: appendOrg, remove: removeOrg } = useFieldArray({
+      control: form.control,
+      name: "sanctionedOrganization",
     });
 
     async function onSubmit(data: LawEnforcementFormValues) {
@@ -68,7 +75,6 @@ export function LawEnforcementForm({ onFormSubmit }: LawEnforcementFormProps) {
         if (result.success) {
             toast({ title: 'Record Added', description: 'The new sanction record has been added.' });
             form.reset();
-            onFormSubmit();
         } else {
             toast({
                 variant: 'destructive',
@@ -139,26 +145,43 @@ export function LawEnforcementForm({ onFormSubmit }: LawEnforcementFormProps) {
                         />
 
                         {impositionType === 'aoc' && (
-                            <FormField
-                                control={form.control}
-                                name="sanctionedAoc"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>AOC</FormLabel>
-                                    <FormControl>
-                                    <Input placeholder="Enter AOC Name" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                            <div>
+                                <FormLabel>AOC</FormLabel>
+                                <div className="space-y-4 mt-2">
+                                {aocFields.map((field, index) => (
+                                    <div key={field.id} className="flex items-center gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name={`sanctionedAoc.${index}.value`}
+                                        render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormControl>
+                                            <Input {...field} placeholder={`AOC ${index + 1}`} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    {aocFields.length > 1 && (
+                                        <Button type="button" variant="destructive" size="icon" onClick={() => removeAoc(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                    </div>
+                                ))}
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendAoc({ value: "" })}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add AOC
+                                </Button>
+                                </div>
+                            </div>
                         )}
 
                         {impositionType === 'personnel' && (
                         <div>
                             <FormLabel>Personnel</FormLabel>
                             <div className="space-y-4 mt-2">
-                            {fields.map((field, index) => (
+                            {personnelFields.map((field, index) => (
                                 <div key={field.id} className="flex items-center gap-2">
                                 <FormField
                                     control={form.control}
@@ -172,14 +195,14 @@ export function LawEnforcementForm({ onFormSubmit }: LawEnforcementFormProps) {
                                     </FormItem>
                                     )}
                                 />
-                                {fields.length > 1 && (
-                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                                {personnelFields.length > 1 && (
+                                    <Button type="button" variant="destructive" size="icon" onClick={() => removePersonnel(index)}>
                                     <Trash2 className="h-4 w-4" />
                                     </Button>
                                 )}
                                 </div>
                             ))}
-                            <Button type="button" variant="outline" size="sm" onClick={() => append({ value: "" })}>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendPersonnel({ value: "" })}>
                                 <Plus className="mr-2 h-4 w-4" />
                                 Add Personnel
                             </Button>
@@ -188,19 +211,36 @@ export function LawEnforcementForm({ onFormSubmit }: LawEnforcementFormProps) {
                         )}
                         
                         {impositionType === 'organization' && (
-                        <FormField
-                            control={form.control}
-                            name="sanctionedOrganization"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Organization Name</FormLabel>
-                                <FormControl>
-                                <Input {...field} placeholder="Enter organization name" />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
+                            <div>
+                                <FormLabel>Organization</FormLabel>
+                                <div className="space-y-4 mt-2">
+                                {orgFields.map((field, index) => (
+                                    <div key={field.id} className="flex items-center gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name={`sanctionedOrganization.${index}.value`}
+                                        render={({ field }) => (
+                                        <FormItem className="flex-grow">
+                                            <FormControl>
+                                            <Input {...field} placeholder={`Organization ${index + 1}`} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    {orgFields.length > 1 && (
+                                        <Button type="button" variant="destructive" size="icon" onClick={() => removeOrg(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                    </div>
+                                ))}
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendOrg({ value: "" })}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Organization
+                                </Button>
+                                </div>
+                            </div>
                         )}
                     </CardContent>
                     <CardFooter className="flex justify-end">

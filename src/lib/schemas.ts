@@ -171,17 +171,17 @@ export const tindakLanjutDgcaFormSchema = z.object({
 
 export const lawEnforcementFormSchema = z.object({
   impositionType: z.enum(['aoc', 'personnel', 'organization']),
-  sanctionedAoc: z.string().optional(),
-  sanctionedPersonnel: z.array(z.object({ value: z.string().min(1, "Personnel name cannot be empty.") })).optional(),
-  sanctionedOrganization: z.string().optional(),
+  sanctionedAoc: z.array(z.object({ value: z.string() })).optional(),
+  sanctionedPersonnel: z.array(z.object({ value: z.string() })).optional(),
+  sanctionedOrganization: z.array(z.object({ value: z.string() })).optional(),
   sanctionType: z.string().min(1, "Sanction type is required."),
   refLetter: z.string().min(1, "Reference letter is required."),
   dateLetter: z.date({ required_error: "Date letter is required." }),
 }).superRefine((data, ctx) => {
-    if (data.impositionType === 'aoc' && (!data.sanctionedAoc || data.sanctionedAoc.length === 0)) {
+    if (data.impositionType === 'aoc' && (!data.sanctionedAoc || data.sanctionedAoc.length === 0 || data.sanctionedAoc.some(p => !p.value))) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "AOC name is required.",
+            message: "At least one AOC is required.",
             path: ['sanctionedAoc'],
         });
     }
@@ -192,10 +192,10 @@ export const lawEnforcementFormSchema = z.object({
             path: ['sanctionedPersonnel'],
         });
     }
-    if (data.impositionType === 'organization' && (!data.sanctionedOrganization || data.sanctionedOrganization.length === 0)) {
+    if (data.impositionType === 'organization' && (!data.sanctionedOrganization || data.sanctionedOrganization.length === 0 || data.sanctionedOrganization.some(p => !p.value))) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Organization name is required.",
+            message: "At least one organization is required.",
             path: ['sanctionedOrganization'],
         });
     }

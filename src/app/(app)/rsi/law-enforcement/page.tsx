@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LawEnforcementRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
@@ -93,7 +93,7 @@ export default function LawEnforcementPage() {
                 </div>
 
                 <TabsContent value="form">
-                    <LawEnforcementForm onFormSubmit={handleFormSuccess} />
+                    <LawEnforcementForm />
                 </TabsContent>
 
                 <TabsContent value="records">
