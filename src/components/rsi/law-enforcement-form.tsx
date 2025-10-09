@@ -2,7 +2,6 @@
 'use client';
 
 import { useForm, type UseFormReturn, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
   FormControl,
@@ -19,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarIcon, Plus, Trash2, Loader2, Check, ChevronsUpDown } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2, Check, ChevronsUpDown } from 'lucide-react';
 import { lawEnforcementFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
@@ -28,7 +27,6 @@ import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { aocOptions } from '@/lib/data';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
@@ -46,7 +44,7 @@ export function LawEnforcementForm({ form }: LawEnforcementFormProps) {
   });
 
   return (
-    <>
+    <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <FormField
             control={form.control}
@@ -209,6 +207,6 @@ export function LawEnforcementForm({ form }: LawEnforcementFormProps) {
             )}
           />
         )}
-    </>
+    </div>
   );
 }
