@@ -10,10 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { Project } from '@/lib/types';
+import type { Project, User } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { ArrowUpDown, CheckCircle, Clock, AlertTriangle, AlertCircle } from 'lucide-react';
+import { ArrowUpDown, CheckCircle, Clock, AlertTriangle, AlertCircle, User as UserIcon } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -143,15 +143,17 @@ export function RulemakingTable({ projects, sort, setSort }: RulemakingTableProp
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center -space-x-2">
-                        {project.team.slice(0, 3).map((member) => (
+                        {(project.team || []).slice(0, 3).map((member) => (
                             <Tooltip key={member.id}>
                                 <TooltipTrigger asChild>
                                     <Avatar className="h-7 w-7 border-2 border-background">
                                         <AvatarImage src={member.avatarUrl} alt={member.name} />
-                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback>
+                                          {member.name ? member.name.charAt(0) : (member.email ? member.email.charAt(0) : 'U')}
+                                        </AvatarFallback>
                                     </Avatar>
                                 </TooltipTrigger>
-                                <TooltipContent>{member.name}</TooltipContent>
+                                <TooltipContent>{member.name || member.email}</TooltipContent>
                             </Tooltip>
                         ))}
                         {project.team.length > 3 && (
