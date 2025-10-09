@@ -1,9 +1,14 @@
 
 'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, ShieldQuestion, FileWarning, Search, List, Gavel } from 'lucide-react';
+import * as React from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { ArrowRight, BarChart, FileSearch, ShieldQuestion, FileWarning, Search, Gavel } from 'lucide-react';
 import Link from 'next/link';
+import { collection, getCountFromServer } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AnimatedCounter } from '@/components/ui/animated-counter';
 
 const rsiModules = [
   {
@@ -11,40 +16,74 @@ const rsiModules = [
     description: 'Review and analyze accident and serious incident data.',
     icon: <FileWarning className="h-8 w-8 text-destructive" />,
     href: '/rsi/data-accident-incident',
+    collectionName: 'accidentIncidentRecords'
   },
   {
     title: 'Pemeriksaan',
-    description: 'Data Kecelakaan (Accident & Serious Incident) yang Dilaksanakan Pemeriksaan oleh DKPPU',
+    description: 'Data Kecelakaan yang Dilaksanakan Pemeriksaan oleh DKPPU.',
     icon: <Search className="h-8 w-8 text-blue-500" />,
     href: '/rsi/pemeriksaan',
+    collectionName: 'pemeriksaanRecords'
   },
   {
-    title: 'Laporan Investigasi dan Rekomendasi KNKT',
+    title: 'Laporan Investigasi KNKT',
     description: 'Access and manage NTSC investigation reports.',
     icon: <FileSearch className="h-8 w-8 text-yellow-500" />,
     href: '/rsi/laporan-investigasi-knkt',
+    collectionName: 'knktReports'
   },
   {
-    title: 'Monitoring Tindak Lanjut Rekomendasi KNKT',
+    title: 'Monitoring Rekomendasi KNKT',
     description: 'Track follow-ups on NTSC safety recommendations.',
     icon: <BarChart className="h-8 w-8 text-green-500" />,
     href: '/rsi/monitoring-rekomendasi',
+    collectionName: 'tindakLanjutRecords'
   },
   {
-    title: 'Monitoring Tindak Lanjut Rekomendasi KNKT ke DGCA',
-    description: 'Track follow-ups on NTSC recommendations to the DGCA.',
+    title: 'Monitoring Rekomendasi ke DGCA',
+    description: 'Track NTSC recommendations to the DGCA.',
     icon: <ShieldQuestion className="h-8 w-8 text-purple-500" />,
     href: '/rsi/monitoring-rekomendasi-dgca',
+    collectionName: 'tindakLanjutDgcaRecords'
   },
   {
     title: 'List of Law Enforcement',
     description: 'View and manage the list of law enforcement actions.',
     icon: <Gavel className="h-8 w-8 text-gray-500" />,
     href: '/rsi/law-enforcement',
+    collectionName: 'lawEnforcementRecords'
   },
 ];
 
+type StatCounts = {
+    [key: string]: number;
+};
+
 export default function RsiPage() {
+    const [counts, setCounts] = React.useState<StatCounts>({});
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchCounts = async () => {
+            setIsLoading(true);
+            const countsData: StatCounts = {};
+            try {
+                for (const module of rsiModules) {
+                    const coll = collection(db, module.collectionName);
+                    const snapshot = await getCountFromServer(coll);
+                    countsData[module.collectionName] = snapshot.data().count;
+                }
+                setCounts(countsData);
+            } catch (error) {
+                console.error("Error fetching collection counts:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCounts();
+    }, []);
+
   return (
     <main className="p-4 md:p-8">
       <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
@@ -56,24 +95,32 @@ export default function RsiPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {rsiModules.map((module) => (
-          <Link key={module.title} href={module.href} className={module.href === '#' ? 'pointer-events-none' : ''}>
-            <Card className="h-full flex flex-col hover:shadow-lg hover:border-primary transition-all">
-              <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
-                {module.icon}
-                <CardTitle>{module.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">
-                  {module.description}
-                </p>
-              </CardContent>
-              <div className="p-6 pt-0 mt-auto">
-                  <div className="flex items-center text-sm text-primary font-semibold">
-                      Open Module <ArrowRight className="ml-2 h-4 w-4" />
-                  </div>
+          <Card key={module.title} className="flex flex-col hover:shadow-lg hover:border-primary transition-all">
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
+              {module.icon}
+              <CardTitle>{module.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow space-y-4">
+              <p className="text-sm text-muted-foreground h-10">
+                {module.description}
+              </p>
+              <div className="pt-4">
+                <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
+                {isLoading ? (
+                    <Skeleton className="h-10 w-20 mt-1" />
+                ) : (
+                    <p className="text-4xl font-bold">
+                        <AnimatedCounter endValue={counts[module.collectionName] || 0} />
+                    </p>
+                )}
               </div>
-            </Card>
-          </Link>
+            </CardContent>
+            <CardFooter className="bg-muted/50 p-4 mt-auto">
+                <Link href={module.href} className="flex items-center text-sm text-primary font-semibold w-full">
+                    Open Module <ArrowRight className="ml-auto h-4 w-4" />
+                </Link>
+            </CardFooter>
+          </Card>
         ))}
       </div>
     </main>
