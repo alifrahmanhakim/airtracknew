@@ -567,7 +567,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               </div>
            </CardHeader>
            <CardContent>
-              <div className="space-y-4">
+            <ScrollArea className="h-72">
+              <div className="space-y-4 pr-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {filteredDocuments.map((doc) => (
                         <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
@@ -595,6 +596,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                       <p className="text-muted-foreground text-center py-4">No documents {documentSearch ? 'match your search' : 'linked yet'}.</p>
                   )}
               </div>
+            </ScrollArea>
            </CardContent>
         </Card>
         
@@ -704,4 +706,3 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </TooltipProvider>
   );
 }
-
