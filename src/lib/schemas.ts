@@ -1,5 +1,4 @@
 
-
 import { z } from 'zod';
 
 export const ccefodFormSchema = z.object({
@@ -132,7 +131,6 @@ export const knktReportFormSchema = z.object({
   nomor_laporan: z.string().min(1, 'Nomor Laporan is required.'),
   status: z.enum(['Final', 'Preliminary', 'Interim Statement', 'Draft Final']),
   operator: z.string().min(1, 'Operator is required.'),
-  aoc: z.string().min(1, 'AOC is required.'),
   registrasi: z.string().min(1, 'Registrasi is required.'),
   tipe_pesawat: z.string().min(1, 'Tipe Pesawat is required.'),
   lokasi: z.string().min(1, 'Lokasi is required.'),

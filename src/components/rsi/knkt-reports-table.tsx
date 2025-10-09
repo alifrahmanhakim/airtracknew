@@ -80,7 +80,7 @@ export function KnktReportsTable({ records }: KnktReportsTableProps) {
                         <TableHead className="cursor-pointer" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
                         <TableHead>Nomor Laporan</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>AOC</TableHead>
+                        <TableHead>Operator</TableHead>
                         <TableHead>Registrasi</TableHead>
                         <TableHead>Tipe Pesawat</TableHead>
                         <TableHead>Lokasi</TableHead>
@@ -98,7 +98,7 @@ export function KnktReportsTable({ records }: KnktReportsTableProps) {
                                     {record.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell>{record.aoc}</TableCell>
+                            <TableCell>{record.operator}</TableCell>
                             <TableCell>{record.registrasi}</TableCell>
                             <TableCell>{record.tipe_pesawat}</TableCell>
                             <TableCell>{record.lokasi}</TableCell>

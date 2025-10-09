@@ -115,7 +115,6 @@ export default function LaporanInvestigasiKnktPage() {
         defaultValues: {
             status: 'Final',
             operator: '',
-            aoc: '',
             registrasi: '',
             tipe_pesawat: '',
             lokasi: '',
@@ -236,7 +235,7 @@ export default function LaporanInvestigasiKnktPage() {
                                         </Button>
                                     )}
                                 </div>
-                                <KnktReportsTable records={filteredRecords} onUpdate={handleRecordUpdate} searchTerm={searchTerm}/>
+                                <KnktReportsTable records={filteredRecords} />
                                 </>
                             )}
                         </CardContent>
