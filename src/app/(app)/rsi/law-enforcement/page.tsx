@@ -43,8 +43,7 @@ export default function LawEnforcementPage() {
         resolver: zodResolver(lawEnforcementFormSchema),
         defaultValues: {
             impositionType: 'aoc',
-            sanctionType: '',
-            refLetter: '',
+            references: [{ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() }],
             sanctionedAoc: [{ value: '' }],
             sanctionedPersonnel: [{ value: '' }],
             sanctionedOrganization: [{ value: '' }],
@@ -52,10 +51,10 @@ export default function LawEnforcementPage() {
     });
 
     React.useEffect(() => {
-        const q = query(collection(db, "lawEnforcementRecords"), orderBy("dateLetter", "desc"));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const q = query(collection(db, "lawEnforcementRecords"), orderBy("createdAt", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
             const recordsFromDb: LawEnforcementRecord[] = [];
-            querySnapshot.forEach((doc) => {
+            snapshot.forEach(doc => {
                 const data = doc.data();
                 recordsFromDb.push({ 
                     id: doc.id, 
@@ -93,7 +92,13 @@ export default function LawEnforcementPage() {
 
         if (result.success) {
             toast({ title: 'Record Added', description: 'The new sanction record has been successfully added.' });
-            form.reset();
+            form.reset({
+                impositionType: 'aoc',
+                references: [{ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() }],
+                sanctionedAoc: [{ value: '' }],
+                sanctionedPersonnel: [],
+                sanctionedOrganization: [],
+            });
             handleFormSuccess();
         } else {
             toast({

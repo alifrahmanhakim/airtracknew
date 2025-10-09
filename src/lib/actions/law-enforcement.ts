@@ -17,12 +17,14 @@ export async function addLawEnforcementRecord(data: z.infer<typeof lawEnforcemen
     try {
         const dataToSubmit = {
             ...parsed.data,
-            dateLetter: format(parsed.data.dateLetter, 'yyyy-MM-dd'),
+            references: parsed.data.references.map(ref => ({
+                ...ref,
+                dateLetter: format(ref.dateLetter, 'yyyy-MM-dd')
+            })),
             createdAt: serverTimestamp(),
         };
         const docRef = await addDoc(collection(db, 'lawEnforcementRecords'), dataToSubmit);
         
-        // THIS IS THE FIX: The return statement must be INSIDE the try block.
         return { success: true, id: docRef.id };
 
     } catch (error) {
@@ -41,14 +43,16 @@ export async function updateLawEnforcementRecord(id: string, data: z.infer<typeo
         const docRef = doc(db, 'lawEnforcementRecords', id);
         const dataToSubmit = {
             ...parsed.data,
-            dateLetter: format(parsed.data.dateLetter, 'yyyy-MM-dd'),
+            references: parsed.data.references.map(ref => ({
+                ...ref,
+                dateLetter: format(ref.dateLetter, 'yyyy-MM-dd')
+            })),
         };
         await updateDoc(docRef, dataToSubmit);
        
         const updatedRecord = {
             id,
             ...data,
-            dateLetter: data.dateLetter.toISOString(),
             createdAt: new Date().toISOString(), // Placeholder
         } as LawEnforcementRecord;
         
