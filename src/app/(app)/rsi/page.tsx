@@ -168,8 +168,8 @@ export default function RsiPage() {
                                 {module.icon}
                                 <CardTitle>{module.title}</CardTitle>
                                 </CardHeader>
-                                <CardContent className="flex-grow space-y-4">
-                                <p className="text-sm text-muted-foreground h-10">
+                                <CardContent className="flex-grow flex flex-col space-y-4">
+                                <p className="text-sm text-muted-foreground h-10 line-clamp-2">
                                     {module.description}
                                 </p>
                                 <div className="pt-4">
@@ -188,7 +188,7 @@ export default function RsiPage() {
                                         <div className="flex flex-wrap gap-2">
                                             {statusArray.map(({ name, count }) => (
                                                 <Badge key={name} className={cn(badgeVariants({ variant: module.statusVariant(name) === 'destructive' ? 'destructive' : 'default' }), module.statusVariant(name))}>
-                                                    {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({((count / totalCount) * 100).toFixed(0)}%)</span>
+                                                    {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
                                                 </Badge>
                                             ))}
                                         </div>
