@@ -193,6 +193,7 @@ export type KnktReport = {
     lokasi: string;
     taxonomy?: string;
     keterangan?: string;
+    fileUrl?: string;
     createdAt: string;
 };
 

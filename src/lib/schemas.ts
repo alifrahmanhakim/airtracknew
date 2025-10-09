@@ -137,6 +137,7 @@ export const knktReportFormSchema = z.object({
   lokasi: z.string().min(1, 'Lokasi is required.'),
   taxonomy: z.string().optional(),
   keterangan: z.string().optional(),
+  fileUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export const rekomendasiKeselamatanSchema = z.object({

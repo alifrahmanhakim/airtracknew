@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -13,7 +14,7 @@ import {
 import type { KnktReport } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, Info, Pencil, Trash2 } from 'lucide-react';
+import { ArrowUpDown, Info, Pencil, Trash2, Link as LinkIcon } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditKnktReportDialog } from './edit-knkt-report-dialog';
@@ -90,6 +91,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                         <TableHead>Tipe Pesawat</TableHead>
                         <TableHead>Lokasi</TableHead>
                         <TableHead>Keterangan</TableHead>
+                        <TableHead>File</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -110,6 +112,17 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             <TableCell><Highlight text={record.tipe_pesawat} query={searchTerm}/></TableCell>
                             <TableCell><Highlight text={record.lokasi} query={searchTerm}/></TableCell>
                             <TableCell className="whitespace-normal"><Highlight text={record.keterangan || '-'} query={searchTerm} /></TableCell>
+                            <TableCell>
+                                {record.fileUrl ? (
+                                    <Button asChild variant="ghost" size="icon">
+                                        <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
+                                            <LinkIcon className="h-4 w-4" />
+                                        </a>
+                                    </Button>
+                                ) : (
+                                    <span className="text-muted-foreground text-xs">No file</span>
+                                )}
+                            </TableCell>
                             <TableCell className="text-right">
                                 <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
@@ -119,7 +132,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                         </TableRow>
                     )) : (
                         <TableRow>
-                            <TableCell colSpan={9} className="text-center h-24">
+                            <TableCell colSpan={10} className="text-center h-24">
                                 <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                 No records found for the current filters.
                             </TableCell>

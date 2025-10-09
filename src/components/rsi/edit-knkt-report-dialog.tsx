@@ -43,6 +43,7 @@ export function EditKnktReportDialog({ record, onRecordUpdate }: EditKnktReportD
       tanggal_diterbitkan: record.tanggal_diterbitkan ? format(parseISO(record.tanggal_diterbitkan), 'yyyy-MM-dd') : '',
       keterangan: record.keterangan || '',
       taxonomy: record.taxonomy || '',
+      fileUrl: record.fileUrl || '',
     },
   });
 

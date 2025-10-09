@@ -107,6 +107,17 @@ export function KnktReportForm({ form }: KnktReportFormProps) {
                     <FormMessage />
                 </FormItem>
              )}/>
+             <FormField
+                control={form.control}
+                name="fileUrl"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Embedded Link (File)</FormLabel>
+                        <FormControl><Input type="url" placeholder="https://example.com/file.pdf" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
         </div>
         <FormField control={form.control} name="keterangan" render={({ field }) => (
             <FormItem>

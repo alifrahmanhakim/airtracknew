@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -126,6 +127,7 @@ export default function LaporanInvestigasiKnktPage() {
             taxonomy: '',
             keterangan: '',
             nomor_laporan: '',
+            fileUrl: '',
         },
     });
 
