@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { TindakLanjutRecord } from '../types';
+import type { TindakLanjutRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Info } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
@@ -32,7 +32,13 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
         const yearData = Object.entries(recordsByYear).map(([name, value]) => ({ name, value })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
         
         const recordsByPenerima = allRecords.reduce((acc, record) => {
-            acc[record.penerimaRekomendasi] = (acc[record.penerimaRekomendasi] || 0) + 1;
+            const penerimaList = Array.isArray(record.penerimaRekomendasi)
+                ? record.penerimaRekomendasi
+                : (typeof record.penerimaRekomendasi === 'string' && record.penerimaRekomendasi ? [record.penerimaRekomendasi] : []);
+
+            penerimaList.forEach(penerima => {
+                acc[penerima] = (acc[penerima] || 0) + 1;
+            });
             return acc;
         }, {} as Record<string, number>);
 
@@ -99,7 +105,7 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                     <CardHeader>
                         <CardTitle>Report Status Distribution</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex justify-center">
                         <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[300px]">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
