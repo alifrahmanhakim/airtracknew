@@ -13,7 +13,7 @@ import {
 import type { AccidentIncidentRecord } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, ArrowUpDown, Search, Info } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, AlertTriangle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -25,7 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Loader2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Input } from '../ui/input';
 import { deleteAccidentIncidentRecord } from '@/lib/actions/accident-incident';
@@ -172,7 +171,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                     </TableBody>
                 </Table>
             </div>
-             <AlertDialog open={!!recordToDelete} onOpenChange={setRecordToDelete}>
+             <AlertDialog open={!!recordToDelete} onOpenChange={(open) => setRecordToDelete(open ? recordToDelete : null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader className="text-center items-center">
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
