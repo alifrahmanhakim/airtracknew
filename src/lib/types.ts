@@ -238,6 +238,7 @@ export type TindakLanjutDgcaRecord = {
   id: string;
   judulLaporan: string;
   nomorLaporan: string;
+  operator: string;
   tanggalKejadian: string;
   tanggalTerbit?: string;
   rekomendasiKeDgca: string;

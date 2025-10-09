@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '../ui/calendar';
+import { Combobox } from '../ui/combobox';
+import { aocOptions } from '@/lib/data';
 
 type TindakLanjutDgcaFormValues = z.infer<typeof tindakLanjutDgcaFormSchema>;
 
@@ -58,6 +60,22 @@ export function TindakLanjutDgcaForm({ form }: TindakLanjutDgcaFormProps) {
                     <FormMessage />
                 </FormItem>
                 )}
+            />
+            <FormField
+              control={form.control}
+              name="operator"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Operator</FormLabel>
+                   <Combobox 
+                      options={aocOptions}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Pilih atau ketik operator..."
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <FormField
                 control={form.control}

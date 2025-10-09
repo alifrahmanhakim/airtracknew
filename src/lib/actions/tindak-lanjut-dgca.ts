@@ -46,6 +46,9 @@ export async function updateTindakLanjutDgcaRecord(id: string, data: z.infer<typ
         const updatedRecord = {
             id,
             ...data,
+            // Re-format dates for client consistency if needed, but not strictly necessary as client parses ISO
+            tanggalKejadian: data.tanggalKejadian.toISOString(),
+            tanggalTerbit: data.tanggalTerbit?.toISOString(),
             createdAt: new Date().toISOString(),
         }
         

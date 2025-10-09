@@ -160,6 +160,7 @@ export const tindakLanjutFormSchema = z.object({
 export const tindakLanjutDgcaFormSchema = z.object({
   judulLaporan: z.string().min(1, 'Judul Laporan is required.'),
   nomorLaporan: z.string().min(1, 'Nomor Laporan is required.'),
+  operator: z.string().min(1, 'Operator is required.'),
   tanggalKejadian: z.date({ required_error: "Tanggal Kejadian is required." }),
   tanggalTerbit: z.date().optional(),
   rekomendasiKeDgca: z.string().min(1, 'Rekomendasi Keselamatan Ke DGCA is required.'),
