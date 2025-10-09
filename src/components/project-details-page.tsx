@@ -72,6 +72,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Input } from './ui/input';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
+import { AnimatedCounter } from './ui/animated-counter';
 
 const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
     if (!value && typeof value !== 'number') return null;
@@ -441,7 +442,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" className="text-primary" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray={`${progress}, 100`} strokeLinecap="round" />
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-4xl font-bold">{Math.round(progress)}%</span>
+                                <span className="text-4xl font-bold"><AnimatedCounter endValue={progress} decimals={0} />%</span>
                                 <span className="text-sm text-muted-foreground">Completed</span>
                             </div>
                         </div>
@@ -621,7 +622,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                                 {tasksWithoutAttachments.length} of {tasks.length} tasks are missing attachments.
                             </p>
                             <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
-                                {Math.round(animatedAttachmentCompletion)}%
+                                <AnimatedCounter endValue={animatedAttachmentCompletion} decimals={0} />%
                             </p>
                         </div>
                         <p className="text-sm text-yellow-800/80 dark:text-yellow-400/80">

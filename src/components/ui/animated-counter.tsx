@@ -13,36 +13,34 @@ interface AnimatedCounterProps {
 export function AnimatedCounter({ endValue, duration = 1500, className, decimals = 0 }: AnimatedCounterProps) {
   const [count, setCount] = useState(0);
   const frameRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Reset start time whenever the endValue changes to restart animation
-    startTimeRef.current = null;
-    
-    const easeOutQuad = (t: number) => t * (2 - t);
+    let startTime: number;
+    const startValue = 0;
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
     const animate = (timestamp: number) => {
-      if (!startTimeRef.current) {
-        startTimeRef.current = timestamp;
+      if (startTime === undefined) {
+        startTime = timestamp;
       }
 
-      const progress = timestamp - startTimeRef.current;
-      const progressFraction = Math.min(progress / duration, 1);
-      const easedProgress = easeOutQuad(progressFraction);
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
 
-      const currentValue = easedProgress * endValue;
+      const newCount = startValue + (endValue - startValue) * easedProgress;
 
-      if (progressFraction < 1) {
-        setCount(currentValue);
+      setCount(newCount);
+
+      if (elapsed < duration) {
         frameRef.current = requestAnimationFrame(animate);
       } else {
-        setCount(endValue); // Ensure it ends exactly on the end value
+        setCount(endValue);
       }
     };
 
     frameRef.current = requestAnimationFrame(animate);
 
-    // Cleanup function to cancel the animation frame when the component unmounts or re-renders
     return () => {
       if (frameRef.current) {
         cancelAnimationFrame(frameRef.current);
