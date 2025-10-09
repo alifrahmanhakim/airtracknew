@@ -4,13 +4,60 @@
 import * as React from 'react';
 import type { LawEnforcementRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Info } from 'lucide-react';
+import { Info, Building, User, Gavel } from 'lucide-react';
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, PieChart, Pie } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '../ui/chart';
+import { getYear, parseISO } from 'date-fns';
+import { AnimatedCounter } from '../ui/animated-counter';
 
 type AnalyticsProps = {
   allRecords: LawEnforcementRecord[];
 };
 
+const CHART_COLORS = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+];
+
 export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
+
+    const analyticsData = React.useMemo(() => {
+        const totalRecords = allRecords.length;
+        
+        const sanctionsByType = allRecords.reduce((acc, record) => {
+            acc[record.impositionType] = (acc[record.impositionType] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+        
+        const impositionTypeData = Object.entries(sanctionsByType).map(([name, value]) => ({name, value}));
+
+        const sanctionsByYear = allRecords.reduce((acc, record) => {
+            const year = getYear(parseISO(record.dateLetter));
+            acc[year] = (acc[year] || 0) + 1;
+            return acc;
+        }, {} as Record<number, number>);
+
+        const yearData = Object.entries(sanctionsByYear).map(([name, value]) => ({ name, value })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
+
+        const sanctionsBySanctionType = allRecords.reduce((acc, record) => {
+            acc[record.sanctionType] = (acc[record.sanctionType] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const sanctionTypeData = Object.entries(sanctionsBySanctionType).map(([name, value]) => ({name, value})).sort((a,b) => b.value - a.value).slice(0, 10);
+
+        return {
+            totalRecords,
+            impositionTypeData,
+            yearData,
+            sanctionTypeData
+        };
+
+    }, [allRecords]);
+    
     if (allRecords.length === 0) {
         return (
             <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
@@ -21,21 +68,98 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
         );
     }
     
+    const chartConfig = (data: {name: string, value: number}[]) => ({
+        value: { label: 'Count' },
+        ...data.reduce((acc, item, index) => {
+            acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
+            return acc;
+        }, {} as any)
+    });
+
     return (
         <div className="space-y-6">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Gavel /> Total Sanctions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalRecords} /></p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned AOCs</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.name === 'aoc')?.value || 0} /></p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><User /> Sanctioned Personnel</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.name === 'personnel')?.value || 0} /></p>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle>Sanctions by Year</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig(analyticsData.yearData)} className="h-[300px] w-full">
+                            <ResponsiveContainer>
+                                <BarChart data={analyticsData.yearData}>
+                                    <XAxis dataKey="name" />
+                                    <YAxis allowDecimals={false} />
+                                    <Tooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                 <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Imposition by Type</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="mx-auto aspect-square h-[300px]">
+                            <PieChart>
+                                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                <Pie data={analyticsData.impositionTypeData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                    {analyticsData.impositionTypeData.map((entry) => (
+                                        <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.impositionTypeData)[entry.name].color} />
+                                    ))}
+                                </Pie>
+                                <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                            </PieChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
             <Card>
                 <CardHeader>
-                    <CardTitle>Analytics</CardTitle>
-                    <CardDescription>
-                        Visualizations of the law enforcement data.
-                    </CardDescription>
+                    <CardTitle>Top 10 Sanction Types</CardTitle>
                 </CardHeader>
                 <CardContent>
-                     <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
-                        <Info className="mx-auto h-8 w-8 mb-2" />
-                        <p className="font-semibold">Analytics Coming Soon</p>
-                        <p className="text-sm">More analytics will be available here soon.</p>
-                    </div>
+                     <ChartContainer config={chartConfig(analyticsData.sanctionTypeData)} className="h-[400px] w-full">
+                        <ResponsiveContainer>
+                            <BarChart data={analyticsData.sanctionTypeData} layout="vertical" margin={{ left: 50, right: 30 }}>
+                                <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                                <XAxis type="number" allowDecimals={false} />
+                                <Tooltip content={<ChartTooltipContent />} />
+                                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                                    {analyticsData.sanctionTypeData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
                 </CardContent>
             </Card>
         </div>
