@@ -10,7 +10,7 @@ const rsiModules = [
     title: 'Data Accident & Serious Incident',
     description: 'Review and analyze accident and serious incident data.',
     icon: <FileWarning className="h-8 w-8 text-destructive" />,
-    href: '#',
+    href: '/rsi/data-accident-incident',
   },
   {
     title: 'Pemeriksaan',

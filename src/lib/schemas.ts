@@ -1,5 +1,4 @@
 
-
 import { z } from 'zod';
 
 export const ccefodFormSchema = z.object({
@@ -89,4 +88,16 @@ export const glossaryFormSchema = z.object({
   keterangan: z.string().min(1, 'Keterangan / Pengaplikasian is required'),
   referensi: z.string().optional(),
   status: z.enum(['Draft', 'Final']),
+});
+
+export const accidentIncidentFormSchema = z.object({
+  tanggal: z.date({ required_error: "Tanggal is required." }),
+  kategori: z.enum(['Accident (A)', 'Serious Incident (SI)'], { required_error: "Kategori is required." }),
+  operator: z.string().min(1, 'Operator is required.'),
+  aoc: z.string().min(1, 'AOC is required.'),
+  registrasiPesawat: z.string().min(1, 'Registrasi Pesawat is required.'),
+  tipePesawat: z.string().min(1, 'Tipe Pesawat is required.'),
+  lokasi: z.string().min(1, 'Lokasi is required.'),
+  wilayah: z.string().min(1, 'Wilayah is required.'),
+  taxonomy: z.string().min(1, 'Taxonomy is required.'),
 });
