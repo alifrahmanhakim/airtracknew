@@ -11,7 +11,8 @@ import type { LawEnforcementRecord } from '../types';
 export async function addLawEnforcementRecord(data: z.infer<typeof lawEnforcementFormSchema>) {
     const parsed = lawEnforcementFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, error: parsed.error.flatten().fieldErrors };
+        // Simplified error reporting
+        return { success: false, error: parsed.error.flatten().fieldErrors.impositionType?.[0] || "Invalid data. Please check the form." };
     }
 
     try {
