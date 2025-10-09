@@ -162,7 +162,7 @@ export default function RsiPage() {
                     const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
 
                     return (
-                        <Link href={module.href} key={module.title} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+                        <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
                             <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
                                 <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
                                 {module.icon}
@@ -203,7 +203,7 @@ export default function RsiPage() {
                                 )}
                                 </CardContent>
                                 <CardFooter className="bg-muted/50 p-4 mt-auto">
-                                    <div className="group relative text-sm font-semibold w-full flex items-center">
+                                    <div className="relative text-sm font-semibold w-full flex items-center">
                                         <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
                                             Open Module
                                         </span>
