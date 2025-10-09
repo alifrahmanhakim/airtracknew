@@ -3,127 +3,192 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info } from 'lucide-react';
 import Link from 'next/link';
-import { collection, getCountFromServer } from 'firebase/firestore';
+import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
+import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-const rsiModules = [
+type RsiModule = {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  href: string;
+  collectionName: keyof RsiData;
+  statusField: string;
+  statusVariant?: (status: string) => 'default' | 'secondary' | 'destructive' | 'outline';
+};
+
+const rsiModules: RsiModule[] = [
   {
     title: 'Data Accident & Serious Incident',
     description: 'Review and analyze accident and serious incident data.',
     icon: <FileWarning className="h-8 w-8 text-destructive" />,
     href: '/rsi/data-accident-incident',
-    collectionName: 'accidentIncidentRecords'
+    collectionName: 'accidentIncidentRecords',
+    statusField: 'kategori',
+    statusVariant: (status) => status === 'Accident (A)' ? 'destructive' : 'secondary',
   },
   {
     title: 'Pemeriksaan',
     description: 'Data Kecelakaan yang Dilaksanakan Pemeriksaan oleh DKPPU.',
     icon: <Search className="h-8 w-8 text-blue-500" />,
     href: '/rsi/pemeriksaan',
-    collectionName: 'pemeriksaanRecords'
+    collectionName: 'pemeriksaanRecords',
+    statusField: 'kategori',
+    statusVariant: (status) => status === 'Accident (A)' ? 'destructive' : 'secondary',
   },
   {
     title: 'Laporan Investigasi KNKT',
     description: 'Access and manage NTSC investigation reports.',
     icon: <FileSearch className="h-8 w-8 text-yellow-500" />,
     href: '/rsi/laporan-investigasi-knkt',
-    collectionName: 'knktReports'
+    collectionName: 'knktReports',
+    statusField: 'status',
   },
   {
     title: 'Monitoring Rekomendasi KNKT',
     description: 'Track follow-ups on NTSC safety recommendations.',
     icon: <BarChart className="h-8 w-8 text-green-500" />,
     href: '/rsi/monitoring-rekomendasi',
-    collectionName: 'tindakLanjutRecords'
+    collectionName: 'tindakLanjutRecords',
+    statusField: 'status',
   },
   {
     title: 'Monitoring Rekomendasi ke DGCA',
     description: 'Track NTSC recommendations to the DGCA.',
     icon: <ShieldQuestion className="h-8 w-8 text-purple-500" />,
     href: '/rsi/monitoring-rekomendasi-dgca',
-    collectionName: 'tindakLanjutDgcaRecords'
+    collectionName: 'tindakLanjutDgcaRecords',
+    statusField: 'operator', // Using operator as a grouping mechanism
   },
   {
     title: 'List of Law Enforcement',
     description: 'View and manage the list of law enforcement actions.',
     icon: <Gavel className="h-8 w-8 text-gray-500" />,
     href: '/rsi/law-enforcement',
-    collectionName: 'lawEnforcementRecords'
+    collectionName: 'lawEnforcementRecords',
+    statusField: 'impositionType',
   },
 ];
 
-type StatCounts = {
-    [key: string]: number;
+type RsiData = {
+  accidentIncidentRecords: AccidentIncidentRecord[];
+  pemeriksaanRecords: PemeriksaanRecord[];
+  knktReports: KnktReport[];
+  tindakLanjutRecords: TindakLanjutRecord[];
+  tindakLanjutDgcaRecords: TindakLanjutDgcaRecord[];
+  lawEnforcementRecords: LawEnforcementRecord[];
 };
 
 export default function RsiPage() {
-    const [counts, setCounts] = React.useState<StatCounts>({});
+    const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {
-        const fetchCounts = async () => {
-            setIsLoading(true);
-            const countsData: StatCounts = {};
-            try {
-                for (const module of rsiModules) {
-                    const coll = collection(db, module.collectionName);
-                    const snapshot = await getCountFromServer(coll);
-                    countsData[module.collectionName] = snapshot.data().count;
-                }
-                setCounts(countsData);
-            } catch (error) {
-                console.error("Error fetching collection counts:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+        setIsLoading(true);
+        const unsubscribes = rsiModules.map(module => {
+            const coll = collection(db, module.collectionName);
+            return onSnapshot(coll, (snapshot) => {
+                const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setData(prevData => ({
+                    ...prevData,
+                    [module.collectionName]: records,
+                }));
+            }, (error) => {
+                 console.error(`Error fetching ${module.collectionName}:`, error);
+            });
+        });
+        
+        // A simple way to set loading to false after an initial fetch period
+        setTimeout(() => setIsLoading(false), 2000);
 
-        fetchCounts();
+        return () => unsubscribes.forEach(unsub => unsub());
     }, []);
 
-  return (
-    <main className="p-4 md:p-8">
-      <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-        <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
-        <p className="text-muted-foreground">
-          A centralized hub for managing and monitoring safety incidents and recommendations.
-        </p>
-      </div>
+    return (
+        <TooltipProvider>
+            <main className="p-4 md:p-8">
+            <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+                <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
+                <p className="text-muted-foreground">
+                A centralized hub for managing and monitoring safety incidents and recommendations.
+                </p>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rsiModules.map((module) => (
-          <Card key={module.title} className="flex flex-col hover:shadow-lg hover:border-primary transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
-              {module.icon}
-              <CardTitle>{module.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow space-y-4">
-              <p className="text-sm text-muted-foreground h-10">
-                {module.description}
-              </p>
-              <div className="pt-4">
-                <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
-                {isLoading ? (
-                    <Skeleton className="h-10 w-20 mt-1" />
-                ) : (
-                    <p className="text-4xl font-bold">
-                        <AnimatedCounter endValue={counts[module.collectionName] || 0} />
-                    </p>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="bg-muted/50 p-4 mt-auto">
-                <Link href={module.href} className="group flex items-center text-sm text-primary font-semibold w-full">
-                    <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-left-bottom bg-no-repeat bg-[length:0%_2px] group-hover:bg-[length:100%_2px] transition-all duration-300 ease-in-out">Open Module</span>
-                    <ArrowRight className="ml-auto h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-    </main>
-  );
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {rsiModules.map((module) => {
+                    const records = data[module.collectionName] || [];
+                    const totalCount = records.length;
+                    
+                    const statusCounts = records.reduce((acc, record) => {
+                        const status = (record as any)[module.statusField];
+                        if (status) {
+                            acc[status] = (acc[status] || 0) + 1;
+                        }
+                        return acc;
+                    }, {} as Record<string, number>);
+
+                    const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
+
+                    return (
+                        <Card key={module.title} className="flex flex-col hover:shadow-lg hover:border-primary transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
+                            <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
+                            {module.icon}
+                            <CardTitle>{module.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-grow space-y-4">
+                            <p className="text-sm text-muted-foreground h-10">
+                                {module.description}
+                            </p>
+                            <div className="pt-4">
+                                <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
+                                {isLoading ? (
+                                    <Skeleton className="h-10 w-20 mt-1" />
+                                ) : (
+                                    <p className="text-4xl font-bold">
+                                        <AnimatedCounter endValue={totalCount} />
+                                    </p>
+                                )}
+                            </div>
+                            {totalCount > 0 && (
+                                <div className="pt-2 space-y-1">
+                                    <p className="text-xs uppercase text-muted-foreground font-semibold">Status Breakdown</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {statusArray.map(({ name, count }) => (
+                                            <Tooltip key={name}>
+                                                <TooltipTrigger asChild>
+                                                    <Badge variant={module.statusVariant ? module.statusVariant(name) : 'secondary'}>
+                                                        {name}: <span className="font-bold ml-1">{count}</span>
+                                                    </Badge>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{((count / totalCount) * 100).toFixed(1)}%</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            </CardContent>
+                            <CardFooter className="bg-muted/50 p-4 mt-auto">
+                                <Link href={module.href} className="group flex items-center text-sm font-semibold w-full text-primary">
+                                    <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:animate-pulse">
+                                        Open Module
+                                    </span>
+                                    <ArrowRight className="ml-auto h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                </Link>
+                            </CardFooter>
+                        </Card>
+                    )
+                })}
+            </div>
+            </main>
+        </TooltipProvider>
+    );
 }
