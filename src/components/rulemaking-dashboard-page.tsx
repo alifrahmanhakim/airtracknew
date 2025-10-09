@@ -19,6 +19,7 @@ import { Button } from './ui/button';
 import { AddRulemakingProjectDialog } from './add-rulemaking-project-dialog';
 import { rulemakingTaskOptions } from '@/lib/data';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './ui/pagination';
 
 const statusConfig: { [key in Project['status']]: { icon: React.ElementType, style: string, label: string } } = {
     'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
@@ -36,6 +37,8 @@ type RulemakingDashboardPageProps = {
 
 export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
+    const [deadlinePage, setDeadlinePage] = useState(1);
+    const DEADLINES_PER_PAGE = 3;
 
     const stats = useMemo(() => {
         const total = projects.length;
@@ -60,6 +63,18 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         }).sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
     }, [projects]);
     
+    const totalDeadlinePages = Math.ceil(projectsNearDeadline.length / DEADLINES_PER_PAGE);
+    const paginatedDeadlineProjects = projectsNearDeadline.slice(
+        (deadlinePage - 1) * DEADLINES_PER_PAGE,
+        deadlinePage * DEADLINES_PER_PAGE
+    );
+
+    const handleDeadlinePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalDeadlinePages) {
+            setDeadlinePage(newPage);
+        }
+    };
+
     const filteredProjects = useMemo(() => {
         if (!searchTerm) return projects;
         const lowercasedFilter = searchTerm.toLowerCase();
@@ -185,8 +200,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             <CardDescription>All upcoming CASR deadlines, sorted by urgency.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {projectsNearDeadline.length > 0 ? (
-                                projectsNearDeadline.map(project => {
+                            {paginatedDeadlineProjects.length > 0 ? (
+                                paginatedDeadlineProjects.map(project => {
                                     const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
                                     return (
                                         <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-muted/50 p-2 rounded-md">
@@ -205,6 +220,25 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                 </div>
                             )}
                         </CardContent>
+                        {totalDeadlinePages > 1 && (
+                            <CardFooter>
+                                <Pagination>
+                                    <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage - 1); }} className={deadlinePage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <span className="px-4 py-2 text-sm">
+                                            Page {deadlinePage} of {totalDeadlinePages}
+                                        </span>
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage + 1); }} className={deadlinePage >= totalDeadlinePages ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </CardFooter>
+                        )}
                     </Card>
                 </aside>
                 
