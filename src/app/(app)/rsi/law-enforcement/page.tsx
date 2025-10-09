@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -11,8 +11,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LawEnforcementRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { lawEnforcementFormSchema } from '@/lib/schemas';
+import type { z } from 'zod';
+import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -25,11 +30,26 @@ const LawEnforcementAnalytics = dynamic(() => import('@/components/rsi/law-enfor
     loading: () => <Skeleton className="h-[600px] w-full" />
 });
 
+type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
+
 export default function LawEnforcementPage() {
     const [records, setRecords] = React.useState<LawEnforcementRecord[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('records');
+    const [activeTab, setActiveTab] = React.useState('form');
     const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    const form = useForm<LawEnforcementFormValues>({
+        resolver: zodResolver(lawEnforcementFormSchema),
+        defaultValues: {
+            impositionType: 'aoc',
+            sanctionType: '',
+            refLetter: '',
+            sanctionedAoc: [{ value: '' }],
+            sanctionedPersonnel: [{ value: '' }],
+            sanctionedOrganization: [{ value: '' }],
+        },
+    });
 
     React.useEffect(() => {
         const q = query(collection(db, "lawEnforcementRecords"), orderBy("dateLetter", "desc"));
@@ -65,6 +85,25 @@ export default function LawEnforcementPage() {
     const handleFormSuccess = () => {
         setActiveTab('records');
     }
+    
+    const onSubmit = async (data: LawEnforcementFormValues) => {
+        setIsSubmitting(true);
+        const result = await addLawEnforcementRecord(data);
+        setIsSubmitting(false);
+
+        if (result.success) {
+            toast({ title: 'Record Added', description: 'The new sanction record has been successfully added.' });
+            form.reset();
+            handleFormSuccess();
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Error Adding Record',
+                description: result.error || 'An unknown error occurred.',
+            });
+        }
+    };
+
 
     return (
         <main className="p-4 md:p-8">
@@ -93,7 +132,23 @@ export default function LawEnforcementPage() {
                 </div>
 
                 <TabsContent value="form">
-                    <LawEnforcementForm />
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <Card>
+                             <CardHeader>
+                                <CardTitle>Add New Sanction</CardTitle>
+                                <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <LawEnforcementForm form={form} isSubmitting={isSubmitting} />
+                            </CardContent>
+                            <CardFooter>
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Submit Record
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </form>
                 </TabsContent>
 
                 <TabsContent value="records">
