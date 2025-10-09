@@ -188,7 +188,6 @@ export type KnktReport = {
     nomor_laporan: string;
     status: string;
     operator: string;
-    aoc: string;
     registrasi: string;
     tipe_pesawat: string;
     lokasi: string;
@@ -211,5 +210,22 @@ export type PemeriksaanRecord = {
     statusPenanganan: string;
     tindakLanjut: string;
     filePemeriksaanUrl?: string;
+    createdAt: string;
+};
+
+export type RekomendasiKeselamatan = {
+    id: string;
+    nomor: string;
+    deskripsi: string;
+};
+
+export type TindakLanjutRecord = {
+    id: string;
+    laporanKnkt: string;
+    penerimaRekomendasi: string;
+    rekomendasi: RekomendasiKeselamatan[];
+    tindakLanjutDkppu: string;
+    tindakLanjutOperator: string;
+    tahun: number;
     createdAt: string;
 };

@@ -1,4 +1,5 @@
 
+
 import { z } from 'zod';
 
 export const ccefodFormSchema = z.object({
@@ -136,4 +137,18 @@ export const knktReportFormSchema = z.object({
   lokasi: z.string().min(1, 'Lokasi is required.'),
   taxonomy: z.string().optional(),
   keterangan: z.string().optional(),
+});
+
+export const rekomendasiKeselamatanSchema = z.object({
+    id: z.string(),
+    nomor: z.string().min(1, 'Nomor rekomendasi is required.'),
+    deskripsi: z.string().min(1, 'Deskripsi is required.'),
+});
+
+export const tindakLanjutFormSchema = z.object({
+    laporanKnkt: z.string().min(1, 'Laporan KNKT is required.'),
+    penerimaRekomendasi: z.string().min(1, 'Penerima Rekomendasi is required.'),
+    rekomendasi: z.array(rekomendasiKeselamatanSchema).min(1, 'At least one recommendation is required.'),
+    tindakLanjutDkppu: z.string().min(1, 'Tindak Lanjut DKPPU is required.'),
+    tindakLanjutOperator: z.string().min(1, 'Tindak Lanjut Operator is required.'),
 });
