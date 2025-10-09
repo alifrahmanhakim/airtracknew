@@ -25,7 +25,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
-import { aocOptions } from '@/lib/data';
 import { Button } from '../ui/button';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
@@ -102,20 +101,9 @@ export function LawEnforcementForm({ form }: LawEnforcementFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>AOC</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select an AOC" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        {aocOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input placeholder="Enter AOC Name" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
