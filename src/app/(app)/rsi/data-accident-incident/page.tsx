@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, Loader2 } from 'lucide-react';
+import { RotateCcw, Search, Loader2, ArrowLeft } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
 import { ComboboxOption } from '@/components/ui/combobox';
 import { useForm } from 'react-hook-form';
@@ -22,6 +22,7 @@ import { accidentIncidentFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { aocOptions } from '@/lib/data';
+import Link from 'next/link';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -145,11 +146,18 @@ export default function DataAccidentIncidentPage() {
         <main className="p-4 md:p-8">
              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                    <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                        <h1 className="text-3xl font-bold">Data Accident & Serious Incident</h1>
-                        <p className="text-muted-foreground">
-                            Manage and view accident and serious incident records.
-                        </p>
+                    <div className="flex items-center gap-4">
+                        <Button asChild variant="outline" size="icon">
+                            <Link href="/rsi">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+                            <h1 className="text-3xl font-bold">Data Accident & Serious Incident</h1>
+                            <p className="text-muted-foreground">
+                                Manage and view accident and serious incident records.
+                            </p>
+                        </div>
                     </div>
                     <div className='flex items-center gap-2'>
                         <TabsList>

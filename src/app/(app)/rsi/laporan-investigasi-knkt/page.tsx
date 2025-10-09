@@ -12,9 +12,10 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search } from 'lucide-react';
+import { RotateCcw, Search, ArrowLeft } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
 import { aocOptions } from '@/lib/data';
+import Link from 'next/link';
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
@@ -88,10 +89,19 @@ export default function LaporanInvestigasiKnktPage() {
         <main className="p-4 md:p-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>LAPORAN INVESTIGASI DAN REKOMENDASI KNKT</CardTitle>
-                    <CardDescription>
-                        Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
-                    </CardDescription>
+                     <div className="flex items-center gap-4 mb-4">
+                        <Button asChild variant="outline" size="icon">
+                            <Link href="/rsi">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <div>
+                            <CardTitle>LAPORAN INVESTIGASI DAN REKOMENDASI KNKT</CardTitle>
+                            <CardDescription>
+                                Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
+                            </CardDescription>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (

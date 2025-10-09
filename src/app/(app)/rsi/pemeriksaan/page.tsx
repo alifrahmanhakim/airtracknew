@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PemeriksaanRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { Loader2, Search, RotateCcw } from 'lucide-react';
+import { Loader2, Search, RotateCcw, ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { pemeriksaanFormSchema } from '@/lib/schemas';
@@ -20,6 +20,7 @@ import { addPemeriksaanRecord } from '@/lib/actions/pemeriksaan';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getYear, parseISO } from 'date-fns';
+import Link from 'next/link';
 
 const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form').then(mod => mod.PemeriksaanForm), { 
     ssr: false,
@@ -125,7 +126,7 @@ export default function PemeriksaanPage() {
 
     const operatorOptions = React.useMemo(() => {
         const operators = [...new Set(records.map(r => r.operator))];
-        return [...operators.sort()];
+        return ['all', ...operators.sort()];
     }, [records]);
 
     const filteredRecords = React.useMemo(() => {
@@ -149,11 +150,18 @@ export default function PemeriksaanPage() {
         <main className="p-4 md:p-8">
              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                    <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                        <h1 className="text-3xl font-bold">Pemeriksaan DKPPU</h1>
-                        <p className="text-muted-foreground">
-                            Data Kecelakaan (Accident & Serious Incident) yang Dilaksanakan Pemeriksaan oleh DKPPU.
-                        </p>
+                    <div className="flex items-center gap-4">
+                         <Button asChild variant="outline" size="icon">
+                            <Link href="/rsi">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+                            <h1 className="text-3xl font-bold">Pemeriksaan DKPPU</h1>
+                            <p className="text-muted-foreground">
+                                Data Kecelakaan (Accident & Serious Incident) yang Dilaksanakan Pemeriksaan oleh DKPPU.
+                            </p>
+                        </div>
                     </div>
                     <div className='flex items-center gap-2'>
                         <TabsList>
