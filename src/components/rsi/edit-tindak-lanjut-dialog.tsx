@@ -20,7 +20,7 @@ import type { TindakLanjutRecord } from '@/lib/types';
 import { TindakLanjutForm } from './tindak-lanjut-form';
 import { updateTindakLanjutRecord } from '@/lib/actions/tindak-lanjut';
 import { tindakLanjutFormSchema } from '@/lib/schemas';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, isValid } from 'date-fns';
 import type { z } from 'zod';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -40,8 +40,8 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
     resolver: zodResolver(tindakLanjutFormSchema),
     defaultValues: {
       ...record,
-      tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
-      tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
+      tanggalKejadian: record.tanggalKejadian ? record.tanggalKejadian : '',
+      tanggalTerbit: record.tanggalTerbit ? record.tanggalTerbit : '',
       status: record.status || 'Draft',
       registrasiPesawat: record.registrasiPesawat || '',
       tipePesawat: record.tipePesawat || '',
@@ -55,7 +55,15 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
 
   const onSubmit = async (data: TindakLanjutFormValues) => {
     setIsSubmitting(true);
-    const result = await updateTindakLanjutRecord(record.id, data);
+
+    // Ensure dates are strings in 'yyyy-MM-dd' format before submitting
+    const dataToSubmit = {
+      ...data,
+      tanggalKejadian: data.tanggalKejadian instanceof Date ? format(data.tanggalKejadian, 'yyyy-MM-dd') : data.tanggalKejadian,
+      tanggalTerbit: data.tanggalTerbit instanceof Date ? format(data.tanggalTerbit, 'yyyy-MM-dd') : data.tanggalTerbit,
+    };
+
+    const result = await updateTindakLanjutRecord(record.id, dataToSubmit);
     setIsSubmitting(false);
 
     if (result.success && result.data) {
