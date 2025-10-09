@@ -163,7 +163,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
                     onClick={() => setRecordToView(record)}
                 >
                     {visibleColumns.map((col) => {
-                        const isRichText = col.key === 'standardPractice';
                         const value = record[col.key as keyof CcefodRecord] as string | undefined;
 
                         return (
@@ -173,9 +172,9 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
                                         return <span className='text-muted-foreground'>—</span>;
                                     }
 
-                                    if (isRichText) {
-                                        const cleanText = value.replace(/<[^>]+>/g, '');
-                                        return <div className="prose dark:prose-invert max-w-none"><Highlight text={cleanText} query={searchTerm} /></div>;
+                                    if (col.key === 'standardPractice') {
+                                        const cleanText = value.replace(/<[^>]+>/g, ' ');
+                                        return <Highlight text={cleanText} query={searchTerm} />;
                                     }
                                     
                                     if (col.key === 'status') {
