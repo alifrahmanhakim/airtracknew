@@ -24,6 +24,9 @@ const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-inc
 const AccidentIncidentTable = dynamic(() => import('@/components/rsi/accident-incident-table').then(mod => mod.AccidentIncidentTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
+const AccidentIncidentAnalytics = dynamic(() => import('@/components/rsi/accident-incident-analytics').then(mod => mod.AccidentIncidentAnalytics), {
+    loading: () => <Skeleton className="h-[800px] w-full" />
+});
 
 export default function DataAccidentIncidentPage() {
     const [records, setRecords] = React.useState<AccidentIncidentRecord[]>([]);
@@ -31,7 +34,7 @@ export default function DataAccidentIncidentPage() {
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
 
-    // Filter states
+    // Filter states for table
     const [searchTerm, setSearchTerm] = React.useState('');
     const [operatorFilter, setOperatorFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
@@ -76,7 +79,7 @@ export default function DataAccidentIncidentPage() {
         return ['all', ...years.sort((a, b) => b - a)];
     }, [records]);
 
-    const filteredRecords = React.useMemo(() => {
+    const filteredTableRecords = React.useMemo(() => {
         return records.filter(record => {
             const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
                 String(value).toLowerCase().includes(searchTerm.toLowerCase())
@@ -93,7 +96,7 @@ export default function DataAccidentIncidentPage() {
         // No need to manually add to state, onSnapshot will handle it
     };
 
-    const resetFilters = () => {
+    const resetTableFilters = () => {
         setSearchTerm('');
         setOperatorFilter('all');
         setYearFilter('all');
@@ -113,6 +116,7 @@ export default function DataAccidentIncidentPage() {
                         <TabsList>
                             <TabsTrigger value="form">Input Form</TabsTrigger>
                             <TabsTrigger value="records">Records</TabsTrigger>
+                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         </TabsList>
                     </div>
                 </div>
@@ -171,16 +175,24 @@ export default function DataAccidentIncidentPage() {
                                         </SelectContent>
                                     </Select>
                                     {(searchTerm || operatorFilter !== 'all' || yearFilter !== 'all') && (
-                                         <Button variant="ghost" onClick={resetFilters}>
+                                         <Button variant="ghost" onClick={resetTableFilters}>
                                             <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                         </Button>
                                     )}
                                 </div>
-                                <AccidentIncidentTable records={filteredRecords} />
+                                <AccidentIncidentTable records={filteredTableRecords} />
                                 </>
                             )}
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                <TabsContent value="analytics">
+                    {isLoading ? (
+                        <Skeleton className="h-[800px] w-full" />
+                    ) : (
+                        <AccidentIncidentAnalytics allRecords={records} />
+                    )}
                 </TabsContent>
             </Tabs>
         </main>
