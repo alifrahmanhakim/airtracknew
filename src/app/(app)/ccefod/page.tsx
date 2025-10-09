@@ -12,7 +12,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { deleteAllCcefodRecords, deleteCcefodRecord } from '@/lib/actions/ccefod';
+import { deleteCcefodRecord } from '@/lib/actions/ccefod';
 import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, RotateCcw } from 'lucide-react';
 import {
   AlertDialog,
@@ -175,14 +175,14 @@ export default function CcefodPage() {
   
   const confirmDeleteAll = async () => {
     setIsDeletingAll(true);
-    const result = await deleteAllCcefodRecords();
+    const result = await deleteCcefodRecord(allRecords.map(r => r.id));
     setIsDeletingAll(false);
     setShowDeleteAllConfirm(false);
 
     if (result.success) {
       toast({
         title: 'All Records Deleted',
-        description: `${result.count} records have been successfully removed.`,
+        description: `All records have been successfully removed.`,
       });
        // State will be updated by onSnapshot
     } else {

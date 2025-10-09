@@ -140,26 +140,19 @@ export async function updateCcefodRecord(id: string, data: z.infer<typeof ccefod
     }
 }
 
-export async function deleteCcefodRecord(id: string) {
-    try {
-        await deleteDoc(doc(db, 'ccefodRecords', id));
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
-    }
-}
+export async function deleteCcefodRecord(ids: string | string[]) {
+    const idArray = Array.isArray(ids) ? ids : [ids];
+    if (idArray.length === 0) return { success: true };
 
-export async function deleteAllCcefodRecords() {
+    const batch = writeBatch(db);
+    idArray.forEach(id => {
+        const docRef = doc(db, 'ccefodRecords', id);
+        batch.delete(docRef);
+    });
+
     try {
-        const querySnapshot = await getDocs(collection(db, 'ccefodRecords'));
-        const batch = writeBatch(db);
-        let count = 0;
-        querySnapshot.forEach((doc) => {
-            batch.delete(doc.ref);
-            count++;
-        });
         await batch.commit();
-        return { success: true, count };
+        return { success: true };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
