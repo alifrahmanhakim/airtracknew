@@ -50,10 +50,16 @@ export async function updateLawEnforcementRecord(id: string, data: z.infer<typeo
         };
         await updateDoc(docRef, dataToSubmit);
        
+        // We'll return the submitted data, but with dates as ISO strings
+        // to maintain consistency on the client-side without a full re-fetch.
         const updatedRecord = {
             id,
-            ...data,
-            createdAt: new Date().toISOString(), // Placeholder
+            ...parsed.data,
+            references: parsed.data.references.map(ref => ({
+                ...ref,
+                dateLetter: ref.dateLetter.toISOString()
+            })),
+            createdAt: new Date().toISOString(), // Placeholder, not the real server time
         } as LawEnforcementRecord;
         
         return { success: true, data: updatedRecord };

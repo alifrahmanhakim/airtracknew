@@ -64,7 +64,18 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
     };
 
     const yearOptions = React.useMemo(() => {
-        const years = new Set(records.flatMap(r => (r.references || []).map(ref => getYear(parseISO(ref.dateLetter)))));
+        const years = new Set(records.flatMap(r => 
+            (r.references || []).map(ref => {
+                try {
+                    if (ref.dateLetter) {
+                        return getYear(parseISO(ref.dateLetter));
+                    }
+                } catch (e) {
+                    // Ignore invalid date formats during this calculation
+                }
+                return null;
+            }).filter(year => year !== null) as number[]
+        ));
         return ['all', ...Array.from(years).sort((a, b) => b - a)];
     }, [records]);
 
@@ -89,15 +100,25 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
         
         if (yearFilter !== 'all') {
             filtered = filtered.filter(record => 
-                (record.references || []).some(ref => getYear(parseISO(ref.dateLetter)) === parseInt(yearFilter))
+                (record.references || []).some(ref => {
+                    try {
+                        if (ref.dateLetter) {
+                            return getYear(parseISO(ref.dateLetter)) === parseInt(yearFilter);
+                        }
+                    } catch (e) {
+                        return false;
+                    }
+                    return false;
+                })
             );
         }
+
 
         if (sort) {
             filtered.sort((a, b) => {
                 if (sort.column === 'dateLetterFirst') {
-                    const dateA = a.references?.[0] ? parseISO(a.references[0].dateLetter).getTime() : 0;
-                    const dateB = b.references?.[0] ? parseISO(b.references[0].dateLetter).getTime() : 0;
+                    const dateA = a.references?.[0]?.dateLetter ? parseISO(a.references[0].dateLetter).getTime() : 0;
+                    const dateB = b.references?.[0]?.dateLetter ? parseISO(b.references[0].dateLetter).getTime() : 0;
                     return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
 
@@ -211,7 +232,7 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                                             <div key={ref.id} className="text-sm p-2 border-l-2 pl-3">
                                                 <p><strong className="font-semibold">Type:</strong> <Highlight text={ref.sanctionType} query={searchTerm} /></p>
                                                 <p><strong className="font-semibold">Ref. Letter:</strong> <Highlight text={ref.refLetter} query={searchTerm} /></p>
-                                                <p><strong className="font-semibold">Date:</strong> <Highlight text={format(parseISO(ref.dateLetter), 'dd-MMM-yy')} query={searchTerm} /></p>
+                                                <p><strong className="font-semibold">Date:</strong> <Highlight text={ref.dateLetter ? format(parseISO(ref.dateLetter), 'dd-MMM-yy') : 'N/A'} query={searchTerm} /></p>
                                             </div>
                                         ))}
                                         </div>
