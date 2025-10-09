@@ -56,7 +56,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
     const projectsNearDeadline = useMemo(() => {
         return projects.filter(p => {
           const daysLeft = differenceInDays(parseISO(p.endDate), new Date());
-          return daysLeft >= 0 && daysLeft <= 14 && p.status !== 'Completed';
+          return daysLeft >= 0 && p.status !== 'Completed';
         }).sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
     }, [projects]);
     
@@ -181,8 +181,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Approaching Deadlines</CardTitle>
-                            <CardDescription>CASR projects due in the next 14 days.</CardDescription>
+                            <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Upcoming Deadlines</CardTitle>
+                            <CardDescription>All upcoming CASR deadlines, sorted by urgency.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {projectsNearDeadline.length > 0 ? (

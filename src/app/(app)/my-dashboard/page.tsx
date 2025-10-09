@@ -244,7 +244,7 @@ export default function MyDashboardPage() {
   const projectsNearDeadline = React.useMemo(() => {
     return myProjects.filter(p => {
       const daysLeft = differenceInDays(parseISO(p.endDate), new Date());
-      return daysLeft >= 0 && daysLeft <= 14 && p.status !== 'Completed';
+      return daysLeft >= 0 && p.status !== 'Completed';
     }).sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
   }, [myProjects]);
 
@@ -448,8 +448,8 @@ export default function MyDashboardPage() {
              </Card>
               <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Approaching Deadlines</CardTitle>
-                    <CardDescription>Projects due in the next 14 days.</CardDescription>
+                    <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Upcoming Deadlines</CardTitle>
+                    <CardDescription>All projects sorted by the nearest deadline.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {projectsNearDeadline.length > 0 ? (
