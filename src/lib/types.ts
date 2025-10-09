@@ -1,4 +1,5 @@
 
+
 export type Project = {
     id: string;
     name: string;
@@ -191,4 +192,21 @@ export type KnktReport = {
     tipe_pesawat: string;
     lokasi: string;
     createdAt: string;
-}
+};
+
+export type PemeriksaanRecord = {
+    id: string;
+    kategori: string;
+    jenisPesawat: string;
+    registrasi: string;
+    tahunPembuatan: string;
+    operator: string;
+    tanggal: string;
+    lokasi: string;
+    korban: string;
+    ringkasanKejadian: string;
+    statusPenanganan: string;
+    tindakLanjut: string;
+    filePemeriksaanUrl?: string;
+    createdAt: string;
+};

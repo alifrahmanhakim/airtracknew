@@ -110,3 +110,18 @@ export const accidentIncidentFormSchema = z.object({
     message: 'Jumlah korban jiwa is required when there are casualties.',
     path: ['jumlahKorbanJiwa'],
 });
+
+export const pemeriksaanFormSchema = z.object({
+    kategori: z.string().min(1, 'Kategori is required.'),
+    jenisPesawat: z.string().min(1, 'Jenis Pesawat is required.'),
+    registrasi: z.string().min(1, 'Registrasi is required.'),
+    tahunPembuatan: z.string().min(1, 'Tahun Pembuatan is required.'),
+    operator: z.string().min(1, 'Operator is required.'),
+    tanggal: z.date({ required_error: "Tanggal is required." }),
+    lokasi: z.string().min(1, 'Lokasi is required.'),
+    korban: z.string().min(1, 'Korban is required.'),
+    ringkasanKejadian: z.string().min(1, 'Ringkasan Kejadian is required.'),
+    statusPenanganan: z.string().min(1, 'Status Penanganan is required.'),
+    tindakLanjut: z.string().min(1, 'Tindak Lanjut is required.'),
+    filePemeriksaanUrl: z.string().url().optional().or(z.literal('')),
+});
