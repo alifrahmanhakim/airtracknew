@@ -47,8 +47,8 @@ const rsiModules = [
 export default function RsiPage() {
   return (
     <main className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Resolved Safety Issues (RSI) Dashboard</h1>
+      <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+        <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
         <p className="text-muted-foreground">
           A centralized hub for managing and monitoring safety incidents and recommendations.
         </p>
