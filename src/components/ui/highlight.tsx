@@ -8,18 +8,19 @@ type HighlightProps = {
   query: string;
 };
 
-export const Highlight = ({ text, query }: HighlightProps) => {
+export const Highlight: React.FC<HighlightProps> = ({ text, query }) => {
   if (!query) {
     return <span>{text}</span>;
   }
 
-  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  const regex = new RegExp(`(${query})`, 'gi');
+  const parts = text.split(regex);
 
   return (
     <span>
       {parts.map((part, index) =>
-        part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={index} className="bg-yellow-300 text-black p-0 m-0">
+        regex.test(part) ? (
+          <mark key={index} className="bg-yellow-300 text-black p-0 m-0 rounded">
             {part}
           </mark>
         ) : (
@@ -29,3 +30,5 @@ export const Highlight = ({ text, query }: HighlightProps) => {
     </span>
   );
 };
+
+    
