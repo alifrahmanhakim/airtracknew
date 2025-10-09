@@ -179,6 +179,8 @@ export type AccidentIncidentRecord = {
     lokasi: string;
     wilayah: string;
     taxonomy: string;
+    keteranganKejadian?: string;
+    korbanJiwa?: string;
     createdAt: string;
 };
 

@@ -109,8 +109,9 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                             <TableHead>Registrasi</TableHead>
                             <TableHead>Tipe Pesawat</TableHead>
                             <TableHead>Lokasi</TableHead>
-                            <TableHead>Wilayah</TableHead>
                             <TableHead>Taxonomy</TableHead>
+                            <TableHead>Keterangan Kejadian</TableHead>
+                            <TableHead>Korban Jiwa</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -127,8 +128,9 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                                 <TableCell>{record.registrasiPesawat}</TableCell>
                                 <TableCell>{record.tipePesawat}</TableCell>
                                 <TableCell>{record.lokasi}</TableCell>
-                                <TableCell>{record.wilayah}</TableCell>
                                 <TableCell>{record.taxonomy}</TableCell>
+                                <TableCell className="max-w-xs truncate">{record.keteranganKejadian}</TableCell>
+                                <TableCell>{record.korbanJiwa}</TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="ghost" size="icon" disabled>
                                         <Pencil className="h-4 w-4" />
@@ -140,7 +142,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                             </TableRow>
                         )) : (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center h-24">
+                                <TableCell colSpan={10} className="text-center h-24">
                                      <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                      No records found for the current filters.
                                 </TableCell>

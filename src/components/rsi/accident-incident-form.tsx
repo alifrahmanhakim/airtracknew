@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Combobox, ComboboxOption } from '../ui/combobox';
+import { Textarea } from '../ui/textarea';
 
 type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
 
@@ -53,6 +54,8 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
       lokasi: '',
       wilayah: '',
       taxonomy: '',
+      keteranganKejadian: '',
+      korbanJiwa: '',
     },
   });
 
@@ -128,6 +131,22 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
              <FormField control={form.control} name="lokasi" render={({ field }) => (<FormItem><FormLabel>Lokasi</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="wilayah" render={({ field }) => (<FormItem><FormLabel>Wilayah</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="taxonomy" render={({ field }) => (<FormItem><FormLabel>Taxonomy</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField control={form.control} name="keteranganKejadian" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Keterangan Kejadian</FormLabel>
+                    <FormControl><Textarea rows={4} {...field} /></FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}/>
+            <FormField control={form.control} name="korbanJiwa" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Korban Jiwa</FormLabel>
+                    <FormControl><Textarea rows={4} {...field} /></FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}/>
         </div>
         <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>
