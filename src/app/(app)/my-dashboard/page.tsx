@@ -20,7 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays, isAfter } from 'date-fns';
-import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2 } from 'lucide-react';
+import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
@@ -240,6 +240,13 @@ export default function MyDashboardPage() {
     { title: "GAP Analysis", value: workspaceAnalytics.gapAnalysis, icon: GitCompareArrows, href: "/gap-analysis", color: "text-yellow-500", description: "GAP Analysis based on State Letters" },
     { title: "Glossary", value: workspaceAnalytics.glossary, icon: BookText, href: "/glossary", color: "text-purple-500", description: "Centralized Translation Analysis" },
   ]
+  
+  const projectsNearDeadline = React.useMemo(() => {
+    return myProjects.filter(p => {
+      const daysLeft = differenceInDays(parseISO(p.endDate), new Date());
+      return daysLeft >= 0 && daysLeft <= 14 && p.status !== 'Completed';
+    }).sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
+  }, [myProjects]);
 
   if (isLoading) {
     return (
@@ -435,6 +442,32 @@ export default function MyDashboardPage() {
                         <div className="text-center text-sm text-muted-foreground py-4">
                             <CalendarClock className="mx-auto h-8 w-8 mb-2" />
                             No upcoming tasks. You're all caught up!
+                        </div>
+                    )}
+                </CardContent>
+             </Card>
+              <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Approaching Deadlines</CardTitle>
+                    <CardDescription>Projects due in the next 14 days.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {projectsNearDeadline.length > 0 ? (
+                        projectsNearDeadline.map(project => {
+                            const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
+                            return (
+                                <Link key={project.id} href={`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`} className="block hover:bg-muted/50 p-2 rounded-md">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <p className="font-semibold truncate flex-1">{project.name}</p>
+                                        <Badge variant="destructive" className="whitespace-nowrap">{daysLeft} days left</Badge>
+                                    </div>
+                                </Link>
+                            )
+                        })
+                    ) : (
+                         <div className="text-center text-sm text-muted-foreground py-4">
+                            <CalendarClock className="mx-auto h-8 w-8 mb-2" />
+                            No projects nearing their deadline.
                         </div>
                     )}
                 </CardContent>
