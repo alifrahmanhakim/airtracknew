@@ -259,7 +259,7 @@ export default function LaporanInvestigasiKnktPage() {
                                         </Button>
                                     )}
                                 </div>
-                                <KnktReportsTable records={filteredRecords} onUpdate={handleRecordUpdate} onDelete={handleDeleteRequest} />
+                                <KnktReportsTable records={filteredRecords} onUpdate={handleRecordUpdate} onDelete={handleDeleteRequest} searchTerm={searchTerm} />
                                 </>
                             )}
                         </CardContent>

@@ -17,11 +17,13 @@ import { ArrowUpDown, Info, Pencil, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditKnktReportDialog } from './edit-knkt-report-dialog';
+import { Highlight } from '../ui/highlight';
 
 type KnktReportsTableProps = {
   records: KnktReport[];
   onUpdate: (record: KnktReport) => void;
   onDelete: (record: KnktReport) => void;
+  searchTerm: string;
 };
 
 type SortDescriptor = {
@@ -29,7 +31,7 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-export function KnktReportsTable({ records, onUpdate, onDelete }: KnktReportsTableProps) {
+export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: KnktReportsTableProps) {
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal_diterbitkan', direction: 'desc' });
 
     const handleSort = (column: keyof KnktReport) => {
@@ -94,20 +96,20 @@ export function KnktReportsTable({ records, onUpdate, onDelete }: KnktReportsTab
                 <TableBody>
                     {sortedRecords.length > 0 ? sortedRecords.map((record) => (
                         <TableRow key={record.id}>
-                            <TableCell>{format(parseISO(record.tanggal_diterbitkan), 'dd-MMM-yy')}</TableCell>
-                            <TableCell>{record.nomor_laporan}</TableCell>
+                            <TableCell><Highlight text={format(parseISO(record.tanggal_diterbitkan), 'dd-MMM-yy')} query={searchTerm}/></TableCell>
+                            <TableCell><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
                             <TableCell>
                                 <Badge variant={getStatusVariant(record.status)} className={cn(
                                     getStatusVariant(record.status) === 'default' && 'bg-blue-100 text-blue-800'
                                 )}>
-                                    {record.status}
+                                    <Highlight text={record.status} query={searchTerm}/>
                                 </Badge>
                             </TableCell>
-                            <TableCell>{record.operator}</TableCell>
-                            <TableCell>{record.registrasi}</TableCell>
-                            <TableCell>{record.tipe_pesawat}</TableCell>
-                            <TableCell>{record.lokasi}</TableCell>
-                            <TableCell className="whitespace-normal">{record.keterangan || '-'}</TableCell>
+                            <TableCell><Highlight text={record.operator} query={searchTerm}/></TableCell>
+                            <TableCell><Highlight text={record.registrasi} query={searchTerm}/></TableCell>
+                            <TableCell><Highlight text={record.tipe_pesawat} query={searchTerm}/></TableCell>
+                            <TableCell><Highlight text={record.lokasi} query={searchTerm}/></TableCell>
+                            <TableCell className="whitespace-normal"><Highlight text={record.keterangan || '-'} query={searchTerm} /></TableCell>
                             <TableCell className="text-right">
                                 <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
