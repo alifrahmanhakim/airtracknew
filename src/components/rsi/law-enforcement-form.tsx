@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm, type UseFormReturn, useFieldArray } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
@@ -19,78 +19,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarIcon, Plus, Trash2, Loader2 } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2, Loader2, Check, ChevronsUpDown } from 'lucide-react';
 import { lawEnforcementFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
-import { Combobox } from '../ui/combobox';
 import { aocOptions } from '@/lib/data';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
-import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 
 interface LawEnforcementFormProps {
-  onFormSubmitSuccess: () => void;
+  form: UseFormReturn<LawEnforcementFormValues>;
+  onSubmit: (data: LawEnforcementFormValues) => void;
+  isSubmitting: boolean;
 }
 
-export function LawEnforcementForm({ onFormSubmitSuccess }: LawEnforcementFormProps) {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<LawEnforcementFormValues>({
-    resolver: zodResolver(lawEnforcementFormSchema),
-    defaultValues: {
-      impositionType: 'aoc',
-      sanctionedAoc: '',
-      sanctionedPersonnel: [{ value: '' }],
-      sanctionedOrganization: '',
-      sanctionType: '',
-      refLetter: '',
-    },
-  });
-
+export function LawEnforcementForm({ form, onSubmit, isSubmitting }: LawEnforcementFormProps) {
   const impositionType = form.watch('impositionType');
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "sanctionedPersonnel",
   });
-  
-  async function onSubmit(data: LawEnforcementFormValues) {
-    setIsSubmitting(true);
-    const result = await addLawEnforcementRecord(data);
-    setIsSubmitting(false);
-
-    if (result.success) {
-      toast({ title: 'Record Added', description: 'The new law enforcement record has been added.' });
-      form.reset();
-      onFormSubmitSuccess();
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Error Adding Record',
-        description: result.error || 'An unexpected error occurred.',
-      });
-    }
-  }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} id="law-enforcement-form">
         <Card>
           <CardHeader>
             <CardTitle>Add New Sanction</CardTitle>
             <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
               <FormField
                 control={form.control}
                 name="dateLetter"
@@ -148,12 +114,56 @@ export function LawEnforcementForm({ onFormSubmitSuccess }: LawEnforcementFormPr
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>AOC</FormLabel>
-                    <Combobox
-                      options={aocOptions}
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                      placeholder="Select or type an AOC..."
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? aocOptions.find(
+                                  (option) => option.value === field.value
+                                )?.label
+                              : "Select AOC"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search AOC..." />
+                          <CommandList>
+                            <CommandEmpty>No AOC found.</CommandEmpty>
+                            <CommandGroup>
+                              {aocOptions.map((option) => (
+                                <CommandItem
+                                  value={option.label}
+                                  key={option.value}
+                                  onSelect={() => {
+                                    form.setValue("sanctionedAoc", option.value)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      option.value === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {option.label}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -209,12 +219,6 @@ export function LawEnforcementForm({ onFormSubmitSuccess }: LawEnforcementFormPr
               />
             )}
           </CardContent>
-           <CardFooter className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Submit Record
-              </Button>
-          </CardFooter>
         </Card>
       </form>
     </Form>
