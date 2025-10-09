@@ -50,6 +50,7 @@ export const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>((props
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
+      e.stopPropagation(); // Stop event from bubbling up to the form
       const newTag = inputValue.trim();
       if (newTag && !tags.includes(newTag)) {
         setTags([...tags, newTag]);
@@ -72,6 +73,7 @@ export const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>((props
           <Badge key={index} variant="secondary">
             {tag}
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               className="ml-1 h-4 w-4 rounded-full"
