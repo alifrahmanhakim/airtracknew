@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 type PemeriksaanFormValues = z.infer<typeof pemeriksaanFormSchema>;
 
