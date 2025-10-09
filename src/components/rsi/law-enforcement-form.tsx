@@ -85,7 +85,7 @@ export function LawEnforcementForm({ onFormSubmitSuccess }: LawEnforcementFormPr
 
   return (
      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} id="law-enforcement-form">
             <Card>
                 <CardHeader>
                     <CardTitle>Add New Sanction</CardTitle>
