@@ -29,10 +29,12 @@ import { format, parseISO } from 'date-fns';
 import { Input } from '../ui/input';
 import { deleteAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { EditAccidentIncidentRecordDialog } from './edit-accident-incident-dialog';
+import { Highlight } from '../ui/highlight';
 
 type AccidentIncidentTableProps = {
   records: AccidentIncidentRecord[];
   onUpdate: (record: AccidentIncidentRecord) => void;
+  searchTerm: string;
 };
 
 type SortDescriptor = {
@@ -40,7 +42,7 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-export function AccidentIncidentTable({ records, onUpdate }: AccidentIncidentTableProps) {
+export function AccidentIncidentTable({ records, onUpdate, searchTerm }: AccidentIncidentTableProps) {
     const { toast } = useToast();
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<AccidentIncidentRecord | null>(null);
@@ -101,7 +103,7 @@ export function AccidentIncidentTable({ records, onUpdate }: AccidentIncidentTab
 
     return (
         <>
-            <div className="border rounded-md">
+            <div className="border rounded-md overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -120,19 +122,19 @@ export function AccidentIncidentTable({ records, onUpdate }: AccidentIncidentTab
                     <TableBody>
                         {sortedRecords.length > 0 ? sortedRecords.map((record) => (
                             <TableRow key={record.id}>
-                                <TableCell>{format(parseISO(record.tanggal), 'dd-MMM-yy')}</TableCell>
+                                <TableCell><Highlight text={format(parseISO(record.tanggal), 'dd-MMM-yy')} query={searchTerm} /></TableCell>
                                 <TableCell>
                                     <Badge variant={record.kategori === 'Accident (A)' ? 'destructive' : 'secondary'}>
-                                        {record.kategori}
+                                        <Highlight text={record.kategori} query={searchTerm} />
                                     </Badge>
                                 </TableCell>
-                                <TableCell>{record.aoc}</TableCell>
-                                <TableCell>{record.registrasiPesawat}</TableCell>
-                                <TableCell>{record.tipePesawat}</TableCell>
-                                <TableCell>{record.lokasi}</TableCell>
-                                <TableCell>{record.taxonomy}</TableCell>
-                                <TableCell className="max-w-xs truncate">{record.keteranganKejadian}</TableCell>
-                                <TableCell>{record.korbanJiwa}</TableCell>
+                                <TableCell><Highlight text={record.aoc} query={searchTerm} /></TableCell>
+                                <TableCell><Highlight text={record.registrasiPesawat} query={searchTerm} /></TableCell>
+                                <TableCell><Highlight text={record.tipePesawat} query={searchTerm} /></TableCell>
+                                <TableCell><Highlight text={record.lokasi} query={searchTerm} /></TableCell>
+                                <TableCell><Highlight text={record.taxonomy} query={searchTerm} /></TableCell>
+                                <TableCell className="whitespace-normal"><Highlight text={record.keteranganKejadian} query={searchTerm} /></TableCell>
+                                <TableCell><Highlight text={record.korbanJiwa} query={searchTerm} /></TableCell>
                                 <TableCell className="text-right">
                                     <EditAccidentIncidentRecordDialog record={record} onRecordUpdate={onUpdate} />
                                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteRequest(record)}>
@@ -142,7 +144,7 @@ export function AccidentIncidentTable({ records, onUpdate }: AccidentIncidentTab
                             </TableRow>
                         )) : (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center h-24">
+                                <TableCell colSpan={10} className="text-center h-24">
                                      <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                      No records found for the current filters.
                                 </TableCell>

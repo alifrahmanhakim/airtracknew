@@ -225,7 +225,7 @@ export default function DataAccidentIncidentPage() {
                                         </Button>
                                     )}
                                 </div>
-                                <AccidentIncidentTable records={filteredTableRecords} onUpdate={handleRecordUpdate} />
+                                <AccidentIncidentTable records={filteredTableRecords} onUpdate={handleRecordUpdate} searchTerm={searchTerm} />
                                 </>
                             )}
                         </CardContent>
