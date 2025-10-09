@@ -39,12 +39,14 @@ type SortDescriptor = {
 } | null;
 
 const BulletList = ({ text }: { text: string }) => {
-    const items = text.split('- ').filter(item => item.trim() !== '');
-    if (items.length === 0) return <p>{text}</p>;
+    if (!text) return null;
+    const items = text.split(/\\n-?|\s*-\s*/).filter(item => item.trim() !== '');
+    if (items.length === 0) return <p className="whitespace-pre-wrap">{text}</p>;
+
     return (
       <ul className="list-disc pl-5 space-y-1">
         {items.map((item, index) => (
-          <li key={index}>{item}</li>
+          <li key={index}>{item.trim()}</li>
         ))}
       </ul>
     );
