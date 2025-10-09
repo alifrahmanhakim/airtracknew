@@ -180,7 +180,7 @@ export type AccidentIncidentRecord = {
     wilayah: string;
     taxonomy: string;
     keteranganKejadian?: string;
-    korbanJiwa?: string;
+    korbanJiwa: string; // Will store the final combined string
     createdAt: string;
 };
 

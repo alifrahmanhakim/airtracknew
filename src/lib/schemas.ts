@@ -101,5 +101,14 @@ export const accidentIncidentFormSchema = z.object({
   wilayah: z.string().min(1, 'Wilayah is required.'),
   taxonomy: z.string().min(1, 'Taxonomy is required.'),
   keteranganKejadian: z.string().optional(),
-  korbanJiwa: z.string().optional(),
+  adaKorbanJiwa: z.enum(['Ada', 'Tidak Ada']),
+  jumlahKorbanJiwa: z.string().optional(),
+}).refine(data => {
+    if (data.adaKorbanJiwa === 'Ada') {
+        return !!data.jumlahKorbanJiwa && data.jumlahKorbanJiwa.length > 0;
+    }
+    return true;
+}, {
+    message: 'Jumlah korban jiwa is required when there are casualties.',
+    path: ['jumlahKorbanJiwa'],
 });

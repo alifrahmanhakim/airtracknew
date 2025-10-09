@@ -56,9 +56,12 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
       wilayah: '',
       taxonomy: '',
       keteranganKejadian: '',
-      korbanJiwa: '',
+      adaKorbanJiwa: 'Tidak Ada',
+      jumlahKorbanJiwa: '',
     },
   });
+
+  const watchAdaKorban = form.watch('adaKorbanJiwa');
 
   const onSubmit = async (data: AccidentIncidentFormValues) => {
     setIsLoading(true);
@@ -163,13 +166,30 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                     <FormMessage />
                 </FormItem>
             )}/>
-            <FormField control={form.control} name="korbanJiwa" render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Korban Jiwa</FormLabel>
-                    <FormControl><Textarea rows={4} {...field} /></FormControl>
-                    <FormMessage />
-                </FormItem>
-            )}/>
+            <div className='space-y-4'>
+                <FormField control={form.control} name="adaKorbanJiwa" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Korban Jiwa</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Pilih status korban..." /></SelectTrigger></FormControl>
+                            <SelectContent>
+                                <SelectItem value="Tidak Ada">Tidak Ada</SelectItem>
+                                <SelectItem value="Ada">Ada</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}/>
+                {watchAdaKorban === 'Ada' && (
+                     <FormField control={form.control} name="jumlahKorbanJiwa" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Jumlah & Rincian Korban</FormLabel>
+                            <FormControl><Input {...field} placeholder="e.g., 2 orang (1 pilot, 1 penumpang)" /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
+                )}
+            </div>
         </div>
         <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>
