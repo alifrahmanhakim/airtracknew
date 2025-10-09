@@ -128,25 +128,21 @@ export default function LawEnforcementPage() {
                 </div>
 
                 <TabsContent value="form">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onFormSubmit)}>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Add New Sanction</CardTitle>
-                                    <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <LawEnforcementForm form={form} />
-                                </CardContent>
-                                <CardFooter className="flex justify-end">
-                                    <Button type="submit" disabled={isSubmitting}>
-                                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Submit Record
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        </form>
-                    </Form>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Add New Sanction</CardTitle>
+                            <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
+                        </CardHeader>
+                        <Form {...form}>
+                            <LawEnforcementForm form={form} onSubmit={onFormSubmit} />
+                        </Form>
+                        <CardFooter className="flex justify-end">
+                            <Button type="submit" form="law-enforcement-form" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Submit Record
+                            </Button>
+                        </CardFooter>
+                    </Card>
                 </TabsContent>
 
                 <TabsContent value="records">
