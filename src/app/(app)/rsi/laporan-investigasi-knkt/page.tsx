@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, ArrowLeft, Loader2 } from 'lucide-react';
+import { RotateCcw, Search, ArrowLeft, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
 import { aocOptions, taxonomyOptions as staticTaxonomyOptions } from '@/lib/data';
 import Link from 'next/link';
@@ -21,7 +21,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { knktReportFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
-import { addKnktReport } from '@/lib/actions/knkt';
+import { addKnktReport, deleteKnktReport } from '@/lib/actions/knkt';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
@@ -49,6 +50,10 @@ export default function LaporanInvestigasiKnktPage() {
     const [yearFilter, setYearFilter] = React.useState('all');
     const [statusFilter, setStatusFilter] = React.useState('all');
     const [taxonomyFilter, setTaxonomyFilter] = React.useState('all');
+
+    // Delete state
+    const [recordToDelete, setRecordToDelete] = React.useState<KnktReport | null>(null);
+    const [isDeleting, setIsDeleting] = React.useState(false);
 
     React.useEffect(() => {
         const q = query(collection(db, "knktReports"), orderBy("tanggal_diterbitkan", "desc"));
@@ -146,6 +151,25 @@ export default function LaporanInvestigasiKnktPage() {
         setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
     };
 
+    const handleDeleteRequest = (record: KnktReport) => {
+        setRecordToDelete(record);
+    };
+
+    const confirmDelete = async () => {
+        if (!recordToDelete) return;
+
+        setIsDeleting(true);
+        const result = await deleteKnktReport(recordToDelete.id);
+        setIsDeleting(false);
+
+        if (result.success) {
+            toast({ title: "Record Deleted", description: "The KNKT Report has been removed." });
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+        }
+        setRecordToDelete(null);
+    };
+
     return (
         <main className="p-4 md:p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -235,7 +259,7 @@ export default function LaporanInvestigasiKnktPage() {
                                         </Button>
                                     )}
                                 </div>
-                                <KnktReportsTable records={filteredRecords} />
+                                <KnktReportsTable records={filteredRecords} onUpdate={handleRecordUpdate} onDelete={handleDeleteRequest} />
                                 </>
                             )}
                         </CardContent>
@@ -246,6 +270,27 @@ export default function LaporanInvestigasiKnktPage() {
                     <KnktAnalytics allRecords={records} />
                 </TabsContent>
             </Tabs>
+
+            <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader className="text-center items-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                            <AlertTriangle className="h-6 w-6 text-red-600" />
+                        </div>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the report: <span className="font-semibold">{recordToDelete?.nomor_laporan}</span>.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
+                            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </main>
     );
 }

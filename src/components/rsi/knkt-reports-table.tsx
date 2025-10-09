@@ -13,12 +13,15 @@ import {
 import type { KnktReport } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, Info } from 'lucide-react';
+import { ArrowUpDown, Info, Pencil, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { EditKnktReportDialog } from './edit-knkt-report-dialog';
 
 type KnktReportsTableProps = {
   records: KnktReport[];
+  onUpdate: (record: KnktReport) => void;
+  onDelete: (record: KnktReport) => void;
 };
 
 type SortDescriptor = {
@@ -26,7 +29,7 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-export function KnktReportsTable({ records }: KnktReportsTableProps) {
+export function KnktReportsTable({ records, onUpdate, onDelete }: KnktReportsTableProps) {
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal_diterbitkan', direction: 'desc' });
 
     const handleSort = (column: keyof KnktReport) => {
@@ -84,6 +87,7 @@ export function KnktReportsTable({ records }: KnktReportsTableProps) {
                         <TableHead>Registrasi</TableHead>
                         <TableHead>Tipe Pesawat</TableHead>
                         <TableHead>Lokasi</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -102,10 +106,16 @@ export function KnktReportsTable({ records }: KnktReportsTableProps) {
                             <TableCell>{record.registrasi}</TableCell>
                             <TableCell>{record.tipe_pesawat}</TableCell>
                             <TableCell>{record.lokasi}</TableCell>
+                            <TableCell className="text-right">
+                                <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
+                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </TableCell>
                         </TableRow>
                     )) : (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center h-24">
+                            <TableCell colSpan={8} className="text-center h-24">
                                 <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                 No records found for the current filters.
                             </TableCell>
