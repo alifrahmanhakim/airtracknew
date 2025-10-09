@@ -32,18 +32,24 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
             return acc;
         }, {} as Record<string, number>);
         
-        const impositionTypeData = Object.entries(sanctionsByType).map(([name, value]) => ({name, value}));
+        const impositionTypeData = Object.entries(sanctionsByType).map(([name, value]) => ({name: name === 'aoc' ? 'AOC' : name, value}));
 
         const sanctionsByYear = allRecords.reduce((acc, record) => {
-            const year = getYear(parseISO(record.dateLetter));
-            acc[year] = (acc[year] || 0) + 1;
+            if (record.references && record.references.length > 0) {
+                const year = getYear(parseISO(record.references[0].dateLetter));
+                acc[year] = (acc[year] || 0) + 1;
+            }
             return acc;
         }, {} as Record<number, number>);
 
         const yearData = Object.entries(sanctionsByYear).map(([name, value]) => ({ name, value })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
 
         const sanctionsBySanctionType = allRecords.reduce((acc, record) => {
-            acc[record.sanctionType] = (acc[record.sanctionType] || 0) + 1;
+            if (record.references && record.references.length > 0) {
+                record.references.forEach(ref => {
+                    acc[ref.sanctionType] = (acc[ref.sanctionType] || 0) + 1;
+                })
+            }
             return acc;
         }, {} as Record<string, number>);
 
@@ -92,7 +98,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned AOCs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.name === 'aoc')?.value || 0} /></p>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.name === 'AOC')?.value || 0} /></p>
                     </CardContent>
                 </Card>
                  <Card>
