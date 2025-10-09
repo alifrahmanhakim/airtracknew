@@ -5,12 +5,12 @@ import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info } from 'lucide-react';
 import Link from 'next/link';
-import { collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -21,7 +21,7 @@ type RsiModule = {
   href: string;
   collectionName: keyof RsiData;
   statusField: string;
-  statusVariant?: (status: string) => 'default' | 'secondary' | 'destructive' | 'outline';
+  statusVariant: (status: string) => string;
 };
 
 const rsiModules: RsiModule[] = [
@@ -32,7 +32,11 @@ const rsiModules: RsiModule[] = [
     href: '/rsi/data-accident-incident',
     collectionName: 'accidentIncidentRecords',
     statusField: 'kategori',
-    statusVariant: (status) => status === 'Accident (A)' ? 'destructive' : 'secondary',
+    statusVariant: (status) => {
+        if (status === 'Accident (A)') return 'destructive';
+        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        return 'secondary';
+    },
   },
   {
     title: 'Pemeriksaan',
@@ -41,7 +45,11 @@ const rsiModules: RsiModule[] = [
     href: '/rsi/pemeriksaan',
     collectionName: 'pemeriksaanRecords',
     statusField: 'kategori',
-    statusVariant: (status) => status === 'Accident (A)' ? 'destructive' : 'secondary',
+     statusVariant: (status) => {
+        if (status === 'Accident (A)') return 'destructive';
+        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        return 'secondary';
+    },
   },
   {
     title: 'Laporan Investigasi KNKT',
@@ -50,6 +58,11 @@ const rsiModules: RsiModule[] = [
     href: '/rsi/laporan-investigasi-knkt',
     collectionName: 'knktReports',
     statusField: 'status',
+    statusVariant: (status) => {
+        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
+        if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300';
+        return 'secondary';
+    },
   },
   {
     title: 'Monitoring Rekomendasi KNKT',
@@ -58,6 +71,11 @@ const rsiModules: RsiModule[] = [
     href: '/rsi/monitoring-rekomendasi',
     collectionName: 'tindakLanjutRecords',
     statusField: 'status',
+     statusVariant: (status) => {
+        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
+        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        return 'secondary';
+    },
   },
   {
     title: 'Monitoring Rekomendasi ke DGCA',
@@ -65,7 +83,8 @@ const rsiModules: RsiModule[] = [
     icon: <ShieldQuestion className="h-8 w-8 text-purple-500" />,
     href: '/rsi/monitoring-rekomendasi-dgca',
     collectionName: 'tindakLanjutDgcaRecords',
-    statusField: 'operator', // Using operator as a grouping mechanism
+    statusField: 'operator',
+    statusVariant: () => 'secondary',
   },
   {
     title: 'List of Law Enforcement',
@@ -74,6 +93,12 @@ const rsiModules: RsiModule[] = [
     href: '/rsi/law-enforcement',
     collectionName: 'lawEnforcementRecords',
     statusField: 'impositionType',
+    statusVariant: (status) => {
+        if (status === 'aoc') return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300';
+        if (status === 'personnel') return 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/50 dark:text-purple-300';
+        if (status === 'organization') return 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/50 dark:text-orange-300';
+        return 'secondary';
+    },
   },
 ];
 
@@ -163,7 +188,7 @@ export default function RsiPage() {
                                         {statusArray.map(({ name, count }) => (
                                             <Tooltip key={name}>
                                                 <TooltipTrigger asChild>
-                                                    <Badge variant={module.statusVariant ? module.statusVariant(name) : 'secondary'}>
+                                                    <Badge className={cn(badgeVariants({ variant: 'default' }), module.statusVariant(name))}>
                                                         {name}: <span className="font-bold ml-1">{count}</span>
                                                     </Badge>
                                                 </TooltipTrigger>
@@ -177,11 +202,11 @@ export default function RsiPage() {
                             )}
                             </CardContent>
                             <CardFooter className="bg-muted/50 p-4 mt-auto">
-                                <Link href={module.href} className="group flex items-center text-sm font-semibold w-full text-primary">
+                                <Link href={module.href} className="group flex items-center text-sm font-semibold w-full">
                                     <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:animate-pulse">
                                         Open Module
                                     </span>
-                                    <ArrowRight className="ml-auto h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                    <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </CardFooter>
                         </Card>
