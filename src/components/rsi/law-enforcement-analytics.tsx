@@ -67,7 +67,10 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
             totalRecords,
             impositionTypeData,
             yearData,
-            sanctionTypeData
+            sanctionTypeData,
+            totalAoc: sanctionsByType['aoc'] || 0,
+            totalPersonnel: sanctionsByType['personnel'] || 0,
+            totalOrganization: sanctionsByType['organization'] || 0,
         };
 
     }, [allRecords]);
@@ -108,7 +111,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned AOCs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.originalName === 'aoc')?.value || 0} /></p>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalAoc} /></p>
                     </CardContent>
                 </Card>
                  <Card>
@@ -116,7 +119,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><User /> Sanctioned Personnel</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.originalName === 'personnel')?.value || 0} /></p>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalPersonnel} /></p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -124,7 +127,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned Orgs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.impositionTypeData.find(d => d.originalName === 'organization')?.value || 0} /></p>
+                        <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalOrganization} /></p>
                     </CardContent>
                 </Card>
             </div>
@@ -149,9 +152,10 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                  <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Imposition by Type</CardTitle>
+                        <CardDescription>Breakdown of sanctions by the type of entity.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex justify-center">
-                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="mx-auto aspect-square h-[300px] max-w-[300px]">
+                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="max-w-[300px] h-[300px]">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                 <Pie data={analyticsData.impositionTypeData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
