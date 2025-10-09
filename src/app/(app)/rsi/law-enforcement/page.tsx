@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { lawEnforcementFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
+import { Form } from '@/components/ui/form';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -132,17 +133,19 @@ export default function LawEnforcementPage() {
                             <CardTitle>Add New Sanction</CardTitle>
                             <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
                         </CardHeader>
-                         <form onSubmit={form.handleSubmit(onFormSubmit)}>
-                            <CardContent>
-                                <LawEnforcementForm form={form} />
-                            </CardContent>
-                            <CardFooter className="flex justify-end">
-                                <Button type="submit" disabled={isSubmitting}>
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Submit Record
-                                </Button>
-                            </CardFooter>
-                         </form>
+                         <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onFormSubmit)} id="law-enforcement-form">
+                                <CardContent>
+                                    <LawEnforcementForm />
+                                </CardContent>
+                                <CardFooter className="flex justify-end">
+                                    <Button type="submit" disabled={isSubmitting}>
+                                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Submit Record
+                                    </Button>
+                                </CardFooter>
+                            </form>
+                         </Form>
                     </Card>
                 </TabsContent>
 
