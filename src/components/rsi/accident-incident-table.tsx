@@ -40,7 +40,6 @@ type SortDescriptor = {
 
 export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
     const { toast } = useToast();
-    const [searchTerm, setSearchTerm] = React.useState('');
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<AccidentIncidentRecord | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
@@ -59,20 +58,10 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
         return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
     };
 
-    const filteredAndSortedRecords = React.useMemo(() => {
-        let filtered = [...records];
-
-        if (searchTerm) {
-            const lowercasedTerm = searchTerm.toLowerCase();
-            filtered = filtered.filter(record => 
-                Object.values(record).some(value => 
-                    String(value).toLowerCase().includes(lowercasedTerm)
-                )
-            );
-        }
-
+    const sortedRecords = React.useMemo(() => {
+        let sorted = [...records];
         if (sort) {
-            filtered.sort((a, b) => {
+            sorted.sort((a, b) => {
                 const aVal = a[sort.column];
                 const bVal = b[sort.column];
                 
@@ -88,8 +77,8 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
             });
         }
         
-        return filtered;
-    }, [records, searchTerm, sort]);
+        return sorted;
+    }, [records, sort]);
 
     const handleDeleteRequest = (record: AccidentIncidentRecord) => {
         setRecordToDelete(record);
@@ -110,17 +99,6 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
 
     return (
         <>
-            <div className="flex justify-end mb-4">
-                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        placeholder="Search all fields..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
-            </div>
             <div className="border rounded-md">
                 <Table>
                     <TableHeader>
@@ -137,7 +115,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredAndSortedRecords.length > 0 ? filteredAndSortedRecords.map((record) => (
+                        {sortedRecords.length > 0 ? sortedRecords.map((record) => (
                             <TableRow key={record.id}>
                                 <TableCell>{format(parseISO(record.tanggal), 'dd-MMM-yy')}</TableCell>
                                 <TableCell>
@@ -164,7 +142,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                             <TableRow>
                                 <TableCell colSpan={9} className="text-center h-24">
                                      <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
-                                     No records found.
+                                     No records found for the current filters.
                                 </TableCell>
                             </TableRow>
                         )}
