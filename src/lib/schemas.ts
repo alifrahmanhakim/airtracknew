@@ -118,7 +118,7 @@ export const pemeriksaanFormSchema = z.object({
     registrasi: z.string().min(1, 'Registrasi is required.'),
     tahunPembuatan: z.string().min(1, 'Tahun Pembuatan is required.'),
     operator: z.string().min(1, 'Operator is required.'),
-    tanggal: z.string({ required_error: "Tanggal is required." }),
+    tanggal: z.string().min(1, 'Tanggal is required.'),
     lokasi: z.string().min(1, 'Lokasi is required.'),
     korban: z.string().min(1, 'Korban is required.'),
     ringkasanKejadian: z.string().min(1, 'Ringkasan Kejadian is required.'),
@@ -179,7 +179,7 @@ export const lawEnforcementFormSchema = z.object({
     id: z.string(),
     sanctionType: z.string().min(1, "Sanction type is required."),
     refLetter: z.string().min(1, "Reference letter is required."),
-    dateLetter: z.string({ required_error: "Date letter is required." }),
+    dateLetter: z.string({ required_error: "Date letter is required." }).min(1, "Date letter is required."),
   })).min(1, "At least one reference is required."),
 }).superRefine((data, ctx) => {
     if (data.impositionType === 'aoc' && (!data.sanctionedAoc || data.sanctionedAoc.length === 0 || data.sanctionedAoc.some(p => !p.value))) {

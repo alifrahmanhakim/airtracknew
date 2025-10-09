@@ -20,7 +20,7 @@ import type { PemeriksaanRecord } from '@/lib/types';
 import { PemeriksaanForm } from './pemeriksaan-form';
 import { updatePemeriksaanRecord } from '@/lib/actions/pemeriksaan';
 import { pemeriksaanFormSchema } from '@/lib/schemas';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import type { z } from 'zod';
 
 type PemeriksaanFormValues = z.infer<typeof pemeriksaanFormSchema>;
@@ -39,7 +39,7 @@ export function EditPemeriksaanRecordDialog({ record, onRecordUpdate }: EditPeme
     resolver: zodResolver(pemeriksaanFormSchema),
     defaultValues: {
       ...record,
-      tanggal: parseISO(record.tanggal),
+      tanggal: record.tanggal ? format(parseISO(record.tanggal), 'yyyy-MM-dd') : '',
     },
   });
 

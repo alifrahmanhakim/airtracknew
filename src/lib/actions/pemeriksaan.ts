@@ -18,6 +18,7 @@ export async function addPemeriksaanRecord(data: z.infer<typeof pemeriksaanFormS
     try {
         const dataToSubmit = {
             ...parsed.data,
+            tanggal: new Date(parsed.data.tanggal).toISOString(),
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'pemeriksaanRecords'), dataToSubmit);
@@ -37,11 +38,16 @@ export async function updatePemeriksaanRecord(id: string, data: z.infer<typeof p
     try {
         const docRef = doc(db, 'pemeriksaanRecords', id);
         
-        await updateDoc(docRef, parsed.data);
+        const dataToSubmit = {
+            ...parsed.data,
+            tanggal: new Date(parsed.data.tanggal).toISOString(),
+        };
+        
+        await updateDoc(docRef, dataToSubmit);
         
         const updatedRecord = {
             id,
-            ...data,
+            ...dataToSubmit,
             createdAt: new Date().toISOString(),
         } as PemeriksaanRecord
         

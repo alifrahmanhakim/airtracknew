@@ -2,7 +2,6 @@
 'use client';
 
 import { useForm, type UseFormReturn } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
   FormControl,
@@ -12,16 +11,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { CalendarIcon } from 'lucide-react';
 import { pemeriksaanFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { Calendar } from '../ui/calendar';
 import { Combobox } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
-import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { aocOptions, indonesianAircraftTypes } from '@/lib/data';
@@ -82,25 +75,19 @@ export function PemeriksaanForm({ form }: PemeriksaanFormProps) {
                             <FormMessage />
                         </FormItem>
                     )}/>
-                    <FormField control={form.control} name="tanggal" render={({ field }) => (
-                        <FormItem className="flex flex-col">
+                     <FormField
+                        control={form.control}
+                        name="tanggal"
+                        render={({ field }) => (
+                            <FormItem>
                             <FormLabel>Tanggal</FormLabel>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <FormControl>
-                                        <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
-                                    </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                                </PopoverContent>
-                            </Popover>
+                            <FormControl>
+                                <Input type="text" placeholder="YYYY-MM-DD" {...field} />
+                            </FormControl>
                             <FormMessage />
-                        </FormItem>
-                    )}/>
+                            </FormItem>
+                        )}
+                    />
                     <FormField control={form.control} name="lokasi" render={({ field }) => (<FormItem><FormLabel>Lokasi</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                     <FormField control={form.control} name="korban" render={({ field }) => (<FormItem><FormLabel>Korban</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
