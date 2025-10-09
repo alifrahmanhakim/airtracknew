@@ -88,7 +88,7 @@ export function RulemakingTable({ projects, sort, setSort }: RulemakingTableProp
 
   return (
     <TooltipProvider>
-      <div className="border rounded-md">
+      <div className="border rounded-md bg-card">
         <Table>
           <TableHeader>
             <TableRow>
