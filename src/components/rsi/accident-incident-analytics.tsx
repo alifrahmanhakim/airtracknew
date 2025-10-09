@@ -11,6 +11,7 @@ import { RotateCcw, Plane, AlertTriangle, Users, Info } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '../ui/chart';
 import { AnimatedCounter } from '../ui/animated-counter';
+import { Tooltip as UiTooltip, TooltipContent as UiTooltipContent, TooltipTrigger as UiTooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 type AnalyticsProps = {
   allRecords: AccidentIncidentRecord[];
@@ -30,6 +31,29 @@ const parseCasualties = (casualtyString: string): number => {
     }
     const match = casualtyString.match(/\d+/);
     return match ? parseInt(match[0], 10) : 0;
+};
+
+const CustomYAxisTick = ({ y, payload }: any) => {
+    const value = payload.value;
+    const MAX_LENGTH = 25;
+    const truncatedValue = value.length > MAX_LENGTH ? `${value.substring(0, MAX_LENGTH)}...` : value;
+
+    return (
+        <TooltipProvider>
+            <UiTooltip>
+                <UiTooltipTrigger asChild>
+                    <g transform={`translate(0,${y})`}>
+                        <text x={0} y={0} dy={4} textAnchor="end" fill="#666" fontSize={12}>
+                            {truncatedValue}
+                        </text>
+                    </g>
+                </UiTooltipTrigger>
+                <UiTooltipContent side="left">
+                    <p>{value}</p>
+                </UiTooltipContent>
+            </UiTooltip>
+        </TooltipProvider>
+    );
 };
 
 
@@ -172,7 +196,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
              <div className="grid grid-cols-1 gap-6">
                 <Card>
                     <CardHeader><CardTitle>Top 10 Operators by Incidents</CardTitle></CardHeader>
-                    <CardContent><ChartContainer config={chartConfig(analyticsData.operatorData)} className="h-[400px] w-full"><ResponsiveContainer><BarChart data={analyticsData.operatorData} layout="vertical" margin={{ left: 150 }}><CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} /><XAxis type="number" allowDecimals={false} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.operatorData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar></BarChart></ResponsiveContainer></ChartContainer></CardContent>
+                    <CardContent><ChartContainer config={chartConfig(analyticsData.operatorData)} className="h-[400px] w-full"><ResponsiveContainer><BarChart data={analyticsData.operatorData} layout="vertical" margin={{ left: 150 }}><CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" interval={0} tick={<CustomYAxisTick />} width={160} /><XAxis type="number" allowDecimals={false} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.operatorData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar></BarChart></ResponsiveContainer></ChartContainer></CardContent>
                 </Card>
                  <Card>
                     <CardHeader><CardTitle>Incidents by Taxonomy</CardTitle></CardHeader>
@@ -184,3 +208,4 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
     );
 }
 
+    
