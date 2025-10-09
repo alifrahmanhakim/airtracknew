@@ -162,6 +162,8 @@ export const tindakLanjutDgcaFormSchema = z.object({
   nomorLaporan: z.string().min(1, 'Nomor Laporan is required.'),
   operator: z.string().min(1, 'Operator is required.'),
   tipePesawat: z.string().min(1, 'Tipe Pesawat is required.'),
+  registrasi: z.string().min(1, 'Registrasi is required.'),
+  lokasi: z.string().min(1, 'Lokasi is required.'),
   tanggalKejadian: z.string().min(1, "Tanggal Kejadian is required."),
   tanggalTerbit: z.string().optional(),
   rekomendasiKeDgca: z.string().min(1, 'Rekomendasi Keselamatan Ke DGCA is required.'),

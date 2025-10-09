@@ -84,6 +84,8 @@ export default function MonitoringRekomendasiDgcaPage() {
             nomorLaporan: '',
             operator: '',
             tipePesawat: '',
+            registrasi: '',
+            lokasi: '',
             tanggalKejadian: '',
             rekomendasiKeDgca: '',
             nomorRekomendasi: '',

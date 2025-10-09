@@ -63,6 +63,8 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm 
                                 <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Operator: <Highlight text={record.operator} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Tipe Pesawat: <Highlight text={record.tipePesawat} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasi} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasi} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Terbit: <Highlight text={record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'dd MMM yyyy') : 'N/A'} query={searchTerm} /></p>
                             </TableCell>

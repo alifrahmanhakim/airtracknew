@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm, type UseFormReturn } from 'react-hook-form';
@@ -86,6 +87,32 @@ export function TindakLanjutDgcaForm({ form }: TindakLanjutDgcaFormProps) {
                   <FormMessage />
                 </FormItem>
               )}
+            />
+             <FormField
+                control={form.control}
+                name="registrasi"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Registrasi</FormLabel>
+                    <FormControl>
+                    <Input placeholder="Registrasi pesawat..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+             <FormField
+                control={form.control}
+                name="lokasi"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Lokasi</FormLabel>
+                    <FormControl>
+                    <Input placeholder="Lokasi kejadian..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
             />
             <FormField
                 control={form.control}

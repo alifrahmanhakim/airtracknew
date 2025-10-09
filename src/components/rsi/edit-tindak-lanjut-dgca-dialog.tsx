@@ -42,7 +42,7 @@ export function EditTindakLanjutDgcaDialog({ record, onRecordUpdate }: EditTinda
     defaultValues: {
       ...record,
       tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
-      tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : undefined,
+      tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
     },
   });
 
