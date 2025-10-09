@@ -87,7 +87,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top">
-                                <Badge variant="secondary"><Highlight text={record.status} query={searchTerm} /></Badge>
+                                <Badge variant="secondary">{record.status || 'N/A'}</Badge>
                             </TableCell>
                             <TableCell className="text-right align-top">
                                 <EditTindakLanjutRecordDialog record={record} onRecordUpdate={onUpdate} />
