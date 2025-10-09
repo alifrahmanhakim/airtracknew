@@ -183,7 +183,7 @@ export default function LaporanInvestigasiKnktPage() {
                             <KnktReportForm form={form} />
                         </CardContent>
                         <CardFooter className="flex justify-end">
-                            <Button type="button" form="knkt-report-form" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
+                            <Button type="button" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Submit Record
                             </Button>
