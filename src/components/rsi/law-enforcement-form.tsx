@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm, type UseFormReturn, useFieldArray, useFormContext } from 'react-hook-form';
+import { useForm, type UseFormReturn, useFieldArray } from 'react-hook-form';
 import {
   FormControl,
   FormField,
@@ -30,8 +30,12 @@ import { Button } from '../ui/button';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 
-export function LawEnforcementForm() {
-  const form = useFormContext<LawEnforcementFormValues>();
+type LawEnforcementFormProps = {
+  form: UseFormReturn<LawEnforcementFormValues>;
+};
+
+
+export function LawEnforcementForm({ form }: LawEnforcementFormProps) {
   const impositionType = form.watch('impositionType');
 
   const { fields, append, remove } = useFieldArray({
