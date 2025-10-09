@@ -92,7 +92,7 @@ export const glossaryFormSchema = z.object({
 });
 
 export const accidentIncidentFormSchema = z.object({
-  tanggal: z.string({ required_error: "Tanggal is required." }),
+  tanggal: z.string({ required_error: "Tanggal is required." }).min(1, 'Tanggal is required.'),
   kategori: z.enum(['Accident (A)', 'Serious Incident (SI)'], { required_error: "Kategori is required." }),
   aoc: z.string().min(1, 'AOC is required.'),
   registrasiPesawat: z.string().min(1, 'Registrasi Pesawat is required.'),
@@ -128,7 +128,7 @@ export const pemeriksaanFormSchema = z.object({
 });
 
 export const knktReportFormSchema = z.object({
-  tanggal_diterbitkan: z.string({ required_error: 'Tanggal is required.' }),
+  tanggal_diterbitkan: z.string({ required_error: 'Tanggal is required.' }).min(1, 'Tanggal is required.'),
   nomor_laporan: z.string().min(1, 'Nomor Laporan is required.'),
   status: z.enum(['Final', 'Preliminary', 'Interim Statement', 'Draft Final']),
   operator: z.string().min(1, 'Operator is required.'),

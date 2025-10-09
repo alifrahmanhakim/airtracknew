@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -20,7 +21,7 @@ import type { KnktReport } from '@/lib/types';
 import { KnktReportForm } from './knkt-report-form';
 import { updateKnktReport } from '@/lib/actions/knkt';
 import { knktReportFormSchema } from '@/lib/schemas';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import type { z } from 'zod';
 
 type KnktReportFormValues = z.infer<typeof knktReportFormSchema>;
@@ -39,7 +40,7 @@ export function EditKnktReportDialog({ record, onRecordUpdate }: EditKnktReportD
     resolver: zodResolver(knktReportFormSchema),
     defaultValues: {
       ...record,
-      tanggal_diterbitkan: parseISO(record.tanggal_diterbitkan),
+      tanggal_diterbitkan: record.tanggal_diterbitkan ? format(parseISO(record.tanggal_diterbitkan), 'yyyy-MM-dd') : '',
       keterangan: record.keterangan || '',
       taxonomy: record.taxonomy || '',
     },

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm, type UseFormReturn } from 'react-hook-form';
@@ -44,21 +45,11 @@ export function KnktReportForm({ form }: KnktReportFormProps) {
       <form id="knkt-report-form" className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FormField control={form.control} name="tanggal_diterbitkan" render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                     <FormLabel>Tanggal Diterbitkan</FormLabel>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <FormControl>
-                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                        </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                        <Input type="text" placeholder="YYYY-MM-DD" {...field} />
+                    </FormControl>
                     <FormMessage />
                 </FormItem>
             )}/>
