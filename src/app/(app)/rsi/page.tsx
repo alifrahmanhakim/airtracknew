@@ -162,55 +162,57 @@ export default function RsiPage() {
                     const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
 
                     return (
-                        <Card key={module.title} className="flex flex-col hover:shadow-lg hover:border-primary transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
-                            <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
-                            {module.icon}
-                            <CardTitle>{module.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-grow space-y-4">
-                            <p className="text-sm text-muted-foreground h-10">
-                                {module.description}
-                            </p>
-                            <div className="pt-4">
-                                <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
-                                {isLoading ? (
-                                    <Skeleton className="h-10 w-20 mt-1" />
-                                ) : (
-                                    <p className="text-4xl font-bold">
-                                        <AnimatedCounter endValue={totalCount} />
-                                    </p>
-                                )}
-                            </div>
-                            {totalCount > 0 && (
-                                <div className="pt-2 space-y-1">
-                                    <p className="text-xs uppercase text-muted-foreground font-semibold">Status Breakdown</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {statusArray.map(({ name, count }) => (
-                                            <Tooltip key={name}>
-                                                <TooltipTrigger asChild>
-                                                    <Badge className={cn(badgeVariants({ variant: module.statusVariant(name) === 'destructive' ? 'destructive' : 'default' }), module.statusVariant(name))}>
-                                                        {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count}</span>
-                                                    </Badge>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>{((count / totalCount) * 100).toFixed(1)}%</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        ))}
-                                    </div>
+                        <Link href={module.href} key={module.title} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+                            <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
+                                <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
+                                {module.icon}
+                                <CardTitle>{module.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex-grow space-y-4">
+                                <p className="text-sm text-muted-foreground h-10">
+                                    {module.description}
+                                </p>
+                                <div className="pt-4">
+                                    <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
+                                    {isLoading ? (
+                                        <Skeleton className="h-10 w-20 mt-1" />
+                                    ) : (
+                                        <p className="text-4xl font-bold">
+                                            <AnimatedCounter endValue={totalCount} />
+                                        </p>
+                                    )}
                                 </div>
-                            )}
-                            </CardContent>
-                             <CardFooter className="bg-muted/50 p-4 mt-auto">
-                                <Link href={module.href} className="group relative text-sm font-semibold w-full flex items-center">
-                                    <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
-                                        Open Module
-                                    </span>
-                                    <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-300 group-hover:w-full"></div>
-                                    <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
-                                </Link>
-                            </CardFooter>
-                        </Card>
+                                {totalCount > 0 && (
+                                    <div className="pt-2 space-y-1">
+                                        <p className="text-xs uppercase text-muted-foreground font-semibold">Status Breakdown</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {statusArray.map(({ name, count }) => (
+                                                <Tooltip key={name}>
+                                                    <TooltipTrigger asChild>
+                                                        <Badge className={cn(badgeVariants({ variant: module.statusVariant(name) === 'destructive' ? 'destructive' : 'default' }), module.statusVariant(name))}>
+                                                            {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count}</span>
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{((count / totalCount) * 100).toFixed(1)}%</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                </CardContent>
+                                <CardFooter className="bg-muted/50 p-4 mt-auto">
+                                    <div className="group relative text-sm font-semibold w-full flex items-center">
+                                        <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
+                                            Open Module
+                                        </span>
+                                        <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-300 group-hover:w-full"></div>
+                                        <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                </CardFooter>
+                            </Card>
+                        </Link>
                     )
                 })}
             </div>
