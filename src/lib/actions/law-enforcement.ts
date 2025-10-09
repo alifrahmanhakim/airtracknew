@@ -11,8 +11,7 @@ import type { LawEnforcementRecord } from '../types';
 export async function addLawEnforcementRecord(data: z.infer<typeof lawEnforcementFormSchema>) {
     const parsed = lawEnforcementFormSchema.safeParse(data);
     if (!parsed.success) {
-        // Simplified error reporting
-        return { success: false, error: parsed.error.flatten().fieldErrors.impositionType?.[0] || "Invalid data. Please check the form." };
+        return { success: false, error: "Invalid data. Please check the form and try again." };
     }
 
     try {
@@ -23,9 +22,12 @@ export async function addLawEnforcementRecord(data: z.infer<typeof lawEnforcemen
         };
         const docRef = await addDoc(collection(db, 'lawEnforcementRecords'), dataToSubmit);
         
+        // THIS IS THE FIX: The return statement must be INSIDE the try block.
         return { success: true, id: docRef.id };
+
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
+        console.error("Firestore Add Error in addLawEnforcementRecord:", error);
+        return { success: false, error: error instanceof Error ? error.message : 'An unknown server error occurred' };
     }
 }
 
