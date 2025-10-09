@@ -48,11 +48,6 @@ const ImportCcefodCsvDialog = dynamic(() => import('@/components/import-ccefod-c
     ssr: false
 });
 
-type SortDescriptor = {
-    column: keyof CcefodRecord;
-    direction: 'asc' | 'desc';
-} | null;
-
 const implementationLevelOptions = [
     "No difference","More exacting or exceeds","Different in character or other means of compliance","Less protective or patially implemented or not implemented","Not applicable","No  Information  Provided","Insufficient  Information  Provided"
 ];
@@ -82,7 +77,6 @@ export default function CcefodPage() {
   const [implementationLevelFilter, setImplementationLevelFilter] = useState<string>('all');
   const [adaPerubahanFilter, setAdaPerubahanFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [sort, setSort] = useState<SortDescriptor>({ column: 'annex', direction: 'asc' });
   const searchInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
@@ -132,22 +126,9 @@ export default function CcefodPage() {
             )
         );
     }
-
-    if (sort) {
-        filtered.sort((a, b) => {
-            const aVal = a[sort.column];
-            const bVal = b[sort.column];
-            if (aVal === undefined || aVal === null) return 1;
-            if (bVal === undefined || bVal === null) return -1;
-
-            if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }
-
+    
     return filtered;
-  }, [allRecords, annexFilter, implementationLevelFilter, adaPerubahanFilter, searchTerm, sort]);
+  }, [allRecords, annexFilter, implementationLevelFilter, adaPerubahanFilter, searchTerm]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -477,8 +458,6 @@ export default function CcefodPage() {
                                     records={paginatedRecords} 
                                     onDelete={handleDeleteRequest} 
                                     onUpdate={() => {}}
-                                    sort={sort}
-                                    setSort={setSort}
                                     searchTerm={searchTerm}
                                 />
                                  <div className="flex items-center justify-between">

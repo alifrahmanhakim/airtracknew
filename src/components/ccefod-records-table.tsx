@@ -43,14 +43,13 @@ type CcefodRecordsTableProps = {
   records: CcefodRecord[];
   onDelete: (record: CcefodRecord) => void;
   onUpdate: (updatedRecord: CcefodRecord) => void;
-  sort: SortDescriptor;
-  setSort: (sort: SortDescriptor) => void;
   searchTerm: string;
 };
 
 
-export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort, searchTerm }: CcefodRecordsTableProps) {
+export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: CcefodRecordsTableProps) {
   const [recordToView, setRecordToView] = useState<CcefodRecord | null>(null);
+  const [sort, setSort] = useState<SortDescriptor>({ column: 'annex', direction: 'asc' });
 
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     id: false,
@@ -77,6 +76,26 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
         return { column, direction: 'asc' };
     });
   };
+  
+   const sortedRecords = useMemo(() => {
+    if (!sort) return records;
+
+    return [...records].sort((a, b) => {
+        const aVal = a[sort.column];
+        const bVal = b[sort.column];
+
+        if (aVal === undefined || aVal === null) return 1;
+        if (bVal === undefined || bVal === null) return -1;
+        
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+            return sort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        }
+
+        if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+  }, [records, sort]);
 
   const renderSortIcon = (column: keyof CcefodRecord) => {
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
@@ -156,7 +175,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
               </TableRow>
             </TableHeader>
             <TableBody>
-              {records.map((record) => (
+              {sortedRecords.map((record) => (
                 <TableRow 
                     key={record.id} 
                     className="cursor-pointer" 
@@ -171,11 +190,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
                                     if (value === null || value === undefined || value === '') {
                                         return <span className='text-muted-foreground'>—</span>;
                                     }
-
-                                    if (col.key === 'standardPractice') {
-                                        const cleanText = value.replace(/<[^>]+>/g, ' ');
-                                        return <Highlight text={cleanText} query={searchTerm} />;
-                                    }
                                     
                                     if (col.key === 'status') {
                                         return (<Badge className={cn({
@@ -185,6 +199,11 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
                                         })}>
                                             <Highlight text={value} query={searchTerm} />
                                         </Badge>);
+                                    }
+
+                                    if (col.key === 'standardPractice') {
+                                        const cleanText = value.replace(/<[^>]+>/g, ' ');
+                                        return <Highlight text={cleanText} query={searchTerm} />;
                                     }
                                     
                                     return <Highlight text={value} query={searchTerm} />;
