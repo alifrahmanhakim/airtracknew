@@ -178,11 +178,11 @@ export const lawEnforcementFormSchema = z.object({
   refLetter: z.string().min(1, "Reference letter is required."),
   dateLetter: z.date({ required_error: "Date letter is required." }),
 }).refine(data => {
-    if (data.impositionType === 'aoc') return !!data.sanctionedAoc;
-    if (data.impositionType === 'personnel') return data.sanctionedPersonnel && data.sanctionedPersonnel.length > 0;
-    if (data.impositionType === 'organization') return !!data.sanctionedOrganization;
+    if (data.impositionType === 'aoc') return !!data.sanctionedAoc && data.sanctionedAoc.length > 0;
+    if (data.impositionType === 'personnel') return data.sanctionedPersonnel && data.sanctionedPersonnel.length > 0 && data.sanctionedPersonnel.every(p => p.value.length > 0);
+    if (data.impositionType === 'organization') return !!data.sanctionedOrganization && data.sanctionedOrganization.length > 0;
     return false;
 }, {
     message: "Please provide the required details for the selected sanction type.",
-    path: ['impositionType'],
+    path: ['impositionType'], // You can associate the error with a specific field if you prefer
 });
