@@ -13,12 +13,6 @@ import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { lawEnforcementFormSchema } from '@/lib/schemas';
-import type { z } from 'zod';
-import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
-import { Form } from '@/components/ui/form';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -31,14 +25,12 @@ const LawEnforcementAnalytics = dynamic(() => import('@/components/rsi/law-enfor
     loading: () => <Skeleton className="h-[600px] w-full" />
 });
 
-type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 
 export default function LawEnforcementPage() {
     const [records, setRecords] = React.useState<LawEnforcementRecord[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     React.useEffect(() => {
         const q = query(collection(db, "lawEnforcementRecords"), orderBy("dateLetter", "desc"));
@@ -71,34 +63,8 @@ export default function LawEnforcementPage() {
         setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
     };
 
-    const form = useForm<LawEnforcementFormValues>({
-        resolver: zodResolver(lawEnforcementFormSchema),
-        defaultValues: {
-            impositionType: 'aoc',
-            sanctionedAoc: '',
-            sanctionedPersonnel: [{ value: '' }],
-            sanctionedOrganization: '',
-            sanctionType: '',
-            refLetter: '',
-        },
-    });
-
-    const onFormSubmit = async (data: LawEnforcementFormValues) => {
-        setIsSubmitting(true);
-        const result = await addLawEnforcementRecord(data);
-        setIsSubmitting(false);
-
-        if (result.success) {
-            toast({ title: 'Record Added', description: 'The new law enforcement record has been added.' });
-            form.reset();
-            setActiveTab('records');
-        } else {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: result.error || 'Failed to add the record.',
-            });
-        }
+    const handleFormSubmitSuccess = () => {
+        setActiveTab('records');
     };
 
     return (
@@ -128,21 +94,7 @@ export default function LawEnforcementPage() {
                 </div>
 
                 <TabsContent value="form">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Add New Sanction</CardTitle>
-                            <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
-                        </CardHeader>
-                        <Form {...form}>
-                            <LawEnforcementForm form={form} onSubmit={onFormSubmit} />
-                        </Form>
-                        <CardFooter className="flex justify-end">
-                            <Button type="submit" form="law-enforcement-form" disabled={isSubmitting}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Submit Record
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                    <LawEnforcementForm onFormSubmitSuccess={handleFormSubmitSuccess} />
                 </TabsContent>
 
                 <TabsContent value="records">
