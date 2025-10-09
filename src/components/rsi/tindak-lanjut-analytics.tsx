@@ -1,9 +1,8 @@
 
-
 'use client';
 
 import * as React from 'react';
-import type { TindakLanjutRecord } from '@/lib/types';
+import type { TindakLanjutRecord } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Info } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
