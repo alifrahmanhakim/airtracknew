@@ -14,7 +14,7 @@ const rsiModules = [
   },
   {
     title: 'Pemeriksaan',
-    description: 'Conduct and manage examinations related to safety.',
+    description: 'Data Kecelakaan (Accident & Serious Incident) yang Dilaksanakan Pemeriksaan oleh DKPPU',
     icon: <Search className="h-8 w-8 text-blue-500" />,
     href: '#',
   },
