@@ -2,7 +2,8 @@
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -12,25 +13,42 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, ArrowLeft } from 'lucide-react';
+import { RotateCcw, Search, ArrowLeft, Loader2 } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
-import { aocOptions } from '@/lib/data';
+import { aocOptions, taxonomyOptions as staticTaxonomyOptions } from '@/lib/data';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { knktReportFormSchema } from '@/lib/schemas';
+import type { z } from 'zod';
+import { addKnktReport } from '@/lib/actions/knkt';
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
+const KnktReportForm = dynamic(() => import('@/components/rsi/knkt-report-form').then(mod => mod.KnktReportForm), { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full" />
+});
+const KnktAnalytics = dynamic(() => import('@/components/rsi/knkt-analytics').then(mod => mod.KnktAnalytics), {
+    loading: () => <Skeleton className="h-[600px] w-full" />
+});
+
+type KnktReportFormValues = z.infer<typeof knktReportFormSchema>;
 
 export default function LaporanInvestigasiKnktPage() {
     const [records, setRecords] = React.useState<KnktReport[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const { toast } = useToast();
+    const [activeTab, setActiveTab] = React.useState('records');
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     // Filter states
     const [searchTerm, setSearchTerm] = React.useState('');
-    const [aocFilter, setAocFilter] = React.useState('all');
+    const [operatorFilter, setOperatorFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
     const [statusFilter, setStatusFilter] = React.useState('all');
+    const [taxonomyFilter, setTaxonomyFilter] = React.useState('all');
 
     React.useEffect(() => {
         const q = query(collection(db, "knktReports"), orderBy("tanggal_diterbitkan", "desc"));
@@ -60,106 +78,174 @@ export default function LaporanInvestigasiKnktPage() {
         return ['all', ...years.sort((a, b) => b - a)];
     }, [records]);
     
-    const statusOptions = React.useMemo(() => {
-        const statuses = [...new Set(records.map(r => r.status))];
-        return ['all', ...statuses.sort()];
+    const statusOptions = React.useMemo(() => ['all', ...[...new Set(records.map(r => r.status))].sort()], [records]);
+    const operatorOptions = React.useMemo(() => ['all', ...[...new Set(records.map(r => r.operator))].sort()], [records]);
+    const taxonomyOptions = React.useMemo(() => {
+        const dynamicTaxonomies = [...new Set(records.map(r => r.taxonomy).filter(Boolean))];
+        const staticTaxonomyValues = staticTaxonomyOptions.map(t => t.value);
+        const combined = [...new Set([...staticTaxonomyValues, ...dynamicTaxonomies])];
+        return ['all', ...combined.sort()];
     }, [records]);
+
 
     const filteredRecords = React.useMemo(() => {
         return records.filter(record => {
             const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
                 String(value).toLowerCase().includes(searchTerm.toLowerCase())
             );
-            const aocMatch = aocFilter === 'all' || record.aoc === aocFilter;
+            const operatorMatch = operatorFilter === 'all' || record.operator === operatorFilter;
             const yearMatch = yearFilter === 'all' || getYear(parseISO(record.tanggal_diterbitkan)) === parseInt(yearFilter);
             const statusMatch = statusFilter === 'all' || record.status === statusFilter;
+            const taxonomyMatch = taxonomyFilter === 'all' || record.taxonomy === taxonomyFilter;
 
-            return searchTermMatch && aocMatch && yearMatch && statusMatch;
+            return searchTermMatch && operatorMatch && yearMatch && statusMatch && taxonomyMatch;
         });
-    }, [records, searchTerm, aocFilter, yearFilter, statusFilter]);
+    }, [records, searchTerm, operatorFilter, yearFilter, statusFilter, taxonomyFilter]);
 
     const resetFilters = () => {
         setSearchTerm('');
-        setAocFilter('all');
+        setOperatorFilter('all');
         setYearFilter('all');
         setStatusFilter('all');
+        setTaxonomyFilter('all');
+    };
+    
+    const form = useForm<KnktReportFormValues>({
+        resolver: zodResolver(knktReportFormSchema),
+        defaultValues: {
+            status: 'Final',
+            operator: '',
+            aoc: '',
+            registrasi: '',
+            tipe_pesawat: '',
+            lokasi: '',
+            taxonomy: '',
+            keterangan: '',
+        },
+    });
+
+    const onFormSubmit = async (data: KnktReportFormValues) => {
+        setIsSubmitting(true);
+        const result = await addKnktReport(data);
+        setIsSubmitting(false);
+
+        if (result.success) {
+            toast({ title: 'Record Added', description: 'The new KNKT report has been successfully added.' });
+            form.reset();
+            setActiveTab('records');
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: result.error || 'Failed to add the record.',
+            });
+        }
+    };
+    
+    const handleRecordUpdate = (updatedRecord: KnktReport) => {
+        setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
     };
 
     return (
         <main className="p-4 md:p-8">
-            <Card>
-                <CardHeader>
-                     <div className="flex items-center gap-4 mb-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                     <div className="flex items-center gap-4">
                         <Button asChild variant="outline" size="icon">
                             <Link href="/rsi">
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
                         </Button>
                         <div>
-                            <CardTitle>LAPORAN INVESTIGASI DAN REKOMENDASI KNKT</CardTitle>
+                            <h1 className="text-3xl font-bold">LAPORAN INVESTIGASI DAN REKOMENDASI KNKT</h1>
+                            <p className="text-muted-foreground">
+                                Manage and view NTSC investigation reports.
+                            </p>
+                        </div>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                        <TabsList>
+                            <TabsTrigger value="form">Input Form</TabsTrigger>
+                            <TabsTrigger value="records">Records</TabsTrigger>
+                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        </TabsList>
+                    </div>
+                </div>
+
+                <TabsContent value="form">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Add New KNKT Report</CardTitle>
+                            <CardDescription>Fill out the form to add a new report.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <KnktReportForm form={form} />
+                        </CardContent>
+                        <CardFooter className="flex justify-end">
+                            <Button type="button" form="knkt-report-form" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Submit Record
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+                
+                <TabsContent value="records">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Investigation Reports</CardTitle>
                             <CardDescription>
                                 Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
                             </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <Skeleton className="h-[600px] w-full" />
-                    ) : (
-                        <>
-                        <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                            <div className="relative flex-grow">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search all fields..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-9"
-                                />
-                            </div>
-                            <Select value={aocFilter} onValueChange={setAocFilter}>
-                                <SelectTrigger className="w-full sm:w-[200px]">
-                                    <SelectValue placeholder="Filter by AOC..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All AOCs</SelectItem>
-                                    {aocOptions.map(op => (
-                                        <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-full sm:w-[160px]">
-                                    <SelectValue placeholder="Filter by status..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {statusOptions.map(s => (
-                                        <SelectItem key={s} value={s}>{s === 'all' ? 'All Statuses' : s}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={String(yearFilter)} onValueChange={setYearFilter}>
-                                <SelectTrigger className="w-full sm:w-[120px]">
-                                    <SelectValue placeholder="Filter by year..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {yearOptions.map(year => (
-                                        <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {(searchTerm || aocFilter !== 'all' || yearFilter !== 'all' || statusFilter !== 'all') && (
-                                <Button variant="ghost" onClick={resetFilters}>
-                                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                                </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoading ? (
+                                <Skeleton className="h-[600px] w-full" />
+                            ) : (
+                                <>
+                                <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                                    <div className="relative flex-grow">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search all fields..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                    <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+                                        <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by Operator..." /></SelectTrigger>
+                                        <SelectContent>{operatorOptions.map(op => <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                     <Select value={taxonomyFilter} onValueChange={setTaxonomyFilter}>
+                                        <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by Taxonomy..." /></SelectTrigger>
+                                        <SelectContent>{taxonomyOptions.map(tax => <SelectItem key={tax} value={tax}>{tax === 'all' ? 'All Taxonomies' : tax}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                        <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
+                                        <SelectContent>{statusOptions.map(s => <SelectItem key={s} value={s}>{s === 'all' ? 'All Statuses' : s}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <Select value={String(yearFilter)} onValueChange={setYearFilter}>
+                                        <SelectTrigger className="w-full sm:w-[120px]"><SelectValue placeholder="Filter by year..." /></SelectTrigger>
+                                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    {(searchTerm || operatorFilter !== 'all' || yearFilter !== 'all' || statusFilter !== 'all' || taxonomyFilter !== 'all') && (
+                                        <Button variant="ghost" onClick={resetFilters}>
+                                            <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                        </Button>
+                                    )}
+                                </div>
+                                <KnktReportsTable records={filteredRecords} onUpdate={handleRecordUpdate} searchTerm={searchTerm}/>
+                                </>
                             )}
-                        </div>
-                        <KnktReportsTable records={filteredRecords} />
-                        </>
-                    )}
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                
+                <TabsContent value="analytics">
+                    <KnktAnalytics allRecords={records} />
+                </TabsContent>
+            </Tabs>
         </main>
     );
 }

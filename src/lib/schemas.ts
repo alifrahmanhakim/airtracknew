@@ -1,4 +1,5 @@
 
+
 import { z } from 'zod';
 
 export const ccefodFormSchema = z.object({
@@ -124,4 +125,17 @@ export const pemeriksaanFormSchema = z.object({
     statusPenanganan: z.string().min(1, 'Status Penanganan is required.'),
     tindakLanjut: z.string().min(1, 'Tindak Lanjut is required.'),
     filePemeriksaanUrl: z.string().url().optional().or(z.literal('')),
+});
+
+export const knktReportFormSchema = z.object({
+  tanggal_diterbitkan: z.date({ required_error: 'Tanggal is required.' }),
+  nomor_laporan: z.string().min(1, 'Nomor Laporan is required.'),
+  status: z.enum(['Final', 'Preliminary', 'Interim Statement', 'Draft Final']),
+  operator: z.string().min(1, 'Operator is required.'),
+  aoc: z.string().min(1, 'AOC is required.'),
+  registrasi: z.string().min(1, 'Registrasi is required.'),
+  tipe_pesawat: z.string().min(1, 'Tipe Pesawat is required.'),
+  lokasi: z.string().min(1, 'Lokasi is required.'),
+  taxonomy: z.string().optional(),
+  keterangan: z.string().optional(),
 });

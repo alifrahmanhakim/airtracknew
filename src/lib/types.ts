@@ -187,10 +187,13 @@ export type KnktReport = {
     tanggal_diterbitkan: string;
     nomor_laporan: string;
     status: string;
+    operator: string;
     aoc: string;
     registrasi: string;
     tipe_pesawat: string;
     lokasi: string;
+    taxonomy?: string;
+    keterangan?: string;
     createdAt: string;
 };
 
