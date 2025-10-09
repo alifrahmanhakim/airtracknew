@@ -174,6 +174,7 @@ export const tindakLanjutDgcaFormSchema = z.object({
   rekomendasiKeDgca: z.string().min(1, 'Rekomendasi Keselamatan Ke DGCA is required.'),
   nomorRekomendasi: z.string().min(1, 'Nomor Rekomendasi Keselamatan is required.'),
   tindakLanjutDkppu: z.string().min(1, 'Tindak lanjut DKPPU is required.'),
+  fileUrl: z.string().url().optional().or(z.literal('')),
 });
 
 
@@ -211,3 +212,14 @@ export const lawEnforcementFormSchema = z.object({
         });
     }
 });
+
+export const changePasswordSchema = z.object({
+    oldPassword: z.string().min(6, "Password must be at least 6 characters long."),
+    newPassword: z.string().min(6, "Password must be at least 6 characters long."),
+    confirmPassword: z.string().min(6, "Password must be at least 6 characters long."),
+}).refine(data => data.newPassword === data.confirmPassword, {
+    message: "New passwords don't match",
+    path: ["confirmPassword"],
+});
+
+export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;

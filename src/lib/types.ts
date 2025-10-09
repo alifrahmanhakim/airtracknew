@@ -252,6 +252,7 @@ export type TindakLanjutDgcaRecord = {
   rekomendasiKeDgca: string;
   nomorRekomendasi: string;
   tindakLanjutDkppu: string;
+  fileUrl?: string;
   createdAt: string;
 };
 

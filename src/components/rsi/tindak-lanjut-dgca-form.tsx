@@ -180,6 +180,19 @@ export function TindakLanjutDgcaForm({ form }: TindakLanjutDgcaFormProps) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="fileUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>File URL</FormLabel>
+              <FormControl>
+                <Input type="url" placeholder="https://example.com/file.pdf" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </form>
     </Form>
   );

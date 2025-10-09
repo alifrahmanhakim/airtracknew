@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -51,6 +52,7 @@ export function EditTindakLanjutDgcaDialog({ record, onRecordUpdate }: EditTinda
       tindakLanjutDkppu: record.tindakLanjutDkppu || '',
       tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
       tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
+      fileUrl: record.fileUrl || '',
     },
   });
 

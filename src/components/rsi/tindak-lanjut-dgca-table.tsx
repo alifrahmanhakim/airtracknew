@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { TindakLanjutDgcaRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info, ArrowUpDown } from 'lucide-react';
+import { Pencil, Trash2, Info, ArrowUpDown, Link as LinkIcon } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
 import { EditTindakLanjutDgcaDialog } from './edit-tindak-lanjut-dgca-dialog';
 import { format, parseISO } from 'date-fns';
@@ -76,6 +77,7 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm,
                         <TableHead className="min-w-[200px]">Rekomendasi Keselamatan Ke DGCA</TableHead>
                         <TableHead className="min-w-[200px]">Nomor Rekomendasi Keselamatan</TableHead>
                         <TableHead className="min-w-[300px]">Tindak lanjut DKPPU</TableHead>
+                        <TableHead>File</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -96,6 +98,17 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm,
                             <TableCell className="align-top"><BulletList text={record.rekomendasiKeDgca} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.nomorRekomendasi} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top">
+                                {record.fileUrl ? (
+                                    <Button asChild variant="ghost" size="icon">
+                                        <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
+                                            <LinkIcon className="h-4 w-4" />
+                                        </a>
+                                    </Button>
+                                ) : (
+                                    <span className="text-xs text-muted-foreground">None</span>
+                                )}
+                            </TableCell>
                             <TableCell className="text-right align-top">
                                 <EditTindakLanjutDgcaDialog record={record} onRecordUpdate={onUpdate} />
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
