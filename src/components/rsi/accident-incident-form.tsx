@@ -117,18 +117,7 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                     <FormMessage />
                 </FormItem>
             )}/>
-             <FormField control={form.control} name="operator" render={({ field }) => (
-                <FormItem className="flex flex-col">
-                    <FormLabel>Operator</FormLabel>
-                    <Combobox 
-                        options={operatorOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select or type an operator..."
-                    />
-                    <FormMessage />
-                </FormItem>
-            )}/>
+             
              <FormField control={form.control} name="aoc" render={({ field }) => (
                  <FormItem className="flex flex-col">
                     <FormLabel>AOC</FormLabel>
@@ -153,7 +142,7 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                     />
                     <FormMessage />
                 </FormItem>
-            )}/>
+             )}/>
              <FormField control={form.control} name="lokasi" render={({ field }) => (<FormItem><FormLabel>Lokasi</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="wilayah" render={({ field }) => (<FormItem><FormLabel>Wilayah</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="taxonomy" render={({ field }) => (
@@ -212,5 +201,3 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
     </Form>
   );
 }
-
-    
