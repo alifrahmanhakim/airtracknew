@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -87,7 +86,15 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                     </Button>
                                 )}
                             </TableCell>
-                            <TableCell className="align-top"><Highlight text={record.penerimaRekomendasi} query={searchTerm} /></TableCell>
+                            <TableCell className="align-top">
+                                <div className="flex flex-wrap gap-1">
+                                    {(record.penerimaRekomendasi || []).map((penerima, i) => (
+                                        <Badge key={i} variant="secondary">
+                                            <Highlight text={penerima} query={searchTerm} />
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </TableCell>
                             <TableCell className="align-top">
                                 {record.rekomendasi.map(rec => (
                                     <div key={rec.id} className="mb-2 last:mb-0">
