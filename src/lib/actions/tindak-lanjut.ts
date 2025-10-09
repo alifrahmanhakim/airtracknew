@@ -20,7 +20,7 @@ export async function addTindakLanjutRecord(data: z.infer<typeof tindakLanjutFor
             ...parsed.data,
             tanggalTerbit: format(parsed.data.tanggalTerbit, 'yyyy-MM-dd'),
             tanggalKejadian: format(parsed.data.tanggalKejadian, 'yyyy-MM-dd'),
-            tahun: getYear(new Date()),
+            tahun: getYear(new Date(parsed.data.tanggalKejadian)),
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'tindakLanjutRecords'), dataToSubmit);
@@ -44,6 +44,7 @@ export async function updateTindakLanjutRecord(id: string, data: z.infer<typeof 
             ...parsed.data,
             tanggalTerbit: format(parsed.data.tanggalTerbit, 'yyyy-MM-dd'),
             tanggalKejadian: format(parsed.data.tanggalKejadian, 'yyyy-MM-dd'),
+            tahun: getYear(new Date(parsed.data.tanggalKejadian)),
         };
 
         await updateDoc(docRef, dataToSubmit);
@@ -51,7 +52,6 @@ export async function updateTindakLanjutRecord(id: string, data: z.infer<typeof 
         const updatedRecord = {
             id,
             ...dataToSubmit,
-            tahun: getYear(new Date()),
             createdAt: new Date().toISOString(),
         }
         

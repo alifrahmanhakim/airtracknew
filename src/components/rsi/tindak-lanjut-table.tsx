@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, Info } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
 import { format, parseISO } from 'date-fns';
+import { EditTindakLanjutRecordDialog } from './edit-tindak-lanjut-dialog';
 
 type TindakLanjutTableProps = {
   records: TindakLanjutRecord[];
@@ -85,9 +86,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="text-right align-top">
-                                <Button variant="ghost" size="icon" onClick={() => { /* onUpdate logic */ }}>
-                                    <Pencil className="h-4 w-4" />
-                                </Button>
+                                <EditTindakLanjutRecordDialog record={record} onRecordUpdate={onUpdate} />
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
