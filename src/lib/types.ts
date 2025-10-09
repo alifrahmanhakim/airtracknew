@@ -226,8 +226,8 @@ export type TindakLanjutRecord = {
     nomorLaporan: string;
     tanggalTerbit?: string;
     tanggalKejadian: string;
-    status: 'Draft' | 'Final' | 'Preliminary' | 'Interim Statement';
-    penerimaRekomendasi: string;
+    status: 'Draft' | 'Final' | 'Preliminary' | 'Interim Statement' | 'Draft Final';
+    penerimaRekomendasi: string[];
     rekomendasi: RekomendasiKeselamatan[];
     tindakLanjutDkppu?: string;
     tindakLanjutOperator?: string;
@@ -271,4 +271,14 @@ export type LawEnforcementRecord = {
     sanctionedOrganization?: { value: string }[];
     references: LawEnforcementReference[];
     createdAt: string;
+};
+
+export type ChatMessage = {
+    id: string;
+    chatRoomId: string;
+    text: string;
+    senderId: string;
+    senderName: string;
+    senderAvatarUrl?: string;
+    createdAt: any; // Firestore Timestamp
 };

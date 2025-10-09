@@ -24,6 +24,7 @@ import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { MultiSelect } from '../ui/multi-select';
+import { TagInput } from '../ui/tag-input';
 
 type TindakLanjutFormValues = z.infer<typeof tindakLanjutFormSchema>;
 
@@ -153,16 +154,21 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 control={form.control}
                 name="penerimaRekomendasi"
                 render={({ field }) => (
-                <FormItem className="flex flex-col">
-                    <FormLabel>Penerima Rekomendasi</FormLabel>
-                    <MultiSelect
-                        options={aocOptions}
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        placeholder="Pilih penerima..."
-                    />
-                    <FormMessage />
-                </FormItem>
+                    <FormItem>
+                        <FormLabel>Penerima Rekomendasi</FormLabel>
+                        <FormControl>
+                            <TagInput
+                                {...field}
+                                placeholder="Enter recipients"
+                                tags={field.value || []}
+                                setTags={(newTags) => {
+                                    form.setValue("penerimaRekomendasi", newTags, { shouldValidate: true });
+                                }}
+                                options={aocOptions.map(o => o.value)}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
                 )}
             />
             <FormField
