@@ -7,6 +7,7 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { tindakLanjutFormSchema } from '../schemas';
 import { getYear } from 'date-fns';
+import { format } from 'date-fns';
 
 export async function addTindakLanjutRecord(data: z.infer<typeof tindakLanjutFormSchema>) {
     const parsed = tindakLanjutFormSchema.safeParse(data);
@@ -17,6 +18,7 @@ export async function addTindakLanjutRecord(data: z.infer<typeof tindakLanjutFor
     try {
         const dataToSubmit = {
             ...parsed.data,
+            tanggalTerbit: format(parsed.data.tanggalTerbit, 'yyyy-MM-dd'),
             tahun: getYear(new Date()),
             createdAt: serverTimestamp(),
         };
@@ -36,11 +38,17 @@ export async function updateTindakLanjutRecord(id: string, data: z.infer<typeof 
 
     try {
         const docRef = doc(db, 'tindakLanjutRecords', id);
-        await updateDoc(docRef, parsed.data);
+        
+        const dataToSubmit = {
+            ...parsed.data,
+            tanggalTerbit: format(parsed.data.tanggalTerbit, 'yyyy-MM-dd'),
+        };
+
+        await updateDoc(docRef, dataToSubmit);
         
         const updatedRecord = {
             id,
-            ...parsed.data,
+            ...dataToSubmit,
             tahun: getYear(new Date()),
             createdAt: new Date().toISOString(),
         }

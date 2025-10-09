@@ -19,7 +19,11 @@ import { aocOptions } from '@/lib/data';
 import type { z } from 'zod';
 import { tindakLanjutFormSchema } from '@/lib/schemas';
 import { Combobox } from '../ui/combobox';
-import { Plus, Trash2 } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Calendar } from '../ui/calendar';
 
 type TindakLanjutFormValues = z.infer<typeof tindakLanjutFormSchema>;
 
@@ -37,15 +41,15 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
   return (
     <Form {...form}>
       <form id="tindak-lanjut-form" className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             <FormField
                 control={form.control}
-                name="laporanKnkt"
+                name="judulLaporan"
                 render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Laporan KNKT</FormLabel>
+                    <FormLabel>Judul Laporan</FormLabel>
                     <FormControl>
-                    <Textarea placeholder="Detail laporan KNKT..." rows={6} {...field} />
+                    <Input placeholder="Judul laporan KNKT..." {...field} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -53,21 +57,58 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
             />
             <FormField
                 control={form.control}
-                name="penerimaRekomendasi"
+                name="nomorLaporan"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Nomor Laporan</FormLabel>
+                    <FormControl>
+                    <Input placeholder="Nomor laporan KNKT..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="tanggalTerbit"
                 render={({ field }) => (
                 <FormItem className="flex flex-col">
-                    <FormLabel>Penerima Rekomendasi</FormLabel>
-                    <Combobox
-                    options={aocOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Pilih atau ketik penerima..."
-                    />
+                    <FormLabel>Tanggal Terbit</FormLabel>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                    {field.value ? format(field.value, "PPP") : <span>Pilih tanggal</span>}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                        </PopoverContent>
+                    </Popover>
                     <FormMessage />
                 </FormItem>
                 )}
             />
         </div>
+
+        <FormField
+            control={form.control}
+            name="penerimaRekomendasi"
+            render={({ field }) => (
+            <FormItem className="flex flex-col">
+                <FormLabel>Penerima Rekomendasi</FormLabel>
+                <Combobox
+                options={aocOptions}
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Pilih atau ketik penerima..."
+                />
+                <FormMessage />
+            </FormItem>
+            )}
+        />
 
         <Card>
           <CardHeader className='flex-row items-center justify-between'>

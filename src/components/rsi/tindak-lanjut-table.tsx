@@ -15,6 +15,7 @@ import type { TindakLanjutRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, Info } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
+import { format, parseISO } from 'date-fns';
 
 type TindakLanjutTableProps = {
   records: TindakLanjutRecord[];
@@ -66,7 +67,11 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                     {records.map((record, index) => (
                         <TableRow key={record.id}>
                             <TableCell>{index + 1}</TableCell>
-                            <TableCell className="align-top"><BulletList text={record.laporanKnkt} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top">
+                                <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
+                                <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground"><Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>
+                            </TableCell>
                             <TableCell className="align-top"><Highlight text={record.penerimaRekomendasi} query={searchTerm} /></TableCell>
                             <TableCell className="align-top">
                                 {record.rekomendasi.map(rec => (

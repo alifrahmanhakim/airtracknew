@@ -221,7 +221,9 @@ export type RekomendasiKeselamatan = {
 
 export type TindakLanjutRecord = {
     id: string;
-    laporanKnkt: string;
+    judulLaporan: string;
+    nomorLaporan: string;
+    tanggalTerbit: string;
     penerimaRekomendasi: string;
     rekomendasi: RekomendasiKeselamatan[];
     tindakLanjutDkppu: string;

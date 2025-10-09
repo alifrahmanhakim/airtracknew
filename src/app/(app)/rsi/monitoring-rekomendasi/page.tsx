@@ -86,7 +86,8 @@ export default function MonitoringRekomendasiPage() {
     const form = useForm<TindakLanjutFormValues>({
         resolver: zodResolver(tindakLanjutFormSchema),
         defaultValues: {
-            laporanKnkt: '',
+            judulLaporan: '',
+            nomorLaporan: '',
             penerimaRekomendasi: '',
             rekomendasi: [{ id: 'rec-1', nomor: '', deskripsi: '' }],
             tindakLanjutDkppu: '',
