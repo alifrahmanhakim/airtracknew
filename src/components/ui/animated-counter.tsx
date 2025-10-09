@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -9,12 +10,16 @@ interface AnimatedCounterProps {
   decimals?: number;
 }
 
-export function AnimatedCounter({ endValue, duration = 1000, className, decimals = 0 }: AnimatedCounterProps) {
+export function AnimatedCounter({ endValue, duration = 1500, className, decimals = 0 }: AnimatedCounterProps) {
   const [count, setCount] = useState(0);
   const frameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
+  const startValueRef = useRef(0); // Start from 0
 
   useEffect(() => {
+    startValueRef.current = 0; // Reset start value on re-render if needed
+    startTimeRef.current = null; // Reset start time
+
     const animate = (timestamp: number) => {
       if (startTimeRef.current === null) {
         startTimeRef.current = timestamp;
@@ -25,7 +30,16 @@ export function AnimatedCounter({ endValue, duration = 1000, className, decimals
       
       // Ease-out quad function for smoother animation
       const easedProgress = progressFraction * (2 - progressFraction);
-      const currentValue = easedProgress * endValue;
+      const currentValue = startValueRef.current + (endValue - startValueRef.current) * easedProgress;
+
+      // Stop the animation exactly at the end value
+      if (progressFraction >= 1) {
+        setCount(endValue);
+        if (frameRef.current) {
+          cancelAnimationFrame(frameRef.current);
+        }
+        return;
+      }
       
       setCount(currentValue);
 
@@ -34,7 +48,6 @@ export function AnimatedCounter({ endValue, duration = 1000, className, decimals
       }
     };
 
-    startTimeRef.current = null;
     frameRef.current = requestAnimationFrame(animate);
 
     return () => {
