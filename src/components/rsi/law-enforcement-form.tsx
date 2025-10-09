@@ -44,8 +44,7 @@ export function LawEnforcementForm({ form }: LawEnforcementFormProps) {
   });
 
   return (
-    <Form {...form}>
-      <form id="law-enforcement-form" className="space-y-6">
+    <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <FormField
             control={form.control}
@@ -162,7 +161,6 @@ export function LawEnforcementForm({ form }: LawEnforcementFormProps) {
             )}
           />
         )}
-      </form>
-    </Form>
+      </div>
   );
 }
