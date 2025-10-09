@@ -139,7 +139,7 @@ export default function LawEnforcementPage() {
                                     <LawEnforcementForm />
                                 </CardContent>
                                 <CardFooter className="flex justify-end">
-                                    <Button type="submit" disabled={isSubmitting}>
+                                    <Button type="submit" form="law-enforcement-form" disabled={isSubmitting}>
                                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         Submit Record
                                     </Button>
