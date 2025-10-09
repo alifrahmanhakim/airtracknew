@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -42,6 +43,7 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
       ...record,
       tanggalTerbit: parseISO(record.tanggalTerbit),
       tanggalKejadian: parseISO(record.tanggalKejadian),
+      status: record.status || 'Draft',
     },
   });
 

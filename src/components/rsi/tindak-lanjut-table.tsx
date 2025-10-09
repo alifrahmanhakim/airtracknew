@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { TindakLanjutRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info } from 'lucide-react';
+import { Pencil, Trash2, Info, Badge } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
 import { format, parseISO } from 'date-fns';
 import { EditTindakLanjutRecordDialog } from './edit-tindak-lanjut-dialog';
@@ -61,6 +61,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                         <TableHead className="min-w-[300px]">Rekomendasi Keselamatan</TableHead>
                         <TableHead className="min-w-[300px]">Tindak Lanjut/Respon DKPPU</TableHead>
                         <TableHead className="min-w-[300px]">Tindak Lanjut Operator/Pihak Terkait</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -85,6 +86,9 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                             </TableCell>
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top">
+                                <Badge variant="secondary"><Highlight text={record.status} query={searchTerm} /></Badge>
+                            </TableCell>
                             <TableCell className="text-right align-top">
                                 <EditTindakLanjutRecordDialog record={record} onRecordUpdate={onUpdate} />
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>

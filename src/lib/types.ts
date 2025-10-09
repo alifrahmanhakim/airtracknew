@@ -225,6 +225,7 @@ export type TindakLanjutRecord = {
     nomorLaporan: string;
     tanggalTerbit: string;
     tanggalKejadian: string;
+    status: 'Draft' | 'Final' | 'Preliminary' | 'Interim Statement';
     penerimaRekomendasi: string;
     rekomendasi: RekomendasiKeselamatan[];
     tindakLanjutDkppu: string;

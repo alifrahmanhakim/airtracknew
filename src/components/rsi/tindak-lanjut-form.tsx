@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 type TindakLanjutFormValues = z.infer<typeof tindakLanjutFormSchema>;
 
@@ -115,23 +116,44 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 )}
             />
         </div>
-
-        <FormField
-            control={form.control}
-            name="penerimaRekomendasi"
-            render={({ field }) => (
-            <FormItem className="flex flex-col">
-                <FormLabel>Penerima Rekomendasi</FormLabel>
-                <Combobox
-                options={aocOptions}
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Pilih atau ketik penerima..."
-                />
-                <FormMessage />
-            </FormItem>
-            )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+                control={form.control}
+                name="penerimaRekomendasi"
+                render={({ field }) => (
+                <FormItem className="flex flex-col">
+                    <FormLabel>Penerima Rekomendasi</FormLabel>
+                    <Combobox
+                    options={aocOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Pilih atau ketik penerima..."
+                    />
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Status Report</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger><SelectValue placeholder="Pilih status..." /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="Draft">Draft</SelectItem>
+                            <SelectItem value="Final">Final</SelectItem>
+                            <SelectItem value="Preliminary">Preliminary</SelectItem>
+                            <SelectItem value="Interim Statement">Interim Statement</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+            )}/>
+        </div>
 
         <Card>
           <CardHeader className='flex-row items-center justify-between'>

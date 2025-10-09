@@ -92,6 +92,7 @@ export default function MonitoringRekomendasiPage() {
             rekomendasi: [{ id: 'rec-1', nomor: '', deskripsi: '' }],
             tindakLanjutDkppu: '',
             tindakLanjutOperator: '',
+            status: 'Draft',
         }
     });
 
@@ -131,7 +132,7 @@ export default function MonitoringRekomendasiPage() {
     };
 
     const yearOptions = React.useMemo(() => ['all', ...[...new Set(records.map(r => r.tahun))].sort((a,b) => b - a)], [records]);
-    const penerimaOptions = React.useMemo(() => ['all', ...[...new Set(records.map(r => r.penerimaRekomendasi || ''))].sort(), ...aocOptions.map(a => a.value)], [records]);
+    const penerimaOptions = React.useMemo(() => ['all', ...Array.from(new Set(records.map(r => r.penerimaRekomendasi || ''))).sort(), ...aocOptions.map(a => a.value)], [records]);
 
 
     const filteredRecords = React.useMemo(() => {
