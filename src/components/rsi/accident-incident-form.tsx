@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -48,12 +47,10 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
   const form = useForm<AccidentIncidentFormValues>({
     resolver: zodResolver(accidentIncidentFormSchema),
     defaultValues: {
-      operator: '',
       aoc: '',
       registrasiPesawat: '',
       tipePesawat: '',
       lokasi: '',
-      wilayah: '',
       taxonomy: '',
       keteranganKejadian: '',
       adaKorbanJiwa: 'Tidak Ada',
@@ -144,7 +141,6 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                 </FormItem>
              )}/>
              <FormField control={form.control} name="lokasi" render={({ field }) => (<FormItem><FormLabel>Lokasi</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-             <FormField control={form.control} name="wilayah" render={({ field }) => (<FormItem><FormLabel>Wilayah</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="taxonomy" render={({ field }) => (
                 <FormItem className="flex flex-col">
                     <FormLabel>Taxonomy</FormLabel>

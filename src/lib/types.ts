@@ -1,5 +1,4 @@
 
-
 export type Project = {
     id: string;
     name: string;
@@ -177,7 +176,6 @@ export type AccidentIncidentRecord = {
     registrasiPesawat: string;
     tipePesawat: string;
     lokasi: string;
-    wilayah: string;
     taxonomy: string;
     keteranganKejadian?: string;
     korbanJiwa: string; // Will store the final combined string

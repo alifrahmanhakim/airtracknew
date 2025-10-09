@@ -98,7 +98,6 @@ export const accidentIncidentFormSchema = z.object({
   registrasiPesawat: z.string().min(1, 'Registrasi Pesawat is required.'),
   tipePesawat: z.string().min(1, 'Tipe Pesawat is required.'),
   lokasi: z.string().min(1, 'Lokasi is required.'),
-  wilayah: z.string().min(1, 'Wilayah is required.'),
   taxonomy: z.string().min(1, 'Taxonomy is required.'),
   keteranganKejadian: z.string().optional(),
   adaKorbanJiwa: z.enum(['Ada', 'Tidak Ada']),
