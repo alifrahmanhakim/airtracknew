@@ -27,10 +27,12 @@ import {
 import { format, parseISO } from 'date-fns';
 import { deletePemeriksaanRecord } from '@/lib/actions/pemeriksaan';
 import { EditPemeriksaanRecordDialog } from './edit-pemeriksaan-record-dialog';
+import { Highlight } from '../ui/highlight';
 
 type PemeriksaanTableProps = {
   records: PemeriksaanRecord[];
   onUpdate: (record: PemeriksaanRecord) => void;
+  searchTerm: string;
 };
 
 type SortDescriptor = {
@@ -38,21 +40,21 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-const BulletList = ({ text }: { text: string }) => {
+const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) => {
     if (!text) return null;
     const items = text.split(/\\n-?|\s*-\s*/).filter(item => item.trim() !== '');
-    if (items.length === 0) return <p className="whitespace-pre-wrap">{text}</p>;
+    if (items.length === 0) return <p className="whitespace-pre-wrap"><Highlight text={text} query={searchTerm} /></p>;
 
     return (
       <ul className="list-disc pl-5 space-y-1">
         {items.map((item, index) => (
-          <li key={index}>{item.trim()}</li>
+          <li key={index}><Highlight text={item.trim()} query={searchTerm} /></li>
         ))}
       </ul>
     );
 };
 
-export function PemeriksaanTable({ records, onUpdate }: PemeriksaanTableProps) {
+export function PemeriksaanTable({ records, onUpdate, searchTerm }: PemeriksaanTableProps) {
     const { toast } = useToast();
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<PemeriksaanRecord | null>(null);
@@ -131,19 +133,19 @@ export function PemeriksaanTable({ records, onUpdate }: PemeriksaanTableProps) {
                                 <TableCell>{index + 1}</TableCell>
                                 <TableCell>
                                     <div className="font-medium space-y-2">
-                                        <p><strong className='font-semibold'>Kategori:</strong> {record.kategori}</p>
-                                        <p><strong className='font-semibold'>Jenis Pesawat:</strong> {record.jenisPesawat}</p>
-                                        <p><strong className='font-semibold'>Registrasi:</strong> {record.registrasi}</p>
-                                        <p><strong className='font-semibold'>Tahun Pembuatan:</strong> {record.tahunPembuatan}</p>
-                                        <p><strong className='font-semibold'>Operator:</strong> {record.operator}</p>
-                                        <p><strong className='font-semibold'>Tanggal:</strong> {format(parseISO(record.tanggal), 'dd MMMM yyyy')}</p>
-                                        <p><strong className='font-semibold'>Lokasi:</strong> {record.lokasi}</p>
-                                        <p><strong className='font-semibold'>Korban:</strong> {record.korban}</p>
-                                        <p><strong className='font-semibold'>Ringkasan:</strong> {record.ringkasanKejadian}</p>
+                                        <p><strong className='font-semibold'>Kategori:</strong> <Highlight text={record.kategori} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Jenis Pesawat:</strong> <Highlight text={record.jenisPesawat} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Registrasi:</strong> <Highlight text={record.registrasi} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Tahun Pembuatan:</strong> <Highlight text={record.tahunPembuatan} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Operator:</strong> <Highlight text={record.operator} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Tanggal:</strong> <Highlight text={format(parseISO(record.tanggal), 'dd MMMM yyyy')} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Lokasi:</strong> <Highlight text={record.lokasi} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Korban:</strong> <Highlight text={record.korban} query={searchTerm} /></p>
+                                        <p><strong className='font-semibold'>Ringkasan:</strong> <Highlight text={record.ringkasanKejadian} query={searchTerm} /></p>
                                     </div>
                                 </TableCell>
-                                <TableCell className="align-top"><BulletList text={record.statusPenanganan} /></TableCell>
-                                <TableCell className="align-top"><BulletList text={record.tindakLanjut} /></TableCell>
+                                <TableCell className="align-top"><BulletList text={record.statusPenanganan} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top"><BulletList text={record.tindakLanjut} searchTerm={searchTerm} /></TableCell>
                                 <TableCell>
                                     {record.filePemeriksaanUrl ? (
                                         <Button asChild variant="outline" size="sm">

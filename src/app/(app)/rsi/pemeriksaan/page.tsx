@@ -11,12 +11,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PemeriksaanRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search, RotateCcw } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { pemeriksaanFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addPemeriksaanRecord } from '@/lib/actions/pemeriksaan';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getYear, parseISO } from 'date-fns';
 
 const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form').then(mod => mod.PemeriksaanForm), { 
     ssr: false,
@@ -40,6 +43,11 @@ export default function PemeriksaanPage() {
 
     // Form state
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    // Filter states
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const [yearFilter, setYearFilter] = React.useState('all');
+    const [operatorFilter, setOperatorFilter] = React.useState('all');
 
     React.useEffect(() => {
         const q = query(collection(db, "pemeriksaanRecords"), orderBy("tanggal", "desc"));
@@ -110,6 +118,33 @@ export default function PemeriksaanPage() {
         }
     };
 
+    const yearOptions = React.useMemo(() => {
+        const years = [...new Set(records.map(r => getYear(parseISO(r.tanggal))))];
+        return ['all', ...years.sort((a, b) => b - a)];
+    }, [records]);
+
+    const operatorOptions = React.useMemo(() => {
+        const operators = [...new Set(records.map(r => r.operator))];
+        return ['all', ...operators.sort()];
+    }, [records]);
+
+    const filteredRecords = React.useMemo(() => {
+        return records.filter(record => {
+            const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
+                String(value).toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            const yearMatch = yearFilter === 'all' || getYear(parseISO(record.tanggal)) === parseInt(yearFilter);
+            const operatorMatch = operatorFilter === 'all' || record.operator === operatorFilter;
+            return searchTermMatch && yearMatch && operatorMatch;
+        });
+    }, [records, searchTerm, yearFilter, operatorFilter]);
+
+    const resetFilters = () => {
+        setSearchTerm('');
+        setYearFilter('all');
+        setOperatorFilter('all');
+    };
+
     return (
         <main className="p-4 md:p-8">
              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -157,7 +192,50 @@ export default function PemeriksaanPage() {
                             {isLoading ? (
                                 <Skeleton className="h-[600px] w-full" />
                             ) : (
-                                <PemeriksaanTable records={records} onUpdate={handleRecordUpdate} />
+                                <div className="space-y-4">
+                                     <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="relative flex-grow">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search records..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="pl-9"
+                                            />
+                                        </div>
+                                        <Select value={String(yearFilter)} onValueChange={setYearFilter}>
+                                            <SelectTrigger className="w-full sm:w-[120px]">
+                                                <SelectValue placeholder="Filter by year..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {yearOptions.map(year => (
+                                                    <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+                                            <SelectTrigger className="w-full sm:w-[200px]">
+                                                <SelectValue placeholder="Filter by operator..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Operators</SelectItem>
+                                                {operatorOptions.map(op => (
+                                                    <SelectItem key={op} value={op}>{op}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {(searchTerm || yearFilter !== 'all' || operatorFilter !== 'all') && (
+                                            <Button variant="ghost" onClick={resetFilters}>
+                                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <PemeriksaanTable 
+                                        records={filteredRecords} 
+                                        onUpdate={handleRecordUpdate}
+                                        searchTerm={searchTerm} 
+                                    />
+                                </div>
                             )}
                         </CardContent>
                     </Card>
