@@ -210,7 +210,10 @@ export default function MyDashboardPage() {
     'Blocked': 'border-transparent bg-red-100 text-red-800',
   };
 
+  const totalTasks = assignedTasks.length;
   const openTasksCount = assignedTasks.filter(t => t.status !== 'Done').length;
+  const completedTasksCount = totalTasks - openTasksCount;
+  const completionPercentage = totalTasks > 0 ? (completedTasksCount / totalTasks) * 100 : 0;
   
   const atRiskProjectsCount = React.useMemo(() => {
     return myProjects.filter(p => p.status === 'At Risk').length;
@@ -357,9 +360,12 @@ export default function MyDashboardPage() {
                 </Card>
                  <Card>
                     <CardHeader className="pb-2 h-16">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><ListTodo className="h-4 w-4" /> Open Tasks</CardTitle>
+                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><ListTodo className="h-4 w-4" /> Task Completion</CardTitle>
                     </CardHeader>
-                    <CardContent><div className="text-3xl font-bold">{openTasksCount}</div></CardContent>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{completionPercentage.toFixed(0)}%</div>
+                        <p className="text-xs text-muted-foreground">{openTasksCount} of {totalTasks} tasks open</p>
+                    </CardContent>
                 </Card>
                  <Card>
                     <CardHeader className="pb-2 h-16">
