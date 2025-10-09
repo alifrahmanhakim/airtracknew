@@ -135,12 +135,24 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
 
     const renderImposition = (record: LawEnforcementRecord) => {
         const items = record[record.impositionType === 'aoc' ? 'sanctionedAoc' : record.impositionType === 'personnel' ? 'sanctionedPersonnel' : 'sanctionedOrganization'] || [];
+        
+        let title = '';
+        switch(record.impositionType) {
+            case 'aoc': title = 'AOC'; break;
+            case 'personnel': title = 'Personnel'; break;
+            case 'organization': title = 'Organization'; break;
+        }
+
         return (
-            <ul className="list-disc pl-5">
-                {items.map((p, i) => <li key={i}><Highlight text={p.value} query={searchTerm}/></li>)}
-            </ul>
+            <div>
+                <p className="font-semibold capitalize mb-1">{title}</p>
+                <ul className="list-disc pl-5 space-y-1">
+                    {items.map((p, i) => <li key={i}><Highlight text={p.value} query={searchTerm}/></li>)}
+                </ul>
+            </div>
         );
     };
+
 
     return (
         <>
