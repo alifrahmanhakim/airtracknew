@@ -96,6 +96,7 @@ export default function MonitoringRekomendasiPage() {
             registrasiPesawat: '',
             tipePesawat: '',
             lokasiKejadian: '',
+            fileUrl: '',
         }
     });
 

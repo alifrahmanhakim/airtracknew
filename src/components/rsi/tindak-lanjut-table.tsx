@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { TindakLanjutRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info } from 'lucide-react';
+import { Pencil, Trash2, Info, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Highlight } from '../ui/highlight';
 import { format, parseISO } from 'date-fns';
@@ -79,6 +79,13 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                 {record.registrasiPesawat && <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasiPesawat} query={searchTerm} /></p>}
                                 {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
                                 {record.lokasiKejadian && <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasiKejadian} query={searchTerm} /></p>}
+                                {record.fileUrl && (
+                                    <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                                        <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
+                                            <LinkIcon className="mr-1 h-3 w-3" /> View File
+                                        </a>
+                                    </Button>
+                                )}
                             </TableCell>
                             <TableCell className="align-top"><Highlight text={record.penerimaRekomendasi} query={searchTerm} /></TableCell>
                             <TableCell className="align-top">

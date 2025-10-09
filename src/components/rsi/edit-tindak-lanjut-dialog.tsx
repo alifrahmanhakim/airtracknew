@@ -47,6 +47,7 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
       registrasiPesawat: record.registrasiPesawat || '',
       tipePesawat: record.tipePesawat || '',
       lokasiKejadian: record.lokasiKejadian || '',
+      fileUrl: record.fileUrl || '',
     },
   });
 

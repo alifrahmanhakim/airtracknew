@@ -236,6 +236,7 @@ export type TindakLanjutRecord = {
     registrasiPesawat?: string;
     tipePesawat?: string;
     lokasiKejadian?: string;
+    fileUrl?: string;
 };
 
 export type TindakLanjutDgcaRecord = {

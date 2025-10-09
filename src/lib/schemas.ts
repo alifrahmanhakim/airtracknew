@@ -159,6 +159,7 @@ export const tindakLanjutFormSchema = z.object({
     registrasiPesawat: z.string().optional(),
     tipePesawat: z.string().optional(),
     lokasiKejadian: z.string().optional(),
+    fileUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export const tindakLanjutDgcaFormSchema = z.object({

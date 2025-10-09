@@ -137,6 +137,17 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 </FormItem>
                 )}
             />
+            <FormField
+                control={form.control}
+                name="fileUrl"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Embedded Link (File)</FormLabel>
+                        <FormControl><Input type="url" placeholder="https://example.com/file.pdf" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
