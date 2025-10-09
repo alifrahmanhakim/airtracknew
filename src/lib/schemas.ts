@@ -177,18 +177,26 @@ export const lawEnforcementFormSchema = z.object({
   sanctionType: z.string().min(1, "Sanction type is required."),
   refLetter: z.string().min(1, "Reference letter is required."),
   dateLetter: z.date({ required_error: "Date letter is required." }),
-}).refine(data => {
-    if (data.impositionType === 'aoc') {
-        return !!data.sanctionedAoc && data.sanctionedAoc.length > 0;
+}).superRefine((data, ctx) => {
+    if (data.impositionType === 'aoc' && (!data.sanctionedAoc || data.sanctionedAoc.length === 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "AOC name is required.",
+            path: ['sanctionedAoc'],
+        });
     }
-    if (data.impositionType === 'personnel') {
-        return !!data.sanctionedPersonnel && data.sanctionedPersonnel.length > 0;
+    if (data.impositionType === 'personnel' && (!data.sanctionedPersonnel || data.sanctionedPersonnel.length === 0 || data.sanctionedPersonnel.some(p => !p.value))) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "At least one personnel is required.",
+            path: ['sanctionedPersonnel'],
+        });
     }
-    if (data.impositionType === 'organization') {
-        return !!data.sanctionedOrganization && data.sanctionedOrganization.length > 0;
+    if (data.impositionType === 'organization' && (!data.sanctionedOrganization || data.sanctionedOrganization.length === 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Organization name is required.",
+            path: ['sanctionedOrganization'],
+        });
     }
-    return false;
-}, {
-    message: "Please provide the required details for the selected sanction type.",
-    path: ['impositionType'], 
 });
