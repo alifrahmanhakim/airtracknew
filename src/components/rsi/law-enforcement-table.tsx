@@ -82,8 +82,8 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
         if (sort) {
             filtered.sort((a, b) => {
                 if (sort.column === 'dateLetterFirst') {
-                    const dateA = a.references && a.references.length > 0 ? parseISO(a.references[0].dateLetter).getTime() : 0;
-                    const dateB = b.references && b.references.length > 0 ? parseISO(b.references[0].dateLetter).getTime() : 0;
+                    const dateA = a.references && a.references[0] ? parseISO(a.references[0].dateLetter).getTime() : 0;
+                    const dateB = b.references && b.references[0] ? parseISO(b.references[0].dateLetter).getTime() : 0;
                     return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
 
@@ -158,7 +158,7 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                                 <TableCell className="align-top">{renderImposition(record)}</TableCell>
                                 <TableCell>
                                     <div className="flex flex-col gap-2">
-                                    {record.references.map(ref => (
+                                    {record.references?.map(ref => (
                                         <div key={ref.id} className="text-sm p-2 border-l-2 pl-3">
                                             <p><strong className="font-semibold">Type:</strong> <Highlight text={ref.sanctionType} query={searchTerm} /></p>
                                             <p><strong className="font-semibold">Ref. Letter:</strong> <Highlight text={ref.refLetter} query={searchTerm} /></p>
