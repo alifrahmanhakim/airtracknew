@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '../ui/calendar';
 import { Combobox } from '../ui/combobox';
-import { aocOptions } from '@/lib/data';
+import { aocOptions, indonesianAircraftTypes } from '@/lib/data';
 
 type TindakLanjutDgcaFormValues = z.infer<typeof tindakLanjutDgcaFormSchema>;
 
@@ -77,6 +77,22 @@ export function TindakLanjutDgcaForm({ form }: TindakLanjutDgcaFormProps) {
                 </FormItem>
               )}
             />
+             <FormField
+              control={form.control}
+              name="tipePesawat"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Tipe Pesawat</FormLabel>
+                   <Combobox 
+                      options={indonesianAircraftTypes}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Pilih atau ketik tipe pesawat..."
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
                 control={form.control}
                 name="tanggalKejadian"
@@ -87,13 +103,13 @@ export function TindakLanjutDgcaForm({ form }: TindakLanjutDgcaFormProps) {
                         <PopoverTrigger asChild>
                             <FormControl>
                                 <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                    {field.value ? format(field.value, "PPP") : <span>Pilih tanggal</span>}
+                                    {field.value ? format(new Date(field.value), "PPP") : <span>Pilih tanggal</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                             </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                            <Calendar mode="single" selected={new Date(field.value)} onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])} initialFocus />
                         </PopoverContent>
                     </Popover>
                     <FormMessage />
@@ -110,13 +126,13 @@ export function TindakLanjutDgcaForm({ form }: TindakLanjutDgcaFormProps) {
                         <PopoverTrigger asChild>
                             <FormControl>
                                 <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                    {field.value ? format(field.value, "PPP") : <span>Pilih tanggal</span>}
+                                    {field.value ? format(new Date(field.value), "PPP") : <span>Pilih tanggal</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                             </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                            <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(date) => field.onChange(date?.toISOString().split('T')[0])} initialFocus />
                         </PopoverContent>
                     </Popover>
                     <FormMessage />

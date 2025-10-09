@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -81,6 +82,9 @@ export default function MonitoringRekomendasiDgcaPage() {
         defaultValues: {
             judulLaporan: '',
             nomorLaporan: '',
+            operator: '',
+            tipePesawat: '',
+            tanggalKejadian: new Date().toISOString().split('T')[0],
             rekomendasiKeDgca: '',
             nomorRekomendasi: '',
             tindakLanjutDkppu: '',
