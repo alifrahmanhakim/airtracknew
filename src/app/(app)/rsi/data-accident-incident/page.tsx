@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RotateCcw, Search } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
+import { ComboboxOption } from '@/components/ui/combobox';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -65,6 +66,10 @@ export default function DataAccidentIncidentPage() {
         const operators = [...new Set(records.map(r => r.operator))];
         return ['all', ...operators.sort()];
     }, [records]);
+
+    const operatorComboboxOptions: ComboboxOption[] = React.useMemo(() => {
+        return operatorOptions.filter(op => op !== 'all').map(op => ({ value: op, label: op }));
+    }, [operatorOptions]);
 
     const yearOptions = React.useMemo(() => {
         const years = [...new Set(records.map(r => getYear(parseISO(r.tanggal))))];
@@ -119,7 +124,7 @@ export default function DataAccidentIncidentPage() {
                             <CardDescription>Fill out the form to add a new accident or serious incident record.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <AccidentIncidentForm onFormSubmit={handleFormSubmit} />
+                            <AccidentIncidentForm onFormSubmit={handleFormSubmit} operatorOptions={operatorComboboxOptions} />
                         </CardContent>
                     </Card>
                 </TabsContent>

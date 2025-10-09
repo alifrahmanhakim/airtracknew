@@ -30,14 +30,16 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
+import { Combobox, ComboboxOption } from '../ui/combobox';
 
 type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
 
 type AccidentIncidentFormProps = {
   onFormSubmit: () => void;
+  operatorOptions: ComboboxOption[];
 };
 
-export function AccidentIncidentForm({ onFormSubmit }: AccidentIncidentFormProps) {
+export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: AccidentIncidentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -108,7 +110,18 @@ export function AccidentIncidentForm({ onFormSubmit }: AccidentIncidentFormProps
                     <FormMessage />
                 </FormItem>
             )}/>
-             <FormField control={form.control} name="operator" render={({ field }) => (<FormItem><FormLabel>Operator</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+             <FormField control={form.control} name="operator" render={({ field }) => (
+                <FormItem className="flex flex-col">
+                    <FormLabel>Operator</FormLabel>
+                    <Combobox 
+                        options={operatorOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select or type an operator..."
+                    />
+                    <FormMessage />
+                </FormItem>
+            )}/>
              <FormField control={form.control} name="aoc" render={({ field }) => (<FormItem><FormLabel>AOC</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="registrasiPesawat" render={({ field }) => (<FormItem><FormLabel>Registrasi Pesawat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="tipePesawat" render={({ field }) => (<FormItem><FormLabel>Tipe Pesawat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
