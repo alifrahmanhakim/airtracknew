@@ -233,3 +233,12 @@ export type TindakLanjutRecord = {
     tahun: number;
     createdAt: string;
 };
+
+export type TindakLanjutDgcaRecord = {
+  id: string;
+  laporanInvestigasi: string;
+  rekomendasiKeDgca: string;
+  nomorRekomendasi: string;
+  tindakLanjutDkppu: string;
+  createdAt: string;
+};

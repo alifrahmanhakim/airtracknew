@@ -34,7 +34,7 @@ const rsiModules = [
     title: 'Monitoring Tindak Lanjut Rekomendasi KNKT ke DGCA',
     description: 'Track follow-ups on NTSC recommendations to the DGCA.',
     icon: <ShieldQuestion className="h-8 w-8 text-purple-500" />,
-    href: '#',
+    href: '/rsi/monitoring-rekomendasi-dgca',
   },
   {
     title: 'List of Law Enforcement',

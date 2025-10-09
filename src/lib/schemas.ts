@@ -141,8 +141,8 @@ export const knktReportFormSchema = z.object({
 
 export const rekomendasiKeselamatanSchema = z.object({
     id: z.string(),
-    nomor: z.string().min(1, 'Nomor rekomendasi is required.'),
-    deskripsi: z.string().min(1, 'Deskripsi is required.'),
+    nomor: z.string(),
+    deskripsi: z.string(),
 });
 
 export const tindakLanjutFormSchema = z.object({
@@ -155,4 +155,11 @@ export const tindakLanjutFormSchema = z.object({
     rekomendasi: z.array(rekomendasiKeselamatanSchema).optional(),
     tindakLanjutDkppu: z.string().optional(),
     tindakLanjutOperator: z.string().optional(),
+});
+
+export const tindakLanjutDgcaFormSchema = z.object({
+  laporanInvestigasi: z.string().min(1, 'Laporan Investigasi KNKT is required.'),
+  rekomendasiKeDgca: z.string().min(1, 'Rekomendasi Keselamatan Ke DGCA is required.'),
+  nomorRekomendasi: z.string().min(1, 'Nomor Rekomendasi Keselamatan is required.'),
+  tindakLanjutDkppu: z.string().min(1, 'Tindak lanjut DKPPU is required.'),
 });
