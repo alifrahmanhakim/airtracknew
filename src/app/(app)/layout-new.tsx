@@ -22,6 +22,7 @@ import {
   BookText,
   User as UserIcon,
   MessageSquare,
+  ShieldAlert,
 } from 'lucide-react';
 
 import {
@@ -67,6 +68,7 @@ const navItems = {
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
       { href: '/gap-analysis', label: 'GAP Analysis', icon: GitCompareArrows },
       { href: '/glossary', label: 'Glossary', icon: BookText },
+      { href: '/rsi', label: 'RSI', icon: ShieldAlert },
     ]
 }
 
