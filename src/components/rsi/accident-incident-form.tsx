@@ -32,7 +32,7 @@ import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Combobox, ComboboxOption } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
-import { indonesianAircraftTypes } from '@/lib/data';
+import { indonesianAircraftTypes, aocOptions } from '@/lib/data';
 
 type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
 
@@ -126,7 +126,18 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                     <FormMessage />
                 </FormItem>
             )}/>
-             <FormField control={form.control} name="aoc" render={({ field }) => (<FormItem><FormLabel>AOC</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+             <FormField control={form.control} name="aoc" render={({ field }) => (
+                 <FormItem className="flex flex-col">
+                    <FormLabel>AOC</FormLabel>
+                     <Combobox 
+                        options={aocOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select or type an AOC..."
+                    />
+                    <FormMessage />
+                </FormItem>
+            )}/>
              <FormField control={form.control} name="registrasiPesawat" render={({ field }) => (<FormItem><FormLabel>Registrasi Pesawat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="tipePesawat" render={({ field }) => (
                 <FormItem className="flex flex-col">
