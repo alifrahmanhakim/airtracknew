@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Highlight } from '../ui/highlight';
 import { format, parseISO } from 'date-fns';
 import { EditTindakLanjutRecordDialog } from './edit-tindak-lanjut-dialog';
+import { cn } from '@/lib/utils';
 
 type TindakLanjutTableProps = {
   records: TindakLanjutRecord[];
@@ -88,7 +89,16 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top">
-                                <Badge variant="secondary">{record.status || 'N/A'}</Badge>
+                                <Badge
+                                    className={cn({
+                                        'bg-green-100 text-green-800 hover:bg-green-200': record.status === 'Final',
+                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': record.status === 'Draft',
+                                        'bg-blue-100 text-blue-800 hover:bg-blue-200': record.status === 'Preliminary',
+                                        'bg-gray-100 text-gray-800 hover:bg-gray-200': record.status === 'Interim Statement',
+                                    })}
+                                >
+                                    {record.status || 'N/A'}
+                                </Badge>
                             </TableCell>
                             <TableCell className="text-right align-top">
                                 <EditTindakLanjutRecordDialog record={record} onRecordUpdate={onUpdate} />
