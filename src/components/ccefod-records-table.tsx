@@ -182,7 +182,8 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, sort, setSort,
                                     }
 
                                     if (isRichText) {
-                                        return <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: value }} />;
+                                        const cleanText = value.replace(/<[^>]+>/g, '');
+                                        return <div className="prose dark:prose-invert max-w-none"><Highlight text={cleanText} query={searchTerm} /></div>;
                                     }
                                     
                                     if (col.key === 'status') {
