@@ -57,10 +57,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
     }, [projects]);
 
     const projectsNearDeadline = useMemo(() => {
-        return projects.filter(p => {
-          const daysLeft = differenceInDays(parseISO(p.endDate), new Date());
-          return daysLeft >= 0 && p.status !== 'Completed';
-        }).sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
+        return projects.filter(p => p.status !== 'Completed')
+        .sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
     }, [projects]);
     
     const totalDeadlinePages = Math.ceil(projectsNearDeadline.length / DEADLINES_PER_PAGE);
@@ -194,12 +192,12 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                            )}
                         </CardContent>
                     </Card>
-                    <Card>
+                     <Card className="flex flex-col">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Upcoming Deadlines</CardTitle>
                             <CardDescription>All upcoming CASR deadlines, sorted by urgency.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-3 flex-grow">
                             {paginatedDeadlineProjects.length > 0 ? (
                                 paginatedDeadlineProjects.map(project => {
                                     const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
@@ -221,7 +219,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             )}
                         </CardContent>
                         {totalDeadlinePages > 1 && (
-                            <CardFooter>
+                             <CardFooter className="pt-4 mt-auto">
                                 <Pagination>
                                     <PaginationContent>
                                     <PaginationItem>
