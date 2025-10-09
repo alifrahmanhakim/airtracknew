@@ -40,8 +40,8 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
     resolver: zodResolver(tindakLanjutFormSchema),
     defaultValues: {
       ...record,
-      tanggalKejadian: record.tanggalKejadian ? parseISO(record.tanggalKejadian) : undefined,
-      tanggalTerbit: record.tanggalTerbit ? parseISO(record.tanggalTerbit) : undefined,
+      tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
+      tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
       status: record.status || 'Draft',
       registrasiPesawat: record.registrasiPesawat || '',
       tipePesawat: record.tipePesawat || '',
@@ -56,13 +56,7 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
   const onSubmit = async (data: TindakLanjutFormValues) => {
     setIsSubmitting(true);
 
-    const dataToSubmit = {
-      ...data,
-      tanggalKejadian: data.tanggalKejadian instanceof Date ? format(data.tanggalKejadian, 'yyyy-MM-dd') : data.tanggalKejadian,
-      tanggalTerbit: data.tanggalTerbit instanceof Date ? format(data.tanggalTerbit, 'yyyy-MM-dd') : data.tanggalTerbit,
-    };
-
-    const result = await updateTindakLanjutRecord(record.id, dataToSubmit);
+    const result = await updateTindakLanjutRecord(record.id, data);
     setIsSubmitting(false);
 
     if (result.success && result.data) {
