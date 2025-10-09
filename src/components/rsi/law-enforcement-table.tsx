@@ -191,7 +191,12 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                             <TableRow>
                                 <TableHead className="w-[50px]">No</TableHead>
                                 <TableHead className="min-w-[200px]">Imposition of Sanction to</TableHead>
-                                <TableHead className="min-w-[400px]">References</TableHead>
+                                <TableHead className="min-w-[400px] cursor-pointer" onClick={() => handleSort('dateLetterFirst')}>
+                                    <div className="flex items-center">
+                                        References
+                                        {renderSortIcon('dateLetterFirst')}
+                                    </div>
+                                </TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
