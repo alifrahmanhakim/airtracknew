@@ -80,11 +80,10 @@ export function KnktReportsTable({ records }: KnktReportsTableProps) {
                         <TableHead className="cursor-pointer" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
                         <TableHead>Nomor Laporan</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Operator</TableHead>
+                        <TableHead>AOC</TableHead>
                         <TableHead>Registrasi</TableHead>
                         <TableHead>Tipe Pesawat</TableHead>
                         <TableHead>Lokasi</TableHead>
-                        <TableHead>Wilayah</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -99,15 +98,14 @@ export function KnktReportsTable({ records }: KnktReportsTableProps) {
                                     {record.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell>{record.operator}</TableCell>
+                            <TableCell>{record.aoc}</TableCell>
                             <TableCell>{record.registrasi}</TableCell>
                             <TableCell>{record.tipe_pesawat}</TableCell>
                             <TableCell>{record.lokasi}</TableCell>
-                            <TableCell>{record.wilayah}</TableCell>
                         </TableRow>
                     )) : (
                         <TableRow>
-                            <TableCell colSpan={8} className="text-center h-24">
+                            <TableCell colSpan={7} className="text-center h-24">
                                 <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                 No records found for the current filters.
                             </TableCell>

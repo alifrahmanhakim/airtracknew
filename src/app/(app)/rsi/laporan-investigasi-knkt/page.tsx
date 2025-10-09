@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RotateCcw, Search } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
+import { aocOptions } from '@/lib/data';
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
@@ -26,7 +27,7 @@ export default function LaporanInvestigasiKnktPage() {
 
     // Filter states
     const [searchTerm, setSearchTerm] = React.useState('');
-    const [operatorFilter, setOperatorFilter] = React.useState('all');
+    const [aocFilter, setAocFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
     const [statusFilter, setStatusFilter] = React.useState('all');
 
@@ -53,11 +54,6 @@ export default function LaporanInvestigasiKnktPage() {
         return () => unsubscribe();
     }, [toast]);
     
-    const operatorOptions = React.useMemo(() => {
-        const operators = [...new Set(records.map(r => r.operator))];
-        return ['all', ...operators.sort()];
-    }, [records]);
-
     const yearOptions = React.useMemo(() => {
         const years = [...new Set(records.map(r => getYear(parseISO(r.tanggal_diterbitkan))))];
         return ['all', ...years.sort((a, b) => b - a)];
@@ -73,17 +69,17 @@ export default function LaporanInvestigasiKnktPage() {
             const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
                 String(value).toLowerCase().includes(searchTerm.toLowerCase())
             );
-            const operatorMatch = operatorFilter === 'all' || record.operator === operatorFilter;
+            const aocMatch = aocFilter === 'all' || record.aoc === aocFilter;
             const yearMatch = yearFilter === 'all' || getYear(parseISO(record.tanggal_diterbitkan)) === parseInt(yearFilter);
             const statusMatch = statusFilter === 'all' || record.status === statusFilter;
 
-            return searchTermMatch && operatorMatch && yearMatch && statusMatch;
+            return searchTermMatch && aocMatch && yearMatch && statusMatch;
         });
-    }, [records, searchTerm, operatorFilter, yearFilter, statusFilter]);
+    }, [records, searchTerm, aocFilter, yearFilter, statusFilter]);
 
     const resetFilters = () => {
         setSearchTerm('');
-        setOperatorFilter('all');
+        setAocFilter('all');
         setYearFilter('all');
         setStatusFilter('all');
     };
@@ -112,13 +108,14 @@ export default function LaporanInvestigasiKnktPage() {
                                     className="pl-9"
                                 />
                             </div>
-                            <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+                            <Select value={aocFilter} onValueChange={setAocFilter}>
                                 <SelectTrigger className="w-full sm:w-[200px]">
-                                    <SelectValue placeholder="Filter by operator..." />
+                                    <SelectValue placeholder="Filter by AOC..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {operatorOptions.map(op => (
-                                        <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>
+                                    <SelectItem value="all">All AOCs</SelectItem>
+                                    {aocOptions.map(op => (
+                                        <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -142,7 +139,7 @@ export default function LaporanInvestigasiKnktPage() {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {(searchTerm || operatorFilter !== 'all' || yearFilter !== 'all' || statusFilter !== 'all') && (
+                            {(searchTerm || aocFilter !== 'all' || yearFilter !== 'all' || statusFilter !== 'all') && (
                                 <Button variant="ghost" onClick={resetFilters}>
                                     <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                 </Button>

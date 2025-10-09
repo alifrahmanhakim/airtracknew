@@ -93,7 +93,6 @@ export const glossaryFormSchema = z.object({
 export const accidentIncidentFormSchema = z.object({
   tanggal: z.date({ required_error: "Tanggal is required." }),
   kategori: z.enum(['Accident (A)', 'Serious Incident (SI)'], { required_error: "Kategori is required." }),
-  operator: z.string().min(1, 'Operator is required.'),
   aoc: z.string().min(1, 'AOC is required.'),
   registrasiPesawat: z.string().min(1, 'Registrasi Pesawat is required.'),
   tipePesawat: z.string().min(1, 'Tipe Pesawat is required.'),

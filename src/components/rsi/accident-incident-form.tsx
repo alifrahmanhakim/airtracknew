@@ -36,10 +36,9 @@ type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
 type AccidentIncidentFormProps = {
   form: UseFormReturn<AccidentIncidentFormValues>;
   onSubmit: (data: AccidentIncidentFormValues) => void;
-  operatorOptions: ComboboxOption[];
 };
 
-export function AccidentIncidentForm({ form, onSubmit, operatorOptions }: AccidentIncidentFormProps) {
+export function AccidentIncidentForm({ form, onSubmit }: AccidentIncidentFormProps) {
   
   const watchAdaKorban = form.watch('adaKorbanJiwa');
 
@@ -76,18 +75,6 @@ export function AccidentIncidentForm({ form, onSubmit, operatorOptions }: Accide
                             <SelectItem value="Serious Incident (SI)">Serious Incident (SI)</SelectItem>
                         </SelectContent>
                     </Select>
-                    <FormMessage />
-                </FormItem>
-            )}/>
-             <FormField control={form.control} name="operator" render={({ field }) => (
-                <FormItem className="flex flex-col">
-                    <FormLabel>Operator</FormLabel>
-                     <Combobox 
-                        options={operatorOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select or type an operator..."
-                    />
                     <FormMessage />
                 </FormItem>
             )}/>

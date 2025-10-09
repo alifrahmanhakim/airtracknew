@@ -21,6 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { accidentIncidentFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addAccidentIncidentRecord } from '@/lib/actions/accident-incident';
+import { aocOptions } from '@/lib/data';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -43,7 +44,7 @@ export default function DataAccidentIncidentPage() {
 
     // Filter states for table
     const [searchTerm, setSearchTerm] = React.useState('');
-    const [operatorFilter, setOperatorFilter] = React.useState('all');
+    const [aocFilter, setAocFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
     
     // Form state
@@ -75,15 +76,6 @@ export default function DataAccidentIncidentPage() {
         return () => unsubscribe();
     }, [toast]);
     
-    const operatorOptions = React.useMemo(() => {
-        const operators = [...new Set(records.map(r => r.operator))];
-        return ['all', ...operators.sort()];
-    }, [records]);
-
-    const operatorComboboxOptions: ComboboxOption[] = React.useMemo(() => {
-        return operatorOptions.filter(op => op !== 'all').map(op => ({ value: op, label: op }));
-    }, [operatorOptions]);
-
     const yearOptions = React.useMemo(() => {
         const years = [...new Set(records.map(r => getYear(parseISO(r.tanggal))))];
         return ['all', ...years.sort((a, b) => b - a)];
@@ -94,12 +86,12 @@ export default function DataAccidentIncidentPage() {
             const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
                 String(value).toLowerCase().includes(searchTerm.toLowerCase())
             );
-            const operatorMatch = operatorFilter === 'all' || record.operator === operatorFilter;
+            const aocMatch = aocFilter === 'all' || record.aoc === aocFilter;
             const yearMatch = yearFilter === 'all' || getYear(parseISO(record.tanggal)) === parseInt(yearFilter);
 
-            return searchTermMatch && operatorMatch && yearMatch;
+            return searchTermMatch && aocMatch && yearMatch;
         });
-    }, [records, searchTerm, operatorFilter, yearFilter]);
+    }, [records, searchTerm, aocFilter, yearFilter]);
 
     const handleFormSubmitSuccess = () => {
         setActiveTab('records');
@@ -107,7 +99,7 @@ export default function DataAccidentIncidentPage() {
 
     const resetTableFilters = () => {
         setSearchTerm('');
-        setOperatorFilter('all');
+        setAocFilter('all');
         setYearFilter('all');
     };
     
@@ -171,7 +163,7 @@ export default function DataAccidentIncidentPage() {
                             <CardDescription>Fill out the form to add a new accident or serious incident record.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <AccidentIncidentForm form={form} onSubmit={onFormSubmit} operatorOptions={operatorComboboxOptions} />
+                            <AccidentIncidentForm form={form} onSubmit={onFormSubmit} />
                         </CardContent>
                         <CardFooter className="flex justify-end">
                             <Button type="submit" form="accident-incident-form" disabled={isSubmitting}>
@@ -203,13 +195,13 @@ export default function DataAccidentIncidentPage() {
                                             className="pl-9"
                                         />
                                     </div>
-                                    <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+                                    <Select value={aocFilter} onValueChange={setAocFilter}>
                                         <SelectTrigger className="w-full sm:w-[200px]">
-                                            <SelectValue placeholder="Filter by operator..." />
+                                            <SelectValue placeholder="Filter by AOC..." />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {operatorOptions.map(op => (
-                                                <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>
+                                            {aocOptions.map(op => (
+                                                <SelectItem key={op.value} value={op.value}>{op.label === 'all' ? 'All AOCs' : op.label}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -223,7 +215,7 @@ export default function DataAccidentIncidentPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {(searchTerm || operatorFilter !== 'all' || yearFilter !== 'all') && (
+                                    {(searchTerm || aocFilter !== 'all' || yearFilter !== 'all') && (
                                          <Button variant="ghost" onClick={resetTableFilters}>
                                             <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                         </Button>

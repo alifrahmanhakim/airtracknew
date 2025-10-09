@@ -58,25 +58,25 @@ const CustomYAxisTick = ({ y, payload }: any) => {
 
 
 export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
-    const [operatorFilter, setOperatorFilter] = React.useState('all');
+    const [aocFilter, setAocFilter] = React.useState('all');
     const [categoryFilter, setCategoryFilter] = React.useState('all');
     const [taxonomyFilter, setTaxonomyFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
 
-    const operatorOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => r.operator))].sort()], [allRecords]);
+    const aocOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => r.aoc))].sort()], [allRecords]);
     const categoryOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => r.kategori))].sort()], [allRecords]);
     const taxonomyOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => r.taxonomy))].sort()], [allRecords]);
     const yearOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => getYear(parseISO(r.tanggal))))].sort((a, b) => b - a)], [allRecords]);
     
     const filteredRecords = React.useMemo(() => {
         return allRecords.filter(r => {
-            const operatorMatch = operatorFilter === 'all' || r.operator === operatorFilter;
+            const aocMatch = aocFilter === 'all' || r.aoc === aocFilter;
             const categoryMatch = categoryFilter === 'all' || r.kategori === categoryFilter;
             const taxonomyMatch = taxonomyFilter === 'all' || r.taxonomy === taxonomyFilter;
             const yearMatch = yearFilter === 'all' || getYear(parseISO(r.tanggal)) === parseInt(yearFilter);
-            return operatorMatch && categoryMatch && taxonomyMatch && yearMatch;
+            return aocMatch && categoryMatch && taxonomyMatch && yearMatch;
         });
-    }, [allRecords, operatorFilter, categoryFilter, taxonomyFilter, yearFilter]);
+    }, [allRecords, aocFilter, categoryFilter, taxonomyFilter, yearFilter]);
     
     const analyticsData = React.useMemo(() => {
         const totalIncidents = filteredRecords.length;
@@ -105,8 +105,8 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
         const incidentsByTaxonomy = countBy('taxonomy');
         const taxonomyData = Object.entries(incidentsByTaxonomy).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
 
-        const incidentsByOperator = countBy('operator');
-        const operatorData = Object.entries(incidentsByOperator).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 10);
+        const incidentsByAoc = countBy('aoc');
+        const aocData = Object.entries(incidentsByAoc).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 10);
 
         return {
             totalIncidents,
@@ -116,12 +116,12 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
             categoryData,
             yearData,
             taxonomyData,
-            operatorData,
+            aocData,
         };
     }, [filteredRecords]);
 
     const resetFilters = () => {
-        setOperatorFilter('all');
+        setAocFilter('all');
         setCategoryFilter('all');
         setTaxonomyFilter('all');
         setYearFilter('all');
@@ -155,9 +155,9 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <Select value={operatorFilter} onValueChange={setOperatorFilter}>
-                        <SelectTrigger><SelectValue placeholder="Filter by operator..." /></SelectTrigger>
-                        <SelectContent>{operatorOptions.map(op => <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>)}</SelectContent>
+                    <Select value={aocFilter} onValueChange={setAocFilter}>
+                        <SelectTrigger><SelectValue placeholder="Filter by AOC..." /></SelectTrigger>
+                        <SelectContent>{aocOptions.map(op => <SelectItem key={op} value={op}>{op === 'all' ? 'All AOCs' : op}</SelectItem>)}</SelectContent>
                     </Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                         <SelectTrigger><SelectValue placeholder="Filter by category..." /></SelectTrigger>
@@ -195,8 +195,8 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
 
              <div className="grid grid-cols-1 gap-6">
                 <Card>
-                    <CardHeader><CardTitle>Top 10 Operators by Incidents</CardTitle></CardHeader>
-                    <CardContent><ChartContainer config={chartConfig(analyticsData.operatorData)} className="h-[400px] w-full"><ResponsiveContainer><BarChart data={analyticsData.operatorData} layout="vertical" margin={{ left: 150 }}><CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" interval={0} tick={<CustomYAxisTick />} width={160} /><XAxis type="number" allowDecimals={false} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.operatorData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar></BarChart></ResponsiveContainer></ChartContainer></CardContent>
+                    <CardHeader><CardTitle>Top 10 AOC by Incidents</CardTitle></CardHeader>
+                    <CardContent><ChartContainer config={chartConfig(analyticsData.aocData)} className="h-[400px] w-full"><ResponsiveContainer><BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 150 }}><CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" interval={0} tick={<CustomYAxisTick />} width={160} /><XAxis type="number" allowDecimals={false} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.aocData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar></BarChart></ResponsiveContainer></ChartContainer></CardContent>
                 </Card>
                  <Card>
                     <CardHeader><CardTitle>Incidents by Taxonomy</CardTitle></CardHeader>
@@ -207,5 +207,3 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
         </div>
     );
 }
-
-    

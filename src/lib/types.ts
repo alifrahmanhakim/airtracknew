@@ -171,7 +171,6 @@ export type AccidentIncidentRecord = {
     id: string;
     tanggal: string;
     kategori: 'Accident (A)' | 'Serious Incident (SI)';
-    operator: string;
     aoc: string;
     registrasiPesawat: string;
     tipePesawat: string;
@@ -187,11 +186,9 @@ export type KnktReport = {
     tanggal_diterbitkan: string;
     nomor_laporan: string;
     status: string;
-    operator: string;
     aoc: string;
     registrasi: string;
     tipe_pesawat: string;
     lokasi: string;
-    wilayah: string;
     createdAt: string;
 }

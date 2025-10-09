@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -104,7 +105,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                         <TableRow>
                             <TableHead className="cursor-pointer" onClick={() => handleSort('tanggal')}><div className="flex items-center">Tanggal {renderSortIcon('tanggal')}</div></TableHead>
                             <TableHead>Kategori</TableHead>
-                            <TableHead>Operator</TableHead>
+                            <TableHead>AOC</TableHead>
                             <TableHead>Registrasi</TableHead>
                             <TableHead>Tipe Pesawat</TableHead>
                             <TableHead>Lokasi</TableHead>
@@ -123,7 +124,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                                         {record.kategori}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>{record.operator}</TableCell>
+                                <TableCell>{record.aoc}</TableCell>
                                 <TableCell>{record.registrasiPesawat}</TableCell>
                                 <TableCell>{record.tipePesawat}</TableCell>
                                 <TableCell>{record.lokasi}</TableCell>
@@ -141,7 +142,7 @@ export function AccidentIncidentTable({ records }: AccidentIncidentTableProps) {
                             </TableRow>
                         )) : (
                             <TableRow>
-                                <TableCell colSpan={10} className="text-center h-24">
+                                <TableCell colSpan={9} className="text-center h-24">
                                      <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                      No records found for the current filters.
                                 </TableCell>
