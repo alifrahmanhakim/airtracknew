@@ -24,6 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 import { EditGlossaryRecordDialog } from './edit-glossary-record-dialog';
 import { GlossaryRecordDetailDialog } from './glossary-record-detail-dialog';
+import { Highlight } from './ui/highlight';
 
 
 type GlossaryRecordsTableProps = {
@@ -32,6 +33,7 @@ type GlossaryRecordsTableProps = {
   onUpdate: (updatedRecord: GlossaryRecord) => void;
   sort: SortDescriptor;
   setSort: (sort: SortDescriptor) => void;
+  searchTerm: string;
 };
 
 type SortDescriptor = {
@@ -39,7 +41,7 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
-export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSort }: GlossaryRecordsTableProps) {
+export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSort, searchTerm }: GlossaryRecordsTableProps) {
   const [recordToView, setRecordToView] = useState<GlossaryRecord | null>(null);
 
   const handleSort = (column: keyof GlossaryRecord) => {
@@ -89,18 +91,18 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
             <TableBody>
               {records.map((record) => (
                 <TableRow key={record.id} className="cursor-pointer align-top" onClick={() => setRecordToView(record)}>
-                    <TableCell className="font-semibold whitespace-normal">{record.tsu}</TableCell>
-                    <TableCell className="whitespace-normal">{record.tsa}</TableCell>
-                    <TableCell className="whitespace-normal">{record.editing}</TableCell>
-                    <TableCell className="whitespace-normal">{record.makna}</TableCell>
-                    <TableCell className="whitespace-normal">{record.keterangan}</TableCell>
-                    <TableCell className="whitespace-normal">{record.referensi}</TableCell>
+                    <TableCell className="font-semibold whitespace-normal"><Highlight text={record.tsu} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal"><Highlight text={record.tsa} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal"><Highlight text={record.editing} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal"><Highlight text={record.makna} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal"><Highlight text={record.keterangan} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal"><Highlight text={record.referensi} query={searchTerm} /></TableCell>
                     <TableCell>
                         <Badge
                             variant={record.status === 'Final' ? 'default' : 'secondary'}
                             className={cn(record.status === 'Final' ? 'bg-green-100 text-green-800' : '')}
                         >
-                            {record.status}
+                            <Highlight text={record.status} query={searchTerm} />
                         </Badge>
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>

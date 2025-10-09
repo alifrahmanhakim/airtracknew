@@ -329,6 +329,7 @@ export default function GlossaryPage() {
                                 onUpdate={handleRecordUpdate}
                                 sort={sort}
                                 setSort={setSort}
+                                searchTerm={searchTerm}
                             />
                             
                              <div className="flex items-center justify-between print:hidden">
