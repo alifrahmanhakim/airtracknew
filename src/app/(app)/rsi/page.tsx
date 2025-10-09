@@ -163,7 +163,7 @@ export default function RsiPage() {
 
                     return (
                         <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
-                            <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
+                            <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20">
                                 <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
                                 {module.icon}
                                 <CardTitle>{module.title}</CardTitle>
@@ -187,16 +187,9 @@ export default function RsiPage() {
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Status Breakdown</p>
                                         <div className="flex flex-wrap gap-2">
                                             {statusArray.map(({ name, count }) => (
-                                                <Tooltip key={name}>
-                                                    <TooltipTrigger asChild>
-                                                        <Badge className={cn(badgeVariants({ variant: module.statusVariant(name) === 'destructive' ? 'destructive' : 'default' }), module.statusVariant(name))}>
-                                                            {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count}</span>
-                                                        </Badge>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>{((count / totalCount) * 100).toFixed(1)}%</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
+                                                <Badge key={name} className={cn(badgeVariants({ variant: module.statusVariant(name) === 'destructive' ? 'destructive' : 'default' }), module.statusVariant(name))}>
+                                                    {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({((count / totalCount) * 100).toFixed(0)}%)</span>
+                                                </Badge>
                                             ))}
                                         </div>
                                     </div>
