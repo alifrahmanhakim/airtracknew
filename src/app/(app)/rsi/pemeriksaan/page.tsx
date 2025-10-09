@@ -25,6 +25,10 @@ const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form'
 const PemeriksaanTable = dynamic(() => import('@/components/rsi/pemeriksaan-table').then(mod => mod.PemeriksaanTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
+const PemeriksaanAnalytics = dynamic(() => import('@/components/rsi/pemeriksaan-analytics').then(mod => mod.PemeriksaanAnalytics), {
+    ssr: false,
+    loading: () => <Skeleton className="h-[600px] w-full" />
+});
 
 type PemeriksaanFormValues = z.infer<typeof pemeriksaanFormSchema>;
 
@@ -120,7 +124,7 @@ export default function PemeriksaanPage() {
                         <TabsList>
                             <TabsTrigger value="form">Input Form</TabsTrigger>
                             <TabsTrigger value="records">Records</TabsTrigger>
-                            {/* <TabsTrigger value="analytics">Analytics</TabsTrigger> */}
+                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         </TabsList>
                     </div>
                 </div>
@@ -159,9 +163,13 @@ export default function PemeriksaanPage() {
                     </Card>
                 </TabsContent>
 
-                {/* <TabsContent value="analytics">
-                   Analytics content here
-                </TabsContent> */}
+                <TabsContent value="analytics">
+                    {isLoading ? (
+                        <Skeleton className="h-[600px] w-full" />
+                    ) : (
+                        <PemeriksaanAnalytics allRecords={records} />
+                    )}
+                </TabsContent>
             </Tabs>
         </main>
     );
