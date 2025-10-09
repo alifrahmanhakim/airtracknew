@@ -13,15 +13,7 @@ import {
 import type { CcefodRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, ChevronDown } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Pencil, Trash2, ArrowUpDown, Info, ChevronDown } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,

@@ -68,7 +68,7 @@ export default function CcefodPage() {
   const [analyticsAdaPerubahanFilter, setAnalyticsAdaPerubahanFilter] = useState<string>('all');
   const [analyticsStatusFilter, setAnalyticsStatusFilter] = useState<string>('all');
   
-  const [activeTab, setActiveTab] = useState('form');
+  const [activeTab, setActiveTab] = useState('records');
   const { toast } = useToast();
   
   const [recordToDelete, setRecordToDelete] = useState<CcefodRecord | null>(null);
