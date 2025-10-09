@@ -67,64 +67,70 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {records.map((record, index) => (
-                        <TableRow key={record.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell className="align-top">
-                                <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
-                                <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
-                                <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
-                                {record.tanggalTerbit && <p className="text-sm text-muted-foreground">Terbit: <Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>}
-                                {record.registrasiPesawat && <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasiPesawat} query={searchTerm} /></p>}
-                                {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
-                                {record.lokasiKejadian && <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasiKejadian} query={searchTerm} /></p>}
-                                {record.fileUrl && (
-                                    <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                                        <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
-                                            <LinkIcon className="mr-1 h-3 w-3" /> View File
-                                        </a>
-                                    </Button>
-                                )}
-                            </TableCell>
-                            <TableCell className="align-top">
-                                <div className="flex flex-wrap gap-1">
-                                    {(record.penerimaRekomendasi || []).map((penerima, i) => (
-                                        <Badge key={i} variant="secondary">
-                                            <Highlight text={penerima} query={searchTerm} />
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </TableCell>
-                            <TableCell className="align-top">
-                                {record.rekomendasi.map(rec => (
-                                    <div key={rec.id} className="mb-2 last:mb-0">
-                                        <p className="font-semibold"><Highlight text={rec.nomor} query={searchTerm} /></p>
-                                        <p><Highlight text={rec.deskripsi} query={searchTerm} /></p>
+                    {records.map((record, index) => {
+                        const penerimaList = Array.isArray(record.penerimaRekomendasi)
+                            ? record.penerimaRekomendasi
+                            : (typeof record.penerimaRekomendasi === 'string' && record.penerimaRekomendasi ? [record.penerimaRekomendasi] : []);
+
+                        return (
+                            <TableRow key={record.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell className="align-top">
+                                    <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
+                                    <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
+                                    <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
+                                    {record.tanggalTerbit && <p className="text-sm text-muted-foreground">Terbit: <Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>}
+                                    {record.registrasiPesawat && <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasiPesawat} query={searchTerm} /></p>}
+                                    {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
+                                    {record.lokasiKejadian && <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasiKejadian} query={searchTerm} /></p>}
+                                    {record.fileUrl && (
+                                        <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                                            <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
+                                                <LinkIcon className="mr-1 h-3 w-3" /> View File
+                                            </a>
+                                        </Button>
+                                    )}
+                                </TableCell>
+                                <TableCell className="align-top">
+                                    <div className="flex flex-wrap gap-1">
+                                        {penerimaList.map((penerima, i) => (
+                                            <Badge key={i} variant="secondary">
+                                                <Highlight text={penerima} query={searchTerm} />
+                                            </Badge>
+                                        ))}
                                     </div>
-                                ))}
-                            </TableCell>
-                            <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu || ''} searchTerm={searchTerm} /></TableCell>
-                            <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator || ''} searchTerm={searchTerm} /></TableCell>
-                            <TableCell className="align-top">
-                                <Badge
-                                    className={cn({
-                                        'bg-green-100 text-green-800 hover:bg-green-200': record.status === 'Final',
-                                        'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': record.status === 'Draft',
-                                        'bg-blue-100 text-blue-800 hover:bg-blue-200': record.status === 'Preliminary',
-                                        'bg-gray-100 text-gray-800 hover:bg-gray-200': record.status === 'Interim Statement',
-                                    })}
-                                >
-                                    {record.status || 'N/A'}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="text-right align-top">
-                                <EditTindakLanjutRecordDialog record={record} onRecordUpdate={onUpdate} />
-                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                                </TableCell>
+                                <TableCell className="align-top">
+                                    {record.rekomendasi.map(rec => (
+                                        <div key={rec.id} className="mb-2 last:mb-0">
+                                            <p className="font-semibold"><Highlight text={rec.nomor} query={searchTerm} /></p>
+                                            <p><Highlight text={rec.deskripsi} query={searchTerm} /></p>
+                                        </div>
+                                    ))}
+                                </TableCell>
+                                <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu || ''} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator || ''} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top">
+                                    <Badge
+                                        className={cn({
+                                            'bg-green-100 text-green-800 hover:bg-green-200': record.status === 'Final',
+                                            'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': record.status === 'Draft' || record.status === 'Draft Final',
+                                            'bg-blue-100 text-blue-800 hover:bg-blue-200': record.status === 'Preliminary',
+                                            'bg-gray-100 text-gray-800 hover:bg-gray-200': record.status === 'Interim Statement',
+                                        })}
+                                    >
+                                        {record.status || 'N/A'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right align-top">
+                                    <EditTindakLanjutRecordDialog record={record} onRecordUpdate={onUpdate} />
+                                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
                 </TableBody>
             </Table>
         </div>
