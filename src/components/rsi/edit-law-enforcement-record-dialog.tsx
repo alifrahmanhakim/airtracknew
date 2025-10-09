@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -39,7 +40,7 @@ export function EditLawEnforcementRecordDialog({ record, onRecordUpdate }: EditL
     resolver: zodResolver(lawEnforcementFormSchema),
     defaultValues: {
       ...record,
-      dateLetter: parseISO(record.dateLetter),
+      references: record.references.map(ref => ({...ref, dateLetter: parseISO(ref.dateLetter)}))
     },
   });
 
@@ -76,7 +77,7 @@ export function EditLawEnforcementRecordDialog({ record, onRecordUpdate }: EditL
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[70vh] overflow-y-auto p-1">
-          <LawEnforcementForm form={form} />
+          <LawEnforcementForm form={form} isSubmitting={isSubmitting} />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -35,18 +36,18 @@ type LawEnforcementTableProps = {
 };
 
 type SortDescriptor = {
-    column: keyof LawEnforcementRecord;
+    column: keyof LawEnforcementRecord | 'dateLetterFirst';
     direction: 'asc' | 'desc';
 } | null;
 
 export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTableProps) {
     const { toast } = useToast();
-    const [sort, setSort] = React.useState<SortDescriptor>({ column: 'dateLetter', direction: 'desc' });
+    const [sort, setSort] = React.useState<SortDescriptor>({ column: 'dateLetterFirst', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<LawEnforcementRecord | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
     const [searchTerm, setSearchTerm] = React.useState('');
 
-    const handleSort = (column: keyof LawEnforcementRecord) => {
+    const handleSort = (column: keyof LawEnforcementRecord | 'dateLetterFirst') => {
         setSort(prevSort => {
             if (prevSort?.column === column) {
                 return { column, direction: prevSort.direction === 'asc' ? 'desc' : 'asc' };
@@ -55,7 +56,7 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
         });
     };
 
-    const renderSortIcon = (column: keyof LawEnforcementRecord) => {
+    const renderSortIcon = (column: keyof LawEnforcementRecord | 'dateLetterFirst') => {
         if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
         return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
     };
@@ -68,7 +69,11 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
              filtered = filtered.filter(record => 
                 Object.values(record).some(value => {
                     if (typeof value === 'string') return value.toLowerCase().includes(lowercasedTerm);
-                    if (Array.isArray(value)) return value.some(item => String(item.value).toLowerCase().includes(lowercasedTerm));
+                    if (Array.isArray(value)) {
+                        return value.some(item => 
+                            Object.values(item).some(val => String(val).toLowerCase().includes(lowercasedTerm))
+                        )
+                    }
                     return false;
                 })
              );
@@ -76,18 +81,16 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
 
         if (sort) {
             filtered.sort((a, b) => {
-                const aVal = a[sort.column];
-                const bVal = b[sort.column];
-                
-                if (sort.column === 'dateLetter') {
-                    return sort.direction === 'asc' 
-                        ? new Date(aVal).getTime() - new Date(bVal).getTime()
-                        : new Date(bVal).getTime() - new Date(aVal).getTime();
+                if (sort.column === 'dateLetterFirst') {
+                    const dateA = a.references[0] ? parseISO(a.references[0].dateLetter).getTime() : 0;
+                    const dateB = b.references[0] ? parseISO(b.references[0].dateLetter).getTime() : 0;
+                    return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
 
-                if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
-                if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
-                return 0;
+                const valA = a[sort.column as keyof LawEnforcementRecord] ?? '';
+                const valB = b[sort.column as keyof LawEnforcementRecord] ?? '';
+
+                return sort.direction === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
             });
         }
         
@@ -144,9 +147,7 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                         <TableRow>
                             <TableHead className="w-[50px]">No</TableHead>
                             <TableHead className="min-w-[200px]">Imposition of Sanction to</TableHead>
-                            <TableHead>Sanction Type</TableHead>
-                            <TableHead>Ref. Letter</TableHead>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort('dateLetter')}><div className="flex items-center">Date Letter {renderSortIcon('dateLetter')}</div></TableHead>
+                            <TableHead className="min-w-[400px]">References</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -154,11 +155,19 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                         {filteredAndSortedRecords.length > 0 ? filteredAndSortedRecords.map((record, index) => (
                             <TableRow key={record.id}>
                                 <TableCell>{index + 1}</TableCell>
-                                <TableCell>{renderImposition(record)}</TableCell>
-                                <TableCell><Highlight text={record.sanctionType} query={searchTerm} /></TableCell>
-                                <TableCell><Highlight text={record.refLetter} query={searchTerm} /></TableCell>
-                                <TableCell><Highlight text={format(parseISO(record.dateLetter), 'dd-MMM-yy')} query={searchTerm} /></TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="align-top">{renderImposition(record)}</TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col gap-2">
+                                    {record.references.map(ref => (
+                                        <div key={ref.id} className="text-sm p-2 border-l-2 pl-3">
+                                            <p><strong className="font-semibold">Type:</strong> <Highlight text={ref.sanctionType} query={searchTerm} /></p>
+                                            <p><strong className="font-semibold">Ref. Letter:</strong> <Highlight text={ref.refLetter} query={searchTerm} /></p>
+                                            <p><strong className="font-semibold">Date:</strong> <Highlight text={format(parseISO(ref.dateLetter), 'dd-MMM-yy')} query={searchTerm} /></p>
+                                        </div>
+                                    ))}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right align-top">
                                     <EditLawEnforcementRecordDialog record={record} onRecordUpdate={onUpdate} />
                                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteRequest(record)}>
                                         <Trash2 className="h-4 w-4" />

@@ -174,9 +174,12 @@ export const lawEnforcementFormSchema = z.object({
   sanctionedAoc: z.array(z.object({ value: z.string() })).optional(),
   sanctionedPersonnel: z.array(z.object({ value: z.string() })).optional(),
   sanctionedOrganization: z.array(z.object({ value: z.string() })).optional(),
-  sanctionType: z.string().min(1, "Sanction type is required."),
-  refLetter: z.string().min(1, "Reference letter is required."),
-  dateLetter: z.date({ required_error: "Date letter is required." }),
+  references: z.array(z.object({
+    id: z.string(),
+    sanctionType: z.string().min(1, "Sanction type is required."),
+    refLetter: z.string().min(1, "Reference letter is required."),
+    dateLetter: z.date({ required_error: "Date letter is required." }),
+  })).min(1, "At least one reference is required."),
 }).superRefine((data, ctx) => {
     if (data.impositionType === 'aoc' && (!data.sanctionedAoc || data.sanctionedAoc.length === 0 || data.sanctionedAoc.some(p => !p.value))) {
         ctx.addIssue({

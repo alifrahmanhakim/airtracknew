@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -30,6 +31,7 @@ import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Button } from '../ui/button';
 import { aocOptions } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 
@@ -121,155 +123,197 @@ export function LawEnforcementForm({ form, isSubmitting }: LawEnforcementFormPro
     name: "sanctionedOrganization",
   });
 
+  const { fields: referenceFields, append: appendReference, remove: removeReference } = useFieldArray({
+    control: form.control,
+    name: "references",
+  });
+
   return (
     <Form {...form}>
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <FormField
-              control={form.control}
-              name="dateLetter"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date Letter</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
+          <Card>
+            <CardHeader><CardTitle>Sanction Details</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="impositionType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Imposition of Sanction to</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                       <FormControl>
-                        <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSubmitting}>
-                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select who the sanction is for..." />
+                        </SelectTrigger>
                       </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
+                      <SelectContent>
+                        <SelectItem value="aoc">AOC</SelectItem>
+                        <SelectItem value="personnel">Personnel</SelectItem>
+                        <SelectItem value="organization">Organization</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {impositionType === 'aoc' && (
+                <div>
+                  <FormLabel>AOC</FormLabel>
+                  <div className="space-y-4 mt-2">
+                    {aocFields.map((field, index) => (
+                      <div key={field.id} className="flex items-center gap-2">
+                        <FormField
+                          control={form.control}
+                          name={`sanctionedAoc.${index}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex-grow">
+                              <FormControl>
+                                <AOCCombobox field={field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {aocFields.length > 1 && (
+                          <Button type="button" variant="destructive" size="icon" onClick={() => removeAoc(index)} disabled={isSubmitting}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendAoc({ value: "" })} disabled={isSubmitting}>
+                      <Plus className="mr-2 h-4 w-4" /> Add AOC
+                    </Button>
+                  </div>
+                </div>
               )}
-            />
-            <FormField control={form.control} name="refLetter" render={({ field }) => (<FormItem><FormLabel>Ref. Letter</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="sanctionType" render={({ field }) => (<FormItem><FormLabel>Sanction Type</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
-          </div>
 
-          <FormField
-            control={form.control}
-            name="impositionType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Imposition of Sanction to</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select who the sanction is for..." />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="aoc">AOC</SelectItem>
-                    <SelectItem value="personnel">Personnel</SelectItem>
-                    <SelectItem value="organization">Organization</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {impositionType === 'aoc' && (
-            <div>
-              <FormLabel>AOC</FormLabel>
-              <div className="space-y-4 mt-2">
-                {aocFields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2">
-                    <FormField
-                      control={form.control}
-                      name={`sanctionedAoc.${index}.value`}
-                      render={({ field }) => (
-                        <FormItem className="flex-grow">
-                          <FormControl>
-                             <AOCCombobox field={field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {aocFields.length > 1 && (
-                      <Button type="button" variant="destructive" size="icon" onClick={() => removeAoc(index)} disabled={isSubmitting}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+              {impositionType === 'personnel' && (
+                <div>
+                  <FormLabel>Personnel</FormLabel>
+                  <div className="space-y-4 mt-2">
+                    {personnelFields.map((field, index) => (
+                      <div key={field.id} className="flex items-center gap-2">
+                        <FormField
+                          control={form.control}
+                          name={`sanctionedPersonnel.${index}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex-grow">
+                              <FormControl>
+                                <Input {...field} placeholder={`Personnel ${index + 1} Name & ID`} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {personnelFields.length > 1 && (
+                          <Button type="button" variant="destructive" size="icon" onClick={() => removePersonnel(index)} disabled={isSubmitting}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendPersonnel({ value: "" })} disabled={isSubmitting}>
+                      <Plus className="mr-2 h-4 w-4" /> Add Personnel
+                    </Button>
                   </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendAoc({ value: "" })} disabled={isSubmitting}>
-                  <Plus className="mr-2 h-4 w-4" /> Add AOC
-                </Button>
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          {impositionType === 'personnel' && (
-            <div>
-              <FormLabel>Personnel</FormLabel>
-              <div className="space-y-4 mt-2">
-                {personnelFields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2">
-                    <FormField
-                      control={form.control}
-                      name={`sanctionedPersonnel.${index}.value`}
-                      render={({ field }) => (
-                        <FormItem className="flex-grow">
-                          <FormControl>
-                            <Input {...field} placeholder={`Personnel ${index + 1} Name & ID`} disabled={isSubmitting} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {personnelFields.length > 1 && (
-                      <Button type="button" variant="destructive" size="icon" onClick={() => removePersonnel(index)} disabled={isSubmitting}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+              {impositionType === 'organization' && (
+                <div>
+                  <FormLabel>Organization</FormLabel>
+                  <div className="space-y-4 mt-2">
+                    {orgFields.map((field, index) => (
+                      <div key={field.id} className="flex items-center gap-2">
+                        <FormField
+                          control={form.control}
+                          name={`sanctionedOrganization.${index}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex-grow">
+                              <FormControl>
+                                <Input {...field} placeholder={`Organization ${index + 1}`} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {orgFields.length > 1 && (
+                          <Button type="button" variant="destructive" size="icon" onClick={() => removeOrg(index)} disabled={isSubmitting}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendOrg({ value: "" })} disabled={isSubmitting}>
+                      <Plus className="mr-2 h-4 w-4" /> Add Organization
+                    </Button>
                   </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendPersonnel({ value: "" })} disabled={isSubmitting}>
-                  <Plus className="mr-2 h-4 w-4" /> Add Personnel
-                </Button>
-              </div>
-            </div>
-          )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          {impositionType === 'organization' && (
-            <div>
-              <FormLabel>Organization</FormLabel>
-              <div className="space-y-4 mt-2">
-                {orgFields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2">
+           <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                    <CardTitle>References</CardTitle>
+                     <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => appendReference({ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() })}
+                        disabled={isSubmitting}
+                        >
+                        <Plus className="mr-2 h-4 w-4" /> Add Reference
+                    </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {referenceFields.map((field, index) => (
+                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name={`references.${index}.dateLetter`}
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col">
+                                    <FormLabel>Date Letter</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSubmitting}>
+                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField control={form.control} name={`references.${index}.refLetter`} render={({ field }) => (<FormItem><FormLabel>Ref. Letter</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`references.${index}.sanctionType`} render={({ field }) => (<FormItem><FormLabel>Sanction Type</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
+                        </div>
+                        {referenceFields.length > 1 && (
+                            <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeReference(index)} disabled={isSubmitting}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
+                    ))}
                     <FormField
-                      control={form.control}
-                      name={`sanctionedOrganization.${index}.value`}
-                      render={({ field }) => (
-                        <FormItem className="flex-grow">
-                          <FormControl>
-                            <Input {...field} placeholder={`Organization ${index + 1}`} disabled={isSubmitting} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                        control={form.control}
+                        name="references"
+                        render={() => (
+                           <FormMessage />
+                        )}
                     />
-                    {orgFields.length > 1 && (
-                      <Button type="button" variant="destructive" size="icon" onClick={() => removeOrg(index)} disabled={isSubmitting}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendOrg({ value: "" })} disabled={isSubmitting}>
-                  <Plus className="mr-2 h-4 w-4" /> Add Organization
-                </Button>
-              </div>
-            </div>
-          )}
+                </CardContent>
+            </Card>
         </div>
     </Form>
   );

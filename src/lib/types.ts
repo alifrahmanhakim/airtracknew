@@ -247,14 +247,19 @@ export type TindakLanjutDgcaRecord = {
   createdAt: string;
 };
 
-export type LawEnforcementRecord = {
+export type LawEnforcementReference = {
     id: string;
-    impositionType: 'aoc' | 'personnel' | 'organization';
-    sanctionedAoc?: string;
-    sanctionedPersonnel?: { value: string }[];
-    sanctionedOrganization?: string;
     sanctionType: string;
     refLetter: string;
     dateLetter: string;
+};
+
+export type LawEnforcementRecord = {
+    id: string;
+    impositionType: 'aoc' | 'personnel' | 'organization';
+    sanctionedAoc?: { value: string }[];
+    sanctionedPersonnel?: { value: string }[];
+    sanctionedOrganization?: { value: string }[];
+    references: LawEnforcementReference[];
     createdAt: string;
 };
