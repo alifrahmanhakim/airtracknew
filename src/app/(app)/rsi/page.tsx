@@ -188,7 +188,7 @@ export default function RsiPage() {
                                         {statusArray.map(({ name, count }) => (
                                             <Tooltip key={name}>
                                                 <TooltipTrigger asChild>
-                                                    <Badge className={cn(badgeVariants({ variant: 'default' }), module.statusVariant(name))}>
+                                                    <Badge className={cn(badgeVariants({ variant: module.statusVariant(name) === 'destructive' ? 'destructive' : 'default' }), module.statusVariant(name))}>
                                                         {name}: <span className="font-bold ml-1">{count}</span>
                                                     </Badge>
                                                 </TooltipTrigger>
@@ -201,11 +201,12 @@ export default function RsiPage() {
                                 </div>
                             )}
                             </CardContent>
-                            <CardFooter className="bg-muted/50 p-4 mt-auto">
-                                <Link href={module.href} className="group flex items-center text-sm font-semibold w-full">
-                                    <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:animate-pulse">
+                             <CardFooter className="bg-muted/50 p-4 mt-auto">
+                                <Link href={module.href} className="group relative text-sm font-semibold w-full flex items-center">
+                                    <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-primary group-hover:text-transparent transition-colors">
                                         Open Module
                                     </span>
+                                    <div className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 w-0 group-hover:w-full transition-all duration-300"></div>
                                     <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </CardFooter>
