@@ -219,7 +219,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             )}
                         </CardContent>
                         {totalDeadlinePages > 1 && (
-                             <CardFooter className="pt-4 mt-auto">
+                             <CardFooter className="pt-4">
                                 <Pagination>
                                     <PaginationContent>
                                     <PaginationItem>
