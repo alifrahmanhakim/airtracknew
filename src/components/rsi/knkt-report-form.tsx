@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, type UseFormReturn } from 'react-hook-form';
@@ -85,18 +86,6 @@ export function KnktReportForm({ form }: KnktReportFormProps) {
                         value={field.value}
                         onChange={field.onChange}
                         placeholder="Pilih atau ketik operator..."
-                    />
-                    <FormMessage />
-                </FormItem>
-            )}/>
-            <FormField control={form.control} name="aoc" render={({ field }) => (
-                 <FormItem className="flex flex-col">
-                    <FormLabel>AOC</FormLabel>
-                     <Combobox 
-                        options={aocOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Pilih atau ketik AOC..."
                     />
                     <FormMessage />
                 </FormItem>
