@@ -195,7 +195,7 @@ export default function LoginPage() {
       </div>
       <div className="absolute inset-0 bg-black/50" />
       <div className="relative flex flex-col items-center gap-4">
-        <Card className="w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden">
+        <Card className="w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden transition-all hover:border-primary/50 hover:bg-gradient-to-t hover:from-primary/10">
             <div className="grid [grid-template-areas:'card-content']">
                 {/* Login Form */}
                 <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
@@ -233,7 +233,7 @@ export default function LoginPage() {
                                 <Label htmlFor="login-password">Password</Label>
                                 <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60" />
                             </div>
-                            <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
+                            <Button type="submit" className="w-full transition-all hover:scale-105 active:bg-gradient-to-r active:from-pink-500 active:via-purple-500 active:to-blue-500" disabled={isLoading}>
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
                             </Button>
                         </form>
@@ -292,7 +292,7 @@ export default function LoginPage() {
                                 <Label htmlFor="signup-password">Password</Label>
                                 <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
                             </div>
-                            <Button type="submit" className="w-full transition-transform hover:scale-105" disabled={isLoading}>
+                            <Button type="submit" className="w-full transition-all hover:scale-105 active:bg-gradient-to-r active:from-pink-500 active:via-purple-500 active:to-blue-500" disabled={isLoading}>
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
                             </Button>
                         </form>
