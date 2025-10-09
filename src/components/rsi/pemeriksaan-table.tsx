@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import type { PemeriksaanRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, ArrowUpDown, Info, Loader2, Link as LinkIcon } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Info, Loader2, Link as LinkIcon, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
