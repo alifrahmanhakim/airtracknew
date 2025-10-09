@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -13,16 +12,23 @@ import {
 } from '@/components/ui/table';
 import type { TindakLanjutDgcaRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info } from 'lucide-react';
+import { Pencil, Trash2, Info, ArrowUpDown } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
 import { EditTindakLanjutDgcaDialog } from './edit-tindak-lanjut-dgca-dialog';
 import { format, parseISO } from 'date-fns';
+
+type SortDescriptor = {
+  column: keyof TindakLanjutDgcaRecord;
+  direction: 'asc' | 'desc';
+} | null;
 
 type TindakLanjutDgcaTableProps = {
   records: TindakLanjutDgcaRecord[];
   onUpdate: (record: TindakLanjutDgcaRecord) => void;
   onDelete: (record: TindakLanjutDgcaRecord) => void;
   searchTerm: string;
+  sort: SortDescriptor;
+  setSort: (sort: SortDescriptor) => void;
 };
 
 const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) => {
@@ -30,7 +36,7 @@ const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) 
     return <p className="whitespace-pre-wrap"><Highlight text={text} query={searchTerm} /></p>;
 };
 
-export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm }: TindakLanjutDgcaTableProps) {
+export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm, sort, setSort }: TindakLanjutDgcaTableProps) {
     if (records.length === 0) {
         return (
             <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
@@ -40,6 +46,20 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm 
             </div>
         )
     }
+    
+    const handleSort = (column: keyof TindakLanjutDgcaRecord) => {
+        setSort(prevSort => {
+            if (prevSort?.column === column) {
+                return { column, direction: prevSort.direction === 'asc' ? 'desc' : 'asc' };
+            }
+            return { column, direction: 'asc' };
+        });
+    };
+
+    const renderSortIcon = (column: keyof TindakLanjutDgcaRecord) => {
+        if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
+        return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
+    };
 
     return (
         <div className="border rounded-md overflow-x-auto">
@@ -47,7 +67,12 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm 
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[50px]">No</TableHead>
-                        <TableHead className="min-w-[250px]">Laporan Investigasi KNKT</TableHead>
+                        <TableHead className="min-w-[250px] cursor-pointer" onClick={() => handleSort('tanggalKejadian')}>
+                            <div className="flex items-center">
+                                Laporan Investigasi KNKT
+                                {renderSortIcon('tanggalKejadian')}
+                            </div>
+                        </TableHead>
                         <TableHead className="min-w-[200px]">Rekomendasi Keselamatan Ke DGCA</TableHead>
                         <TableHead className="min-w-[200px]">Nomor Rekomendasi Keselamatan</TableHead>
                         <TableHead className="min-w-[300px]">Tindak lanjut DKPPU</TableHead>

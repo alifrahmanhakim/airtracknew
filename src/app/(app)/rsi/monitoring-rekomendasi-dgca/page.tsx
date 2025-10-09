@@ -20,6 +20,8 @@ import type { z } from 'zod';
 import { addTindakLanjutDgcaRecord, deleteTindakLanjutDgcaRecord } from '@/lib/actions/tindak-lanjut-dgca';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { getYear, parseISO } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TindakLanjutDgcaForm = dynamic(() => import('@/components/rsi/tindak-lanjut-dgca-form').then(mod => mod.TindakLanjutDgcaForm), { 
     ssr: false,
@@ -34,6 +36,10 @@ const TindakLanjutDgcaAnalytics = dynamic(() => import('@/components/rsi/tindak-
 });
 
 type TindakLanjutDgcaFormValues = z.infer<typeof tindakLanjutDgcaFormSchema>;
+type SortDescriptor = {
+  column: keyof TindakLanjutDgcaRecord;
+  direction: 'asc' | 'desc';
+} | null;
 
 export default function MonitoringRekomendasiDgcaPage() {
     const { toast } = useToast();
@@ -42,8 +48,10 @@ export default function MonitoringRekomendasiDgcaPage() {
     const [activeTab, setActiveTab] = React.useState('records');
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     
-    // Filter states
+    // Filter and sort states
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [yearFilter, setYearFilter] = React.useState('all');
+    const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggalKejadian', direction: 'desc' });
 
     // Delete state
     const [recordToDelete, setRecordToDelete] = React.useState<TindakLanjutDgcaRecord | null>(null);
@@ -128,17 +136,49 @@ export default function MonitoringRekomendasiDgcaPage() {
         setRecordToDelete(null);
     };
 
-    const filteredRecords = React.useMemo(() => {
-        return records.filter(record => {
-            const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
-                typeof value === 'string' && String(value).toLowerCase().includes(searchTerm.toLowerCase())
+    const yearOptions = React.useMemo(() => {
+        const years = new Set(records.map(r => getYear(parseISO(r.tanggalKejadian))));
+        return ['all', ...Array.from(years).sort((a, b) => b - a)];
+    }, [records]);
+
+    const filteredAndSortedRecords = React.useMemo(() => {
+        let filtered = [...records];
+        
+        if (searchTerm) {
+            const lowercasedTerm = searchTerm.toLowerCase();
+            filtered = filtered.filter(record => 
+                Object.values(record).some(value => 
+                    typeof value === 'string' && String(value).toLowerCase().includes(lowercasedTerm)
+                )
             );
-            return searchTermMatch;
-        });
-    }, [records, searchTerm]);
+        }
+
+        if (yearFilter !== 'all') {
+            filtered = filtered.filter(record => getYear(parseISO(record.tanggalKejadian)) === parseInt(yearFilter, 10));
+        }
+
+        if (sort) {
+            filtered.sort((a, b) => {
+                const aVal = a[sort.column];
+                const bVal = b[sort.column];
+
+                if (sort.column === 'tanggalKejadian') {
+                    const dateA = aVal ? parseISO(aVal).getTime() : 0;
+                    const dateB = bVal ? parseISO(bVal).getTime() : 0;
+                    return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
+                }
+
+                if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return filtered;
+    }, [records, searchTerm, yearFilter, sort]);
 
     const resetFilters = () => {
         setSearchTerm('');
+        setYearFilter('all');
     };
 
     return (
@@ -206,13 +246,32 @@ export default function MonitoringRekomendasiDgcaPage() {
                                                className="pl-9"
                                            />
                                        </div>
-                                       {searchTerm && (
+                                        <Select value={yearFilter} onValueChange={setYearFilter}>
+                                            <SelectTrigger className="w-full sm:w-[180px]">
+                                                <SelectValue placeholder="Filter by year..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {yearOptions.map(year => (
+                                                    <SelectItem key={year} value={String(year)}>
+                                                        {year === 'all' ? 'All Years' : year}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                       {(searchTerm || yearFilter !== 'all') && (
                                            <Button variant="ghost" onClick={resetFilters}>
                                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                            </Button>
                                        )}
                                    </div>
-                                   <TindakLanjutDgcaTable records={filteredRecords} onUpdate={handleRecordUpdate} onDelete={handleDeleteRequest} searchTerm={searchTerm} />
+                                   <TindakLanjutDgcaTable 
+                                        records={filteredAndSortedRecords} 
+                                        onUpdate={handleRecordUpdate} 
+                                        onDelete={handleDeleteRequest} 
+                                        searchTerm={searchTerm}
+                                        sort={sort}
+                                        setSort={setSort}
+                                    />
                                </div>
                            )}
                         </CardContent>
