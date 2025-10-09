@@ -7,7 +7,7 @@ import type { TindakLanjutRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Info } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '../ui/chart';
 
 type AnalyticsProps = {
   allRecords: TindakLanjutRecord[];
@@ -38,8 +38,16 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
         }, {} as Record<string, number>);
 
         const penerimaData = Object.entries(recordsByPenerima).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 10);
+        
+        const recordsByStatus = allRecords.reduce((acc, record) => {
+            acc[record.status] = (acc[record.status] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
 
-        return { yearData, penerimaData, totalRecords: allRecords.length };
+        const statusData = Object.entries(recordsByStatus).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+
+
+        return { yearData, penerimaData, statusData, totalRecords: allRecords.length };
     }, [allRecords]);
     
     if (allRecords.length === 0) {
@@ -70,23 +78,43 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                     <p className="text-4xl font-bold">{analyticsData.totalRecords}</p>
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Records by Year</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ChartContainer config={chartConfig(analyticsData.yearData)} className="h-[300px] w-full">
-                        <ResponsiveContainer>
-                            <BarChart data={analyticsData.yearData}>
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <Card className="lg:col-span-3">
+                    <CardHeader>
+                        <CardTitle>Records by Year</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig(analyticsData.yearData)} className="h-[300px] w-full">
+                            <ResponsiveContainer>
+                                <BarChart data={analyticsData.yearData}>
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                 <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Report Status Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[300px]">
+                            <PieChart>
+                                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                <Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                    {analyticsData.statusData.map((entry) => (
+                                        <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
+                                    ))}
+                                </Pie>
+                                <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                            </PieChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle>Top 10 Penerima Rekomendasi</CardTitle>
