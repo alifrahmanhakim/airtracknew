@@ -82,8 +82,8 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
         if (sort) {
             filtered.sort((a, b) => {
                 if (sort.column === 'dateLetterFirst') {
-                    const dateA = a.references[0] ? parseISO(a.references[0].dateLetter).getTime() : 0;
-                    const dateB = b.references[0] ? parseISO(b.references[0].dateLetter).getTime() : 0;
+                    const dateA = a.references && a.references.length > 0 ? parseISO(a.references[0].dateLetter).getTime() : 0;
+                    const dateB = b.references && b.references.length > 0 ? parseISO(b.references[0].dateLetter).getTime() : 0;
                     return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
 
