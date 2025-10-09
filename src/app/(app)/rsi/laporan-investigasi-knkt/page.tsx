@@ -121,6 +121,7 @@ export default function LaporanInvestigasiKnktPage() {
             lokasi: '',
             taxonomy: '',
             keterangan: '',
+            nomor_laporan: '',
         },
     });
 
@@ -157,7 +158,7 @@ export default function LaporanInvestigasiKnktPage() {
                             </Link>
                         </Button>
                         <div>
-                            <h1 className="text-3xl font-bold">LAPORAN INVESTIGASI DAN REKOMENDASI KNKT</h1>
+                            <h1 className="text-3xl font-bold">Laporan Investigasi dan Rekomendasi KNKT</h1>
                             <p className="text-muted-foreground">
                                 Manage and view NTSC investigation reports.
                             </p>
