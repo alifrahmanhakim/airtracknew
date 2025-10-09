@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useForm, type UseFormReturn, useFieldArray } from 'react-hook-form';
@@ -25,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { MultiSelect } from '../ui/multi-select';
 
 type TindakLanjutFormValues = z.infer<typeof tindakLanjutFormSchema>;
 
@@ -156,11 +155,11 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 render={({ field }) => (
                 <FormItem className="flex flex-col">
                     <FormLabel>Penerima Rekomendasi</FormLabel>
-                    <Combobox
-                    options={aocOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Pilih atau ketik penerima..."
+                    <MultiSelect
+                        options={aocOptions}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        placeholder="Pilih penerima..."
                     />
                     <FormMessage />
                 </FormItem>
@@ -179,6 +178,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                         <SelectContent>
                             <SelectItem value="Draft">Draft</SelectItem>
                             <SelectItem value="Final">Final</SelectItem>
+                            <SelectItem value="Draft Final">Draft Final</SelectItem>
                             <SelectItem value="Preliminary">Preliminary</SelectItem>
                             <SelectItem value="Interim Statement">Interim Statement</SelectItem>
                         </SelectContent>
