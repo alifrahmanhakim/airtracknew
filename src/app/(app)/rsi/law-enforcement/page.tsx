@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -11,8 +11,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LawEnforcementRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { lawEnforcementFormSchema } from '@/lib/schemas';
+import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
+import type { z } from 'zod';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -25,12 +30,26 @@ const LawEnforcementAnalytics = dynamic(() => import('@/components/rsi/law-enfor
     loading: () => <Skeleton className="h-[600px] w-full" />
 });
 
+type LawEnforcementFormValues = z.infer<typeof lawEnforcementFormSchema>;
 
 export default function LawEnforcementPage() {
     const [records, setRecords] = React.useState<LawEnforcementRecord[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    const form = useForm<LawEnforcementFormValues>({
+        resolver: zodResolver(lawEnforcementFormSchema),
+        defaultValues: {
+            impositionType: 'aoc',
+            sanctionedAoc: '',
+            sanctionedPersonnel: [{ value: "" }],
+            sanctionedOrganization: '',
+            sanctionType: '',
+            refLetter: '',
+        },
+    });
 
     React.useEffect(() => {
         const q = query(collection(db, "lawEnforcementRecords"), orderBy("dateLetter", "desc"));
@@ -63,8 +82,22 @@ export default function LawEnforcementPage() {
         setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
     };
 
-    const handleFormSubmitSuccess = () => {
-        setActiveTab('records');
+    const onSubmit = async (data: LawEnforcementFormValues) => {
+        setIsSubmitting(true);
+        const result = await addLawEnforcementRecord(data);
+        setIsSubmitting(false);
+
+        if (result.success) {
+            toast({ title: 'Record Added', description: 'The new sanction record has been added.' });
+            form.reset();
+            setActiveTab('records');
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Error Adding Record',
+                description: result.error || 'An unknown error occurred.',
+            });
+        }
     };
 
     return (
@@ -94,7 +127,13 @@ export default function LawEnforcementPage() {
                 </div>
 
                 <TabsContent value="form">
-                    <LawEnforcementForm onFormSubmitSuccess={handleFormSubmitSuccess} />
+                   <Card>
+                        <LawEnforcementForm 
+                            form={form} 
+                            onSubmit={form.handleSubmit(onSubmit)} 
+                            isSubmitting={isSubmitting} 
+                        />
+                    </Card>
                 </TabsContent>
 
                 <TabsContent value="records">
