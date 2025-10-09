@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import type { Project, User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon } from 'lucide-react';
+import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock } from 'lucide-react';
 import { useMemo, useState, useRef } from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -12,7 +13,7 @@ import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { AddRulemakingProjectDialog } from './add-rulemaking-project-dialog';
@@ -50,6 +51,13 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         ];
 
         return { total, completed, inProgress, reviewPending, highPriority, distribution };
+    }, [projects]);
+
+    const projectsNearDeadline = useMemo(() => {
+        return projects.filter(p => {
+          const daysLeft = differenceInDays(parseISO(p.endDate), new Date());
+          return daysLeft >= 0 && daysLeft <= 14 && p.status !== 'Completed';
+        }).sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
     }, [projects]);
     
     const filteredProjects = useMemo(() => {
@@ -171,6 +179,33 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                            )}
                         </CardContent>
                     </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Approaching Deadlines</CardTitle>
+                            <CardDescription>CASR projects due in the next 14 days.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {projectsNearDeadline.length > 0 ? (
+                                projectsNearDeadline.map(project => {
+                                    const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
+                                    return (
+                                        <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-muted/50 p-2 rounded-md">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <p className="font-semibold truncate flex-1">CASR {project.casr}</p>
+                                                <Badge variant="destructive" className="whitespace-nowrap">{daysLeft} days left</Badge>
+                                            </div>
+                                             <p className="text-xs text-muted-foreground truncate">{project.name}</p>
+                                        </Link>
+                                    )
+                                })
+                            ) : (
+                                <div className="text-center text-sm text-muted-foreground py-4">
+                                    <CalendarClock className="mx-auto h-8 w-8 mb-2" />
+                                    No projects nearing their deadline.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </aside>
                 
                 {/* Main Content */}
@@ -283,7 +318,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                                         +{project.team.length - 5}
                                                       </div>
                                                     )}
-                                                </div>
+                                               </div>
                                                 {project.team.length > 0 && (
                                                     <span className="text-xs text-muted-foreground font-medium truncate max-w-[100px]">
                                                         {project.team[0].name}
