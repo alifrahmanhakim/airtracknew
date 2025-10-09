@@ -13,9 +13,14 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search } from 'lucide-react';
+import { RotateCcw, Search, Loader2 } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
 import { ComboboxOption } from '@/components/ui/combobox';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { accidentIncidentFormSchema } from '@/lib/schemas';
+import type { z } from 'zod';
+import { addAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -28,6 +33,8 @@ const AccidentIncidentAnalytics = dynamic(() => import('@/components/rsi/acciden
     loading: () => <Skeleton className="h-[800px] w-full" />
 });
 
+type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
+
 export default function DataAccidentIncidentPage() {
     const [records, setRecords] = React.useState<AccidentIncidentRecord[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -38,6 +45,9 @@ export default function DataAccidentIncidentPage() {
     const [searchTerm, setSearchTerm] = React.useState('');
     const [operatorFilter, setOperatorFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
+    
+    // Form state
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     React.useEffect(() => {
         const q = query(collection(db, "accidentIncidentRecords"), orderBy("tanggal", "desc"));
@@ -91,9 +101,8 @@ export default function DataAccidentIncidentPage() {
         });
     }, [records, searchTerm, operatorFilter, yearFilter]);
 
-    const handleFormSubmit = () => {
+    const handleFormSubmitSuccess = () => {
         setActiveTab('records');
-        // No need to manually add to state, onSnapshot will handle it
     };
 
     const resetTableFilters = () => {
@@ -101,6 +110,40 @@ export default function DataAccidentIncidentPage() {
         setOperatorFilter('all');
         setYearFilter('all');
     };
+    
+    const form = useForm<AccidentIncidentFormValues>({
+        resolver: zodResolver(accidentIncidentFormSchema),
+        defaultValues: {
+            kategori: 'Accident (A)',
+            aoc: '',
+            registrasiPesawat: '',
+            tipePesawat: '',
+            lokasi: '',
+            taxonomy: '',
+            keteranganKejadian: '',
+            adaKorbanJiwa: 'Tidak Ada',
+            jumlahKorbanJiwa: '',
+        },
+    });
+
+    const onFormSubmit = async (data: AccidentIncidentFormValues) => {
+        setIsSubmitting(true);
+        const result = await addAccidentIncidentRecord(data);
+        setIsSubmitting(false);
+
+        if (result.success) {
+            toast({ title: 'Record Added', description: 'The new record has been successfully added.' });
+            form.reset();
+            handleFormSubmitSuccess();
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: result.error || 'Failed to add the record.',
+            });
+        }
+    };
+
 
     return (
         <main className="p-4 md:p-8">
@@ -128,8 +171,14 @@ export default function DataAccidentIncidentPage() {
                             <CardDescription>Fill out the form to add a new accident or serious incident record.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <AccidentIncidentForm onFormSubmit={handleFormSubmit} operatorOptions={operatorComboboxOptions} />
+                            <AccidentIncidentForm form={form} onSubmit={onFormSubmit} operatorOptions={operatorComboboxOptions} />
                         </CardContent>
+                        <CardFooter className="flex justify-end">
+                            <Button type="submit" form="accident-incident-form" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Submit Record
+                            </Button>
+                        </CardFooter>
                     </Card>
                 </TabsContent>
 

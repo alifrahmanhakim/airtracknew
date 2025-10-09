@@ -1,9 +1,8 @@
 
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -20,12 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, CalendarIcon } from 'lucide-react';
-import { useState } from 'react';
+import { CalendarIcon } from 'lucide-react';
 import { accidentIncidentFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
-import { addAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -33,55 +29,23 @@ import { Calendar } from '../ui/calendar';
 import { Combobox, ComboboxOption } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
 import { indonesianAircraftTypes, aocOptions, taxonomyOptions } from '@/lib/data';
+import { Button } from '../ui/button';
 
 type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
 
 type AccidentIncidentFormProps = {
-  onFormSubmit: () => void;
+  form: UseFormReturn<AccidentIncidentFormValues>;
+  onSubmit: (data: AccidentIncidentFormValues) => void;
   operatorOptions: ComboboxOption[];
 };
 
-export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: AccidentIncidentFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const form = useForm<AccidentIncidentFormValues>({
-    resolver: zodResolver(accidentIncidentFormSchema),
-    defaultValues: {
-      aoc: '',
-      registrasiPesawat: '',
-      tipePesawat: '',
-      lokasi: '',
-      taxonomy: '',
-      keteranganKejadian: '',
-      adaKorbanJiwa: 'Tidak Ada',
-      jumlahKorbanJiwa: '',
-    },
-  });
-
+export function AccidentIncidentForm({ form, onSubmit, operatorOptions }: AccidentIncidentFormProps) {
+  
   const watchAdaKorban = form.watch('adaKorbanJiwa');
-
-  const onSubmit = async (data: AccidentIncidentFormValues) => {
-    setIsLoading(true);
-    const result = await addAccidentIncidentRecord(data);
-    setIsLoading(false);
-
-    if (result.success) {
-        toast({ title: 'Record Added', description: 'The new record has been successfully added.' });
-        form.reset();
-        onFormSubmit();
-    } else {
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: result.error || 'Failed to add the record.',
-        });
-    }
-  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" id="accident-incident-form">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FormField control={form.control} name="tanggal" render={({ field }) => (
                 <FormItem className="flex flex-col">
@@ -115,7 +79,18 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                     <FormMessage />
                 </FormItem>
             )}/>
-             
+             <FormField control={form.control} name="operator" render={({ field }) => (
+                <FormItem className="flex flex-col">
+                    <FormLabel>Operator</FormLabel>
+                     <Combobox 
+                        options={operatorOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select or type an operator..."
+                    />
+                    <FormMessage />
+                </FormItem>
+            )}/>
              <FormField control={form.control} name="aoc" render={({ field }) => (
                  <FormItem className="flex flex-col">
                     <FormLabel>AOC</FormLabel>
@@ -188,7 +163,6 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
                 )}
             </div>
         </div>
-        
       </form>
     </Form>
   );
