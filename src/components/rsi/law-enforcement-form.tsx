@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -132,6 +131,65 @@ export function LawEnforcementForm({ form, isSubmitting }: LawEnforcementFormPro
     <Form {...form}>
         <div className="space-y-6">
           <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                    <CardTitle>References</CardTitle>
+                     <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => appendReference({ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() })}
+                        disabled={isSubmitting}
+                        >
+                        <Plus className="mr-2 h-4 w-4" /> Add Reference
+                    </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {referenceFields.map((field, index) => (
+                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name={`references.${index}.dateLetter`}
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col">
+                                    <FormLabel>Date Letter</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSubmitting}>
+                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField control={form.control} name={`references.${index}.refLetter`} render={({ field }) => (<FormItem><FormLabel>Ref. Letter</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`references.${index}.sanctionType`} render={({ field }) => (<FormItem><FormLabel>Sanction Type</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
+                        </div>
+                        {referenceFields.length > 1 && (
+                            <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeReference(index)} disabled={isSubmitting}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
+                    ))}
+                    <FormField
+                        control={form.control}
+                        name="references"
+                        render={() => (
+                           <FormMessage />
+                        )}
+                    />
+                </CardContent>
+            </Card>
+            <Card>
             <CardHeader><CardTitle>Sanction Details</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -254,66 +312,6 @@ export function LawEnforcementForm({ form, isSubmitting }: LawEnforcementFormPro
               )}
             </CardContent>
           </Card>
-
-           <Card>
-                <CardHeader className="flex-row items-center justify-between">
-                    <CardTitle>References</CardTitle>
-                     <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => appendReference({ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() })}
-                        disabled={isSubmitting}
-                        >
-                        <Plus className="mr-2 h-4 w-4" /> Add Reference
-                    </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {referenceFields.map((field, index) => (
-                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <FormField
-                                control={form.control}
-                                name={`references.${index}.dateLetter`}
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                    <FormLabel>Date Letter</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSubmitting}>
-                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField control={form.control} name={`references.${index}.refLetter`} render={({ field }) => (<FormItem><FormLabel>Ref. Letter</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name={`references.${index}.sanctionType`} render={({ field }) => (<FormItem><FormLabel>Sanction Type</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>)} />
-                        </div>
-                        {referenceFields.length > 1 && (
-                            <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={() => removeReference(index)} disabled={isSubmitting}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </div>
-                    ))}
-                    <FormField
-                        control={form.control}
-                        name="references"
-                        render={() => (
-                           <FormMessage />
-                        )}
-                    />
-                </CardContent>
-            </Card>
         </div>
     </Form>
   );
