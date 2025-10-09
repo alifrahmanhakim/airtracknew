@@ -40,8 +40,8 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
     resolver: zodResolver(tindakLanjutFormSchema),
     defaultValues: {
       ...record,
-      tanggalKejadian: record.tanggalKejadian ? record.tanggalKejadian : '',
-      tanggalTerbit: record.tanggalTerbit ? record.tanggalTerbit : '',
+      tanggalKejadian: record.tanggalKejadian ? parseISO(record.tanggalKejadian) : undefined,
+      tanggalTerbit: record.tanggalTerbit ? parseISO(record.tanggalTerbit) : undefined,
       status: record.status || 'Draft',
       registrasiPesawat: record.registrasiPesawat || '',
       tipePesawat: record.tipePesawat || '',
@@ -56,7 +56,6 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
   const onSubmit = async (data: TindakLanjutFormValues) => {
     setIsSubmitting(true);
 
-    // Ensure dates are strings in 'yyyy-MM-dd' format before submitting
     const dataToSubmit = {
       ...data,
       tanggalKejadian: data.tanggalKejadian instanceof Date ? format(data.tanggalKejadian, 'yyyy-MM-dd') : data.tanggalKejadian,
