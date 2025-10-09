@@ -56,8 +56,6 @@ import {
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditProjectDialog } from './edit-project-dialog';
-import { AddSubProjectDialog } from './add-subproject-dialog';
-import { EditSubProjectDialog } from './edit-subproject-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AddDocumentLinkDialog } from './add-document-link-dialog';
@@ -227,17 +225,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     setProject(prev => ({...prev, tasks: updatedTasks}));
   }
 
-  const handleSubProjectAdd = (newSubProject: SubProject) => {
-    setProject(prev => ({...prev, subProjects: [...(prev.subProjects || []), newSubProject]}));
-  }
-
-  const handleSubProjectUpdate = (updatedSubProject: SubProject) => {
-     setProject(prev => ({
-        ...prev,
-        subProjects: (prev.subProjects || []).map(sub => sub.id === updatedSubProject.id ? updatedSubProject : sub)
-     }));
-  }
-  
   const handleDocumentAdd = (newDocument: ProjectDocument) => {
     setProject(prev => ({ ...prev, documents: [...(prev.documents || []), newDocument] }));
   }
@@ -326,17 +313,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     return <FileQuestion className="h-6 w-6 text-gray-500" />;
   };
   
-  const subProjectStatusStyles: { [key in SubProject['status']]: string } = {
-    'On Track': 'border-transparent bg-blue-500 text-white',
-    'At Risk': 'border-transparent bg-yellow-500 text-white',
-    'Off Track': 'border-transparent bg-red-500 text-white',
-    'Completed': 'border-transparent bg-green-500 text-white',
-  }
-
   const projectManager = findUserById(project.ownerId || users[0].id, users);
   const tasks = project.tasks || [];
-  const projectDocuments = project.documents || [];
-  const subProjects = project.subProjects || [];
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'Done').length;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
@@ -375,6 +353,22 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
     return [...projDocs, ...taskAttachments];
   }, [project.documents, project.tasks]);
+  
+  const tasksWithoutAttachments = React.useMemo(() => {
+    const tasksToCheck = (tasks: Task[]): Task[] => {
+      let result: Task[] = [];
+      tasks.forEach(task => {
+        if (!task.attachments || task.attachments.length === 0) {
+          result.push(task);
+        }
+        if (task.subTasks) {
+          result = result.concat(tasksToCheck(task.subTasks));
+        }
+      });
+      return result;
+    };
+    return tasksToCheck(project.tasks || []);
+  }, [project.tasks]);
 
   const filteredDocuments = React.useMemo(() => {
     if (!documentSearch) return allDocuments;
@@ -600,38 +594,25 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
            </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                  <Folder /> Sub-Projects
+        {tasksWithoutAttachments.length > 0 && (
+          <Card className="border-yellow-500/50 bg-yellow-500/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                <AlertTriangle /> Attachment Alert
               </CardTitle>
-              <AddSubProjectDialog projectId={project.id} projectType={project.projectType} onSubProjectAdd={handleSubProjectAdd} />
-          </CardHeader>
-          <CardContent>
-            {subProjects.length > 0 ? (
-              <div className="space-y-4">
-                {subProjects.map(sub => (
-                  <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div>
-                      <p className="font-semibold">{sub.name}</p>
-                      <p className="text-sm text-muted-foreground">{sub.description}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="outline" className={cn("text-xs font-semibold", subProjectStatusStyles[sub.status])}>
-                          {sub.status}
-                      </Badge>
-                      <div className="print:hidden">
-                        <EditSubProjectDialog projectId={project.id} projectType={project.projectType} subProject={sub} onSubProjectUpdate={handleSubProjectUpdate} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-center py-4">No sub-projects yet.</p>
-            )}
-          </CardContent>
-        </Card>
+              <CardDescription>
+                The following tasks are missing attachments. Please upload the necessary files.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ul className="list-disc pl-5 space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
+                    {tasksWithoutAttachments.map(task => (
+                        <li key={task.id}>{task.title}</li>
+                    ))}
+                </ul>
+            </CardContent>
+          </Card>
+        )}
         
       </div>
 
