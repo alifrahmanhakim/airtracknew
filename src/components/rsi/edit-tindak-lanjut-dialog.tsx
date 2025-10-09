@@ -21,7 +21,7 @@ import type { TindakLanjutRecord } from '@/lib/types';
 import { TindakLanjutForm } from './tindak-lanjut-form';
 import { updateTindakLanjutRecord } from '@/lib/actions/tindak-lanjut';
 import { tindakLanjutFormSchema } from '@/lib/schemas';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import type { z } from 'zod';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -41,9 +41,12 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
     resolver: zodResolver(tindakLanjutFormSchema),
     defaultValues: {
       ...record,
-      tanggalTerbit: parseISO(record.tanggalTerbit),
-      tanggalKejadian: parseISO(record.tanggalKejadian),
+      tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
+      tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
       status: record.status || 'Draft',
+      registrasiPesawat: record.registrasiPesawat || '',
+      tipePesawat: record.tipePesawat || '',
+      lokasiKejadian: record.lokasiKejadian || '',
     },
   });
 

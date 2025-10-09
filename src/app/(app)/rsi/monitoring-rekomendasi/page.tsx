@@ -93,6 +93,9 @@ export default function MonitoringRekomendasiPage() {
             tindakLanjutDkppu: '',
             tindakLanjutOperator: '',
             status: 'Draft',
+            registrasiPesawat: '',
+            tipePesawat: '',
+            lokasiKejadian: '',
         }
     });
 

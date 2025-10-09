@@ -58,7 +58,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[50px]">No</TableHead>
-                        <TableHead className="min-w-[250px]">Laporan KNKT</TableHead>
+                        <TableHead className="min-w-[250px]">Laporan KNKT & Info Pesawat</TableHead>
                         <TableHead className="min-w-[200px]">Penerima Rekomendasi</TableHead>
                         <TableHead className="min-w-[300px]">Rekomendasi Keselamatan</TableHead>
                         <TableHead className="min-w-[300px]">Tindak Lanjut/Respon DKPPU</TableHead>
@@ -75,7 +75,10 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                 <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
                                 <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
-                                <p className="text-sm text-muted-foreground">Terbit: <Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>
+                                {record.tanggalTerbit && <p className="text-sm text-muted-foreground">Terbit: <Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>}
+                                {record.registrasiPesawat && <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasiPesawat} query={searchTerm} /></p>}
+                                {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
+                                {record.lokasiKejadian && <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasiKejadian} query={searchTerm} /></p>}
                             </TableCell>
                             <TableCell className="align-top"><Highlight text={record.penerimaRekomendasi} query={searchTerm} /></TableCell>
                             <TableCell className="align-top">
@@ -86,8 +89,8 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                     </div>
                                 ))}
                             </TableCell>
-                            <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
-                            <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu || ''} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator || ''} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top">
                                 <Badge
                                     className={cn({

@@ -232,6 +232,9 @@ export type TindakLanjutRecord = {
     tindakLanjutOperator?: string;
     tahun: number;
     createdAt: string;
+    registrasiPesawat?: string;
+    tipePesawat?: string;
+    lokasiKejadian?: string;
 };
 
 export type TindakLanjutDgcaRecord = {

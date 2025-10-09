@@ -155,6 +155,9 @@ export const tindakLanjutFormSchema = z.object({
     rekomendasi: z.array(rekomendasiKeselamatanSchema).optional(),
     tindakLanjutDkppu: z.string().optional(),
     tindakLanjutOperator: z.string().optional(),
+    registrasiPesawat: z.string().optional(),
+    tipePesawat: z.string().optional(),
+    lokasiKejadian: z.string().optional(),
 });
 
 export const tindakLanjutDgcaFormSchema = z.object({
