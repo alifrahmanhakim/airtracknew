@@ -124,12 +124,13 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
     if (todayRef.current && timelineContainerRef.current) {
       const container = timelineContainerRef.current;
       const todayPosition = todayRef.current.offsetLeft;
+      // Scroll to the "Today" marker, positioning it roughly one-third of the way into the view
       container.scrollTo({
         left: todayPosition - container.offsetWidth / 3,
-        behavior: 'smooth',
+        behavior: 'auto', // Use 'auto' for initial load for instant positioning
       });
     }
-  }, [viewMode, weeks, days, sortedTasks]);
+  }, [sortedTasks]); // Reruns when tasks are filtered/sorted
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
