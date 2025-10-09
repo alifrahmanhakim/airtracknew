@@ -32,7 +32,7 @@ import { format } from 'date-fns';
 import { Calendar } from '../ui/calendar';
 import { Combobox, ComboboxOption } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
-import { indonesianAircraftTypes, aocOptions } from '@/lib/data';
+import { indonesianAircraftTypes, aocOptions, taxonomyOptions } from '@/lib/data';
 
 type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
 
@@ -156,7 +156,18 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
             )}/>
              <FormField control={form.control} name="lokasi" render={({ field }) => (<FormItem><FormLabel>Lokasi</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
              <FormField control={form.control} name="wilayah" render={({ field }) => (<FormItem><FormLabel>Wilayah</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-             <FormField control={form.control} name="taxonomy" render={({ field }) => (<FormItem><FormLabel>Taxonomy</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+             <FormField control={form.control} name="taxonomy" render={({ field }) => (
+                <FormItem className="flex flex-col">
+                    <FormLabel>Taxonomy</FormLabel>
+                     <Combobox 
+                        options={taxonomyOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select or type a taxonomy..."
+                    />
+                    <FormMessage />
+                </FormItem>
+             )}/>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField control={form.control} name="keteranganKejadian" render={({ field }) => (
@@ -201,3 +212,5 @@ export function AccidentIncidentForm({ onFormSubmit, operatorOptions }: Accident
     </Form>
   );
 }
+
+    

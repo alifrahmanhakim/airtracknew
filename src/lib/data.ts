@@ -113,7 +113,7 @@ export const aocOptions: ComboboxOption[] = [
     { value: 'GENESA DIRGANTARA - 135', label: 'GENESA DIRGANTARA - 135' },
     { value: 'NATIONAL GLOBAL AVIASI - 135', label: 'NATIONAL GLOBAL AVIASI - 135' },
     { value: 'TRANSWISATA PRIMA AVIATION - 135', label: 'TRANSWISATA PRIMA AVIATION - 135' },
-    { value: 'ZAVERYNA UTAMA - 135', label: 'ZAVERYNA UTama - 135' },
+    { value: 'ZAVERYNA UTAMA - 135', label: 'ZAVERYNA UTAMA - 135' },
     { value: 'ABADI MEGA ANGKUTAN NUSANTARA - 135', label: 'ABADI MEGA ANGKUTAN NUSANTARA - 135' },
     { value: 'VAST INTRA AVIA - 135', label: 'VAST INTRA AVIA - 135' },
     { value: 'IKAIROS AIR SERVICES - 135', label: 'IKAIROS AIR SERVICES - 135' },
@@ -143,3 +143,17 @@ export const aocOptions: ComboboxOption[] = [
     { value: 'VAST INTRA AVIA - 121', label: 'VAST INTRA AVIA - 121' },
     { value: 'PERSADA PERKASA AIRNESIA - 121', label: 'PERSADA PERKASA AIRNESIA - 121' },
 ];
+
+export const taxonomyOptions: ComboboxOption[] = [
+    { value: 'Turbulence Encounter (TURB)', label: 'Turbulence Encounter (TURB)' },
+    { value: 'System/Component Failure or Malfunction (Powerplant) (SCF-PP)', label: 'System/Component Failure or Malfunction (Powerplant) (SCF-PP)' },
+    { value: 'Loss of Control Inflight (LOC-I)', label: 'Loss of Control Inflight (LOC-I)' },
+    { value: 'Abnormal Runway Contact (ARC)', label: 'Abnormal Runway Contact (ARC)' },
+    { value: 'Runway Excursion (RE)', label: 'Runway Excursion (RE)' },
+    { value: 'ATM/CNS (ATM)', label: 'ATM/CNS (ATM)' },
+    { value: 'Fuel Related (FUEL)', label: 'Fuel Related (FUEL)' },
+    { value: 'System/Component Failure – Non-Powerplant (SCF-NP)', label: 'System/Component Failure – Non-Powerplant (SCF-NP)' },
+    { value: 'Belum tertaxonomy', label: 'Belum tertaxonomy' },
+];
+
+    
