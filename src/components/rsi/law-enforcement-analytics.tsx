@@ -174,7 +174,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                     <CardTitle>Top 10 Sanction Types</CardTitle>
                 </CardHeader>
                 <CardContent>
-                     <ChartContainer config={chartConfig(analyticsData.sanctionTypeData)} className="h-[400px] w-full">
+                     <ChartContainer config={chartConfig(analyticsData.sanctionTypeData)} className="h-auto w-full" style={{ height: `${Math.max(200, analyticsData.sanctionTypeData.length * 40)}px` }}>
                         <ResponsiveContainer>
                             <BarChart data={analyticsData.sanctionTypeData} layout="vertical" margin={{ left: 100, right: 30 }}>
                                 <YAxis dataKey="name" type="category" width={200} interval={0} tick={{ fontSize: 12 }} />
