@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
 import { updateTask } from '@/lib/actions/project';
+import { AnimatedCounter } from '@/components/ui/animated-counter';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -363,14 +364,14 @@ export default function MyDashboardPage() {
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><FolderKanban className="h-4 w-4" /> My Projects</CardTitle>
                     </CardHeader>
-                    <CardContent><div className="text-3xl font-bold">{myProjects.length}</div></CardContent>
+                    <CardContent><div className="text-3xl font-bold"><AnimatedCounter endValue={myProjects.length} /></div></CardContent>
                 </Card>
                  <Card>
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><ListTodo className="h-4 w-4" /> Task Completion</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{completionPercentage.toFixed(0)}%</div>
+                        <div className="text-3xl font-bold"><AnimatedCounter endValue={completionPercentage} />%</div>
                         <p className="text-xs text-muted-foreground">{openTasksCount} of {totalTasks} tasks open</p>
                     </CardContent>
                 </Card>
@@ -378,14 +379,14 @@ export default function MyDashboardPage() {
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-yellow-500" /> Projects at Risk</CardTitle>
                     </CardHeader>
-                    <CardContent><div className="text-3xl font-bold text-yellow-500">{atRiskProjectsCount}</div></CardContent>
+                    <CardContent><div className="text-3xl font-bold text-yellow-500"><AnimatedCounter endValue={atRiskProjectsCount} /></div></CardContent>
                 </Card>
                  <Card>
                     <CardHeader className="pb-2 h-16">
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-red-500" /> Projects Off Track</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold text-red-500">{offTrackProjectsCount}</div>
+                      <div className="text-3xl font-bold text-red-500"><AnimatedCounter endValue={offTrackProjectsCount} /></div>
                     </CardContent>
                 </Card>
                 <Card className="col-span-2">
@@ -393,7 +394,7 @@ export default function MyDashboardPage() {
                         <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-orange-500" /> Critical Issues</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold text-orange-500">{criticalIssuesCount}</div>
+                      <div className="text-3xl font-bold text-orange-500"><AnimatedCounter endValue={criticalIssuesCount} /></div>
                       <p className="text-xs text-muted-foreground">Proyek dengan masalah kritis yang perlu perhatian segera.</p>
                     </CardContent>
                 </Card>
@@ -484,7 +485,7 @@ export default function MyDashboardPage() {
                                 <Link href={item.href}>
                                     <div className="p-3 rounded-lg border bg-background hover:bg-muted/80 hover:shadow-sm transition-all text-center">
                                         <item.icon className={cn("h-8 w-8 mx-auto mb-2", item.color)} />
-                                        <p className="font-bold text-lg">{item.value}</p>
+                                        <p className="font-bold text-lg"><AnimatedCounter endValue={item.value} /></p>
                                         <p className="text-xs font-medium text-muted-foreground">{item.title}</p>
                                     </div>
                                 </Link>
