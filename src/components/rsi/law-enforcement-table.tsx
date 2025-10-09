@@ -158,7 +158,7 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                                 <TableCell className="align-top">{renderImposition(record)}</TableCell>
                                 <TableCell>
                                     <div className="flex flex-col gap-2">
-                                    {record.references?.map(ref => (
+                                    {(record.references || []).map(ref => (
                                         <div key={ref.id} className="text-sm p-2 border-l-2 pl-3">
                                             <p><strong className="font-semibold">Type:</strong> <Highlight text={ref.sanctionType} query={searchTerm} /></p>
                                             <p><strong className="font-semibold">Ref. Letter:</strong> <Highlight text={ref.refLetter} query={searchTerm} /></p>
