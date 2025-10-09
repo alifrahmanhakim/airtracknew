@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/table';
 import type { TindakLanjutRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info, Badge } from 'lucide-react';
+import { Pencil, Trash2, Info } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Highlight } from '../ui/highlight';
 import { format, parseISO } from 'date-fns';
 import { EditTindakLanjutRecordDialog } from './edit-tindak-lanjut-dialog';
