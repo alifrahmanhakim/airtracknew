@@ -149,6 +149,7 @@ export const tindakLanjutFormSchema = z.object({
     judulLaporan: z.string().min(1, 'Judul Laporan is required.'),
     nomorLaporan: z.string().min(1, 'Nomor Laporan is required.'),
     tanggalTerbit: z.date({ required_error: "Tanggal Terbit is required." }),
+    tanggalKejadian: z.date({ required_error: "Tanggal Kejadian is required." }),
     penerimaRekomendasi: z.string().min(1, 'Penerima Rekomendasi is required.'),
     rekomendasi: z.array(rekomendasiKeselamatanSchema).min(1, 'At least one recommendation is required.'),
     tindakLanjutDkppu: z.string().min(1, 'Tindak Lanjut DKPPU is required.'),

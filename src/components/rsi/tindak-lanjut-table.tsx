@@ -70,7 +70,8 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                             <TableCell className="align-top">
                                 <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
                                 <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
-                                <p className="text-sm text-muted-foreground"><Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Terbit: <Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>
                             </TableCell>
                             <TableCell className="align-top"><Highlight text={record.penerimaRekomendasi} query={searchTerm} /></TableCell>
                             <TableCell className="align-top">
