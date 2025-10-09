@@ -114,7 +114,11 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
     const renderImposition = (record: LawEnforcementRecord) => {
         switch (record.impositionType) {
             case 'aoc':
-                return <Highlight text={record.sanctionedAoc || ''} query={searchTerm} />;
+                return (
+                    <ul className="list-disc pl-5">
+                        {record.sanctionedAoc?.map((p, i) => <li key={i}><Highlight text={p.value} query={searchTerm}/></li>)}
+                    </ul>
+                );
             case 'personnel':
                 return (
                     <ul className="list-disc pl-5">
@@ -122,7 +126,11 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                     </ul>
                 );
             case 'organization':
-                 return <Highlight text={record.sanctionedOrganization || ''} query={searchTerm} />;
+                 return (
+                    <ul className="list-disc pl-5">
+                        {record.sanctionedOrganization?.map((p, i) => <li key={i}><Highlight text={p.value} query={searchTerm}/></li>)}
+                    </ul>
+                );
             default:
                 return 'N/A';
         }
