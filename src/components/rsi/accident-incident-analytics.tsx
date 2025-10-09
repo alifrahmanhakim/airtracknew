@@ -172,11 +172,35 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
              <div className="grid grid-cols-1 gap-6">
                 <Card>
                     <CardHeader><CardTitle>Top 10 AOC by Incidents</CardTitle></CardHeader>
-                    <CardContent><ChartContainer config={chartConfig(analyticsData.aocData)} className="h-[400px] w-full"><ResponsiveContainer><BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 100, right: 30 }}><CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={200} /><XAxis type="number" allowDecimals={false} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.aocData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar></BarChart></ResponsiveContainer></ChartContainer></CardContent>
+                    <CardContent>
+                        <ChartContainer config={chartConfig(analyticsData.aocData)} className="h-[400px] w-full">
+                            <ResponsiveContainer>
+                                <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 50, right: 30 }}>
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={150} />
+                                    <XAxis type="number" allowDecimals={false} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.aocData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
                 </Card>
                  <Card>
                     <CardHeader><CardTitle>Incidents by Taxonomy</CardTitle></CardHeader>
-                    <CardContent><ChartContainer config={chartConfig(analyticsData.taxonomyData)} className="h-[400px] w-full"><ResponsiveContainer><BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 100, right: 30 }}><CartesianGrid horizontal={false} /><YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={200} /><XAxis type="number" allowDecimals={false} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.taxonomyData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar></BarChart></ResponsiveContainer></ChartContainer></CardContent>
+                    <CardContent>
+                        <ChartContainer config={chartConfig(analyticsData.taxonomyData)} className="h-[400px] w-full">
+                            <ResponsiveContainer>
+                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 50, right: 30 }}>
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={150} />
+                                    <XAxis type="number" allowDecimals={false} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.taxonomyData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
                 </Card>
             </div>
 
