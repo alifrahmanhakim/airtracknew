@@ -167,3 +167,22 @@ export const tindakLanjutDgcaFormSchema = z.object({
   nomorRekomendasi: z.string().min(1, 'Nomor Rekomendasi Keselamatan is required.'),
   tindakLanjutDkppu: z.string().min(1, 'Tindak lanjut DKPPU is required.'),
 });
+
+
+export const lawEnforcementFormSchema = z.object({
+  impositionType: z.enum(['aoc', 'personnel', 'organization']),
+  sanctionedAoc: z.string().optional(),
+  sanctionedPersonnel: z.array(z.object({ value: z.string().min(1, "Personnel name cannot be empty.") })).optional(),
+  sanctionedOrganization: z.string().optional(),
+  sanctionType: z.string().min(1, "Sanction type is required."),
+  refLetter: z.string().min(1, "Reference letter is required."),
+  dateLetter: z.date({ required_error: "Date letter is required." }),
+}).refine(data => {
+    if (data.impositionType === 'aoc') return !!data.sanctionedAoc;
+    if (data.impositionType === 'personnel') return data.sanctionedPersonnel && data.sanctionedPersonnel.length > 0;
+    if (data.impositionType === 'organization') return !!data.sanctionedOrganization;
+    return false;
+}, {
+    message: "Please provide the required details for the selected sanction type.",
+    path: ['impositionType'],
+});

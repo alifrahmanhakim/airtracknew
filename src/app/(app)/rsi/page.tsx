@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, ShieldQuestion, FileWarning, Search, List } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, ShieldQuestion, FileWarning, Search, List, Gavel } from 'lucide-react';
 import Link from 'next/link';
 
 const rsiModules = [
@@ -39,8 +39,8 @@ const rsiModules = [
   {
     title: 'List of Law Enforcement',
     description: 'View and manage the list of law enforcement actions.',
-    icon: <List className="h-8 w-8 text-gray-500" />,
-    href: '#',
+    icon: <Gavel className="h-8 w-8 text-gray-500" />,
+    href: '/rsi/law-enforcement',
   },
 ];
 
@@ -56,7 +56,7 @@ export default function RsiPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {rsiModules.map((module) => (
-          <Link key={module.title} href={module.href}>
+          <Link key={module.title} href={module.href} className={module.href === '#' ? 'pointer-events-none' : ''}>
             <Card className="h-full flex flex-col hover:shadow-lg hover:border-primary transition-all">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
                 {module.icon}

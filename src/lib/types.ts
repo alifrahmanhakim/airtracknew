@@ -246,3 +246,15 @@ export type TindakLanjutDgcaRecord = {
   tindakLanjutDkppu: string;
   createdAt: string;
 };
+
+export type LawEnforcementRecord = {
+    id: string;
+    impositionType: 'aoc' | 'personnel' | 'organization';
+    sanctionedAoc?: string;
+    sanctionedPersonnel?: { value: string }[];
+    sanctionedOrganization?: string;
+    sanctionType: string;
+    refLetter: string;
+    dateLetter: string;
+    createdAt: string;
+};
