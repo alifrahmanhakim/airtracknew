@@ -54,6 +54,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Progress } from './ui/progress';
 import { parseISO, getYear } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { cn } from '@/lib/utils';
 
 export function DashboardPage() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
@@ -197,6 +198,9 @@ export function DashboardPage() {
   };
 
   const maxTasks = teamWorkloadData.length > 0 ? Math.max(...teamWorkloadData.map(item => item.tasks)) : 0;
+  
+  const cardHoverClasses = "transition-all duration-300 hover:shadow-lg hover:border-primary group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20";
+
 
   return (
     <>
@@ -229,7 +233,7 @@ export function DashboardPage() {
               </div>
           </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className={cn(cardHoverClasses)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
               <FolderKanban className="h-4 w-4 text-muted-foreground" />
@@ -239,7 +243,7 @@ export function DashboardPage() {
               <p className="text-xs text-muted-foreground">All active and completed projects</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className={cn(cardHoverClasses)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
               <ListTodo className="h-4 w-4 text-muted-foreground" />
@@ -249,7 +253,7 @@ export function DashboardPage() {
               <p className="text-xs text-muted-foreground">{stats.completedTasks} tasks completed</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className={cn(cardHoverClasses)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">At Risk</CardTitle>
               <AlarmClockOff className="h-4 w-4 text-muted-foreground" />
@@ -259,7 +263,7 @@ export function DashboardPage() {
               <p className="text-xs text-muted-foreground">Projects needing attention</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className={cn(cardHoverClasses)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Off Track</CardTitle>
               <Frown className="h-4 w-4 text-muted-foreground" />
@@ -272,7 +276,7 @@ export function DashboardPage() {
         </div>
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-          <Card>
+          <Card className={cn(cardHoverClasses)}>
             <CardHeader>
               <CardTitle>Project Status Overview</CardTitle>
               <CardDescription>A look at the health of all projects in the portfolio.</CardDescription>
@@ -299,7 +303,7 @@ export function DashboardPage() {
               </ChartContainer>
             </CardContent>
           </Card>
-          <Card>
+          <Card className={cn(cardHoverClasses)}>
             <CardHeader>
                 <CardTitle>Team Workload</CardTitle>
                 <CardDescription>Distribution of tasks among team members.</CardDescription>
