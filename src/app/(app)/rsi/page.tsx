@@ -202,7 +202,7 @@ export default function RsiPage() {
                                             {totalCasualties !== null && (
                                                 <div className="flex items-center gap-2">
                                                     <Users className="h-4 w-4 text-muted-foreground" />
-                                                    <Badge variant="destructive" className='font-normal'>
+                                                    <Badge variant="destructive">
                                                         Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
                                                     </Badge>
                                                 </div>
