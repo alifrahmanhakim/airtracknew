@@ -20,7 +20,7 @@ import type { AccidentIncidentRecord } from '@/lib/types';
 import { AccidentIncidentForm } from './accident-incident-form';
 import { updateAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { accidentIncidentFormSchema } from '@/lib/schemas';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import type { z } from 'zod';
 
 type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
@@ -48,7 +48,7 @@ export function EditAccidentIncidentRecordDialog({ record, onRecordUpdate }: Edi
     resolver: zodResolver(accidentIncidentFormSchema),
     defaultValues: {
       ...record,
-      tanggal: parseISO(record.tanggal),
+      tanggal: format(parseISO(record.tanggal), 'yyyy-MM-dd'),
       adaKorbanJiwa: korbanData.ada,
       jumlahKorbanJiwa: korbanData.jumlah,
     },

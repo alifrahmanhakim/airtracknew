@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RotateCcw, Search, Loader2, ArrowLeft } from 'lucide-react';
-import { getYear, parseISO } from 'date-fns';
+import { getYear, parseISO, format } from 'date-fns';
 import { ComboboxOption } from '@/components/ui/combobox';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -111,6 +111,7 @@ export default function DataAccidentIncidentPage() {
     const form = useForm<AccidentIncidentFormValues>({
         resolver: zodResolver(accidentIncidentFormSchema),
         defaultValues: {
+            tanggal: format(new Date(), 'yyyy-MM-dd'),
             kategori: 'Accident (A)',
             aoc: '',
             registrasiPesawat: '',
