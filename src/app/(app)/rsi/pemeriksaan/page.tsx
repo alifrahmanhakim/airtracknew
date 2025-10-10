@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getYear, parseISO } from 'date-fns';
 import Link from 'next/link';
+import { aocOptions } from '@/lib/data';
 
 const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form').then(mod => mod.PemeriksaanForm), { 
     ssr: false,
@@ -168,10 +169,10 @@ export default function PemeriksaanPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <TabsList>
-                            <TabsTrigger value="form">Input Form</TabsTrigger>
-                            <TabsTrigger value="records">Records</TabsTrigger>
-                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        <TabsList className="w-full sm:w-auto">
+                            <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
+                            <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
+                            <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
                         </TabsList>
                     </CardContent>
                 </Card>
@@ -232,7 +233,7 @@ export default function PemeriksaanPage() {
                                             <SelectContent>
                                                 <SelectItem value="all">All Operators</SelectItem>
                                                 {operatorOptions.map(op => (
-                                                    <SelectItem key={op} value={op}>{op}</SelectItem>
+                                                    <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
@@ -264,5 +265,3 @@ export default function PemeriksaanPage() {
         </main>
     );
 }
-
-    
