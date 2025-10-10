@@ -202,14 +202,17 @@ export default function RsiPage() {
             });
         };
 
-        const totalIncidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords').length;
+        const filteredAccidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords') as AccidentIncidentRecord[];
+        const totalIncidents = filteredAccidents.length;
         const totalReports = filterByYear(data.knktReports, 'knktReports').length;
         const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
+        const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
 
         return {
             totalIncidents,
             totalReports,
             totalSanctions,
+            totalCasualties,
         }
     }, [data, yearFilter]);
 
@@ -247,7 +250,7 @@ export default function RsiPage() {
                     <CardDescription>Key metrics from all records.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                              <AlertTriangle className="h-8 w-8 text-destructive" />
                             <div>
@@ -267,6 +270,13 @@ export default function RsiPage() {
                             <div>
                                 <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
                                 <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
+                            </div>
+                        </div>
+                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                             <Users className="h-8 w-8 text-red-500" />
+                            <div>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
+                                <p className="text-sm text-muted-foreground">Total Casualties</p>
                             </div>
                         </div>
                     </div>
