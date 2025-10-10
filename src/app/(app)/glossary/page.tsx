@@ -232,24 +232,30 @@ export default function GlossaryPage() {
     }
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 print:hidden">
-                <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                    <h1 className="text-3xl font-bold">Translation Analysis</h1>
-                    <p className="text-muted-foreground">
-                        A centralized tool for analyzing and storing translation data.
-                    </p>
-                </div>
-                <div className='flex items-center gap-2'>
-                  <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                    <ImportGlossaryCsvDialog />
-                  </Suspense>
-                  <TabsList>
-                      <TabsTrigger value="form">Input Form</TabsTrigger>
-                      <TabsTrigger value="records">Records</TabsTrigger>
-                      <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  </TabsList>
-                </div>
-            </div>
+            <Card className="mb-4 print:hidden">
+                <CardHeader>
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                        <div>
+                            <h1 className="text-3xl font-bold">Translation Analysis</h1>
+                            <p className="text-muted-foreground mt-2">
+                                A centralized tool for analyzing and storing translation data.
+                            </p>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                            <ImportGlossaryCsvDialog />
+                          </Suspense>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <TabsList className="w-full">
+                        <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
+                        <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
+                        <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
+                    </TabsList>
+                </CardContent>
+            </Card>
             
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden', 'print:hidden')}>
                 <Card className="max-w-4xl mx-auto">

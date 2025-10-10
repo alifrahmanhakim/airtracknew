@@ -299,193 +299,197 @@ export default function CcefodPage() {
       );
     }
     return (
-        <div>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                    <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                        <h1 className="text-3xl font-bold">CC/EFOD Monitoring</h1>
-                        <p className="text-muted-foreground">
-                            Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
-                        </p>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Card className="mb-4">
+                <CardHeader>
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                        <div className="flex-1">
+                            <CardTitle className="text-3xl font-bold">CC/EFOD Monitoring</CardTitle>
+                            <CardDescription className="mt-2">
+                                Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
+                            </CardDescription>
+                        </div>
+                         <div className='flex items-center gap-2'>
+                            <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                                <ImportCcefodCsvDialog />
+                            </Suspense>
+                        </div>
                     </div>
-                    <div className='flex items-center gap-2'>
-                      <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                        <ImportCcefodCsvDialog />
-                      </Suspense>
-                      <TabsList>
-                          <TabsTrigger value="form">Input Form</TabsTrigger>
-                          <TabsTrigger value="records">Records</TabsTrigger>
-                          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                      </TabsList>
-                    </div>
-                </div>
-                
-                <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
-                    <Card className="max-w-4xl mx-auto">
-                        <CardHeader>
-                        <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
-                        <CardDescription>
-                            Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di database.
-                        </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                           <CcefodForm onFormSubmit={handleRecordAdd} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                
-                <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
-                    <Card>
-                        <CardHeader>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <CardTitle>CC/EFOD Analytics Dashboard</CardTitle>
-                                    <CardDescription>
-                                        Visualisasi data dari catatan yang telah dimasukkan.
-                                    </CardDescription>
-                                </div>
-                                <div className="flex items-center gap-2 print:hidden w-full sm:w-auto">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 w-full">
-                                        <MultiSelect
-                                            options={annexSelectOptions}
-                                            onValueChange={setAnalyticsAnnexFilter}
-                                            defaultValue={analyticsAnnexFilter}
-                                            placeholder="Filter by Annex..."
-                                            className="w-full"
-                                        />
-                                        <Select value={analyticsAdaPerubahanFilter} onValueChange={setAnalyticsAdaPerubahanFilter}>
-                                            <SelectTrigger><SelectValue placeholder="Filter by Change..." /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Change Statuses</SelectItem>
-                                                <SelectItem value="YA">YA</SelectItem>
-                                                <SelectItem value="TIDAK">TIDAK</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={analyticsStatusFilter} onValueChange={setAnalyticsStatusFilter}>
-                                            <SelectTrigger><SelectValue placeholder="Filter by Status..." /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Statuses</SelectItem>
-                                                <SelectItem value="Draft">Draft</SelectItem>
-                                                <SelectItem value="Final">Final</SelectItem>
-                                                <SelectItem value="Existing">Existing</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    { (analyticsAnnexFilter.length > 0 || analyticsAdaPerubahanFilter !== 'all' || analyticsStatusFilter !== 'all') && (
-                                        <Button variant="ghost" onClick={() => {
-                                            setAnalyticsAnnexFilter([]);
-                                            setAnalyticsAdaPerubahanFilter('all');
-                                            setAnalyticsStatusFilter('all');
-                                        }}>
-                                            <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                                        </Button>
-                                    )}
-                                </div>
+                </CardHeader>
+                <CardContent>
+                    <TabsList className="w-full">
+                        <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
+                        <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
+                        <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
+                    </TabsList>
+                </CardContent>
+            </Card>
+            
+            <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
+                <Card className="max-w-4xl mx-auto">
+                    <CardHeader>
+                    <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
+                    <CardDescription>
+                        Isi formulir di bawah ini untuk menambahkan data baru. Data akan tersimpan di database.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                       <CcefodForm onFormSubmit={handleRecordAdd} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            
+            <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle>CC/EFOD Analytics Dashboard</CardTitle>
+                                <CardDescription>
+                                    Visualisasi data dari catatan yang telah dimasukkan.
+                                </CardDescription>
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                           <CcefodAnalyticsDashboard records={filteredAnalyticsRecords} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                
-                <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
-                    <Card>
-                        <CardHeader>
-                            <div className='flex justify-between items-start'>
-                                <div>
-                                    <CardTitle>CC/EFOD Records</CardTitle>
-                                    <CardDescription>
-                                        Berikut adalah daftar data yang telah dimasukkan dari database.
-                                    </CardDescription>
+                            <div className="flex items-center gap-2 print:hidden w-full sm:w-auto">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 w-full">
+                                    <MultiSelect
+                                        options={annexSelectOptions}
+                                        onValueChange={setAnalyticsAnnexFilter}
+                                        defaultValue={analyticsAnnexFilter}
+                                        placeholder="Filter by Annex..."
+                                        className="w-full"
+                                    />
+                                    <Select value={analyticsAdaPerubahanFilter} onValueChange={setAnalyticsAdaPerubahanFilter}>
+                                        <SelectTrigger><SelectValue placeholder="Filter by Change..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Change Statuses</SelectItem>
+                                            <SelectItem value="YA">YA</SelectItem>
+                                            <SelectItem value="TIDAK">TIDAK</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={analyticsStatusFilter} onValueChange={setAnalyticsStatusFilter}>
+                                        <SelectTrigger><SelectValue placeholder="Filter by Status..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Statuses</SelectItem>
+                                            <SelectItem value="Draft">Draft</SelectItem>
+                                            <SelectItem value="Final">Final</SelectItem>
+                                            <SelectItem value="Existing">Existing</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                                <div className="flex items-center gap-2 print:hidden">
-                                    <Button variant="outline" size="icon" onClick={confirmExport}>
-                                        <FileSpreadsheet className="h-4 w-4" />
-                                        <span className="sr-only">Export as Excel</span>
-                                     </Button>
-                                     <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">Delete All Records</span>
+                                { (analyticsAnnexFilter.length > 0 || analyticsAdaPerubahanFilter !== 'all' || analyticsStatusFilter !== 'all') && (
+                                    <Button variant="ghost" onClick={() => {
+                                        setAnalyticsAnnexFilter([]);
+                                        setAnalyticsAdaPerubahanFilter('all');
+                                        setAnalyticsStatusFilter('all');
+                                    }}>
+                                        <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                     </Button>
+                                )}
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                       <CcefodAnalyticsDashboard records={filteredAnalyticsRecords} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            
+            <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
+                <Card>
+                    <CardHeader>
+                        <div className='flex justify-between items-start'>
+                            <div>
+                                <CardTitle>CC/EFOD Records</CardTitle>
+                                <CardDescription>
+                                    Berikut adalah daftar data yang telah dimasukkan dari database.
+                                </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2 print:hidden">
+                                <Button variant="outline" size="icon" onClick={confirmExport}>
+                                    <FileSpreadsheet className="h-4 w-4" />
+                                    <span className="sr-only">Export as Excel</span>
+                                 </Button>
+                                 <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Delete All Records</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                       <div className="space-y-4">
+                            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                                <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                            ref={searchInputRef}
+                                            placeholder="Search all fields..."
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
+                                            className="pl-9 w-full"
+                                        />
+                                    </div>
+                                    <Select value={annexFilter} onValueChange={setAnnexFilter}>
+                                        <SelectTrigger><SelectValue placeholder="Filter by Annex..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {annexOptions.map(annex => (
+                                                <SelectItem key={annex} value={annex}>
+                                                    {annex === 'all' ? 'All Annexes' : annex}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={implementationLevelFilter} onValueChange={setImplementationLevelFilter}>
+                                        <SelectTrigger><SelectValue placeholder="Filter by Level..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Implementation Levels</SelectItem>
+                                            {implementationLevelOptions.map(option => (
+                                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={adaPerubahanFilter} onValueChange={setAdaPerubahanFilter}>
+                                        <SelectTrigger><SelectValue placeholder="Filter by Change..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Change Statuses</SelectItem>
+                                            <SelectItem value="YA">YA</SelectItem>
+                                            <SelectItem value="TIDAK">TIDAK</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                           <div className="space-y-4">
-                                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                                    <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input 
-                                                ref={searchInputRef}
-                                                placeholder="Search all fields..."
-                                                value={searchTerm}
-                                                onChange={e => setSearchTerm(e.target.value)}
-                                                className="pl-9 w-full"
-                                            />
-                                        </div>
-                                        <Select value={annexFilter} onValueChange={setAnnexFilter}>
-                                            <SelectTrigger><SelectValue placeholder="Filter by Annex..." /></SelectTrigger>
-                                            <SelectContent>
-                                                {annexOptions.map(annex => (
-                                                    <SelectItem key={annex} value={annex}>
-                                                        {annex === 'all' ? 'All Annexes' : annex}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={implementationLevelFilter} onValueChange={setImplementationLevelFilter}>
-                                            <SelectTrigger><SelectValue placeholder="Filter by Level..." /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Implementation Levels</SelectItem>
-                                                {implementationLevelOptions.map(option => (
-                                                    <SelectItem key={option} value={option}>{option}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={adaPerubahanFilter} onValueChange={setAdaPerubahanFilter}>
-                                            <SelectTrigger><SelectValue placeholder="Filter by Change..." /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Change Statuses</SelectItem>
-                                                <SelectItem value="YA">YA</SelectItem>
-                                                <SelectItem value="TIDAK">TIDAK</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                            <CcefodRecordsTable 
+                                records={paginatedRecords} 
+                                onDelete={handleDeleteRequest} 
+                                onUpdate={() => {}}
+                                searchTerm={searchTerm}
+                            />
+                             <div className="flex items-center justify-between">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing {paginatedRecords.length} of {filteredRecords.length} records.
                                 </div>
-                                <CcefodRecordsTable 
-                                    records={paginatedRecords} 
-                                    onDelete={handleDeleteRequest} 
-                                    onUpdate={() => {}}
-                                    searchTerm={searchTerm}
-                                />
-                                 <div className="flex items-center justify-between">
-                                    <div className="text-sm text-muted-foreground">
-                                        Showing {paginatedRecords.length} of {filteredRecords.length} records.
-                                    </div>
-                                    <Pagination>
-                                        <PaginationContent>
-                                        <PaginationItem>
-                                            <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
-                                        </PaginationItem>
-                                        <PaginationItem>
-                                            <span className="px-4 py-2 text-sm">
-                                                Page {currentPage} of {totalPages}
-                                            </span>
-                                        </PaginationItem>
-                                        <PaginationItem>
-                                            <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
-                                        </PaginationItem>
-                                        </PaginationContent>
-                                    </Pagination>
-                                </div>
+                                <Pagination>
+                                    <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage - 1)}} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <span className="px-4 py-2 text-sm">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationNext href="#" onClick={(e) => {e.preventDefault(); handlePageChange(currentPage + 1)}} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
+                                    </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
                             </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
-        </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
     );
   }
 

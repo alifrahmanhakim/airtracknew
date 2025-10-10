@@ -148,21 +148,21 @@ export default function GapAnalysisPage() {
     }
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                    <h1 className="text-3xl font-bold">GAP Analysis</h1>
-                    <p className="text-muted-foreground">
+            <Card className="mb-4">
+                <CardHeader>
+                    <CardTitle className="text-3xl font-bold">GAP Analysis</CardTitle>
+                    <CardDescription className="mt-2">
                         Manage and monitor GAP Analysis records based on State Letters.
-                    </p>
-                </div>
-                <div className='flex items-center gap-2'>
-                  <TabsList>
-                      <TabsTrigger value="form">Input Form</TabsTrigger>
-                      <TabsTrigger value="records">Records</TabsTrigger>
-                      <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  </TabsList>
-                </div>
-            </div>
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <TabsList className="w-full">
+                      <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
+                      <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
+                      <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
+                    </TabsList>
+                </CardContent>
+            </Card>
             
             <TabsContent value="form" className={cn(activeTab !== 'form' ? 'hidden' : '')}>
                 <Card>
