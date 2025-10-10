@@ -23,6 +23,7 @@ import type { z } from 'zod';
 import { addAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { aocOptions } from '@/lib/data';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -151,7 +152,7 @@ export default function DataAccidentIncidentPage() {
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div className="flex items-center gap-4 flex-1">
-                                <Button asChild variant="outline" size="icon">
+                                <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
                                     <Link href="/rsi">
                                         <ArrowLeft className="h-4 w-4" />
                                     </Link>
@@ -163,10 +164,22 @@ export default function DataAccidentIncidentPage() {
                                     </p>
                                 </div>
                             </div>
+                            <div className="w-full sm:w-auto">
+                                <Select value={String(yearFilter)} onValueChange={setYearFilter}>
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder="Filter by year..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {yearOptions.map(year => (
+                                            <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <TabsList className="w-full sm:w-auto">
+                       <TabsList>
                             <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
                             <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
                             <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
@@ -223,17 +236,7 @@ export default function DataAccidentIncidentPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                     <Select value={String(yearFilter)} onValueChange={setYearFilter}>
-                                        <SelectTrigger className="w-full sm:w-[120px]">
-                                            <SelectValue placeholder="Filter by year..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {yearOptions.map(year => (
-                                                <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {(searchTerm || aocFilter !== 'all' || yearFilter !== 'all') && (
+                                    {(searchTerm || aocFilter !== 'all') && (
                                          <Button variant="ghost" onClick={resetTableFilters}>
                                             <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                         </Button>
@@ -250,12 +253,10 @@ export default function DataAccidentIncidentPage() {
                     {isLoading ? (
                         <Skeleton className="h-[800px] w-full" />
                     ) : (
-                        <AccidentIncidentAnalytics allRecords={records} />
+                        <AccidentIncidentAnalytics allRecords={filteredRecords} />
                     )}
                 </TabsContent>
             </Tabs>
         </main>
     );
 }
-
-    

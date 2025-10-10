@@ -155,7 +155,7 @@ export default function PemeriksaanPage() {
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div className="flex items-center gap-4 flex-1">
-                                 <Button asChild variant="outline" size="icon">
+                                 <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
                                     <Link href="/rsi">
                                         <ArrowLeft className="h-4 w-4" />
                                     </Link>
@@ -170,10 +170,10 @@ export default function PemeriksaanPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <TabsList className="w-full sm:w-auto">
-                            <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
-                            <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
-                            <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
+                        <TabsList>
+                            <TabsTrigger value="form">Input Form</TabsTrigger>
+                            <TabsTrigger value="records">Records</TabsTrigger>
+                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         </TabsList>
                     </CardContent>
                 </Card>
@@ -256,7 +256,7 @@ export default function PemeriksaanPage() {
                     {isLoading ? (
                         <Skeleton className="h-[600px] w-full" />
                     ) : (
-                        <PemeriksaanAnalytics allRecords={records} />
+                        <PemeriksaanAnalytics allRecords={filteredRecords} />
                     )}
                 </TabsContent>
             </Tabs>

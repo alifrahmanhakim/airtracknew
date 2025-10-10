@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -117,7 +118,7 @@ export default function LawEnforcementPage() {
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div className="flex items-center gap-4 flex-1">
-                                <Button asChild variant="outline" size="icon">
+                                <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
                                     <Link href="/rsi">
                                         <ArrowLeft className="h-4 w-4" />
                                     </Link>
