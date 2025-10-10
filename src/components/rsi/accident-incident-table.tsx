@@ -134,7 +134,7 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                                 <TableCell><Highlight text={record.tipePesawat} query={searchTerm} /></TableCell>
                                 <TableCell><Highlight text={record.lokasi} query={searchTerm} /></TableCell>
                                 <TableCell><Highlight text={record.taxonomy} query={searchTerm} /></TableCell>
-                                <TableCell className="whitespace-normal"><Highlight text={record.keteranganKejadian} query={searchTerm} /></TableCell>
+                                <TableCell className="whitespace-normal"><Highlight text={record.keteranganKejadian || ''} query={searchTerm} /></TableCell>
                                 <TableCell><Highlight text={record.korbanJiwa} query={searchTerm} /></TableCell>
                                 <TableCell>
                                     {record.fileUrl ? (

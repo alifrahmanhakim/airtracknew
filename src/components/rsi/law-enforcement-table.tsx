@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -246,7 +247,7 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                                 </TableRow>
                             )) : (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24">
+                                    <TableCell colSpan={4} className="text-center h-24">
                                         <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                         No records found.
                                     </TableCell>

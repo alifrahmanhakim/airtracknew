@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -245,5 +246,3 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
     </TooltipProvider>
   );
 }
-
-    
