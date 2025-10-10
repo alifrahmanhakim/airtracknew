@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -111,6 +111,15 @@ type RsiData = {
   lawEnforcementRecords: LawEnforcementRecord[];
 };
 
+const parseCasualties = (casualtyString: string | undefined): number => {
+    if (!casualtyString || casualtyString.toLowerCase() === 'tidak ada') {
+      return 0;
+    }
+    const match = casualtyString.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+};
+
+
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
@@ -161,6 +170,10 @@ export default function RsiPage() {
 
                     const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
 
+                    const totalCasualties = module.collectionName === 'accidentIncidentRecords'
+                        ? (records as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
+                        : null;
+
                     return (
                         <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
                             <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20">
@@ -182,14 +195,25 @@ export default function RsiPage() {
                                         </p>
                                     )}
                                 </div>
-                                {totalCount > 0 && (
-                                    <div className="pt-2 space-y-1">
-                                        <p className="text-xs uppercase text-muted-foreground font-semibold">Status Breakdown</p>
-                                        <div className="flex flex-wrap gap-2">
+                                {(totalCount > 0 || totalCasualties !== null) && (
+                                    <div className="pt-2 space-y-3">
+                                        <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
+                                        <div className="space-y-1">
+                                            {totalCasualties !== null && (
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                                    <Badge variant="secondary" className='font-normal'>
+                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
+                                                    </Badge>
+                                                </div>
+                                            )}
                                             {statusArray.map(({ name, count }) => (
-                                                <Badge key={name} className={cn(badgeVariants({ variant: module.statusVariant(name) === 'destructive' ? 'destructive' : 'default' }), module.statusVariant(name))}>
-                                                    {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
-                                                </Badge>
+                                                <div key={name} className="flex items-center gap-2">
+                                                    <div className={cn("h-2 w-2 rounded-full", module.statusVariant(name) === 'destructive' ? 'bg-destructive' : 'bg-secondary-foreground')}></div>
+                                                    <Badge variant={module.statusVariant(name) === 'destructive' ? 'destructive' : 'default'} className={cn(module.statusVariant(name))}>
+                                                        {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
+                                                    </Badge>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
