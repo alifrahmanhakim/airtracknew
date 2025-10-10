@@ -168,7 +168,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                         <CardDescription>Breakdown of sanctions by the type of entity.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex justify-center">
-                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="max-w-[300px] h-[300px]">
+                        <ChartContainer config={chartConfig(analyticsData.impositionTypeData)} className="mx-auto aspect-square h-[300px]">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                 <Pie data={analyticsData.impositionTypeData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
