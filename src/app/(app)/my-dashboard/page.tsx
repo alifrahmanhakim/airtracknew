@@ -19,8 +19,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { format, parseISO, differenceInDays, isAfter } from 'date-fns';
-import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX } from 'lucide-react';
+import { format, parseISO, differenceInDays, isAfter, isToday, isBefore, startOfDay } from 'date-fns';
+import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX, CheckSquare, XSquare, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
@@ -230,6 +230,14 @@ export default function MyDashboardPage() {
   const criticalIssuesCount = React.useMemo(() => {
     return myProjects.filter(p => (p.tasks || []).some(task => !!task.criticalIssue)).length;
   }, [myProjects]);
+
+  const todaysFocusStats = React.useMemo(() => {
+      const today = startOfDay(new Date());
+      const tasksDueToday = assignedTasks.filter(t => t.status !== 'Done' && isToday(parseISO(t.dueDate))).length;
+      const overdueTasks = assignedTasks.filter(t => t.status !== 'Done' && isBefore(parseISO(t.dueDate), today)).length;
+      const criticalProjects = myProjects.filter(p => p.status !== 'Completed' && (p.tasks || []).some(t => t.criticalIssue)).length;
+      return { tasksDueToday, overdueTasks, criticalProjects };
+  }, [assignedTasks, myProjects]);
   
   const upcomingTasks = assignedTasks
     .filter(t => t.status !== 'Done')
@@ -359,46 +367,34 @@ export default function MyDashboardPage() {
 
         {/* Sidebar */}
         <aside className="lg:col-span-1 xl:col-span-1 space-y-6 mt-14">
-            <div className="grid grid-cols-2 gap-4">
-                <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
-                    <CardHeader className="pb-2 h-16">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><FolderKanban className="h-4 w-4" /> My Projects</CardTitle>
-                    </CardHeader>
-                    <CardContent><div className="text-3xl font-bold"><AnimatedCounter endValue={myProjects.length} /></div></CardContent>
-                </Card>
-                 <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
-                    <CardHeader className="pb-2 h-16">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><ListTodo className="h-4 w-4" /> Task Completion</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold"><AnimatedCounter endValue={completionPercentage} />%</div>
-                        <p className="text-xs text-muted-foreground">{openTasksCount} of {totalTasks} tasks open</p>
-                    </CardContent>
-                </Card>
-                 <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
-                    <CardHeader className="pb-2 h-16">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-yellow-500" /> Projects at Risk</CardTitle>
-                    </CardHeader>
-                    <CardContent><div className="text-3xl font-bold text-yellow-500"><AnimatedCounter endValue={atRiskProjectsCount} /></div></CardContent>
-                </Card>
-                 <Card className="transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
-                    <CardHeader className="pb-2 h-16">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-red-500" /> Projects Off Track</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-red-500"><AnimatedCounter endValue={offTrackProjectsCount} /></div>
-                    </CardContent>
-                </Card>
-                <Card className="col-span-2 transition-all hover:bg-gradient-to-b hover:from-primary/10 dark:hover:from-primary/20">
-                    <CardHeader className="pb-2 h-16">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><AlertTriangle className="h-4 w-4 text-orange-500" /> Critical Issues</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-orange-500"><AnimatedCounter endValue={criticalIssuesCount} /></div>
-                      <p className="text-xs text-muted-foreground">Proyek dengan masalah kritis yang perlu perhatian segera.</p>
-                    </CardContent>
-                </Card>
-            </div>
+            <Card className="bg-gradient-to-br from-primary/20 via-background to-background">
+                <CardHeader>
+                    <CardTitle>Fokus Hari Ini</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+                        <div className='flex items-center gap-3'>
+                            <CheckSquare className="h-6 w-6 text-blue-500" />
+                            <p className='font-semibold'>Tugas Jatuh Tempo Hari Ini</p>
+                        </div>
+                        <p className="text-2xl font-bold text-blue-500"><AnimatedCounter endValue={todaysFocusStats.tasksDueToday} /></p>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+                        <div className='flex items-center gap-3'>
+                            <XSquare className="h-6 w-6 text-yellow-500" />
+                            <p className='font-semibold'>Tugas Terlambat</p>
+                        </div>
+                        <p className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={todaysFocusStats.overdueTasks} /></p>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+                        <div className='flex items-center gap-3'>
+                            <AlertTriangle className="h-6 w-6 text-red-500" />
+                            <p className='font-semibold'>Proyek Kritis</p>
+                        </div>
+                        <p className="text-2xl font-bold text-red-500"><AnimatedCounter endValue={todaysFocusStats.criticalProjects} /></p>
+                    </div>
+                </CardContent>
+            </Card>
              <Card className="border-primary">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary"><Bell className="h-5 w-5"/> Upcoming Tasks</CardTitle>
@@ -522,3 +518,5 @@ export default function MyDashboardPage() {
     </TooltipProvider>
   );
 }
+
+    
