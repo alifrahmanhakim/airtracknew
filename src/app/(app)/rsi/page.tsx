@@ -179,14 +179,14 @@ export default function RsiPage() {
     }, [data]);
 
     const dashboardStats = React.useMemo(() => {
-        const incidentsToday = (data.accidentIncidentRecords || []).filter(r => isToday(parseISO(r.tanggal))).length;
-        const reportsToday = (data.knktReports || []).filter(r => isToday(parseISO(r.tanggal_diterbitkan))).length;
-        const sanctionsToday = (data.lawEnforcementRecords || []).filter(r => isToday(r.createdAt.toDate())).length;
+        const totalIncidents = (data.accidentIncidentRecords || []).length;
+        const totalReports = (data.knktReports || []).length;
+        const totalSanctions = (data.lawEnforcementRecords || []).length;
 
         return {
-            incidentsToday,
-            reportsToday,
-            sanctionsToday,
+            totalIncidents,
+            totalReports,
+            totalSanctions,
         }
     }, [data]);
 
@@ -220,30 +220,30 @@ export default function RsiPage() {
 
             <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background">
                 <CardHeader>
-                    <CardTitle>Today's Snapshot</CardTitle>
-                    <CardDescription>Key metrics recorded today.</CardDescription>
+                    <CardTitle>Overall Summary</CardTitle>
+                    <CardDescription>Key metrics from all records.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                              <AlertTriangle className="h-8 w-8 text-destructive" />
                             <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.incidentsToday} /></p>
-                                <p className="text-sm text-muted-foreground">Incidents Recorded</p>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
+                                <p className="text-sm text-muted-foreground">Total Incidents</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                              <FileSearch className="h-8 w-8 text-yellow-500" />
                             <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.reportsToday} /></p>
-                                <p className="text-sm text-muted-foreground">KNKT Reports Published</p>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
+                                <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                              <Gavel className="h-8 w-8 text-gray-500" />
                             <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.sanctionsToday} /></p>
-                                <p className="text-sm text-muted-foreground">Law Enforcements</p>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
+                                <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
                             </div>
                         </div>
                     </div>
