@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,7 +36,6 @@ import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { addRulemakingProject } from '@/lib/actions/project';
 import { Checkbox } from './ui/checkbox';
-import { z } from 'zod';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -45,6 +45,7 @@ const projectSchema = z.object({
   team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
   annex: z.string().min(1, 'Annex is required.'),
   casr: z.string().min(1, 'CASR is required.'),
+  casrRevision: z.string().optional(),
   tags: z.array(z.string()).optional(),
   isHighPriority: z.boolean().default(false),
 });
@@ -53,9 +54,10 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 
 type AddRulemakingProjectDialogProps = {
   allUsers: User[];
+  onProjectAdd: () => void;
 };
 
-export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDialogProps) {
+export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulemakingProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -74,6 +76,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       team: [],
       annex: '',
       casr: '',
+      casrRevision: '',
       tags: [],
       isHighPriority: false,
     },
@@ -82,7 +85,6 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     
-    // Get the currently logged-in user's ID
     const ownerId = localStorage.getItem('loggedInUserId');
     if (!ownerId) {
       toast({
@@ -107,10 +109,10 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
 
     const newProjectData = {
       ...data,
-      ownerId: ownerId, // Add ownerId to the data object
-      status: 'On Track' as const, // Set a default status
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
+      ownerId: ownerId,
+      status: 'On Track' as const,
       tags: finalTags,
     };
     
@@ -125,7 +127,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
       });
       setOpen(false);
       form.reset();
-      router.refresh(); 
+      onProjectAdd();
     } else {
       toast({
         variant: 'destructive',
@@ -165,7 +167,7 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                 control={form.control}
                 name="annex"
@@ -187,6 +189,19 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
                     <FormLabel>CASR</FormLabel>
                     <FormControl>
                         <Input placeholder="e.g., 61" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                 <FormField
+                control={form.control}
+                name="casrRevision"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Revisi CASR Ke</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., 2" {...field} type="number" />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -356,3 +371,5 @@ export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDia
     </Dialog>
   );
 }
+
+    
