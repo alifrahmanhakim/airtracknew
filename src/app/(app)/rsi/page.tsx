@@ -121,21 +121,20 @@ const parseCasualties = (casualtyString: string | undefined): number => {
     return match ? parseInt(match[0], 10) : 0;
 };
 
+const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
+    switch (collectionName) {
+        case 'knktReports': return 'tanggal_diterbitkan';
+        case 'tindakLanjutDgcaRecords': return 'tanggalKejadian';
+        case 'tindakLanjutRecords': return 'tanggalKejadian';
+        case 'lawEnforcementRecords': return 'createdAt';
+        default: return 'tanggal';
+    }
+};
 
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
     const [yearFilter, setYearFilter] = React.useState<string>('all');
-
-    const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
-        switch (collectionName) {
-            case 'knktReports': return 'tanggal_diterbitkan';
-            case 'tindakLanjutRecords':
-            case 'tindakLanjutDgcaRecords': return 'tanggalKejadian';
-            case 'lawEnforcementRecords': return 'createdAt';
-            default: return 'tanggal';
-        }
-    };
 
     React.useEffect(() => {
         setIsLoading(true);
@@ -179,16 +178,40 @@ export default function RsiPage() {
     }, [data]);
 
     const dashboardStats = React.useMemo(() => {
-        const totalIncidents = (data.accidentIncidentRecords || []).length;
-        const totalReports = (data.knktReports || []).length;
-        const totalSanctions = (data.lawEnforcementRecords || []).length;
+        const filterByYear = (records: any[] | undefined, collectionName: keyof RsiData) => {
+            if (!records) return [];
+            if (yearFilter === 'all') return records;
+            
+            const dateField = getDateFieldForCollection(collectionName);
+            
+            return records.filter((record: any) => {
+                const dateString = record[dateField];
+                if (!dateString) return false;
+                
+                try {
+                    let recordYear;
+                    if (typeof dateString === 'string') {
+                        recordYear = getYear(parseISO(dateString));
+                    } else if (dateString.toDate) { // Firestore Timestamp
+                        recordYear = getYear(dateString.toDate());
+                    }
+                    return recordYear === parseInt(yearFilter);
+                } catch(e) {
+                    return false;
+                }
+            });
+        };
+
+        const totalIncidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords').length;
+        const totalReports = filterByYear(data.knktReports, 'knktReports').length;
+        const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
 
         return {
             totalIncidents,
             totalReports,
             totalSanctions,
         }
-    }, [data]);
+    }, [data, yearFilter]);
 
     return (
         <TooltipProvider>
