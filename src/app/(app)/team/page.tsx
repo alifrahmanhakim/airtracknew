@@ -142,9 +142,9 @@ export default function TeamPage() {
       // Filter by search term
       if (searchTerm) {
           const lowercasedTerm = searchTerm.toLowerCase();
-          filtered = filtered.filter(user => 
-              user.name.toLowerCase().includes(lowercasedTerm) || 
-              user.email?.toLowerCase().includes(lowercasedTerm)
+          filtered = filtered.filter(user =>
+              (user.name && user.name.toLowerCase().includes(lowercasedTerm)) ||
+              (user.email && user.email.toLowerCase().includes(lowercasedTerm))
           );
       }
 
