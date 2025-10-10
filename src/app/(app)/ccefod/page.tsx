@@ -309,7 +309,7 @@ export default function CcefodPage() {
                                 Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
                             </CardDescription>
                         </div>
-                         <div className='flex items-center gap-2'>
+                        <div className='flex items-center gap-2'>
                             <Suspense fallback={<Skeleton className="h-10 w-24" />}>
                                 <ImportCcefodCsvDialog />
                             </Suspense>
@@ -317,10 +317,10 @@ export default function CcefodPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <TabsList className="w-full">
-                        <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
-                        <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
-                        <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
+                    <TabsList>
+                        <TabsTrigger value="form">Input Form</TabsTrigger>
+                        <TabsTrigger value="records">Records</TabsTrigger>
+                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
                     </TabsList>
                 </CardContent>
             </Card>
@@ -542,5 +542,7 @@ export default function CcefodPage() {
     </div>
   );
 }
+
+    
 
     

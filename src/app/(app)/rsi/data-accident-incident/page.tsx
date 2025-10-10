@@ -147,28 +147,32 @@ export default function DataAccidentIncidentPage() {
     return (
         <main className="p-4 md:p-8">
              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                    <div className="flex items-center gap-4">
-                        <Button asChild variant="outline" size="icon">
-                            <Link href="/rsi">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                        <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                            <h1 className="text-3xl font-bold">Data Accident &amp; Serious Incident</h1>
-                            <p className="text-muted-foreground">
-                                Manage and view accident and serious incident records.
-                            </p>
+                <Card className="mb-4">
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex items-center gap-4 flex-1">
+                                <Button asChild variant="outline" size="icon">
+                                    <Link href="/rsi">
+                                        <ArrowLeft className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                                <div>
+                                    <h1 className="text-3xl font-bold">Data Accident &amp; Serious Incident</h1>
+                                    <p className="text-muted-foreground mt-2">
+                                        Manage and view accident and serious incident records.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div className='flex items-center gap-2'>
+                    </CardHeader>
+                    <CardContent>
                         <TabsList>
                             <TabsTrigger value="form">Input Form</TabsTrigger>
                             <TabsTrigger value="records">Records</TabsTrigger>
                             <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         </TabsList>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
                 <TabsContent value="form">
                     <Card>
@@ -253,3 +257,5 @@ export default function DataAccidentIncidentPage() {
         </main>
     );
 }
+
+    
