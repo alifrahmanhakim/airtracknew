@@ -166,10 +166,10 @@ export default function DataAccidentIncidentPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <TabsList>
-                            <TabsTrigger value="form">Input Form</TabsTrigger>
-                            <TabsTrigger value="records">Records</TabsTrigger>
-                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        <TabsList className="w-full sm:w-auto">
+                            <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
+                            <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
+                            <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
                         </TabsList>
                     </CardContent>
                 </Card>
