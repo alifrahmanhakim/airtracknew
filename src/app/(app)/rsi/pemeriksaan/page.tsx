@@ -127,8 +127,8 @@ export default function PemeriksaanPage() {
     }, [records]);
 
     const operatorOptions: ComboboxOption[] = React.useMemo(() => {
-        const operators = [...new Set(records.map(r => r.operator))];
-        return operators.sort().map(op => ({ value: op, label: op }));
+        const operators = [...new Set(records.map(r => r.operator))].sort((a, b) => a.localeCompare(b));
+        return operators.map(op => ({ value: op, label: op }));
     }, [records]);
 
     const filteredRecords = React.useMemo(() => {
