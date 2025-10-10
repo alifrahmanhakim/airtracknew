@@ -6,7 +6,7 @@ import type { TindakLanjutDgcaRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Info, Building, Calendar, FileText } from 'lucide-react';
 import { AnimatedCounter } from '../ui/animated-counter';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 import { getYear, parseISO } from 'date-fns';
 
@@ -102,33 +102,21 @@ export function TindakLanjutDgcaAnalytics({ allRecords }: AnalyticsProps) {
                 <CardContent>
                     <ChartContainer config={chartConfig(analyticsData.yearData)} className="h-[300px] w-full">
                         <ResponsiveContainer>
-                            <BarChart data={analyticsData.yearData}>
+                            <LineChart
+                                data={analyticsData.yearData}
+                                margin={{
+                                    top: 5,
+                                    right: 30,
+                                    left: 20,
+                                    bottom: 5,
+                                }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="name" />
                                 <YAxis allowDecimals={false} />
                                 <Tooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader>
-                    <CardTitle>Top 10 Operators by Records</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <ChartContainer config={chartConfig(analyticsData.operatorData)} className="h-[400px] w-full">
-                        <ResponsiveContainer>
-                            <BarChart data={analyticsData.operatorData} layout="vertical" margin={{ left: 50, right: 30 }}>
-                                <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
-                                <XAxis type="number" allowDecimals={false} />
-                                <Tooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                                    {analyticsData.operatorData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
+                                <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" activeDot={{ r: 8 }} />
+                            </LineChart>
                         </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
