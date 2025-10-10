@@ -13,6 +13,8 @@ import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, Tindak
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { getYear, parseISO } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type RsiModule = {
   title: string;
@@ -123,6 +125,17 @@ const parseCasualties = (casualtyString: string | undefined): number => {
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
+    const [yearFilter, setYearFilter] = React.useState<string>('all');
+
+    const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
+        switch (collectionName) {
+            case 'knktReports': return 'tanggal_diterbitkan';
+            case 'tindakLanjutRecords':
+            case 'tindakLanjutDgcaRecords': return 'tanggalKejadian';
+            case 'lawEnforcementRecords': return 'createdAt';
+            default: return 'tanggal';
+        }
+    };
 
     React.useEffect(() => {
         setIsLoading(true);
@@ -139,28 +152,83 @@ export default function RsiPage() {
             });
         });
         
-        // A simple way to set loading to false after an initial fetch period
         setTimeout(() => setIsLoading(false), 2000);
 
         return () => unsubscribes.forEach(unsub => unsub());
     }, []);
 
+    const yearOptions = React.useMemo(() => {
+        const allYears = new Set<number>();
+        rsiModules.forEach(module => {
+            const records = data[module.collectionName] || [];
+            const dateField = getDateFieldForCollection(module.collectionName);
+            records.forEach((record: any) => {
+                const dateString = record[dateField];
+                if (dateString && typeof dateString === 'string') {
+                    try {
+                        allYears.add(getYear(parseISO(dateString)));
+                    } catch (e) {
+                        // ignore invalid date
+                    }
+                } else if (dateString && dateString.toDate) { // For Firestore Timestamps
+                    allYears.add(getYear(dateString.toDate()));
+                }
+            });
+        });
+        return ['all', ...Array.from(allYears).sort((a,b) => b-a)];
+    }, [data]);
+
     return (
         <TooltipProvider>
             <main className="p-4 md:p-8">
             <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
-                <p className="text-muted-foreground">
-                A centralized hub for managing and monitoring safety incidents and recommendations.
-                </p>
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
+                        <p className="text-muted-foreground">
+                        A centralized hub for managing and monitoring safety incidents and recommendations.
+                        </p>
+                    </div>
+                    <div className="w-full sm:w-auto">
+                        <Select value={yearFilter} onValueChange={setYearFilter}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="Filter by year..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {yearOptions.map(year => (
+                                    <SelectItem key={year} value={String(year)}>
+                                        {year === 'all' ? 'All Years' : year}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rsiModules.map((module) => {
-                    const records = data[module.collectionName] || [];
-                    const totalCount = records.length;
+                    const dateField = getDateFieldForCollection(module.collectionName);
                     
-                    const statusCounts = records.reduce((acc, record) => {
+                    const filteredRecords = (data[module.collectionName] || []).filter((record: any) => {
+                        if (yearFilter === 'all') return true;
+                        const dateString = record[dateField];
+                        if (dateString && typeof dateString === 'string') {
+                             try {
+                                return getYear(parseISO(dateString)) === parseInt(yearFilter);
+                            } catch (e) {
+                                return false;
+                            }
+                        }
+                         if (dateString && dateString.toDate) { // For Firestore Timestamps
+                            return getYear(dateString.toDate()) === parseInt(yearFilter);
+                        }
+                        return false;
+                    });
+                    
+                    const totalCount = filteredRecords.length;
+                    
+                    const statusCounts = filteredRecords.reduce((acc, record) => {
                         const status = (record as any)[module.statusField];
                         if (status) {
                             acc[status] = (acc[status] || 0) + 1;
@@ -171,7 +239,7 @@ export default function RsiPage() {
                     const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
 
                     const totalCasualties = module.collectionName === 'accidentIncidentRecords'
-                        ? (records as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
+                        ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
                         : null;
 
                     return (
