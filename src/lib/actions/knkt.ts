@@ -18,7 +18,6 @@ export async function addKnktReport(data: z.infer<typeof knktReportFormSchema>) 
     try {
         const dataToSubmit = {
             ...parsed.data,
-            tanggal_diterbitkan: new Date(parsed.data.tanggal_diterbitkan).toISOString(),
             createdAt: serverTimestamp(),
         };
         const docRef = await addDoc(collection(db, 'knktReports'), dataToSubmit);
@@ -40,7 +39,6 @@ export async function updateKnktReport(id: string, data: z.infer<typeof knktRepo
         
         const dataToSubmit = {
             ...parsed.data,
-            tanggal_diterbitkan: new Date(parsed.data.tanggal_diterbitkan).toISOString(),
         };
 
         await updateDoc(docRef, dataToSubmit);

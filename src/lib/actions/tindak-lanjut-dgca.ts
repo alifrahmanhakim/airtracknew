@@ -17,8 +17,6 @@ export async function addTindakLanjutDgcaRecord(data: z.infer<typeof tindakLanju
     try {
         const dataToSubmit = {
             ...parsed.data,
-            tanggalKejadian: new Date(parsed.data.tanggalKejadian).toISOString(),
-            tanggalTerbit: parsed.data.tanggalTerbit ? new Date(parsed.data.tanggalTerbit).toISOString() : undefined,
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'tindakLanjutDgcaRecords'), dataToSubmit);
@@ -40,8 +38,6 @@ export async function updateTindakLanjutDgcaRecord(id: string, data: z.infer<typ
         
         const dataToSubmit = {
             ...parsed.data,
-            tanggalKejadian: new Date(parsed.data.tanggalKejadian).toISOString(),
-            tanggalTerbit: parsed.data.tanggalTerbit ? new Date(parsed.data.tanggalTerbit).toISOString() : undefined,
         };
 
         await updateDoc(docRef, dataToSubmit);

@@ -76,3 +76,4 @@ export async function deleteAccidentIncidentRecord(id: string) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
+
