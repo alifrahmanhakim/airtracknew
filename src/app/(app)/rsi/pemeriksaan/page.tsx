@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getYear, parseISO } from 'date-fns';
 import Link from 'next/link';
 import { aocOptions } from '@/lib/data';
+import { Combobox, ComboboxOption } from '@/components/ui/combobox';
 
 const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form').then(mod => mod.PemeriksaanForm), { 
     ssr: false,
@@ -125,9 +126,9 @@ export default function PemeriksaanPage() {
         return ['all', ...years.sort((a, b) => b - a)];
     }, [records]);
 
-    const operatorOptions = React.useMemo(() => {
+    const operatorOptions: ComboboxOption[] = React.useMemo(() => {
         const operators = [...new Set(records.map(r => r.operator))];
-        return ['all', ...operators.sort()];
+        return operators.sort().map(op => ({ value: op, label: op }));
     }, [records]);
 
     const filteredRecords = React.useMemo(() => {
@@ -226,17 +227,14 @@ export default function PemeriksaanPage() {
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <Select value={operatorFilter} onValueChange={setOperatorFilter}>
-                                            <SelectTrigger className="w-full sm:w-[200px]">
-                                                <SelectValue placeholder="Filter by operator..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All Operators</SelectItem>
-                                                {operatorOptions.map(op => (
-                                                    <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <div className="w-full sm:w-[200px]">
+                                            <Combobox
+                                                options={[{ value: 'all', label: 'All Operators' }, ...operatorOptions]}
+                                                value={operatorFilter}
+                                                onChange={setOperatorFilter}
+                                                placeholder="Filter by operator..."
+                                            />
+                                        </div>
                                         {(searchTerm || yearFilter !== 'all' || operatorFilter !== 'all') && (
                                             <Button variant="ghost" onClick={resetFilters}>
                                                 <RotateCcw className="mr-2 h-4 w-4" /> Reset
