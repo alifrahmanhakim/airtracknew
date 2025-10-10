@@ -160,7 +160,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="border rounded-md overflow-x-auto">
+        <div className="border rounded-md w-full overflow-x-auto">
           <Table className="min-w-full">
             <TableHeader className="sticky top-0 bg-background/95 z-10">
               <TableRow>
@@ -212,7 +212,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
                             </TableCell>
                         )
                     })}
-                    <TableCell className="text-right sticky right-0 bg-background/95 z-10 align-middle">
+                    <TableCell className="text-right sticky right-0 bg-background/95 align-middle">
                         <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
                             <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
                             <Tooltip>

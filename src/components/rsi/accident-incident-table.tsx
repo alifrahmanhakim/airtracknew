@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -103,7 +104,7 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
 
     return (
         <>
-            <div className="border rounded-md overflow-x-auto">
+            <div className="border rounded-md w-full overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
