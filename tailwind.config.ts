@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 const { fontFamily } = require("tailwindcss/defaultTheme")
@@ -100,11 +101,16 @@ export default {
           '50%': { backgroundPosition: '100% 50%' },
           '100%': { backgroundPosition: '0% 50%' },
         },
+        'progress-stripes': {
+          '0%': { backgroundPosition: '1rem 0' },
+          '100%': { backgroundPosition: '0 0' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'gradient-move': 'gradient-move 4s linear infinite',
+        'progress-stripes': 'progress-stripes 1s linear infinite',
       },
        backgroundSize: {
         '400%': '400% 400%',

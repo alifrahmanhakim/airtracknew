@@ -90,8 +90,9 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
 
   return (
     <TooltipProvider>
-      <Link href={projectLink} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
-        <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300 h-full">
+      <Link href={projectLink} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full group">
+        <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300 h-full overflow-hidden relative">
+          <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start gap-2">
               <CardTitle className="text-lg font-bold leading-snug">
