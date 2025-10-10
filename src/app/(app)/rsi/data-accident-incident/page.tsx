@@ -44,10 +44,11 @@ export default function DataAccidentIncidentPage() {
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
 
-    // Filter states for table
+    // Filter states
     const [searchTerm, setSearchTerm] = React.useState('');
     const [aocFilter, setAocFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
+    const [categoryFilter, setCategoryFilter] = React.useState('all');
     
     // Form state
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -79,21 +80,25 @@ export default function DataAccidentIncidentPage() {
     }, [toast]);
     
     const yearOptions = React.useMemo(() => {
+        if (records.length === 0) return ['all'];
         const years = [...new Set(records.map(r => getYear(parseISO(r.tanggal))))];
         return ['all', ...years.sort((a, b) => b - a)];
     }, [records]);
+    
+    const categoryOptions = React.useMemo(() => ['all', ...[...new Set(records.map(r => r.kategori))].sort()], [records]);
 
-    const filteredTableRecords = React.useMemo(() => {
+    const filteredRecords = React.useMemo(() => {
         return records.filter(record => {
             const searchTermMatch = searchTerm === '' || Object.values(record).some(value => 
                 String(value).toLowerCase().includes(searchTerm.toLowerCase())
             );
             const aocMatch = aocFilter === 'all' || record.aoc === aocFilter;
             const yearMatch = yearFilter === 'all' || getYear(parseISO(record.tanggal)) === parseInt(yearFilter);
+            const categoryMatch = categoryFilter === 'all' || record.kategori === categoryFilter;
 
-            return searchTermMatch && aocMatch && yearMatch;
+            return searchTermMatch && aocMatch && yearMatch && categoryMatch;
         });
-    }, [records, searchTerm, aocFilter, yearFilter]);
+    }, [records, searchTerm, aocFilter, yearFilter, categoryFilter]);
 
     const handleFormSubmitSuccess = () => {
         setActiveTab('records');
@@ -106,7 +111,7 @@ export default function DataAccidentIncidentPage() {
     const resetTableFilters = () => {
         setSearchTerm('');
         setAocFilter('all');
-        setYearFilter('all');
+        setCategoryFilter('all');
     };
     
     const form = useForm<AccidentIncidentFormValues>({
@@ -179,7 +184,7 @@ export default function DataAccidentIncidentPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                       <TabsList>
+                       <TabsList className='w-full'>
                             <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
                             <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
                             <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
@@ -236,13 +241,23 @@ export default function DataAccidentIncidentPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {(searchTerm || aocFilter !== 'all') && (
+                                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                        <SelectTrigger className="w-full sm:w-[200px]">
+                                            <SelectValue placeholder="Filter by Category..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categoryOptions.map(cat => (
+                                                <SelectItem key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {(searchTerm || aocFilter !== 'all' || categoryFilter !== 'all') && (
                                          <Button variant="ghost" onClick={resetTableFilters}>
                                             <RotateCcw className="mr-2 h-4 w-4" /> Reset
                                         </Button>
                                     )}
                                 </div>
-                                <AccidentIncidentTable records={filteredTableRecords} onUpdate={handleRecordUpdate} searchTerm={searchTerm} />
+                                <AccidentIncidentTable records={filteredRecords} onUpdate={handleRecordUpdate} searchTerm={searchTerm} />
                                 </>
                             )}
                         </CardContent>
