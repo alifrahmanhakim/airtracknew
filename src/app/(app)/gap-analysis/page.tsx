@@ -154,14 +154,14 @@ export default function GapAnalysisPage() {
                     <CardDescription className="mt-2">
                         Manage and monitor GAP Analysis records based on State Letters.
                     </CardDescription>
+                    <div className="pt-4">
+                        <TabsList>
+                          <TabsTrigger value="form">Input Form</TabsTrigger>
+                          <TabsTrigger value="records">Records</TabsTrigger>
+                          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        </TabsList>
+                    </div>
                 </CardHeader>
-                <CardContent>
-                    <TabsList className="w-full">
-                      <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
-                      <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
-                      <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
-                    </TabsList>
-                </CardContent>
             </Card>
             
             <TabsContent value="form" className={cn(activeTab !== 'form' ? 'hidden' : '')}>

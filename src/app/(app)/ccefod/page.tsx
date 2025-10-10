@@ -308,6 +308,13 @@ export default function CcefodPage() {
                             <CardDescription className="mt-2">
                                 Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
                             </CardDescription>
+                             <div className="mt-4">
+                                <TabsList>
+                                    <TabsTrigger value="form">Input Form</TabsTrigger>
+                                    <TabsTrigger value="records">Records</TabsTrigger>
+                                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                                </TabsList>
+                            </div>
                         </div>
                         <div className='flex items-center gap-2'>
                             <Suspense fallback={<Skeleton className="h-10 w-24" />}>
@@ -316,13 +323,6 @@ export default function CcefodPage() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <TabsList>
-                        <TabsTrigger value="form">Input Form</TabsTrigger>
-                        <TabsTrigger value="records">Records</TabsTrigger>
-                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    </TabsList>
-                </CardContent>
             </Card>
             
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>

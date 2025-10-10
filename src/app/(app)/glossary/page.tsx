@@ -235,11 +235,18 @@ export default function GlossaryPage() {
             <Card className="mb-4 print:hidden">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div>
+                        <div className='flex-1'>
                             <h1 className="text-3xl font-bold">Translation Analysis</h1>
                             <p className="text-muted-foreground mt-2">
                                 A centralized tool for analyzing and storing translation data.
                             </p>
+                             <div className="mt-4">
+                                <TabsList>
+                                    <TabsTrigger value="form">Input Form</TabsTrigger>
+                                    <TabsTrigger value="records">Records</TabsTrigger>
+                                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                                </TabsList>
+                            </div>
                         </div>
                         <div className='flex items-center gap-2'>
                           <Suspense fallback={<Skeleton className="h-10 w-24" />}>
@@ -248,13 +255,6 @@ export default function GlossaryPage() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <TabsList className="w-full">
-                        <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
-                        <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
-                        <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
-                    </TabsList>
-                </CardContent>
             </Card>
             
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden', 'print:hidden')}>
@@ -429,3 +429,4 @@ export default function GlossaryPage() {
     </div>
   );
 }
+

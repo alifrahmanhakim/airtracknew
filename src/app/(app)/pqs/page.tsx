@@ -329,6 +329,13 @@ export default function PqsPage() {
                             <CardDescription className="mt-2">
                                 Manage and monitor Protocol Questions records.
                             </CardDescription>
+                             <div className="mt-4">
+                                <TabsList>
+                                  <TabsTrigger value="form">Input Form</TabsTrigger>
+                                  <TabsTrigger value="records">Records</TabsTrigger>
+                                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                                </TabsList>
+                            </div>
                         </div>
                         <div className='flex items-center gap-2'>
                           <Suspense fallback={<Skeleton className="h-10 w-24" />}>
@@ -337,13 +344,6 @@ export default function PqsPage() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    <TabsList className="w-full">
-                      <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
-                      <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
-                      <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
-                    </TabsList>
-                </CardContent>
             </Card>
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
                 <Card className="max-w-4xl mx-auto">

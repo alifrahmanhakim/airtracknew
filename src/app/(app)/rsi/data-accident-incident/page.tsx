@@ -112,6 +112,7 @@ export default function DataAccidentIncidentPage() {
         setSearchTerm('');
         setAocFilter('all');
         setCategoryFilter('all');
+        setYearFilter('all');
     };
     
     const form = useForm<AccidentIncidentFormValues>({
@@ -182,14 +183,14 @@ export default function DataAccidentIncidentPage() {
                                 </Select>
                             </div>
                         </div>
+                         <div className="mt-4">
+                            <TabsList>
+                                <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
+                                <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
+                                <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
+                            </TabsList>
+                        </div>
                     </CardHeader>
-                    <CardContent>
-                       <TabsList className='w-full'>
-                            <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
-                            <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
-                            <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
-                        </TabsList>
-                    </CardContent>
                 </Card>
 
                 <TabsContent value="form">
@@ -236,8 +237,9 @@ export default function DataAccidentIncidentPage() {
                                             <SelectValue placeholder="Filter by AOC..." />
                                         </SelectTrigger>
                                         <SelectContent>
+                                            <SelectItem value="all">All AOCs</SelectItem>
                                             {aocOptions.map(op => (
-                                                <SelectItem key={op.value} value={op.value}>{op.label === 'all' ? 'All AOCs' : op.label}</SelectItem>
+                                                <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
