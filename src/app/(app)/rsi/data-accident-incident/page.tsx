@@ -121,6 +121,7 @@ export default function DataAccidentIncidentPage() {
             keteranganKejadian: '',
             adaKorbanJiwa: 'Tidak Ada',
             jumlahKorbanJiwa: '',
+            fileUrl: '',
         },
     });
 
@@ -154,7 +155,7 @@ export default function DataAccidentIncidentPage() {
                             </Link>
                         </Button>
                         <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                            <h1 className="text-3xl font-bold">Data Accident & Serious Incident</h1>
+                            <h1 className="text-3xl font-bold">Data Accident &amp; Serious Incident</h1>
                             <p className="text-muted-foreground">
                                 Manage and view accident and serious incident records.
                             </p>

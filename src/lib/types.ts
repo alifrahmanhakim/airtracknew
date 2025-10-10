@@ -180,6 +180,7 @@ export type AccidentIncidentRecord = {
     keteranganKejadian?: string;
     korbanJiwa: string; // Will store the final combined string
     createdAt: string;
+    fileUrl?: string;
 };
 
 export type KnktReport = {

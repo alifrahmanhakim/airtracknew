@@ -110,6 +110,19 @@ export function AccidentIncidentForm({ form, onSubmit }: AccidentIncidentFormPro
                     <FormMessage />
                 </FormItem>
              )}/>
+             <FormField
+                control={form.control}
+                name="fileUrl"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>File URL (Optional)</FormLabel>
+                    <FormControl>
+                        <Input type="url" placeholder="https://example.com/report.pdf" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField control={form.control} name="keteranganKejadian" render={({ field }) => (
@@ -136,7 +149,7 @@ export function AccidentIncidentForm({ form, onSubmit }: AccidentIncidentFormPro
                 {watchAdaKorban === 'Ada' && (
                      <FormField control={form.control} name="jumlahKorbanJiwa" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Jumlah & Rincian Korban</FormLabel>
+                            <FormLabel>Jumlah &amp; Rincian Korban</FormLabel>
                             <FormControl><Input {...field} placeholder="e.g., 2 orang (1 pilot, 1 penumpang)" /></FormControl>
                             <FormMessage />
                         </FormItem>

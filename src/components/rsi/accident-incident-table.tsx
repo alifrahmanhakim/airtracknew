@@ -13,7 +13,7 @@ import {
 import type { AccidentIncidentRecord } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, AlertTriangle, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Search, Info, AlertTriangle, Loader2, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -116,6 +116,7 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                             <TableHead>Taxonomy</TableHead>
                             <TableHead>Keterangan Kejadian</TableHead>
                             <TableHead>Korban Jiwa</TableHead>
+                            <TableHead>File</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -135,6 +136,17 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                                 <TableCell><Highlight text={record.taxonomy} query={searchTerm} /></TableCell>
                                 <TableCell className="whitespace-normal"><Highlight text={record.keteranganKejadian} query={searchTerm} /></TableCell>
                                 <TableCell><Highlight text={record.korbanJiwa} query={searchTerm} /></TableCell>
+                                <TableCell>
+                                    {record.fileUrl ? (
+                                        <Button asChild variant="ghost" size="icon">
+                                            <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
+                                                <LinkIcon className="h-4 w-4" />
+                                            </a>
+                                        </Button>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">None</span>
+                                    )}
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <EditAccidentIncidentRecordDialog record={record} onRecordUpdate={onUpdate} />
                                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteRequest(record)}>
@@ -144,7 +156,7 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                             </TableRow>
                         )) : (
                             <TableRow>
-                                <TableCell colSpan={10} className="text-center h-24">
+                                <TableCell colSpan={11} className="text-center h-24">
                                      <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                      No records found for the current filters.
                                 </TableCell>

@@ -51,6 +51,7 @@ export function EditAccidentIncidentRecordDialog({ record, onRecordUpdate }: Edi
       tanggal: format(parseISO(record.tanggal), 'yyyy-MM-dd'),
       adaKorbanJiwa: korbanData.ada,
       jumlahKorbanJiwa: korbanData.jumlah,
+      fileUrl: record.fileUrl || '',
     },
   });
 

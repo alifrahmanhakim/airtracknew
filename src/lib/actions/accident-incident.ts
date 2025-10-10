@@ -55,7 +55,14 @@ export async function updateAccidentIncidentRecord(id: string, data: z.infer<typ
         };
         await updateDoc(docRef, dataToSubmit);
        
-        return { success: true, data: { id, ...data, korbanJiwa: korbanJiwaString, createdAt: new Date().toISOString() } };
+        const updatedRecord: AccidentIncidentRecord = {
+          id,
+          ...dataToSubmit,
+          createdAt: new Date().toISOString(), // This is a placeholder, Firestore update won't return server timestamp
+          tanggal: data.tanggal,
+        };
+
+        return { success: true, data: updatedRecord };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }

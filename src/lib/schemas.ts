@@ -101,6 +101,7 @@ export const accidentIncidentFormSchema = z.object({
   keteranganKejadian: z.string().optional(),
   adaKorbanJiwa: z.enum(['Ada', 'Tidak Ada']),
   jumlahKorbanJiwa: z.string().optional(),
+  fileUrl: z.string().url().optional().or(z.literal('')),
 }).refine(data => {
     if (data.adaKorbanJiwa === 'Ada') {
         return !!data.jumlahKorbanJiwa && data.jumlahKorbanJiwa.length > 0;
