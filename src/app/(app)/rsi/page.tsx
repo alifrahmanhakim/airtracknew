@@ -247,7 +247,7 @@ export default function RsiPage() {
             <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background">
                 <CardHeader>
                     <CardTitle>Overall Summary</CardTitle>
-                    <CardDescription>Key metrics from all records.</CardDescription>
+                    <CardDescription className="text-foreground">Key metrics from all records.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
