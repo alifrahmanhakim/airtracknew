@@ -101,66 +101,65 @@ function AssociatedGapAnalysisCard({
   
     return (
       <>
-        <Card>
+        <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
               <GitCompareArrows /> Associated Revision with State Letter
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
               These GAP analysis records are linked to this CASR.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="w-full overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2">SL Ref. Number</th>
-                    <th className="text-left p-2">Subject</th>
-                    <th className="text-left p-2">Annex</th>
-                    <th className="text-left p-2">Type</th>
-                    <th className="text-left p-2">Status</th>
-                    <th className="text-left p-2">Evaluation Date</th>
-                    <th className="text-right p-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((record) => (
-                    <tr key={record.id} className="border-b">
-                      <td className="p-2 font-semibold">{record.slReferenceNumber}</td>
-                      <td className="p-2 max-w-[200px] truncate">{record.subject}</td>
-                      <td className="p-2">{record.annex}</td>
-                      <td className="p-2">{record.typeOfStateLetter}</td>
-                      <td className="p-2">
-                        <Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>
-                          {record.statusItem}
-                        </Badge>
-                      </td>
-                      <td className="p-2">{record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'}</td>
-                      <td className="text-right p-2 print:hidden">
-                        <Tooltip>
-                              <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" onClick={() => setRecordToView(record)}>
-                                      <Eye className="h-4 w-4" />
-                                  </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>View Details</p></TooltipContent>
-                        </Tooltip>
-                        <EditGapAnalysisRecordDialog record={record} onRecordUpdate={onUpdate} />
-                        <Tooltip>
-                              <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
-                                      <Trash2 className="h-4 w-4" />
-                                  </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>Delete Record</p></TooltipContent>
-                        </Tooltip>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <CardContent className="space-y-4">
+            {records.map((record) => (
+                <div key={record.id} className="border bg-card p-4 rounded-lg shadow-sm">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h4 className="font-bold">{record.slReferenceNumber}</h4>
+                            <p className="text-sm text-muted-foreground max-w-md truncate">{record.subject}</p>
+                        </div>
+                         <div className="flex items-center gap-2 print:hidden flex-shrink-0">
+                            <Tooltip>
+                                  <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRecordToView(record)}>
+                                          <Eye className="h-4 w-4" />
+                                      </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>View Details</p></TooltipContent>
+                            </Tooltip>
+                            <EditGapAnalysisRecordDialog record={record} onRecordUpdate={onUpdate} />
+                            <Tooltip>
+                                  <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => onDelete(record)}>
+                                          <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>Delete Record</p></TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </div>
+                     <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p className="text-xs text-muted-foreground">Annex</p>
+                            <p className="font-semibold">{record.annex}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Type</p>
+                            <p className="font-semibold">{record.typeOfStateLetter}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Evaluation Date</p>
+                            <p className="font-semibold">{record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'}</p>
+                        </div>
+                         <div>
+                            <p className="text-xs text-muted-foreground">Status</p>
+                             <Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>
+                                {record.statusItem}
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+            ))}
           </CardContent>
         </Card>
 
@@ -214,12 +213,11 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   const associatedGapRecords = React.useMemo(() => {
     if (project.projectType !== 'Rulemaking' || !project.casr) return [];
   
-    // Create a pattern to match "CASR {number}"
     const casrNumber = project.casr;
     const casrPattern = new RegExp(`CASR\\s+${casrNumber}\\b`, 'i');
   
     return allGapAnalysisRecords.filter(record => 
-        record.evaluations.some(e => casrPattern.test(e.casrAffected))
+      (record.evaluations || []).some(e => e.casrAffected && casrPattern.test(e.casrAffected))
     );
   }, [allGapAnalysisRecords, project.casr, project.projectType]);
 
@@ -525,6 +523,10 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                 </div>
             </CardContent>
         </Card>
+        
+        {project.projectType === 'Rulemaking' && (
+          <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
+        )}
 
         <Card>
           <CardHeader>
@@ -543,10 +545,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               />
           </CardContent>
         </Card>
-
-        {project.projectType === 'Rulemaking' && (
-          <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
-        )}
         
         <TasksTable 
           projectId={project.id}
@@ -611,7 +609,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </Card>
         
         {tasksWithoutAttachments.length > 0 && (
-          <Card className="border-yellow-300 bg-yellow-100 dark:bg-yellow-950 dark:border-yellow-800/80">
+          <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800/80">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
                     <AlertTriangle /> Attachment Alert
@@ -723,3 +721,4 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </TooltipProvider>
   );
 }
+
