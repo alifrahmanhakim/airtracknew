@@ -94,14 +94,12 @@ export function StatusIndicator({ className }: { className?: string }) {
   return (
     <TooltipProvider>
       <div className={cn(
-        "flex items-center justify-between p-2 rounded-lg text-xs",
+        "flex items-center justify-end p-2 rounded-lg text-xs gap-3",
         isLoginPage 
           ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80" 
-          : "bg-sidebar-accent/50 border border-sidebar-border/50 text-sidebar-foreground/80 group-data-[collapsible=icon]:hidden",
+          : "text-foreground/80",
         className
       )}>
-        <span className='font-semibold'>Status:</span>
-        <div className="flex items-center gap-3">
           <Tooltip>
             <TooltipTrigger>
               <internet.Icon className={cn("h-4 w-4", internet.color)} />
@@ -120,7 +118,6 @@ export function StatusIndicator({ className }: { className?: string }) {
             </TooltipTrigger>
             <TooltipContent>{server.text}</TooltipContent>
           </Tooltip>
-        </div>
       </div>
     </TooltipProvider>
   );

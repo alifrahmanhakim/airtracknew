@@ -242,6 +242,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <LiveClock />
+            <StatusIndicator />
             <NotificationBell userId={userId} />
             <ThemeToggle />
             <DropdownMenu>
@@ -283,9 +284,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="animate-in fade-in-50 duration-500">
             {children}
         </div>
-        <footer className="sticky bottom-0 p-2 z-10">
-             <StatusIndicator className="w-full max-w-sm" />
-        </footer>
       </SidebarInset>
     </SidebarProvider>
   );
