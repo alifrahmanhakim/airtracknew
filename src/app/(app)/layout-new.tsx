@@ -23,6 +23,7 @@ import {
   User as UserIcon,
   MessageSquare,
   ShieldAlert,
+  Mail,
 } from 'lucide-react';
 
 import {
@@ -65,7 +66,7 @@ const navItems = {
       { href: '/reports', label: 'Reports', icon: LineChart },
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
-      { href: '/gap-analysis', label: 'GAP Analysis', icon: GitCompareArrows },
+      { href: '/state-letter', label: 'State Letter', icon: Mail },
       { href: '/glossary', label: 'Glossary', icon: BookText },
       { href: '/rsi', label: 'RSI', icon: ShieldAlert },
     ]

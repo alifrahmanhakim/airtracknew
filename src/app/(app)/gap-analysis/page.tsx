@@ -20,13 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GapAnalysisForm } from '@/components/gap-analysis-form';
 import { GapAnalysisRecordsTable } from '@/components/gap-analysis-records-table';
 import { GapAnalysisAnalyticsDashboard } from '@/components/gap-analysis-analytics-dashboard';
 
-export default function GapAnalysisPage() {
+export default function StateLetterPage() {
   const [records, setRecords] = useState<GapAnalysisRecord[]>([]);
   const [rulemakingProjects, setRulemakingProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,11 +75,11 @@ export default function GapAnalysisPage() {
       setRecords(recordsFromDb);
       setIsLoading(false);
     }, (error) => {
-      console.error("Error fetching GAP Analysis records: ", error);
+      console.error("Error fetching State Letter records: ", error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to fetch GAP Analysis records from the database.',
+        description: 'Failed to fetch State Letter records from the database.',
       });
       setIsLoading(false);
     });
@@ -130,7 +130,7 @@ export default function GapAnalysisPage() {
     setIsDeleting(false);
 
     if (result.success) {
-      toast({ title: "Record Deleted", description: "The GAP Analysis record has been removed." });
+      toast({ title: "Record Deleted", description: "The State Letter record has been removed." });
     } else {
       toast({ variant: 'destructive', title: 'Error', description: result.error });
     }
@@ -150,9 +150,9 @@ export default function GapAnalysisPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <Card className="mb-4">
                 <CardHeader>
-                    <CardTitle className="text-3xl font-bold">GAP Analysis</CardTitle>
+                    <CardTitle className="text-3xl font-bold flex items-center gap-2"><Mail /> State Letter</CardTitle>
                     <CardDescription className="mt-2">
-                        Manage and monitor GAP Analysis records based on State Letters.
+                        Manage and monitor State Letter records.
                     </CardDescription>
                     <div className="pt-4">
                         <TabsList>
@@ -167,7 +167,7 @@ export default function GapAnalysisPage() {
             <TabsContent value="form" className={cn(activeTab !== 'form' ? 'hidden' : '')}>
                 <Card>
                     <CardHeader>
-                    <CardTitle>GAP Analysis Form</CardTitle>
+                    <CardTitle>State Letter Form</CardTitle>
                     <CardDescription>
                         Fill out the form below to add a new analysis record.
                     </CardDescription>
@@ -181,9 +181,9 @@ export default function GapAnalysisPage() {
             <TabsContent value="records" className={cn(activeTab !== 'records' ? 'hidden' : '')}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>GAP Analysis Records</CardTitle>
+                        <CardTitle>State Letter Records</CardTitle>
                         <CardDescription>
-                            A list of all GAP Analysis records from the database.
+                            A list of all State Letter records from the database.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -241,5 +241,3 @@ export default function GapAnalysisPage() {
     </div>
   );
 }
-
-    
