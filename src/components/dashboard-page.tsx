@@ -287,7 +287,7 @@ export function DashboardPage() {
           let workloadStatus: WorkloadStatus = 'Normal';
           if (item.workloadScore >= 15) { // Threshold for Overload
               workloadStatus = 'Overload';
-          } else if (item.openTasks === 0) { // Keep simple for underload
+          } else if (item.workloadScore === 0 && item.openTasks === 0) {
               workloadStatus = 'Underload';
           }
           return { ...item, workloadStatus };
@@ -305,7 +305,7 @@ export function DashboardPage() {
     };
 
     const chartData = [
-        { name: 'On Track', projects: statusCounts['On Track'] || 0, tasks: taskStatusCounts['In Progress'], fill: 'hsl(var(--chart-1))' },
+        { name: 'On Track', projects: statusCounts['On Track'] || 0, tasks: taskStatusCounts['In Progress'], 'To Do': taskStatusCounts['To Do'], fill: 'hsl(var(--chart-1))' },
         { name: 'At Risk', projects: statusCounts['At Risk'] || 0, tasks: taskStatusCounts['Blocked'], fill: 'hsl(var(--chart-2))' },
         { name: 'Off Track', projects: statusCounts['Off Track'] || 0, tasks: overdueTasks.length, fill: 'hsl(var(--chart-3))' },
         { name: 'Completed', projects: statusCounts['Completed'] || 0, tasks: taskStatusCounts['Done'], fill: 'hsl(var(--chart-4))' },
@@ -322,6 +322,7 @@ export function DashboardPage() {
   const chartConfig = {
     projects: { label: 'Projects', color: 'hsl(var(--chart-1))' },
     tasks: { label: 'Tasks', color: 'hsl(var(--chart-5))' },
+    'To Do': { label: 'To Do', color: 'hsl(var(--muted))' }
   };
   
   const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
@@ -543,7 +544,8 @@ export function DashboardPage() {
                                 <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                             ))}
                         </Bar>
-                        <Line type="monotone" dataKey="tasks" yAxisId="right" strokeWidth={2} stroke="hsl(var(--chart-5))" />
+                        <Line type="monotone" dataKey="tasks" name="Active/Overdue" yAxisId="right" strokeWidth={2} stroke="hsl(var(--chart-5))" />
+                        <Line type="monotone" dataKey="To Do" yAxisId="right" strokeWidth={2} stroke="hsl(var(--muted))" />
                     </ComposedChart>
                 </ResponsiveContainer>
               </ChartContainer>
