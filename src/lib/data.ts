@@ -1,5 +1,7 @@
 
+
 import type { ComboboxOption } from '@/components/ui/combobox';
+import type { User } from './types';
 
 // This file should ONLY contain static data arrays.
 // No functions, no complex imports.
@@ -13,6 +15,10 @@ export const users = [
     { id: 'user-2', name: 'Maria Garcia', email: 'maria.garcia@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC' },
     { id: 'user-3', name: 'James Smith', email: 'james.smith@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'PIC Assistant' },
     { id: 'user-4', name: 'Patricia Williams', email: 'patricia.williams@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Functional' },
+];
+
+export const userDepartments: User['department'][] = [
+    'Pegawai STD', 'PEL', 'AIR', 'SPU', 'OPS', 'DGCA', 'K/L lain'
 ];
 
 export const rulemakingTaskOptions: ComboboxOption[] = [

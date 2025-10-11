@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -33,13 +34,15 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Loader2, UserCog } from 'lucide-react';
-import { updateUserRole } from '@/lib/actions/user';
+import { updateUser } from '@/lib/actions/user';
+import { userDepartments } from '@/lib/data';
 
-const roleSchema = z.object({
+const formSchema = z.object({
   role: z.enum(['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional']),
+  department: z.enum(['Pegawai STD', 'PEL', 'AIR', 'SPU', 'OPS', 'DGCA', 'K/L lain']).optional(),
 });
 
-type RoleFormValues = z.infer<typeof roleSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 type AssignRoleDialogProps = {
   user: User;
@@ -54,35 +57,36 @@ export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDial
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
 
-  const form = useForm<RoleFormValues>({
-    resolver: zodResolver(roleSchema),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       role: user.role,
+      department: user.department || undefined,
     },
   });
 
-  const onSubmit = async (data: RoleFormValues) => {
-    if (data.role === user.role) {
+  const onSubmit = async (data: FormValues) => {
+    if (data.role === user.role && data.department === user.department) {
       setOpen(false);
       return;
     }
     
     setIsSubmitting(true);
-    const result = await updateUserRole(user.id, data.role);
+    const result = await updateUser(user.id, data);
     setIsSubmitting(false);
 
     if (result.success) {
-      onUserUpdate({ ...user, role: data.role });
+      onUserUpdate({ ...user, ...data });
       toast({
-        title: 'Role Updated',
-        description: `${user.name}'s role has been changed to ${data.role}.`,
+        title: 'User Updated',
+        description: `${user.name}'s profile has been updated.`,
       });
       setOpen(false);
     } else {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: result.error || 'Failed to update user role.',
+        description: result.error || 'Failed to update user.',
       });
     }
   };
@@ -94,14 +98,14 @@ export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDial
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <UserCog className="mr-2 h-4 w-4" />
-          Assign Role
+          Edit User
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Assign Role to {user.name}</DialogTitle>
+          <DialogTitle>Edit User: {user.name}</DialogTitle>
           <DialogDescription>
-            Select a new role for this user. This will affect their permissions.
+            Change the role and department for this user.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -122,6 +126,30 @@ export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDial
                       {availableRoles.map((role) => (
                         <SelectItem key={role} value={role}>
                           {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="department"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Department</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a department" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {userDepartments.map((dep) => (
+                        <SelectItem key={dep} value={dep}>
+                          {dep}
                         </SelectItem>
                       ))}
                     </SelectContent>

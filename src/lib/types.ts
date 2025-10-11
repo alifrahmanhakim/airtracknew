@@ -71,6 +71,7 @@ export type User = {
     email: string | null;
     avatarUrl?: string;
     role: 'Sub-Directorate Head' | 'Team Lead' | 'PIC' | 'PIC Assistant' | 'Functional';
+    department?: 'Pegawai STD' | 'PEL' | 'AIR' | 'SPU' | 'OPS' | 'DGCA' | 'K/L lain';
     isApproved?: boolean;
     lastOnline?: string;
 };

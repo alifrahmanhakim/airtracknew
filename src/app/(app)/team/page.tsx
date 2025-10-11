@@ -35,6 +35,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
+import { userDepartments } from '@/lib/data';
 
 const USERS_PER_PAGE = 10;
 
@@ -97,6 +98,7 @@ export default function TeamPage() {
   // State for filtering and sorting
   const [searchTerm, setSearchTerm] = React.useState('');
   const [roleFilter, setRoleFilter] = React.useState('all');
+  const [departmentFilter, setDepartmentFilter] = React.useState('all');
   const [statusFilter, setStatusFilter] = React.useState('all');
   const [sort, setSort] = React.useState<SortDescriptor>({ column: 'name', direction: 'asc' });
   
@@ -153,6 +155,11 @@ export default function TeamPage() {
           filtered = filtered.filter(user => user.role === roleFilter);
       }
 
+      // Filter by department
+      if (departmentFilter !== 'all') {
+        filtered = filtered.filter(user => user.department === departmentFilter);
+      }
+
       // Filter by status
       if (statusFilter !== 'all') {
           const isApproved = statusFilter === 'approved';
@@ -173,7 +180,7 @@ export default function TeamPage() {
       }
       
       return filtered;
-  }, [users, searchTerm, roleFilter, statusFilter, sort]);
+  }, [users, searchTerm, roleFilter, departmentFilter, statusFilter, sort]);
 
   const totalPages = Math.ceil(filteredAndSortedUsers.length / USERS_PER_PAGE);
   const paginatedUsers = filteredAndSortedUsers.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
@@ -281,8 +288,8 @@ export default function TeamPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                <div className="relative flex-grow">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="relative flex-grow col-span-full sm:col-span-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                         placeholder="Search by name or email..."
@@ -292,9 +299,7 @@ export default function TeamPage() {
                     />
                 </div>
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Filter by role..." />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Filter by role..." /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Roles</SelectItem>
                         {userRoles.map(role => (
@@ -302,10 +307,17 @@ export default function TeamPage() {
                         ))}
                     </SelectContent>
                 </Select>
+                <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Filter by department..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Departments</SelectItem>
+                        {userDepartments.map(dep => (
+                            <SelectItem key={dep} value={dep}>{dep}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Filter by status..." />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Statuses</SelectItem>
                         <SelectItem value="approved">Approved</SelectItem>
@@ -322,6 +334,9 @@ export default function TeamPage() {
                             </TableHead>
                             <TableHead className="cursor-pointer" onClick={() => handleSort('role')}>
                                 <div className="flex items-center">Role {renderSortIcon('role')}</div>
+                            </TableHead>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort('department')}>
+                                <div className="flex items-center">Department {renderSortIcon('department')}</div>
                             </TableHead>
                             <TableHead>Approval Status</TableHead>
                              <TableHead>Online Status</TableHead>
@@ -350,6 +365,7 @@ export default function TeamPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>{user.role}</TableCell>
+                                    <TableCell>{user.department || 'N/A'}</TableCell>
                                     <TableCell>
                                         <div className={cn("flex items-center gap-2 text-sm", user.isApproved ? "text-green-600" : "text-yellow-600")}>
                                             {user.isApproved ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}

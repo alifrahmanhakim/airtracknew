@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -80,6 +81,7 @@ export default function LoginPage() {
                 email: firebaseUser.email,
                 avatarUrl: firebaseUser.photoURL || `https://placehold.co/100x100.png`,
                 role: 'Functional',
+                department: 'Pegawai STD',
                 isApproved: false,
             };
             await setDoc(userRef, newUser);
@@ -156,6 +158,7 @@ export default function LoginPage() {
         email: email,
         avatarUrl: `https://placehold.co/100x100.png`,
         role: 'Functional', // All new users start with the 'Functional' role.
+        department: 'Pegawai STD', // Default department
         isApproved: false, // Wait for admin approval
       };
       await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
