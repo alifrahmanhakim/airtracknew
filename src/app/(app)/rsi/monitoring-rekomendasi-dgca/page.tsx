@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TindakLanjutDgcaRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,8 +21,10 @@ import type { z } from 'zod';
 import { addTindakLanjutDgcaRecord, deleteTindakLanjutDgcaRecord } from '@/lib/actions/tindak-lanjut-dgca';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { getYear, parseISO } from 'date-fns';
+import { getYear, parseISO, format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import * as XLSX from 'xlsx';
+
 
 const TindakLanjutDgcaForm = dynamic(() => import('@/components/rsi/tindak-lanjut-dgca-form').then(mod => mod.TindakLanjutDgcaForm), { 
     ssr: false,
@@ -182,6 +184,38 @@ export default function MonitoringRekomendasiDgcaPage() {
         setSearchTerm('');
         setYearFilter('all');
     };
+    
+    const handleExportExcel = () => {
+        if (filteredAndSortedRecords.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no records matching the current filters.',
+            });
+            return;
+        }
+
+        const dataToExport = filteredAndSortedRecords.map(record => ({
+            'Judul Laporan': record.judulLaporan,
+            'Nomor Laporan': record.nomorLaporan,
+            'Operator': record.operator,
+            'Tipe Pesawat': record.tipePesawat,
+            'Registrasi': record.registrasi,
+            'Lokasi': record.lokasi,
+            'Tanggal Kejadian': record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
+            'Tanggal Terbit': record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
+            'Rekomendasi ke DGCA': record.rekomendasiKeDgca,
+            'Nomor Rekomendasi': record.nomorRekomendasi,
+            'Tindak Lanjut DKPPU': record.tindakLanjutDkppu,
+            'File URL': record.fileUrl,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Tindak Lanjut DGCA');
+        XLSX.writeFile(workbook, 'tindak_lanjut_dgca.xlsx');
+    };
+
 
     return (
         <main className="p-4 md:p-8">
@@ -234,8 +268,16 @@ export default function MonitoringRekomendasiDgcaPage() {
                 <TabsContent value="records">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Records</CardTitle>
-                            <CardDescription>List of all DGCA recommendation follow-ups.</CardDescription>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>Records</CardTitle>
+                                    <CardDescription>List of all DGCA recommendation follow-ups.</CardDescription>
+                                </div>
+                                <Button variant="outline" onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Export to Excel
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                            {isLoading ? (
@@ -319,5 +361,3 @@ export default function MonitoringRekomendasiDgcaPage() {
         </main>
     );
 }
-
-    
