@@ -23,6 +23,7 @@ import { Loader2, AlertTriangle, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GapAnalysisForm } from '@/components/gap-analysis-form';
 import { GapAnalysisRecordsTable } from '@/components/gap-analysis-records-table';
+import { GapAnalysisAnalyticsDashboard } from '@/components/gap-analysis-analytics-dashboard';
 
 export default function StateLetterPage() {
   const [records, setRecords] = useState<GapAnalysisRecord[]>([]);
@@ -156,6 +157,7 @@ export default function StateLetterPage() {
                         <TabsList>
                           <TabsTrigger value="form">Input Form</TabsTrigger>
                           <TabsTrigger value="records">Records</TabsTrigger>
+                          <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         </TabsList>
                     </div>
                 </CardHeader>
@@ -193,6 +195,20 @@ export default function StateLetterPage() {
                             filterOptions={{ annexOptions, casrOptions }}
                             onResetFilters={resetFilters}
                         />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className={cn(activeTab !== 'analytics' ? 'hidden' : '')}>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>State Letter Analytics</CardTitle>
+                        <CardDescription>
+                            Visualizations of the State Letter data.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <GapAnalysisAnalyticsDashboard records={filteredRecords} />
                     </CardContent>
                 </Card>
             </TabsContent>
