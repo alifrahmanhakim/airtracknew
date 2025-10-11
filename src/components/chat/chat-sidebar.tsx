@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -18,6 +19,11 @@ interface ChatSidebarProps {
     selectedUser: User | null;
     globalChatUser: User;
 }
+
+const stripHtml = (html: string | undefined) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>?/gm, '');
+};
 
 export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selectedUser, globalChatUser }: ChatSidebarProps) {
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -123,7 +129,7 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                                 </Avatar>
                                 <div className="flex-1 overflow-hidden">
                                     <p className="font-semibold truncate">{user.name || user.email}</p>
-                                    <p className="text-sm text-muted-foreground truncate">{lastMessage?.text || 'No messages yet'}</p>
+                                    <p className="text-sm text-muted-foreground truncate">{stripHtml(lastMessage?.text) || 'No messages yet'}</p>
                                 </div>
                                 <div className="text-xs text-muted-foreground self-start">
                                     {formatTimestamp(lastMessage?.createdAt)}
