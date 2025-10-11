@@ -50,6 +50,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from '@/components/notification-bell';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { GlobalSearch } from '@/components/global-search';
 
 const navItems = {
     dashboards: [
@@ -228,17 +229,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenu>
             </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter className="flex flex-col gap-3">
-            <SidebarSeparator />
+        <SidebarFooter>
              <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
                 stdatabase © 2025
             </div>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex items-center justify-between p-2 bg-card/80 backdrop-blur-sm">
+        <header className="sticky top-0 z-10 m-2 mt-4 flex items-center justify-between rounded-lg border bg-card/80 p-2 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
+            <GlobalSearch />
           </div>
           <div className="flex items-center gap-2">
             <LiveClock />
@@ -248,7 +249,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-9 w-9" online={isCurrentUserOnline}>
+                  <Avatar className="h-9 w-9 aspect-square" online={isCurrentUserOnline}>
                     <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
                     <AvatarFallback>
                       <UserIcon className="h-5 w-5" />
@@ -281,7 +282,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </DropdownMenu>
           </div>
         </header>
-        <div className="animate-in fade-in-50 duration-500">
+        <div className="animate-in fade-in-50 duration-500 p-2">
             {children}
         </div>
       </SidebarInset>
