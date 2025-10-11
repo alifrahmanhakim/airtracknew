@@ -114,7 +114,7 @@ export default function StateLetterPage() {
   };
   
   const handleRecordAdd = (newRecord: GapAnalysisRecord) => {
-    setRecords(prev => [...prev, newRecord]);
+    // The onSnapshot listener will automatically handle adding the record.
     setActiveTab('records');
   };
   
