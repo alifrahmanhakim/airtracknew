@@ -37,7 +37,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditGapAnalysisRecordDialog } from './edit-gap-analysis-record-dialog';
 import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
@@ -255,7 +255,15 @@ export function GapAnalysisRecordsTable({
                                     );
                                 }
                                 if ((col.key === 'dateOfEvaluation' || col.key === 'implementationDate') && value) {
-                                    return format(parseISO(value), 'PPP');
+                                    try {
+                                        const date = parseISO(value);
+                                        if (isValid(date)) {
+                                            return format(date, 'PPP');
+                                        }
+                                    } catch (e) {
+                                        // Catches invalid date strings for parseISO
+                                    }
+                                    return 'N/A';
                                 }
                                 return <div className='max-w-xs truncate'>{value || 'N/A'}</div>;
                             })()}
