@@ -4,22 +4,16 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  FolderKanban,
   Home,
   Users,
   FileText,
-  LineChart,
-  Plane,
-  LogOut,
   Landmark,
   ClipboardCheck,
   CircleHelp,
   UserSquare,
-  FileBadge,
-  GitCompareArrows,
-  Settings,
   BookText,
-  User as UserIcon,
+  Settings,
+  LogOut,
   MessageSquare,
   ShieldAlert,
   Mail,
@@ -36,15 +30,13 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
-  SidebarInset,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { User } from '@/lib/types';
-import { doc, getDoc, onSnapshot, collection } from 'firebase/firestore';
+import { doc, onSnapshot, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { format } from 'date-fns';
@@ -53,7 +45,6 @@ import { StatusIndicator } from '@/components/status-indicator';
 import { updateUserOnlineStatus } from '@/lib/actions/user';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from '@/components/notification-bell';
-import { SendEmailDialog } from '@/components/send-email-dialog';
 
 const navItems = {
     dashboards: [

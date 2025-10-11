@@ -12,13 +12,6 @@ export default function RulemakingDashboard() {
   const [rulemakingProjects, setRulemakingProjects] = useState<Project[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [version, setVersion] = useState(0); // State to trigger re-fetch
-
-  useEffect(() => {
-    const loggedInUserId = localStorage.getItem('loggedInUserId');
-    setUserId(loggedInUserId);
-  }, []);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -48,11 +41,8 @@ export default function RulemakingDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData, version]);
+  }, [fetchData]);
 
-  const refreshData = () => {
-    setVersion(v => v + 1);
-  };
 
   if (isLoading) {
     return (
@@ -83,5 +73,5 @@ export default function RulemakingDashboard() {
     );
   }
 
-  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={allUsers} onProjectAdd={refreshData} />;
+  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={allUsers} />;
 }
