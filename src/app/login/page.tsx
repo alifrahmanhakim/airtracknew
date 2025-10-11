@@ -193,7 +193,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{backgroundImage: "url('https://i.imgur.com/1QgsJAm.jpeg')"} }>
+    <main className="relative flex items-center justify-center min-h-screen bg-cover bg-center p-4">
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
