@@ -1,12 +1,17 @@
 
 
 import { z } from 'zod';
+import { isValid, parse } from 'date-fns';
 
 const dateSchema = z.string().optional().refine(val => {
-    if (!val) return true; // Allow empty strings
-    return /^\d{4}-\d{2}-\d{2}$/.test(val);
+    if (!val || val.trim() === '') return true; // Allow empty strings
+    // Check for DD-MM-YYYY format
+    if (!/^\d{2}-\d{2}-\d{4}$/.test(val)) return false;
+    // Check if the date is actually valid
+    const date = parse(val, 'dd-MM-yyyy', new Date());
+    return isValid(date);
 }, {
-    message: "Date must be in YYYY-MM-DD format"
+    message: "Date must be in DD-MM-YYYY format and be a valid date"
 });
 
 
