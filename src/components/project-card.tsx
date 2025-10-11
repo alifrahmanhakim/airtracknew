@@ -27,7 +27,7 @@ type ProjectCardProps = {
 };
 
 export function ProjectCard({ project, allUsers }: ProjectCardProps) {
-  const { name, status, endDate, startDate, tasks, notes, team, projectType, annex, casr, tags } = project;
+  const { name, status, endDate, startDate, tasks, notes, team, projectType, annex, casr, tags } from project;
 
   const { total: totalTasks, completed: completedTasks, hasCritical } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
@@ -54,7 +54,8 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
       return 'At Risk';
     }
     
-    return status;
+    // If none of the above, it's On Track
+    return 'On Track';
   }
   
   const effectiveStatus = getEffectiveStatus();
