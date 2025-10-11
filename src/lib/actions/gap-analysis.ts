@@ -7,13 +7,45 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { GapAnalysisRecord, Project } from '../types';
 import { gapAnalysisFormSchema } from '../schemas';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
+
+function formatDateForStorage(dateString?: string): string | undefined {
+    if (!dateString) return undefined;
+    try {
+        // Handle YYYY-MM-DD (from direct input) or DD-MM-YYYY (from manual edit)
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+            return dateString; // Already in correct format
+        }
+        const date = parse(dateString, 'dd-MM-yyyy', new Date());
+        return format(date, 'yyyy-MM-dd');
+    } catch (e) {
+        return dateString; // Return original if parsing fails
+    }
+}
+
 
 export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormSchema>) {
     // The Zod validation now happens automatically on the boundary of the Server Action
     try {
         const dataToSubmit = {
           ...data,
+          dateOfEvaluation: formatDateForStorage(data.dateOfEvaluation),
+          implementationDate: formatDateForStorage(data.implementationDate),
+          effectiveDate: formatDateForStorage(data.effectiveDate),
+          applicabilityDate: formatDateForStorage(data.applicabilityDate),
+          embeddedApplicabilityDate: formatDateForStorage(data.embeddedApplicabilityDate),
+          actionRequired: data.actionRequired.map(act => ({
+              ...act,
+              date: formatDateForStorage(act.date)
+          })),
+          verifiers: data.verifiers?.map(v => ({
+              ...v,
+              date: formatDateForStorage(v.date)
+          })),
+          implementationTasks: data.implementationTasks?.map(t => ({
+              ...t,
+              estimatedComplianceDate: formatDateForStorage(t.estimatedComplianceDate)
+          })),
           createdAt: new Date().toISOString(),
         };
 
@@ -35,7 +67,28 @@ export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof g
     try {
         const docRef = doc(db, 'gapAnalysisRecords', id);
         
-        await updateDoc(docRef, data);
+        const dataToSubmit = {
+          ...data,
+          dateOfEvaluation: formatDateForStorage(data.dateOfEvaluation),
+          implementationDate: formatDateForStorage(data.implementationDate),
+          effectiveDate: formatDateForStorage(data.effectiveDate),
+          applicabilityDate: formatDateForStorage(data.applicabilityDate),
+          embeddedApplicabilityDate: formatDateForStorage(data.embeddedApplicabilityDate),
+          actionRequired: data.actionRequired.map(act => ({
+              ...act,
+              date: formatDateForStorage(act.date)
+          })),
+          verifiers: data.verifiers?.map(v => ({
+              ...v,
+              date: formatDateForStorage(v.date)
+          })),
+          implementationTasks: data.implementationTasks?.map(t => ({
+              ...t,
+              estimatedComplianceDate: formatDateForStorage(t.estimatedComplianceDate)
+          })),
+        };
+        
+        await updateDoc(docRef, dataToSubmit);
 
         const updatedRecord: GapAnalysisRecord = {
             id,

@@ -2,6 +2,14 @@
 
 import { z } from 'zod';
 
+const dateSchema = z.string().optional().refine(val => {
+    if (!val) return true; // Allow empty strings
+    return /^\d{4}-\d{2}-\d{2}$/.test(val);
+}, {
+    message: "Date must be in YYYY-MM-DD format"
+});
+
+
 export const ccefodFormSchema = z.object({
     adaPerubahan: z.enum(['YA', 'TIDAK']),
     usulanPerubahan: z.string().nullable().optional(),
@@ -54,28 +62,28 @@ const verifierSchema = z.object({
     id: z.string(),
     name: z.string().min(1, 'Verifier name is required'),
     signature: z.string().optional(),
-    date: z.string().optional(),
+    date: dateSchema,
 });
 
 export const gapAnalysisFormSchema = z.object({
   slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
   annex: z.string().min(1, 'Annex is required'),
   typeOfStateLetter: z.string().min(1, 'Type of State Letter is required'),
-  dateOfEvaluation: z.string().optional(),
+  dateOfEvaluation: dateSchema,
   subject: z.string().min(1, 'Subject is required'),
   letterName: z.string().optional(),
   letterSubject: z.string().optional(),
-  implementationDate: z.string().optional(),
+  implementationDate: dateSchema,
   actionRequired: z.array(z.object({
     id: z.enum(['disapproval', 'differences', 'efod']),
     checked: z.boolean(),
-    date: z.string().optional(),
+    date: dateSchema,
   })).refine(value => value.some(item => item.checked), {
     message: "You have to select at least one item.",
   }),
-  effectiveDate: z.string().optional(),
-  applicabilityDate: z.string().optional(),
-  embeddedApplicabilityDate: z.string().optional(),
+  effectiveDate: dateSchema,
+  applicabilityDate: dateSchema,
+  embeddedApplicabilityDate: dateSchema,
   evaluations: z.array(z.object({
     id: z.string(),
     icaoSarp: z.string().min(1, 'ICAO SARP is required'),
@@ -96,7 +104,7 @@ export const gapAnalysisFormSchema = z.object({
   implementationTasks: z.array(z.object({
     id: z.string(),
     description: z.string().min(1, 'Task description is required.'),
-    estimatedComplianceDate: z.string().optional(),
+    estimatedComplianceDate: dateSchema,
   })).optional(),
 });
 
@@ -243,3 +251,4 @@ export const changePasswordSchema = z.object({
 });
 
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
