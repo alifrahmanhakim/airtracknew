@@ -136,7 +136,7 @@ export function DashboardPage() {
         if (userId) {
           const userDoc = await getDoc(doc(db, 'users', userId));
           if (userDoc.exists()) {
-            setCurrentUser({ id: userDoc.id, ...doc.data() } as User);
+            setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
           }
         }
       } catch (error) {
