@@ -88,11 +88,10 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
       <Card>
         <CardHeader><CardTitle>A. GENERAL</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField control={form.control} name="slReferenceNumber" render={({ field }) => ( <FormItem> <FormLabel>SL Reference Number</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <FormField control={form.control} name="annex" render={({ field }) => ( <FormItem> <FormLabel>ANNEX</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="typeOfStateLetter" render={({ field }) => ( <FormItem> <FormLabel>Type of State Letter</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <FormField
+            <FormField control={form.control} name="slReferenceNumber" render={({ field }) => ( <FormItem> <FormLabel>SL Reference Number</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+             <FormField
               control={form.control}
               name="dateOfEvaluation"
               render={({ field }) => (
@@ -103,23 +102,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 </FormItem>
               )}
             />
-            <FormField control={form.control} name="letterName" render={({ field }) => ( <FormItem> <FormLabel>Nama Surat</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <FormField
-              control={form.control}
-              name="implementationDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tanggal Pelaksanaan</FormLabel>
-                   <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="letterSubject" render={({ field }) => ( <FormItem> <FormLabel>Perihal Surat</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          
-           <FormItem>
+             <FormItem>
                 <FormLabel>Action required</FormLabel>
                 <div className="space-y-4 rounded-md border p-4">
                     {actionFields.map((item, index) => (
@@ -165,37 +148,53 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 </div>
                 <FormMessage>{form.formState.errors.actionRequired?.root?.message}</FormMessage>
             </FormItem>
-
-          <fieldset className="border p-4 rounded-md">
-            <legend className="text-sm font-medium px-1">Standardization Process</legend>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                <FormField control={form.control} name="effectiveDate" render={({ field }) => ( 
-                  <FormItem>
-                    <FormLabel>Effective Date</FormLabel>
-                     <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem> 
-                )}/>
-                <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( 
-                  <FormItem>
-                    <FormLabel>Applicability Date</FormLabel>
-                     <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem> 
-                )}/>
-                <FormField
-                  control={form.control}
-                  name="embeddedApplicabilityDate"
-                  render={({ field }) => (
+            <fieldset className="border p-4 rounded-md">
+                <legend className="text-sm font-medium px-1">Standardization Process</legend>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                    <FormField control={form.control} name="effectiveDate" render={({ field }) => ( 
                     <FormItem>
-                      <FormLabel>Embedded applicability date(s)</FormLabel>
-                      <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormLabel>Effective Date</FormLabel>
+                        <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem> 
+                    )}/>
+                    <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( 
+                    <FormItem>
+                        <FormLabel>Applicability Date</FormLabel>
+                        <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem> 
+                    )}/>
+                    <FormField
+                    control={form.control}
+                    name="embeddedApplicabilityDate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Embedded applicability date(s)</FormLabel>
+                        <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+            </fieldset>
+            {/* Other fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+              <FormField control={form.control} name="annex" render={({ field }) => ( <FormItem> <FormLabel>ANNEX</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+              <FormField control={form.control} name="letterName" render={({ field }) => ( <FormItem> <FormLabel>Nama Surat</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+              <FormField
+                control={form.control}
+                name="implementationDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tanggal Pelaksanaan</FormLabel>
+                    <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </fieldset>
+            <FormField control={form.control} name="letterSubject" render={({ field }) => ( <FormItem> <FormLabel>Perihal Surat</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
         </CardContent>
       </Card>
 
@@ -378,7 +377,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                 ) : (
                                     <SignaturePadDialog
                                         onSave={(newSignature) => {
-                                            const currentName = form.getValues(`inspectors.${index}.name`);
+                                             const currentName = form.getValues(`inspectors.${index}.name`);
                                             updateInspector(index, { id: field.id, name: currentName, signature: newSignature });
                                         }}
                                         trigger={
@@ -502,3 +501,4 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
     </>
   );
 }
+
