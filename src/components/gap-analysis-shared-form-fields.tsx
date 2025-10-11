@@ -192,7 +192,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
           </fieldset>
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>B. Implementation Task List (if applicable)</CardTitle>
@@ -243,7 +243,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>EVALUATION</CardTitle>
+            <CardTitle>E. EVALUATION</CardTitle>
             <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
             </Button>
