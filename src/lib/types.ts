@@ -151,6 +151,7 @@ export type ImplementationTaskItem = {
 export type GapAnalysisRecord = {
     id: string;
     slReferenceNumber: string;
+    slReferenceDate?: string;
     annex: string;
     typeOfStateLetter: string;
     dateOfEvaluation: string;

@@ -122,6 +122,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
         <ScrollArea className="max-h-[70vh] pr-6">
             <dl className="divide-y divide-border">
                 <DetailRow label="SL Reference Number" value={record.slReferenceNumber} />
+                <DetailRow label="SL Reference Date" value={record.slReferenceDate ? format(parseISO(record.slReferenceDate), 'PPP') : 'N/A'} />
                 <DetailRow label="Annex" value={record.annex} />
                 <DetailRow label="Type of State Letter" value={record.typeOfStateLetter} />
                 <DetailRow label="Date of Evaluation" value={record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'} />

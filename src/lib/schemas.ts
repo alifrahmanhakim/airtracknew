@@ -72,6 +72,7 @@ const verifierSchema = z.object({
 
 export const gapAnalysisFormSchema = z.object({
   slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
+  slReferenceDate: dateSchema,
   annex: z.string().min(1, 'Annex is required'),
   typeOfStateLetter: z.string().min(1, 'Type of State Letter is required'),
   dateOfEvaluation: dateSchema,
@@ -260,4 +261,3 @@ export const changePasswordSchema = z.object({
 });
 
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
-

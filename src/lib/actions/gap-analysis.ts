@@ -10,7 +10,7 @@ import { gapAnalysisFormSchema } from '../schemas';
 import { format, parse } from 'date-fns';
 
 function formatDateForStorage(dateString?: string): string | null {
-    if (!dateString) return null;
+    if (!dateString || dateString.trim() === '') return null; // Handle empty or undefined
     try {
         // Handle YYYY-MM-DD (from direct input) or DD-MM-YYYY (from manual edit)
         if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
@@ -29,6 +29,7 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
     try {
         const dataToSubmit = {
           ...data,
+          slReferenceDate: formatDateForStorage(data.slReferenceDate),
           dateOfEvaluation: formatDateForStorage(data.dateOfEvaluation),
           implementationDate: formatDateForStorage(data.implementationDate),
           effectiveDate: formatDateForStorage(data.effectiveDate),
@@ -69,6 +70,7 @@ export async function updateGapAnalysisRecord(id: string, data: z.infer<typeof g
         
         const dataToSubmit = {
           ...data,
+          slReferenceDate: formatDateForStorage(data.slReferenceDate),
           dateOfEvaluation: formatDateForStorage(data.dateOfEvaluation),
           implementationDate: formatDateForStorage(data.implementationDate),
           effectiveDate: formatDateForStorage(data.effectiveDate),

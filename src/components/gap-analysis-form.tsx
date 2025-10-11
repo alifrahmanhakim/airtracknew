@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -51,6 +52,7 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
 
   const defaultFormValues: GapAnalysisFormValues = {
     slReferenceNumber: '',
+    slReferenceDate: '',
     annex: '',
     typeOfStateLetter: '',
     dateOfEvaluation: '',
@@ -67,7 +69,7 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     applicabilityDate: '',
     embeddedApplicabilityDate: '',
     evaluations: [
-      { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '', followUp: '', proposedAmendment: '', reasonOrRemark: '', status: 'OPEN' }
+      { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '', status: 'OPEN', followUp: '', proposedAmendment: '', reasonOrRemark: '' }
     ],
     statusItem: 'OPEN',
     summary: '',

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -107,6 +108,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...record,
+      slReferenceDate: formatToInputDate(record.slReferenceDate),
       dateOfEvaluation: formatToInputDate(record.dateOfEvaluation),
       implementationDate: formatToInputDate(record.implementationDate),
       effectiveDate: formatToInputDate(record.effectiveDate),
