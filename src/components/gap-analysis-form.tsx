@@ -34,7 +34,8 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
         const uniqueCasrMap = new Map<string, { label: string; value: string }>();
         projectsFromDb.forEach(p => {
           if (p.casr) {
-            const value = `CASR ${p.casr}`;
+            const revision = p.casrRevision ? ` (Rev. ${p.casrRevision})` : '';
+            const value = `CASR ${p.casr}${revision}`;
             if (!uniqueCasrMap.has(value)) {
               uniqueCasrMap.set(value, {
                 value: value,
