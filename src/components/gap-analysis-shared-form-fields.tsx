@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
@@ -192,7 +191,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
           </fieldset>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>B. Implementation Task List (if applicable)</CardTitle>
@@ -240,7 +239,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
             ))}
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>E. EVALUATION</CardTitle>
@@ -292,7 +291,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
       </Card>
       
       <Card>
-        <CardHeader><CardTitle>FOLLOW UP</CardTitle></CardHeader>
+        <CardHeader><CardTitle>D. SUMMARY</CardTitle></CardHeader>
         <CardContent className="space-y-4">
             <FormField control={form.control} name="statusItem" render={({ field }) => (
                 <FormItem>
