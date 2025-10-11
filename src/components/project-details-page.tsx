@@ -481,7 +481,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </div>
       </div>
       
-      <Card>
+      <div className="relative group overflow-hidden rounded-xl">
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+        <Card className="relative">
             <CardHeader><CardTitle>Project Dashboard</CardTitle></CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -577,7 +579,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                 </div>
             </CardContent>
         </Card>
-        
+      </div>
+      
       <div className="grid grid-cols-1 gap-6">
         
         {project.projectType === 'Rulemaking' && (
