@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -212,11 +211,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     }
   }, [users]);
 
-
   const associatedGapRecords = React.useMemo(() => {
     if (project.projectType !== 'Rulemaking' || !project.casr) return [];
+
+    // Create a pattern to match "CASR {number}"
+    const casrNumber = project.casr;
+    const casrPattern = new RegExp(`^CASR\\s+${casrNumber}\\b`, 'i');
+
     return allGapAnalysisRecords.filter(record => 
-        record.evaluations.some(e => e.casrAffected === `CASR ${project.casr}`)
+        record.evaluations.some(e => casrPattern.test(e.casrAffected))
     );
   }, [allGapAnalysisRecords, project.casr, project.projectType]);
 
