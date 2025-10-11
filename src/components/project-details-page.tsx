@@ -51,6 +51,7 @@ import {
   ListTodo,
   Clock,
   CheckCircle,
+  CalendarX,
 } from 'lucide-react';
 import { format, parseISO, differenceInDays, isAfter } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -414,10 +415,16 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       'In Progress': 0,
       'Blocked': 0,
       'Done': 0,
+      'Off Track': 0,
     };
     const countTasks = (tasksToCount: Task[]) => {
         tasksToCount.forEach(task => {
-            counts[task.status]++;
+            const isOffTrack = isAfter(new Date(), parseISO(task.dueDate)) && task.status !== 'Done';
+            if (isOffTrack) {
+                counts['Off Track']++;
+            } else {
+                counts[task.status]++;
+            }
             if (task.subTasks) {
                 countTasks(task.subTasks);
             }
@@ -530,6 +537,11 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                                <span className='text-blue-500'>In Progress:</span>
                                <span className="font-bold ml-auto text-blue-500">{taskStatusCounts['In Progress']}</span>
                            </div>
+                             <div className="flex items-center gap-2 text-sm">
+                               <CalendarX className="h-4 w-4 text-yellow-600" />
+                               <span className='text-yellow-600'>Off Track:</span>
+                               <span className="font-bold ml-auto text-yellow-600">{taskStatusCounts['Off Track']}</span>
+                           </div>
                            <div className="flex items-center gap-2 text-sm">
                                <AlertTriangle className="h-4 w-4 text-destructive" />
                                <span className='text-destructive'>Blocked:</span>
@@ -573,14 +585,14 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         )}
         
         {(offTrackTasks.length > 0 || tasksWithoutAttachments.length > 0) && (
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive" /> Project Alerts</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {offTrackTasks.length > 0 && (
-                            <div className="border border-destructive/50 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                            <div className="border border-red-300 bg-red-50 dark:bg-red-950 dark:border-red-800/80 p-4 rounded-lg">
                                 <h3 className="font-semibold text-red-800 dark:text-red-300">
                                     {offTrackTasks.length} Off Track Task{offTrackTasks.length > 1 ? 's' : ''}
                                 </h3>
