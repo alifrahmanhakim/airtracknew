@@ -226,6 +226,7 @@ export const lawEnforcementFormSchema = z.object({
     sanctionType: z.string().min(1, "Sanction type is required."),
     refLetter: z.string().min(1, "Reference letter is required."),
     dateLetter: z.string({ required_error: "Date letter is required." }).min(1, "Date letter is required."),
+    fileUrl: z.string().url().optional().or(z.literal('')),
   })).min(1, "At least one reference is required."),
 }).superRefine((data, ctx) => {
     if (data.impositionType === 'aoc' && (!data.sanctionedAoc || data.sanctionedAoc.length === 0 || data.sanctionedAoc.some(p => !p.value))) {

@@ -294,6 +294,7 @@ export type LawEnforcementReference = {
     sanctionType: string;
     refLetter: string;
     dateLetter: string;
+    fileUrl?: string;
 };
 
 export type LawEnforcementRecord = {

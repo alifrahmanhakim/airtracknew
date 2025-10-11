@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -39,7 +40,7 @@ export function EditLawEnforcementRecordDialog({ record, onRecordUpdate }: EditL
     resolver: zodResolver(lawEnforcementFormSchema),
     defaultValues: {
       ...record,
-      references: record.references?.map(ref => ({...ref, dateLetter: ref.dateLetter ? format(parseISO(ref.dateLetter), 'yyyy-MM-dd') : ''})) || []
+      references: record.references?.map(ref => ({...ref, dateLetter: ref.dateLetter ? format(parseISO(ref.dateLetter), 'yyyy-MM-dd') : '', fileUrl: ref.fileUrl || ''})) || []
     },
   });
 

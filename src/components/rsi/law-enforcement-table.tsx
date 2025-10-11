@@ -234,6 +234,13 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                                                 <p><strong className="font-semibold">Type:</strong> <Highlight text={ref.sanctionType} query={searchTerm} /></p>
                                                 <p><strong className="font-semibold">Ref. Letter:</strong> <Highlight text={ref.refLetter} query={searchTerm} /></p>
                                                 <p><strong className="font-semibold">Date:</strong> <Highlight text={ref.dateLetter ? format(parseISO(ref.dateLetter), 'dd-MMM-yy') : 'N/A'} query={searchTerm} /></p>
+                                                {ref.fileUrl && (
+                                                    <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                                                        <a href={ref.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                            <LinkIcon className="h-3 w-3" /> View File
+                                                        </a>
+                                                    </Button>
+                                                )}
                                             </div>
                                         ))}
                                         </div>
