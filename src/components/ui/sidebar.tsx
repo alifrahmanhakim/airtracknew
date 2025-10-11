@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -312,7 +313,10 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-transparent",
+        "relative flex min-h-svh flex-1 flex-col bg-transparent transition-[margin-left] ease-linear duration-200",
+        "md:ml-[var(--sidebar-width)]",
+        "peer-data-[state=collapsed]:peer-data-[variant=sidebar]:md:ml-[var(--sidebar-width-icon)]",
+        "peer-data-[state=collapsed]:peer-data-[variant=floating]:md:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]",
         "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-border",
         className
       )}

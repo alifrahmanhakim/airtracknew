@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -17,6 +18,7 @@ import {
   MessageSquare,
   ShieldAlert,
   Mail,
+  User as UserIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -266,7 +268,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-transparent">
+      <main className="transition-[margin-left] ease-linear duration-200 bg-transparent md:ml-[var(--sidebar-width)] peer-data-[state=collapsed]:peer-data-[variant=sidebar]:md:ml-[var(--sidebar-width-icon)] peer-data-[state=collapsed]:peer-data-[variant=floating]:md:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]">
         <header className="absolute top-0 left-0 right-0 flex items-center justify-between p-2 z-10">
             <div className="flex items-center gap-2">
                 <SidebarTrigger />
@@ -279,7 +281,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="animate-in fade-in-50 duration-500 pt-12">
             {children}
         </div>
-      </SidebarInset>
+      </main>
     </SidebarProvider>
   );
 }
