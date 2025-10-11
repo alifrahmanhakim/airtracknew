@@ -210,17 +210,17 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
   const associatedGapRecords = React.useMemo(() => {
     if (project.projectType !== 'Rulemaking' || !project.casr) return [];
-
+    
     const casrNumber = project.casr;
-    // This regex looks for "CASR" followed by the number, ensuring it's a whole word.
-    const casrPattern = new RegExp(`\\bCASR\\s+${casrNumber}\\b`, 'i');
+    // This regex looks for "CASR" followed by the number, ensuring it's a whole word or followed by a non-digit.
+    const casrPattern = new RegExp(`\\bCASR\\s+${casrNumber}(?!\\d)`, 'i');
 
     return allGapAnalysisRecords.filter(record => 
         (record.evaluations || []).some(e => 
             e.casrAffected && casrPattern.test(e.casrAffected)
         )
     );
-  }, [allGapAnalysisRecords, project.casr, project.projectType]);
+}, [allGapAnalysisRecords, project.casr, project.projectType]);
 
 
   if (!project) {
@@ -414,6 +414,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   }, [tasks]);
 
   const effectiveStatus = React.useMemo(() => {
+    if (progress === 100) return 'Completed';
     if (project.status === 'Completed') return 'Completed';
 
     const today = new Date();
@@ -428,7 +429,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     const elapsedDuration = differenceInDays(today, startDate);
     const timeProgress = totalDuration > 0 ? (elapsedDuration / totalDuration) * 100 : 0;
     
-    // Consider it "At Risk" if task progress is significantly behind time progress (e.g., 20%)
     if (progress < timeProgress - 20) {
       return 'At Risk';
     }
@@ -497,8 +497,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                             <div>
                                 <p className="text-sm text-muted-foreground">Timeline</p>
                                 <p className="font-semibold">{format(parseISO(project.startDate), 'dd MMM')} - {format(parseISO(project.endDate), 'dd MMM yyyy')}</p>
-                                <p className={cn("text-xs", daysLeft < 0 && project.status !== 'Completed' ? "text-destructive" : "text-muted-foreground")}>
-                                  {project.status === 'Completed' ? 'Project completed' : (daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`)}
+                                <p className={cn("text-xs", daysLeft < 0 && effectiveStatus !== 'Completed' ? "text-destructive" : "text-muted-foreground")}>
+                                  {effectiveStatus === 'Completed' ? 'Project completed' : (daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`)}
                                 </p>
                             </div>
                         </div>
