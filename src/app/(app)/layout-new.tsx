@@ -63,6 +63,7 @@ const navItems = {
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark },
     ],
     workspace: [
+      { href: '/chats', label: 'Chats', icon: MessageSquare },
       { href: '/documents', label: 'Documents', icon: FileText },
       { href: '/team', label: 'Team', icon: Users, requiredRole: 'Sub-Directorate Head' },
       { href: '/reports', label: 'Reports', icon: LineChart },
@@ -253,9 +254,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </div>
             <SidebarMenu>
-                <SidebarMenuItem>
-                    <SendEmailDialog allUsers={allUsers} currentUser={currentUser} />
-                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={pathname === '/profile'}>
                         <Link href="/profile">
