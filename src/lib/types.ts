@@ -70,7 +70,7 @@ export type User = {
     name: string;
     email: string | null;
     avatarUrl?: string;
-    role: 'Sub-Directorate Head' | 'Team Lead' | 'PIC' | 'PIC Assistant' | 'Functional';
+    role: 'Administrator' | 'Sub-Directorate Head' | 'Team Lead' | 'PIC' | 'PIC Assistant' | 'Functional';
     department?: 'Pegawai STD' | 'PEL' | 'AIR' | 'SPU' | 'OPS' | 'DGCA' | 'K/L lain';
     isApproved?: boolean;
     lastOnline?: string;

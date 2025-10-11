@@ -102,7 +102,7 @@ export default function TeamPage() {
   const [statusFilter, setStatusFilter] = React.useState('all');
   const [sort, setSort] = React.useState<SortDescriptor>({ column: 'name', direction: 'asc' });
   
-  const userRoles: User['role'][] = ['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
+  const userRoles: User['role'][] = ['Administrator', 'Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
 
   React.useEffect(() => {
     async function fetchInitialData() {
@@ -275,7 +275,7 @@ export default function TeamPage() {
     )
   }
   
-  const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
+  const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
 
   return (
     <TooltipProvider>
@@ -460,5 +460,3 @@ export default function TeamPage() {
     </TooltipProvider>
   );
 }
-
-    

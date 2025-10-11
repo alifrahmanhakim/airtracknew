@@ -38,7 +38,7 @@ import { updateUser } from '@/lib/actions/user';
 import { userDepartments } from '@/lib/data';
 
 const formSchema = z.object({
-  role: z.enum(['Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional']),
+  role: z.enum(['Administrator', 'Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional']),
   department: z.enum(['Pegawai STD', 'PEL', 'AIR', 'SPU', 'OPS', 'DGCA', 'K/L lain']).optional(),
 });
 
@@ -51,6 +51,7 @@ type AssignRoleDialogProps = {
 };
 
 const baseRoles: User['role'][] = ['Team Lead', 'PIC', 'PIC Assistant', 'Functional'];
+const adminRoles: User['role'][] = ['Administrator', 'Sub-Directorate Head'];
 
 export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDialogProps) {
   const [open, setOpen] = React.useState(false);
@@ -91,7 +92,7 @@ export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDial
     }
   };
 
-  const availableRoles = isAdmin ? ['Sub-Directorate Head', ...baseRoles] : baseRoles;
+  const availableRoles = isAdmin ? [...adminRoles, ...baseRoles] : baseRoles;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
