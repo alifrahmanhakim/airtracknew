@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, Loader2, ArrowLeft } from 'lucide-react';
+import { RotateCcw, Search, Loader2, ArrowLeft, FileSpreadsheet } from 'lucide-react';
 import { getYear, parseISO, format } from 'date-fns';
 import { ComboboxOption } from '@/components/ui/combobox';
 import { useForm } from 'react-hook-form';
@@ -24,6 +24,7 @@ import { addAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { aocOptions } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import * as XLSX from 'xlsx';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -113,6 +114,35 @@ export default function DataAccidentIncidentPage() {
         setAocFilter('all');
         setCategoryFilter('all');
         setYearFilter('all');
+    };
+
+    const handleExportExcel = () => {
+        if (filteredRecords.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no records matching the current filters.',
+            });
+            return;
+        }
+
+        const dataToExport = filteredRecords.map(record => ({
+            Tanggal: record.tanggal,
+            Kategori: record.kategori,
+            AOC: record.aoc,
+            'Registrasi Pesawat': record.registrasiPesawat,
+            'Tipe Pesawat': record.tipePesawat,
+            Lokasi: record.lokasi,
+            Taxonomy: record.taxonomy,
+            'Keterangan Kejadian': record.keteranganKejadian,
+            'Korban Jiwa': record.korbanJiwa,
+            'File URL': record.fileUrl,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Accident & Incident Records');
+        XLSX.writeFile(workbook, 'accident_incident_records.xlsx');
     };
     
     const form = useForm<AccidentIncidentFormValues>({
@@ -214,8 +244,16 @@ export default function DataAccidentIncidentPage() {
                 <TabsContent value="records">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Records</CardTitle>
-                            <CardDescription>List of all accident and serious incident records.</CardDescription>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>Records</CardTitle>
+                                    <CardDescription>List of all accident and serious incident records.</CardDescription>
+                                </div>
+                                <Button variant="outline" onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Export to Excel
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? (
