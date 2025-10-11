@@ -250,7 +250,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>C. EVALUATION</CardTitle>
-            <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '', status: 'OPEN' })}>
+            <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '', status: 'OPEN', followUp: '', proposedAmendment: '', reasonOrRemark: '' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
             </Button>
         </CardHeader>
@@ -264,19 +264,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                     <FormField control={form.control} name={`evaluations.${index}.followUp`} render={({ field }) => ( <FormItem> <FormLabel>Follow Up</FormLabel> <FormControl><Textarea placeholder="Follow up actions..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={form.control} name={`evaluations.${index}.proposedAmendment`} render={({ field }) => ( <FormItem> <FormLabel>Proposed Amendment</FormLabel> <FormControl><Textarea placeholder="Details of the proposed amendment..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={form.control} name={`evaluations.${index}.reasonOrRemark`} render={({ field }) => ( <FormItem> <FormLabel>Reason/Remark</FormLabel> <FormControl><Textarea placeholder="Reason or remark for the evaluation..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`evaluations.${index}.status`} render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Status Item</FormLabel>
-                             <FormControl>
-                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex items-center space-x-4">
-                                    <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="OPEN" /></FormControl><FormLabel className="font-normal">OPEN</FormLabel></FormItem>
-                                    <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="CLOSED" /></FormControl><FormLabel className="font-normal">CLOSED</FormLabel></FormItem>
-                                </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}/>
-                    <FormField
+                     <FormField
                         control={form.control}
                         name={`evaluations.${index}.casrAffected`}
                         render={({ field }) => (
@@ -294,7 +282,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                     />
                     <FormField control={form.control} name={`evaluations.${index}.complianceStatus`} render={({ field }) => (
                         <FormItem>
-                            <FormLabel>DGCA Compliance/Differences Status</FormLabel>
+                            <FormLabel>PROPOSED DGCA COMPLIANCE/ DIFFERENCES STATUS</FormLabel>
                             <FormControl>
                                 <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
                                     {complianceStatusOptions.map(option => (
@@ -305,6 +293,18 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                     ))}
                                 </RadioGroup>
                             </FormControl>
+                        </FormItem>
+                    )}/>
+                    <FormField control={form.control} name={`evaluations.${index}.status`} render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Status Item</FormLabel>
+                             <FormControl>
+                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex items-center space-x-4">
+                                    <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="OPEN" /></FormControl><FormLabel className="font-normal">OPEN</FormLabel></FormItem>
+                                    <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="CLOSED" /></FormControl><FormLabel className="font-normal">CLOSED</FormLabel></FormItem>
+                                </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
                         </FormItem>
                     )}/>
                 </div>
