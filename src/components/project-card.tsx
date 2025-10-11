@@ -16,7 +16,7 @@ import type { Project, Task, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format, parseISO, isAfter, differenceInDays, startOfToday } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle, User as UserIcon } from 'lucide-react';
+import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { countAllTasks } from '@/lib/data-utils';
 
@@ -27,34 +27,39 @@ type ProjectCardProps = {
 };
 
 export function ProjectCard({ project, allUsers }: ProjectCardProps) {
-  const { name, status, endDate, startDate, tasks, notes, team, projectType, annex, casr, tags } from project;
+  const { name, status, endDate, startDate, tasks, notes, team, projectType, annex, casr, tags } = project;
 
   const { total: totalTasks, completed: completedTasks, hasCritical } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
 
   const getEffectiveStatus = (): Project['status'] => {
+    // 1. If explicitly completed or progress is 100%, it's Completed.
     if (status === 'Completed' || progress === 100) return 'Completed';
 
     const today = startOfToday();
-    const projectStart = parseISO(startDate);
     const projectEnd = parseISO(endDate);
-    
+
+    // 2. If the end date is in the past, it's Off Track. This is the highest priority issue.
     if (isAfter(today, projectEnd)) return 'Off Track';
+    
+    // 3. If there is a critical issue, it's At Risk.
     if (hasCritical) return 'At Risk';
 
+    const projectStart = parseISO(startDate);
     const totalDuration = differenceInDays(projectEnd, projectStart);
-    if (totalDuration <= 0) return 'On Track'; // Avoid division by zero for short projects
+    
+    // 4. If progress is significantly behind the time elapsed, it's At Risk.
+    if (totalDuration > 0) {
+        const elapsedDuration = differenceInDays(today, projectStart);
+        const timeProgress = (elapsedDuration / totalDuration) * 100;
 
-    const elapsedDuration = differenceInDays(today, projectStart);
-    const timeProgress = (elapsedDuration / totalDuration) * 100;
-
-    // If task progress is significantly behind time progress, it's at risk
-    if (progress < timeProgress - 20) {
-      return 'At Risk';
+        if (progress < timeProgress - 20) {
+          return 'At Risk';
+        }
     }
     
-    // If none of the above, it's On Track
+    // 5. If none of the above, it's On Track.
     return 'On Track';
   }
   
@@ -62,9 +67,9 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
 
   const statusConfig = {
     'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
-    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'On Track' },
+    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'In Progress' },
     'At Risk': { icon: AlertTriangle, style: 'border-transparent bg-yellow-100 text-yellow-800', label: 'At Risk' },
-    'Off Track': { icon: AlertTriangle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
+    'Off Track': { icon: AlertCircle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
   };
 
   const currentStatus = statusConfig[effectiveStatus] || statusConfig['On Track'];
