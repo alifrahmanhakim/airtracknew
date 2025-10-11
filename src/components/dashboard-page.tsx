@@ -52,13 +52,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { deleteAllTimKerjaProjects } from '@/lib/actions/project';
+import { deleteAllTimKerjaProjects, updateTask } from '@/lib/actions/project';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Progress } from './ui/progress';
-import { parseISO, getYear, isAfter, differenceInDays, startOfToday } from 'date-fns';
+import { parseISO, getYear, isAfter, differenceInDays, startOfToday, format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { cn } from '@/lib/utils';
 import { countAllTasks } from '@/lib/data-utils';
@@ -66,6 +66,8 @@ import { Separator } from './ui/separator';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Checkbox } from './ui/checkbox';
+
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
@@ -101,6 +103,12 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     return 'On Track';
 };
 
+type AssignedTask = Task & {
+  projectName: string;
+  projectId: string;
+  projectType: Project['projectType'];
+};
+
 
 export function DashboardPage() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
@@ -111,6 +119,9 @@ export function DashboardPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [taskToComplete, setTaskToComplete] = useState<AssignedTask | null>(null);
+  const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+
   const { toast } = useToast();
   const router = useRouter();
 
@@ -152,6 +163,45 @@ export function DashboardPage() {
 
     fetchData();
   }, [userId]);
+  
+  const handleCompleteTask = async () => {
+    if (!taskToComplete) return;
+
+    setIsUpdatingTask(true);
+    const updatedTask: Task = {
+        ...taskToComplete,
+        status: 'Done',
+        doneDate: format(new Date(), 'yyyy-MM-dd'),
+    };
+
+    const { projectId, projectType, ...baseTask } = updatedTask;
+
+    const result = await updateTask(projectId, baseTask, projectType);
+    
+    if (result.success && result.tasks) {
+        // Optimistically update the UI
+        setAllProjects(prevProjects => prevProjects.map(p => {
+            if (p.id === projectId) {
+                return { ...p, tasks: result.tasks! };
+            }
+            return p;
+        }));
+        toast({
+            title: 'Task Completed!',
+            description: `"${taskToComplete.title}" has been marked as done.`,
+        });
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.error || "Failed to update task.",
+        });
+    }
+
+    setTaskToComplete(null);
+    setIsUpdatingTask(false);
+  }
+
 
   const yearOptions = useMemo(() => {
     const years = new Set(allProjects.map(p => getYear(parseISO(p.startDate))));
@@ -187,9 +237,9 @@ export function DashboardPage() {
     const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0 };
     let totalTasksCount = 0;
     const today = startOfToday();
-    const overdueTasks: (Task & { projectName: string })[] = [];
+    const overdueTasks: AssignedTask[] = [];
 
-    const countTasksRecursively = (tasks: Task[], projectName: string) => {
+    const countTasksRecursively = (tasks: Task[], projectName: string, projectId: string, projectType: Project['projectType']) => {
         tasks.forEach(task => {
             totalTasksCount++;
             taskStatusCounts[task.status]++;
@@ -197,15 +247,15 @@ export function DashboardPage() {
                 workloadCounts[task.assigneeIds[0]].tasks += 1;
             }
             if (task.status !== 'Done' && isAfter(today, parseISO(task.dueDate))) {
-                overdueTasks.push({ ...task, projectName });
+                overdueTasks.push({ ...task, projectName, projectId, projectType });
             }
             if (task.subTasks && task.subTasks.length > 0) {
-                countTasksRecursively(task.subTasks, projectName);
+                countTasksRecursively(task.subTasks, projectName, projectId, projectType);
             }
         });
     }
 
-    filteredProjects.forEach(p => countTasksRecursively(p.tasks || [], p.name));
+    filteredProjects.forEach(p => countTasksRecursively(p.tasks || [], p.name, p.id, p.projectType));
 
     const projectStats = {
         totalProjects: filteredProjects.length,
@@ -225,7 +275,7 @@ export function DashboardPage() {
       ],
       teamWorkloadData: Object.values(workloadCounts).filter(item => item.tasks > 0).sort((a,b) => b.tasks - a.tasks),
       stats: projectStats,
-      offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
+      offTrackTasks: overdueTasks.sort((a,b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime()),
     };
   }, [filteredProjects, allUsers]);
   
@@ -346,7 +396,7 @@ export function DashboardPage() {
         </div>
         
         {offTrackTasks.length > 0 && (
-             <Collapsible>
+            <Collapsible defaultOpen>
                 <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60">
                     <CardHeader>
                         <CollapsibleTrigger asChild>
@@ -371,14 +421,18 @@ export function DashboardPage() {
                             return (
                                 <div key={task.id}>
                                     <div className="flex items-start justify-between gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 font-bold">
-                                                {daysOverdue}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-sm">{task.title}</p>
-                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
-                                            </div>
+                                        <Checkbox
+                                            id={`off-track-complete-${task.id}`}
+                                            className="mt-1"
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setTaskToComplete(task);
+                                                }
+                                            }}
+                                        />
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-sm">{task.title}</p>
+                                            <p className="text-xs text-muted-foreground">{task.projectName}</p>
                                         </div>
                                         <Badge variant="destructive" className="whitespace-nowrap mt-1">
                                             {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
@@ -397,14 +451,18 @@ export function DashboardPage() {
                                 return (
                                     <div key={task.id}>
                                         <div className="flex items-start justify-between gap-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 font-bold">
-                                                    {daysOverdue}
-                                                </div>
-                                                <div>
-                                                    <p className="font-semibold text-sm">{task.title}</p>
-                                                    <p className="text-xs text-muted-foreground">{task.projectName}</p>
-                                                </div>
+                                            <Checkbox
+                                                id={`off-track-complete-${task.id}`}
+                                                className="mt-1"
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        setTaskToComplete(task);
+                                                    }
+                                                }}
+                                            />
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-sm">{task.title}</p>
+                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
                                             </div>
                                             <Badge variant="destructive" className="whitespace-nowrap mt-1">
                                                 {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
@@ -538,6 +596,24 @@ export function DashboardPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!taskToComplete} onOpenChange={(open) => !open && setTaskToComplete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Complete Task?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Are you sure you want to mark the task <span className="font-semibold">"{taskToComplete?.title}"</span> as done?
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUpdatingTask}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCompleteTask} disabled={isUpdatingTask}>
+                {isUpdatingTask && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Confirm & Complete
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+        </AlertDialog>
     </>
   );
 }
