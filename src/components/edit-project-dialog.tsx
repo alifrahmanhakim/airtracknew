@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { Checkbox } from './ui/checkbox';
 import { updateProject } from '@/lib/actions/project';
+import { countAllTasks } from '@/lib/data-utils';
 
 const editProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -80,13 +81,17 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
   }));
   
   const highPriorityTag = 'High Priority';
+  
+  const { total: totalTasks, completed: completedTasks } = countAllTasks(project.tasks || []);
+  const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  const isCompletedByProgress = progress === 100;
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(editProjectSchema),
     defaultValues: {
       name: project.name,
       description: project.description,
-      status: project.status,
+      status: isCompletedByProgress ? 'Completed' : project.status,
       startDate: parseISO(project.startDate),
       endDate: parseISO(project.endDate),
       notes: project.notes,
@@ -125,7 +130,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
     const projectUpdateData: Partial<Omit<Project, 'id'>> = { 
         name: data.name,
         description: data.description,
-        status: data.status,
+        status: isCompletedByProgress ? 'Completed' : data.status,
         startDate: format(data.startDate, 'yyyy-MM-dd'),
         endDate: format(data.endDate, 'yyyy-MM-dd'),
         notes: data.notes ?? '',
@@ -334,7 +339,11 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    disabled={isCompletedByProgress}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a status" />
@@ -347,6 +356,9 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
                       <SelectItem value="Completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
+                  {isCompletedByProgress && (
+                      <p className="text-xs text-muted-foreground">Status is automatically set to "Completed" as all tasks are done.</p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
