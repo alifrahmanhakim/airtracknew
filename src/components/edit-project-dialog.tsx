@@ -35,15 +35,16 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Project, User } from '@/lib/types';
-import { CalendarIcon, Loader2, Pencil } from 'lucide-react';
+import { CalendarIcon, Loader2, Pencil, CheckCircle, Clock, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isAfter, differenceInDays, startOfToday } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { Checkbox } from './ui/checkbox';
 import { updateProject } from '@/lib/actions/project';
 import { countAllTasks } from '@/lib/data-utils';
+import { Badge } from './ui/badge';
 
 const editProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -69,6 +70,41 @@ type EditProjectDialogProps = {
   allUsers: User[];
 };
 
+const getEffectiveStatus = (project: Project): Project['status'] => {
+    const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
+    const progress = total > 0 ? (completed / total) * 100 : 0;
+  
+    if (progress === 100 || project.status === 'Completed') {
+      return 'Completed';
+    }
+  
+    const today = startOfToday();
+    const projectEnd = parseISO(project.endDate);
+  
+    if (isAfter(today, projectEnd)) {
+      return 'Off Track';
+    }
+  
+    if (hasCritical) {
+      return 'At Risk';
+    }
+    
+    const projectStart = parseISO(project.startDate);
+    const totalDuration = differenceInDays(projectEnd, projectStart);
+  
+    if (totalDuration > 0) {
+      const elapsedDuration = differenceInDays(today, projectStart);
+      const timeProgress = (elapsedDuration / totalDuration) * 100;
+  
+      if (progress < timeProgress - 20) {
+        return 'At Risk';
+      }
+    }
+    
+    return 'On Track';
+};
+
+
 export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,16 +118,14 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
   
   const highPriorityTag = 'High Priority';
   
-  const { total: totalTasks, completed: completedTasks } = countAllTasks(project.tasks || []);
-  const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-  const isCompletedByProgress = progress === 100;
+  const effectiveStatus = getEffectiveStatus(project);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(editProjectSchema),
     defaultValues: {
       name: project.name,
       description: project.description,
-      status: isCompletedByProgress ? 'Completed' : project.status,
+      status: effectiveStatus,
       startDate: parseISO(project.startDate),
       endDate: parseISO(project.endDate),
       notes: project.notes,
@@ -130,7 +164,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
     const projectUpdateData: Partial<Omit<Project, 'id'>> = { 
         name: data.name,
         description: data.description,
-        status: isCompletedByProgress ? 'Completed' : data.status,
+        status: effectiveStatus,
         startDate: format(data.startDate, 'yyyy-MM-dd'),
         endDate: format(data.endDate, 'yyyy-MM-dd'),
         notes: data.notes ?? '',
@@ -164,6 +198,14 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
         });
     }
   };
+
+  const statusConfig: { [key in Project['status']]: { icon: React.ElementType, style: string, label: string } } = {
+    'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
+    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'On Track' },
+    'At Risk': { icon: AlertTriangle, style: 'border-transparent bg-yellow-100 text-yellow-800', label: 'At Risk' },
+    'Off Track': { icon: AlertCircle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
+  };
+  const currentStatusInfo = statusConfig[effectiveStatus];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -333,36 +375,16 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                    disabled={isCompletedByProgress}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="On Track">On Track</SelectItem>
-                      <SelectItem value="At Risk">At Risk</SelectItem>
-                      <SelectItem value="Off Track">Off Track</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {isCompletedByProgress && (
-                      <p className="text-xs text-muted-foreground">Status is automatically set to "Completed" as all tasks are done.</p>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <FormItem>
+                <FormLabel>Project Status</FormLabel>
+                <div className="p-3 border rounded-md bg-muted/50">
+                     <Badge variant="outline" className={cn("text-base font-semibold gap-2", currentStatusInfo.style)}>
+                        <currentStatusInfo.icon className="h-4 w-4" />
+                        {currentStatusInfo.label}
+                    </Badge>
+                </div>
+                 <p className="text-xs text-muted-foreground">Status is determined automatically based on task progress and deadlines.</p>
+            </FormItem>
 
             <FormField
               control={form.control}
