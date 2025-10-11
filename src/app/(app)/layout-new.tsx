@@ -54,6 +54,7 @@ import { StatusIndicator } from '@/components/status-indicator';
 import { updateUserOnlineStatus } from '@/lib/actions/user';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from '@/components/notification-bell';
+import { SendEmailDialog } from '@/components/send-email-dialog';
 
 const navItems = {
     dashboards: [
@@ -105,6 +106,7 @@ function AppLayoutLoader() {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [allUsers, setAllUsers] = React.useState<User[]>([]);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
@@ -134,7 +136,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     const userRef = doc(db, 'users', userId);
-    const unsubscribe = onSnapshot(userRef, (doc) => {
+    
+    const unsubs: (() => void)[] = [];
+
+    const userUnsub = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
             setCurrentUser({ id: doc.id, ...doc.data() } as User);
         } else {
@@ -144,16 +149,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }
         setLoading(false);
     });
+    unsubs.push(userUnsub);
+    
+    const usersUnsub = onSnapshot(collection(db, 'users'), (snapshot) => {
+        const usersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setAllUsers(usersList);
+    });
+    unsubs.push(usersUnsub);
 
     // Set up a recurring task to update the user's online status
     updateUserOnlineStatus(userId); // Update immediately
     const presenceInterval = setInterval(() => {
         updateUserOnlineStatus(userId);
     }, 60 * 1000); // Every 1 minute
+    unsubs.push(() => clearInterval(presenceInterval));
 
     return () => {
-        unsubscribe();
-        clearInterval(presenceInterval);
+        unsubs.forEach(unsub => unsub());
     };
   }, [userId, router, isCheckingAuth]);
 
@@ -241,6 +253,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </div>
             <SidebarMenu>
+                <SidebarMenuItem>
+                    <SendEmailDialog allUsers={allUsers} currentUser={currentUser} />
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={pathname === '/profile'}>
                         <Link href="/profile">
