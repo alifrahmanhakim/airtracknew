@@ -197,7 +197,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
           </fieldset>
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>B. Implementation Task List (if applicable)</CardTitle>
@@ -245,10 +245,10 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
             ))}
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>C. EVALUATION</CardTitle>
+            <CardTitle>E. EVALUATION</CardTitle>
             <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
             </Button>
@@ -400,7 +400,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                               name={`verifiers.${index}.name`}
                               render={({ field }) => (
                                   <FormItem>
-                                  <FormLabel className="text-xs">Verifier Name {index + 1}</FormLabel>
+                                  <FormLabel className="text-xs">Sub-directorate Name {index + 1}</FormLabel>
                                   <FormControl>
                                       <Input placeholder="Full Name" {...field} />
                                   </FormControl>
