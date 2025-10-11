@@ -47,7 +47,8 @@ export async function updateLawEnforcementRecord(id: string, data: z.infer<typeo
             ...parsed.data,
              references: parsed.data.references.map(ref => ({
                 ...ref,
-                dateLetter: ref.dateLetter // Already a string
+                dateLetter: ref.dateLetter, // Already a string
+                fileUrl: ref.fileUrl || '', // Ensure empty string is saved if undefined
             })),
         };
         
@@ -55,7 +56,7 @@ export async function updateLawEnforcementRecord(id: string, data: z.infer<typeo
        
         const updatedRecord = {
             id,
-            ...parsed.data,
+            ...dataToSubmit,
             createdAt: new Date().toISOString(), // Placeholder, not the real server time
         } as LawEnforcementRecord;
         
