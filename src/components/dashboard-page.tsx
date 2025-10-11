@@ -24,6 +24,7 @@ import {
   CheckCircle,
   AlertCircle,
   CalendarClock,
+  CalendarX,
 } from 'lucide-react';
 import type { Project, User, Task } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -61,6 +62,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { cn } from '@/lib/utils';
 import { countAllTasks } from '@/lib/data-utils';
 import { Separator } from './ui/separator';
+import Link from 'next/link';
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
@@ -160,7 +162,7 @@ export function DashboardPage() {
     return allProjects.filter(p => getYear(parseISO(p.startDate)) === parseInt(selectedYear, 10));
   }, [allProjects, selectedYear]);
 
-  const { projectStatusData, teamWorkloadData, stats } = useMemo(() => {
+  const { projectStatusData, teamWorkloadData, stats, offTrackTasks } = useMemo(() => {
     const statusCounts: Record<Project['status'], number> = {
         'On Track': 0,
         'At Risk': 0,
@@ -178,42 +180,37 @@ export function DashboardPage() {
     allUsers.forEach(user => {
         workloadCounts[user.id] = { user, tasks: 0 };
     });
-
-    const allTasks = filteredProjects.flatMap(p => p.tasks || []);
-
-    const taskStatusCounts = {
-        'To Do': 0,
-        'In Progress': 0,
-        'Done': 0,
-        'Blocked': 0
-    };
     
-    let offTrackTasksCount = 0;
+    const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0 };
+    let totalTasksCount = 0;
     const today = startOfToday();
+    const overdueTasks: (Task & { projectName: string })[] = [];
 
-    const countTasksRecursively = (tasks: Task[]) => {
+    const countTasksRecursively = (tasks: Task[], projectName: string) => {
         tasks.forEach(task => {
+            totalTasksCount++;
             taskStatusCounts[task.status]++;
             if(workloadCounts[task.assigneeIds[0]]) {
                 workloadCounts[task.assigneeIds[0]].tasks += 1;
             }
             if (task.status !== 'Done' && isAfter(today, parseISO(task.dueDate))) {
-                offTrackTasksCount++;
+                overdueTasks.push({ ...task, projectName });
             }
             if (task.subTasks && task.subTasks.length > 0) {
-                countTasksRecursively(task.subTasks);
+                countTasksRecursively(task.subTasks, projectName);
             }
         });
     }
 
-    countTasksRecursively(allTasks);
+    filteredProjects.forEach(p => countTasksRecursively(p.tasks || [], p.name));
 
     const projectStats = {
         totalProjects: filteredProjects.length,
         atRiskProjects: statusCounts['At Risk'],
         offTrackProjects: statusCounts['Off Track'],
         taskStatusCounts,
-        offTrackTasks: offTrackTasksCount,
+        offTrackTasks: overdueTasks.length,
+        totalTasks: totalTasksCount
     };
 
     return {
@@ -225,6 +222,7 @@ export function DashboardPage() {
       ],
       teamWorkloadData: Object.values(workloadCounts).filter(item => item.tasks > 0).sort((a,b) => b.tasks - a.tasks),
       stats: projectStats,
+      offTrackTasks: overdueTasks.sort((a,b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime()),
     };
   }, [filteredProjects, allUsers]);
   
@@ -312,12 +310,12 @@ export function DashboardPage() {
                 <ListTodo className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-center">
-                <div className="text-2xl font-bold">{stats.taskStatusCounts['To Do'] + stats.taskStatusCounts['In Progress'] + stats.taskStatusCounts['Done'] + stats.taskStatusCounts['Blocked']} Total</div>
+                <div className="text-2xl font-bold">{stats.totalTasks} Total</div>
                 <div className="mt-2 space-y-1">
                     <p className="text-xs text-green-500">{stats.taskStatusCounts['Done']} Completed</p>
                     <p className="text-xs text-blue-500">{stats.taskStatusCounts['In Progress']} In Progress</p>
                     <p className="text-xs text-gray-500">{stats.taskStatusCounts['To Do']} To Do</p>
-                    <p className="text-xs text-red-500">{stats.offTrackTasks} Off Track</p>
+                    <p className="text-xs text-yellow-500">{stats.offTrackTasks} Off Track</p>
                     <p className="text-xs text-destructive">{stats.taskStatusCounts['Blocked']} Blocked</p>
                 </div>
             </CardContent>
@@ -343,6 +341,35 @@ export function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+        
+        {offTrackTasks.length > 0 && (
+          <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800/80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                <CalendarX /> Off Track Tasks ({offTrackTasks.length})
+              </CardTitle>
+              <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
+                These tasks have passed their due date but are not completed.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {offTrackTasks.map(task => {
+                     const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
+                     return (
+                         <div key={task.id} className="p-3 rounded-md bg-card border">
+                             <p className="font-semibold text-sm truncate">{task.title}</p>
+                             <p className="text-xs text-muted-foreground truncate">{task.projectName}</p>
+                             <Badge variant="destructive" className="mt-2 text-xs">
+                                Overdue by {daysOverdue} day(s)
+                             </Badge>
+                         </div>
+                     )
+                  })}
+                </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
           <Card className={cn(cardHoverClasses)}>
