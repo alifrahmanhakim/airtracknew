@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from './ui/progress';
 import type { Project, Task, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { format, parseISO, isAfter, differenceInDays } from 'date-fns';
+import { format, parseISO, isAfter, differenceInDays, startOfToday } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle, User as UserIcon } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
@@ -27,17 +27,33 @@ type ProjectCardProps = {
 };
 
 export function ProjectCard({ project, allUsers }: ProjectCardProps) {
-  const { name, status, endDate, tasks, notes, team, projectType, annex, casr, tags } = project;
+  const { name, status, endDate, startDate, tasks, notes, team, projectType, annex, casr, tags } = project;
 
   const { total: totalTasks, completed: completedTasks, hasCritical } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
-  const isPastDue = isAfter(new Date(), parseISO(endDate)) && status !== 'Completed';
 
   const getEffectiveStatus = (): Project['status'] => {
-    if (status === 'Completed') return 'Completed';
-    if (isPastDue) return 'Off Track';
+    if (status === 'Completed' || progress === 100) return 'Completed';
+
+    const today = startOfToday();
+    const projectStart = parseISO(startDate);
+    const projectEnd = parseISO(endDate);
+    
+    if (isAfter(today, projectEnd)) return 'Off Track';
     if (hasCritical) return 'At Risk';
+
+    const totalDuration = differenceInDays(projectEnd, projectStart);
+    if (totalDuration <= 0) return 'On Track'; // Avoid division by zero for short projects
+
+    const elapsedDuration = differenceInDays(today, projectStart);
+    const timeProgress = (elapsedDuration / totalDuration) * 100;
+
+    // If task progress is significantly behind time progress, it's at risk
+    if (progress < timeProgress - 20) {
+      return 'At Risk';
+    }
+    
     return status;
   }
   
