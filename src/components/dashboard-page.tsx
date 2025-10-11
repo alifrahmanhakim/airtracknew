@@ -396,24 +396,24 @@ export function DashboardPage() {
         </div>
         
         {offTrackTasks.length > 0 && (
-            <Collapsible defaultOpen>
+            <Collapsible defaultOpen={false}>
                 <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60">
                     <CardHeader>
-                        <CollapsibleTrigger asChild>
-                             <div className="flex justify-between items-center cursor-pointer">
-                                <div>
-                                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                                        <CalendarX /> Off Track Tasks ({offTrackTasks.length})
-                                    </CardTitle>
-                                    <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
-                                        These tasks have passed their due date but are not completed.
-                                    </CardDescription>
-                                </div>
-                                <Button variant="ghost" size="sm" className="data-[state=open]:rotate-180 transition-transform">
-                                    <ChevronDown className="h-4 w-4" />
-                                </Button>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                                    <CalendarX /> Off Track Tasks ({offTrackTasks.length})
+                                </CardTitle>
+                                <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
+                                    These tasks have passed their due date but are not completed.
+                                </CardDescription>
                             </div>
-                        </CollapsibleTrigger>
+                             <CollapsibleTrigger asChild>
+                                <Button variant="ghost">
+                                    Show all <ChevronDown className="ml-2 h-4 w-4" />
+                                </Button>
+                            </CollapsibleTrigger>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {offTrackTasks.slice(0, 3).map((task, index) => {
@@ -432,7 +432,7 @@ export function DashboardPage() {
                                             <Badge variant="destructive" className="whitespace-nowrap">
                                                 {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
                                             </Badge>
-                                             <Button size="sm" variant="outline" onClick={() => setTaskToComplete(task)}>
+                                            <Button size="sm" variant="outline" onClick={() => setTaskToComplete(task)}>
                                                 Done
                                             </Button>
                                         </div>
