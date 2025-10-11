@@ -24,6 +24,7 @@ import { RulemakingTable } from './rulemaking-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { countAllTasks } from '@/lib/data-utils';
 import { ProjectCard } from './project-card';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -82,34 +83,30 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
     const DEADLINES_PER_PAGE = 3;
 
     const stats = useMemo(() => {
-        const total = projects.length;
-        let statusCounts = {
-            'Completed': 0,
-            'On Track': 0,
-            'At Risk': 0,
-            'Off Track': 0,
+        const statusGroups: { [key in Project['status']]: Project[] } = {
+            'Completed': [],
+            'On Track': [],
+            'At Risk': [],
+            'Off Track': [],
         };
 
         projects.forEach(p => {
             const status = getEffectiveStatus(p);
-            statusCounts[status]++;
+            statusGroups[status].push(p);
         });
 
         const highPriority = projects.filter(p => p.tags?.includes('High Priority'));
 
         const distribution = [
-            { name: 'Completed', value: statusCounts['Completed'], color: 'hsl(var(--chart-1))' },
-            { name: 'On Track', value: statusCounts['On Track'], color: 'hsl(var(--chart-2))' },
-            { name: 'At Risk', value: statusCounts['At Risk'], color: 'hsl(var(--chart-3))' },
-            { name: 'Off Track', value: statusCounts['Off Track'], color: 'hsl(var(--chart-4))' }
+            { name: 'Completed', value: statusGroups['Completed'].length, color: 'hsl(var(--chart-1))' },
+            { name: 'On Track', value: statusGroups['On Track'].length, color: 'hsl(var(--chart-2))' },
+            { name: 'At Risk', value: statusGroups['At Risk'].length, color: 'hsl(var(--chart-3))' },
+            { name: 'Off Track', value: statusGroups['Off Track'].length, color: 'hsl(var(--chart-4))' }
         ];
 
         return { 
-            total, 
-            completed: statusCounts['Completed'],
-            onTrack: statusCounts['On Track'],
-            atRisk: statusCounts['At Risk'],
-            offTrack: statusCounts['Off Track'],
+            total: projects.length, 
+            statusGroups,
             highPriority, 
             distribution 
         };
@@ -164,6 +161,49 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
 
         return filtered;
     }, [projects, searchTerm, statusFilter, tagFilter]);
+
+    const StatusCard = ({
+        title,
+        count,
+        icon: Icon,
+        className,
+        projects,
+    }: {
+        title: string,
+        count: number,
+        icon: React.ElementType,
+        className?: string,
+        projects: Project[]
+    }) => (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Card className="hover:bg-muted/50 cursor-pointer">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                        <Icon className={cn("h-4 w-4 text-muted-foreground", className)} />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{count}</div>
+                    </CardContent>
+                </Card>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+                <div className="font-bold mb-2">{title} Projects</div>
+                 {projects.length > 0 ? (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {projects.map(p => (
+                            <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent">
+                                <p className="font-semibold truncate">{p.name}</p>
+                                <p className="text-xs text-muted-foreground">Due: {format(parseISO(p.endDate), 'dd MMM yyyy')}</p>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-muted-foreground">No projects with this status.</p>
+                )}
+            </PopoverContent>
+        </Popover>
+    );
 
     return (
         <TooltipProvider>
@@ -222,42 +262,12 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                         <CardHeader>
                             <CardTitle>Project Snapshot</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                           <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                                <List className="h-6 w-6 text-primary" />
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.total}</p>
-                                    <p className="text-sm text-muted-foreground">Total Regulations</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                                <CheckCircle className="h-6 w-6 text-green-500" />
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.completed}</p>
-                                    <p className="text-sm text-muted-foreground">Completed</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                                <Clock className="h-6 w-6 text-blue-500" />
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.onTrack}</p>
-                                    <p className="text-sm text-muted-foreground">On Track</p>
-                                </div>
-                            </div>
-                             <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                                <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.atRisk}</p>
-                                    <p className="text-sm text-muted-foreground">At Risk</p>
-                                </div>
-                            </div>
-                             <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                                <AlertCircle className="h-6 w-6 text-red-500" />
-                                <div>
-                                    <p className="text-2xl font-bold">{stats.offTrack}</p>
-                                    <p className="text-sm text-muted-foreground">Off Track</p>
-                                </div>
-                            </div>
+                        <CardContent className="space-y-2">
+                           <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
+                           <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
+                           <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
+                           <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
+                           <StatusCard title="Off Track" count={stats.statusGroups['Off Track'].length} icon={AlertCircle} className="text-red-500" projects={stats.statusGroups['Off Track']} />
                         </CardContent>
                     </Card>
 
@@ -289,41 +299,52 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20">
                         <CardHeader>
-                            <CardTitle className='flex items-center gap-2'><HelpCircle className='text-blue-500' /> Status Logic</CardTitle>
-                            <CardDescription>How project status is automatically determined.</CardDescription>
+                            <CardTitle className='flex items-center gap-2 text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
+                            <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4 text-xs">
-                            <div className="flex items-start gap-3">
-                                <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="font-semibold text-green-600 dark:text-green-400">Completed</p>
-                                    <p className="text-muted-foreground">All tasks are 100% done.</p>
+                        <CardContent>
+                           {paginatedDeadlineProjects.length > 0 ? (
+                               <div className="space-y-3">
+                                   {paginatedDeadlineProjects.map(project => {
+                                       const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
+                                       return (
+                                           <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <p className="font-semibold truncate flex-1">{project.name}</p>
+                                                    <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
+                                                </div>
+                                           </Link>
+                                       )
+                                   })}
+                               </div>
+                           ) : (
+                                <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4">
+                                    <CheckCircle className="mx-auto h-8 w-8 mb-2" />
+                                    No projects are off track.
                                 </div>
-                            </div>
-                             <div className="flex items-start gap-3">
-                                <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="font-semibold text-red-600 dark:text-red-400">Off Track</p>
-                                    <p className="text-muted-foreground">The project has passed its due date but isn't complete.</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="font-semibold text-yellow-600 dark:text-yellow-400">At Risk</p>
-                                    <p className="text-muted-foreground">A task has a critical issue, OR progress is &gt;20% behind the timeline.</p>
-                                </div>
-                            </div>
-                             <div className="flex items-start gap-3">
-                                <Clock className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="font-semibold text-blue-600 dark:text-blue-400">On Track</p>
-                                    <p className="text-muted-foreground">The project is on schedule and has no critical issues.</p>
-                                </div>
-                            </div>
+                           )}
                         </CardContent>
+                        {totalDeadlinePages > 1 && (
+                            <CardFooter>
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage - 1); }} className={deadlinePage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                                        </PaginationItem>
+                                        <PaginationItem>
+                                            <span className="px-4 py-2 text-sm">
+                                                Page {deadlinePage} of {totalDeadlinePages}
+                                            </span>
+                                        </PaginationItem>
+                                        <PaginationItem>
+                                            <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage + 1); }} className={deadlinePage >= totalDeadlinePages ? 'pointer-events-none opacity-50' : ''} />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </CardFooter>
+                        )}
                     </Card>
                 </aside>
                 
