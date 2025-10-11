@@ -98,7 +98,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date of Evaluation</FormLabel>
-                   <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                   <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -110,7 +110,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tanggal Pelaksanaan</FormLabel>
-                   <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                   <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -150,7 +150,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                             <FormControl>
                                                 <Input
                                                     type="text"
-                                                    placeholder="YYYY-MM-DD"
+                                                    placeholder="DD-MM-YYYY"
                                                     disabled={!form.watch(`actionRequired.${index}.checked`)}
                                                     {...field}
                                                 />
@@ -171,14 +171,14 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 <FormField control={form.control} name="effectiveDate" render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Effective Date</FormLabel>
-                     <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                     <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem> 
                 )}/>
                 <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Applicability Date</FormLabel>
-                     <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                     <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem> 
                 )}/>
@@ -188,7 +188,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Embedded applicability date(s)</FormLabel>
-                      <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                      <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -234,7 +234,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                 <FormItem>
                                     <FormLabel>Estimated Compliance Date</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="YYYY-MM-DD" {...field} />
+                                        <Input placeholder="DD-MM-YYYY" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -414,7 +414,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs">Date</FormLabel>
-                                   <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                                   <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -472,4 +472,5 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
     </>
   );
 }
+
 
