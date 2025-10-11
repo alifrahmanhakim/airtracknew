@@ -89,35 +89,35 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
         <CardHeader><CardTitle>A. GENERAL</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField control={form.control} name="slReferenceNumber" render={({ field }) => ( <FormItem> <FormLabel>SL Reference Number</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <FormField control={form.control} name="annex" render={({ field }) => ( <FormItem> <FormLabel>ANNEX</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <FormField control={form.control} name="typeOfStateLetter" render={({ field }) => ( <FormItem> <FormLabel>Type of State Letter</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="slReferenceNumber" render={({ field }) => ( <FormItem> <FormLabel>SL Reference Number</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="annex" render={({ field }) => ( <FormItem> <FormLabel>ANNEX</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="typeOfStateLetter" render={({ field }) => ( <FormItem> <FormLabel>Type of State Letter</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField
               control={form.control}
               name="dateOfEvaluation"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date of Evaluation</FormLabel>
-                   <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                   <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField control={form.control} name="letterName" render={({ field }) => ( <FormItem> <FormLabel>Nama Surat</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="letterName" render={({ field }) => ( <FormItem> <FormLabel>Nama Surat</FormLabel> <FormControl><Input autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField
               control={form.control}
               name="implementationDate"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tanggal Pelaksanaan</FormLabel>
-                   <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                   <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="letterSubject" render={({ field }) => ( <FormItem> <FormLabel>Perihal Surat</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="letterSubject" render={({ field }) => ( <FormItem> <FormLabel>Perihal Surat</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           
            <FormItem>
                 <FormLabel>Action required</FormLabel>
@@ -149,6 +149,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                         <FormItem>
                                             <FormControl>
                                                 <Input
+                                                    autoComplete="off"
                                                     type="text"
                                                     placeholder="DD-MM-YYYY"
                                                     disabled={!form.watch(`actionRequired.${index}.checked`)}
@@ -171,14 +172,14 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 <FormField control={form.control} name="effectiveDate" render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Effective Date</FormLabel>
-                     <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                     <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem> 
                 )}/>
                 <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Applicability Date</FormLabel>
-                     <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                     <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem> 
                 )}/>
@@ -188,7 +189,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Embedded applicability date(s)</FormLabel>
-                      <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                      <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -197,7 +198,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
           </fieldset>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>B. Implementation Task List (if applicable)</CardTitle>
@@ -234,7 +235,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                 <FormItem>
                                     <FormLabel>Estimated Compliance Date</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="DD-MM-YYYY" {...field} />
+                                        <Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -245,7 +246,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
             ))}
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>C. EVALUATION</CardTitle>
@@ -258,8 +259,8 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 <div key={field.id} className="border p-4 rounded-lg relative space-y-4">
                     <h4 className="font-semibold text-lg">Number: {index + 1}</h4>
                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
-                    <FormField control={form.control} name={`evaluations.${index}.icaoSarp`} render={({ field }) => ( <FormItem> <FormLabel>ICAO SARP</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`evaluations.${index}.review`} render={({ field }) => ( <FormItem> <FormLabel>REVIEW</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`evaluations.${index}.icaoSarp`} render={({ field }) => ( <FormItem> <FormLabel>ICAO SARP</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`evaluations.${index}.review`} render={({ field }) => ( <FormItem> <FormLabel>REVIEW</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField
                         control={form.control}
                         name={`evaluations.${index}.casrAffected`}
@@ -310,7 +311,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                     </FormControl>
                 </FormItem>
             )}/>
-            <FormField control={form.control} name="summary" render={({ field }) => ( <FormItem> <FormLabel>SUMMARY</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="summary" render={({ field }) => ( <FormItem> <FormLabel>SUMMARY</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
         </CardContent>
       </Card>
       
@@ -332,7 +333,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                   <FormItem>
                                   <FormLabel className="text-xs">Inspector Name {index + 1}</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="Full Name" {...field} />
+                                      <Input autoComplete="off" placeholder="Full Name" {...field} />
                                   </FormControl>
                                   <FormMessage />
                                   </FormItem>
@@ -402,7 +403,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                   <FormItem>
                                   <FormLabel className="text-xs">Sub-directorate Name {index + 1}</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="Full Name" {...field} />
+                                      <Input autoComplete="off" placeholder="Full Name" {...field} />
                                   </FormControl>
                                   <FormMessage />
                                   </FormItem>
@@ -414,7 +415,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs">Date</FormLabel>
-                                   <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
+                                   <FormControl><Input autoComplete="off" placeholder="DD-MM-YYYY" {...field} /></FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -472,6 +473,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
     </>
   );
 }
+
 
 
 
