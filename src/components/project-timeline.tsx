@@ -405,5 +405,3 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
     </TooltipProvider>
   );
 }
-
-    
