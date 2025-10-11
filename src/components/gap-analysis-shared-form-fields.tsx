@@ -195,6 +195,54 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>B. Implementation Task List (if applicable)</CardTitle>
+             <Button type="button" size="sm" onClick={() => appendTask({ id: `task-${Date.now()}`, description: '', estimatedComplianceDate: '' })}>
+                <Plus className="mr-2 h-4 w-4" /> Add Task
+            </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+             {taskFields.map((field, index) => (
+                <div key={field.id} className="border p-4 rounded-lg relative space-y-4">
+                    <h4 className="font-semibold text-lg">Task: {index + 1}</h4>
+                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeTask(index)}><Trash2 className="h-4 w-4" /></Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <FormField
+                            control={form.control}
+                            name={`implementationTasks.${index}.description`}
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Task Description</FormLabel>
+                                    <Combobox
+                                        options={implementationTaskOptions}
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        placeholder="Select or type a task..."
+                                    />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name={`implementationTasks.${index}.estimatedComplianceDate`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Estimated Compliance Date</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="YYYY-MM-DD" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+            ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>EVALUATION</CardTitle>
             <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
@@ -238,54 +286,6 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                             </FormControl>
                         </FormItem>
                     )}/>
-                </div>
-            ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Implementation Task List (if applicable)</CardTitle>
-             <Button type="button" size="sm" onClick={() => appendTask({ id: `task-${Date.now()}`, description: '', estimatedComplianceDate: '' })}>
-                <Plus className="mr-2 h-4 w-4" /> Add Task
-            </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-             {taskFields.map((field, index) => (
-                <div key={field.id} className="border p-4 rounded-lg relative space-y-4">
-                    <h4 className="font-semibold text-lg">Task: {index + 1}</h4>
-                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeTask(index)}><Trash2 className="h-4 w-4" /></Button>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <FormField
-                            control={form.control}
-                            name={`implementationTasks.${index}.description`}
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Task Description</FormLabel>
-                                    <Combobox
-                                        options={implementationTaskOptions}
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        placeholder="Select or type a task..."
-                                    />
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name={`implementationTasks.${index}.estimatedComplianceDate`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Estimated Compliance Date</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="YYYY-MM-DD" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
                 </div>
             ))}
         </CardContent>
