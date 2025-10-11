@@ -131,6 +131,12 @@ export type ActionRequiredItem = {
     date?: string;
 };
 
+export type ImplementationTaskItem = {
+    id: string;
+    description: string;
+    estimatedComplianceDate?: string;
+};
+
 export type GapAnalysisRecord = {
     id: string;
     slReferenceNumber: string;
@@ -149,6 +155,7 @@ export type GapAnalysisRecord = {
     statusItem: 'OPEN' | 'CLOSED';
     summary: string;
     inspectors: Inspector[];
+    implementationTasks?: ImplementationTaskItem[];
     createdAt: string;
 };
 

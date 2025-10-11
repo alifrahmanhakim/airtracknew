@@ -84,6 +84,11 @@ export const gapAnalysisFormSchema = z.object({
   statusItem: z.enum(['OPEN', 'CLOSED']),
   summary: z.string().optional(),
   inspectors: z.array(inspectorSchema).optional(),
+  implementationTasks: z.array(z.object({
+    id: z.string(),
+    description: z.string().min(1, 'Task description is required.'),
+    estimatedComplianceDate: z.string().optional(),
+  })).optional(),
 });
 
 export const glossaryFormSchema = z.object({

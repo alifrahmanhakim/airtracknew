@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -67,7 +68,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     const defaultActions = [
       { id: 'disapproval', checked: false, date: '' },
       { id: 'differences', checked: false, date: '' },
-      { id: 'efod', checked: false, date: '' },
+      { id: 'efod', checked: false },
     ] as const;
 
     if (Array.isArray(record.actionRequired) && record.actionRequired.every(item => typeof item === 'object' && 'id' in item)) {
@@ -93,6 +94,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
       ...record,
       actionRequired: getActionRequiredDefault(),
       inspectors: record.inspectors || [],
+      implementationTasks: record.implementationTasks || [],
     },
   });
 

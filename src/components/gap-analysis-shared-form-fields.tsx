@@ -41,6 +41,16 @@ const actionRequiredItems = [
   { id: 'efod', label: 'Consider the use of the Electronic Filing of Differences (EFOD) System for notification of differences and compliance' },
 ] as const;
 
+const implementationTaskOptions: ComboboxOption[] = [
+    { value: 'Development of new regulations', label: 'Development of new regulations' },
+    { value: 'Revision of existing regulations', label: 'Revision of existing regulations' },
+    { value: 'Development of guidance material', label: 'Development of guidance material' },
+    { value: 'Revision of guidance material', label: 'Revision of guidance material' },
+    { value: 'Training of technical personnel', label: 'Training of technical personnel' },
+    { value: 'Supervision and surveillance', label: 'Supervision and surveillance' },
+    { value: 'Others', label: 'Others' },
+];
+
 
 type GapAnalysisSharedFormFieldsProps = {
   form: ReturnType<typeof useFormContext<GapAnalysisFormValues>>;
@@ -61,6 +71,11 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
   const { fields: actionFields } = useFieldArray({
     control: form.control,
     name: "actionRequired",
+  });
+  
+  const { fields: taskFields, append: appendTask, remove: removeTask } = useFieldArray({
+    control: form.control,
+    name: "implementationTasks",
   });
 
   return (
@@ -223,6 +238,54 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                             </FormControl>
                         </FormItem>
                     )}/>
+                </div>
+            ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Implementation Task List (if applicable)</CardTitle>
+             <Button type="button" size="sm" onClick={() => appendTask({ id: `task-${Date.now()}`, description: '', estimatedComplianceDate: '' })}>
+                <Plus className="mr-2 h-4 w-4" /> Add Task
+            </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+             {taskFields.map((field, index) => (
+                <div key={field.id} className="border p-4 rounded-lg relative space-y-4">
+                    <h4 className="font-semibold text-lg">Task: {index + 1}</h4>
+                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeTask(index)}><Trash2 className="h-4 w-4" /></Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <FormField
+                            control={form.control}
+                            name={`implementationTasks.${index}.description`}
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Task Description</FormLabel>
+                                    <Combobox
+                                        options={implementationTaskOptions}
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        placeholder="Select or type a task..."
+                                    />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name={`implementationTasks.${index}.estimatedComplianceDate`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Estimated Compliance Date</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="YYYY-MM-DD" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 </div>
             ))}
         </CardContent>

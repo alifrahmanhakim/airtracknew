@@ -10,12 +10,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem } from '@/lib/types';
+import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem, ImplementationTaskItem } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { format, parseISO } from 'date-fns';
 import { Separator } from './ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { User } from 'lucide-react';
+import { User, ListChecks } from 'lucide-react';
 import Image from 'next/image';
 import { Checkbox } from './ui/checkbox';
 
@@ -124,6 +124,30 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 </div>
 
                 <Separator className="my-4" />
+
+                <div className="py-3 border-b">
+                    <dt className="font-semibold text-muted-foreground mb-2 flex items-center gap-2"><ListChecks className="h-4 w-4" /> Implementation Task List</dt>
+                    <dd>
+                        {(record.implementationTasks && record.implementationTasks.length > 0) ? (
+                            <ul className="space-y-2">
+                                {record.implementationTasks.map(task => (
+                                    <li key={task.id} className="text-sm p-2 border rounded-md">
+                                        <p className="font-medium">{task.description}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Est. Compliance Date: {task.estimatedComplianceDate ? format(parseISO(task.estimatedComplianceDate), 'PPP') : 'N/A'}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Not applicable.</p>
+                        )}
+                    </dd>
+                </div>
+
+
+                <Separator className="my-4" />
+
 
                 <h3 className="text-lg font-semibold mt-6 mb-2">Follow Up</h3>
                 <DetailRow label="Status Item" value={<Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>{record.statusItem}</Badge>} />

@@ -75,6 +75,9 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     inspectors: [
         { id: 'inspector-1', name: '', signature: '' }
     ],
+    implementationTasks: [
+        { id: 'task-1', description: '', estimatedComplianceDate: '' }
+    ],
   };
 
   const form = useForm<GapAnalysisFormValues>({
