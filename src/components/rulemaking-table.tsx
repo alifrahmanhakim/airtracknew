@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { Project, User } from '@/lib/types';
+import type { Project, User, Task } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { ArrowUpDown, CheckCircle, Clock, AlertTriangle, AlertCircle, User as UserIcon } from 'lucide-react';
@@ -21,11 +21,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isAfter, differenceInDays, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Progress } from './ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import Link from 'next/link';
+import { countAllTasks } from '@/lib/data-utils';
 
 type SortDescriptor = {
     column: keyof Project | 'progress';
@@ -37,6 +38,41 @@ type RulemakingTableProps = {
   sort: SortDescriptor;
   setSort: (sort: SortDescriptor) => void;
 };
+
+const getEffectiveStatus = (project: Project): Project['status'] => {
+    const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
+    const progress = total > 0 ? (completed / total) * 100 : 0;
+  
+    if (progress === 100 || project.status === 'Completed') {
+      return 'Completed';
+    }
+  
+    const today = startOfToday();
+    const projectEnd = parseISO(project.endDate);
+  
+    if (isAfter(today, projectEnd)) {
+      return 'Off Track';
+    }
+  
+    if (hasCritical) {
+      return 'At Risk';
+    }
+    
+    const projectStart = parseISO(project.startDate);
+    const totalDuration = differenceInDays(projectEnd, projectStart);
+  
+    if (totalDuration > 0) {
+      const elapsedDuration = differenceInDays(today, projectStart);
+      const timeProgress = (elapsedDuration / totalDuration) * 100;
+  
+      if (progress < timeProgress - 20) {
+        return 'At Risk';
+      }
+    }
+    
+    return 'On Track';
+};
+
 
 const statusConfig: { [key in Project['status']]: { icon: React.ElementType, style: string, label: string } } = {
     'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
@@ -67,9 +103,15 @@ export function RulemakingTable({ projects, sort, setSort }: RulemakingTableProp
     if (sort) {
         sorted.sort((a, b) => {
             if (sort.column === 'progress') {
-                const progressA = (a.tasks?.filter(t => t.status === 'Done').length || 0) / (a.tasks?.length || 1);
-                const progressB = (b.tasks?.filter(t => t.status === 'Done').length || 0) / (b.tasks?.length || 1);
+                const progressA = (countAllTasks(a.tasks || []).completed) / (countAllTasks(a.tasks || []).total || 1);
+                const progressB = (countAllTasks(b.tasks || []).completed) / (countAllTasks(b.tasks || []).total || 1);
                 return sort.direction === 'asc' ? progressA - progressB : progressB - progressA;
+            }
+
+            if (sort.column === 'status') {
+                const statusA = getEffectiveStatus(a);
+                const statusB = getEffectiveStatus(b);
+                 return sort.direction === 'asc' ? statusA.localeCompare(statusB) : statusB.localeCompare(statusA);
             }
 
             const valA = a[sort.column as keyof Project] ?? '';
@@ -114,10 +156,10 @@ export function RulemakingTable({ projects, sort, setSort }: RulemakingTableProp
           </TableHeader>
           <TableBody>
             {sortedProjects.map((project) => {
-              const totalTasks = project.tasks?.length || 0;
-              const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
+              const { total: totalTasks, completed: completedTasks } = countAllTasks(project.tasks || []);
               const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-              const currentStatus = statusConfig[project.status];
+              const effectiveStatus = getEffectiveStatus(project);
+              const currentStatus = statusConfig[effectiveStatus];
 
               return (
                 <TableRow 
