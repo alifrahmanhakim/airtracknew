@@ -25,6 +25,7 @@ import {
   AlertCircle,
   CalendarClock,
   CalendarX,
+  ChevronDown,
 } from 'lucide-react';
 import type { Project, User, Task } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -64,6 +65,7 @@ import { countAllTasks } from '@/lib/data-utils';
 import { Separator } from './ui/separator';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
@@ -223,7 +225,7 @@ export function DashboardPage() {
       ],
       teamWorkloadData: Object.values(workloadCounts).filter(item => item.tasks > 0).sort((a,b) => b.tasks - a.tasks),
       stats: projectStats,
-      offTrackTasks: overdueTasks.sort((a,b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime()),
+      offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
     };
   }, [filteredProjects, allUsers]);
   
@@ -344,18 +346,27 @@ export function DashboardPage() {
         </div>
         
         {offTrackTasks.length > 0 && (
-            <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                        <CalendarX /> Off Track Tasks ({offTrackTasks.length})
-                    </CardTitle>
-                    <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
-                        These tasks have passed their due date but are not completed.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {offTrackTasks.map((task, index) => {
+             <Collapsible>
+                <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60">
+                    <CardHeader>
+                        <CollapsibleTrigger asChild>
+                             <div className="flex justify-between items-center cursor-pointer">
+                                <div>
+                                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                                        <CalendarX /> Off Track Tasks ({offTrackTasks.length})
+                                    </CardTitle>
+                                    <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
+                                        These tasks have passed their due date but are not completed.
+                                    </CardDescription>
+                                </div>
+                                <Button variant="ghost" size="sm" className="data-[state=open]:rotate-180 transition-transform">
+                                    <ChevronDown className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </CollapsibleTrigger>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {offTrackTasks.slice(0, 3).map((task, index) => {
                             const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
                             return (
                                 <div key={task.id}>
@@ -373,13 +384,40 @@ export function DashboardPage() {
                                             {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
                                         </Badge>
                                     </div>
-                                    {index < offTrackTasks.length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
+                                    {index < offTrackTasks.slice(0, 3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
                                 </div>
                             )
                         })}
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                    <CollapsibleContent>
+                        <CardContent className="space-y-4 pt-0">
+                             {offTrackTasks.length > 3 && <Separator className="mb-4 bg-yellow-200 dark:bg-yellow-800/50" />}
+                             {offTrackTasks.slice(3).map((task, index) => {
+                                const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
+                                return (
+                                    <div key={task.id}>
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 font-bold">
+                                                    {daysOverdue}
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-sm">{task.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                                </div>
+                                            </div>
+                                            <Badge variant="destructive" className="whitespace-nowrap mt-1">
+                                                {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
+                                            </Badge>
+                                        </div>
+                                        {index < offTrackTasks.slice(3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
+                                    </div>
+                                )
+                            })}
+                        </CardContent>
+                    </CollapsibleContent>
+                </Card>
+            </Collapsible>
         )}
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
