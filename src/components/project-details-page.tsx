@@ -378,6 +378,20 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       return { tasksWithoutAttachments: missing, attachmentCompletion: completion };
   }, [project.tasks]);
 
+  const offTrackTasks = React.useMemo(() => {
+    const allFlattenedTasks = (function flatten(tasks: Task[]): Task[] {
+        return tasks.reduce((acc: Task[], task) => {
+            acc.push(task);
+            if (task.subTasks) {
+                acc.push(...flatten(task.subTasks));
+            }
+            return acc;
+        }, []);
+    })(project.tasks || []);
+    
+    return allFlattenedTasks.filter(task => isAfter(new Date(), parseISO(task.dueDate)) && task.status !== 'Done');
+  }, [project.tasks]);
+
   useEffect(() => {
     const animation = requestAnimationFrame(() => {
       setAnimatedAttachmentCompletion(attachmentCompletion);
@@ -674,6 +688,34 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                          </ScrollArea>
                     </div>
                 </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {offTrackTasks.length > 0 && (
+          <Card className="border-destructive/50 bg-red-50 dark:bg-red-900/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-300">
+                <AlertTriangle /> Off Track Tasks
+              </CardTitle>
+              <CardDescription className="text-red-700/80 dark:text-red-400/80">
+                These tasks have passed their due date but are not marked as 'Done'.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-48">
+                <ul className="space-y-2">
+                  {offTrackTasks.map(task => (
+                    <li key={task.id} className="flex items-center justify-between gap-4 p-2 border-b border-red-200/50 dark:border-red-800/50 last:border-b-0">
+                      <div>
+                        <p className="font-semibold">{task.title}</p>
+                        <p className="text-xs text-muted-foreground">{format(parseISO(task.dueDate), 'PPP')}</p>
+                      </div>
+                      <Badge variant="destructive">Overdue</Badge>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
             </CardContent>
           </Card>
         )}
