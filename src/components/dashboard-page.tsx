@@ -20,8 +20,11 @@ import {
   Users,
   Calendar,
   User as UserIcon,
+  Clock,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
-import type { Project, User } from '@/lib/types';
+import type { Project, User, Task } from '@/lib/types';
 import { ProjectCard } from './project-card';
 import {
   ChartContainer,
@@ -56,6 +59,7 @@ import { parseISO, getYear, isAfter, differenceInDays, startOfToday } from 'date
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { cn } from '@/lib/utils';
 import { countAllTasks } from '@/lib/data-utils';
+import { Separator } from './ui/separator';
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
@@ -174,15 +178,28 @@ export function DashboardPage() {
         workloadCounts[user.id] = { user, tasks: 0 };
     });
 
-    filteredProjects.forEach(project => {
-        (project.tasks || []).forEach(task => {
-            (task.assigneeIds || []).forEach(userId => {
-                if (workloadCounts[userId]) {
-                    workloadCounts[userId].tasks += 1;
-                }
-            });
+    const allTasks = filteredProjects.flatMap(p => p.tasks || []);
+
+    const taskStatusCounts = {
+        'To Do': 0,
+        'In Progress': 0,
+        'Done': 0,
+        'Blocked': 0
+    };
+
+    const countTasksRecursively = (tasks: Task[]) => {
+        tasks.forEach(task => {
+            taskStatusCounts[task.status]++;
+            if(workloadCounts[task.assigneeIds[0]]) {
+                workloadCounts[task.assigneeIds[0]].tasks += 1;
+            }
+            if (task.subTasks && task.subTasks.length > 0) {
+                countTasksRecursively(task.subTasks);
+            }
         });
-    });
+    }
+
+    countTasksRecursively(allTasks);
 
     const workloadArray = Object.values(workloadCounts)
         .filter(item => item.tasks > 0)
@@ -190,10 +207,9 @@ export function DashboardPage() {
         
     const projectStats = {
         totalProjects: filteredProjects.length,
-        completedTasks: filteredProjects.flatMap(p => countAllTasks(p.tasks || []).completed).reduce((a, b) => a + b, 0),
-        totalTasks: filteredProjects.flatMap(p => countAllTasks(p.tasks || []).total).reduce((a, b) => a + b, 0),
         atRiskProjects: statusCounts['At Risk'],
         offTrackProjects: statusCounts['Off Track'],
+        taskStatusCounts,
     };
 
     return {
@@ -286,23 +302,28 @@ export function DashboardPage() {
               <p className="text-xs text-muted-foreground">All active and completed projects</p>
             </CardContent>
           </Card>
-          <Card className={cn(cardHoverClasses)}>
+          <Card className={cn(cardHoverClasses, "flex flex-col")}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-              <ListTodo className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Task Overview</CardTitle>
+                <ListTodo className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalTasks}</div>
-              <p className="text-xs text-muted-foreground">{stats.completedTasks} tasks completed</p>
+            <CardContent className="flex-grow flex flex-col justify-center">
+                <div className="text-2xl font-bold">{stats.taskStatusCounts['To Do'] + stats.taskStatusCounts['In Progress'] + stats.taskStatusCounts['Done'] + stats.taskStatusCounts['Blocked']} Total</div>
+                <div className="mt-2 space-y-1">
+                    <p className="text-xs text-green-500">{stats.taskStatusCounts['Done']} Completed</p>
+                    <p className="text-xs text-blue-500">{stats.taskStatusCounts['In Progress']} In Progress</p>
+                    <p className="text-xs text-gray-500">{stats.taskStatusCounts['To Do']} To Do</p>
+                    <p className="text-xs text-red-500">{stats.taskStatusCounts['Blocked']} Blocked</p>
+                </div>
             </CardContent>
-          </Card>
+        </Card>
           <Card className={cn(cardHoverClasses)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">At Risk</CardTitle>
               <AlarmClockOff className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.atRiskProjects}</div>
+              <div className="text-2xl font-bold text-yellow-500">{stats.atRiskProjects}</div>
               <p className="text-xs text-muted-foreground">Projects needing attention</p>
             </CardContent>
           </Card>
@@ -312,7 +333,7 @@ export function DashboardPage() {
               <Frown className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.offTrackProjects}</div>
+              <div className="text-2xl font-bold text-red-500">{stats.offTrackProjects}</div>
               <p className="text-xs text-muted-foreground">Projects with critical issues</p>
             </CardContent>
           </Card>
