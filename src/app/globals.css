@@ -92,7 +92,15 @@
     border-color: hsl(var(--border));
   }
   body {
-    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    background-image: 
+        radial-gradient(hsl(var(--foreground)) 0.5px, transparent 0.5px), 
+        radial-gradient(hsl(var(--foreground)) 0.5px, hsl(var(--background)) 0.5px),
+        linear-gradient(45deg, hsl(var(--chart-1)), hsl(var(--chart-2)), hsl(var(--chart-3)), hsl(var(--chart-4)), hsl(var(--chart-5)));
+    background-size: 40px 40px, 40px 40px, 100% 100%;
+    background-position: 0 0, 20px 20px, 0 0;
+    background-blend-mode: overlay;
+    animation: gradient-move 15s ease infinite;
+    background-attachment: fixed;
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
