@@ -191,7 +191,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar/80 backdrop-blur-lg p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -239,7 +239,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar/80 backdrop-blur-lg border border-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=inset]:rounded-lg group-data-[variant=floating]:shadow"
+            className="flex h-full w-full flex-col bg-sidebar border border-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=inset]:rounded-lg group-data-[variant=floating]:shadow"
           >
             {children}
           </div>
@@ -313,7 +313,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-transparent transition-[margin-left] ease-linear duration-200",
+        "relative flex min-h-svh flex-1 flex-col transition-[margin-left] ease-linear duration-200",
         "md:ml-[var(--sidebar-width)]",
         "peer-data-[state=collapsed]:peer-data-[variant=sidebar]:md:ml-[var(--sidebar-width-icon)]",
         "peer-data-[state=collapsed]:peer-data-[variant=floating]:md:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]",
