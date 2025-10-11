@@ -12,13 +12,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LawEnforcementRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { lawEnforcementFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
+import * as XLSX from 'xlsx';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -109,6 +110,40 @@ export default function LawEnforcementPage() {
             });
         }
     };
+    
+    const handleExportExcel = () => {
+        if (records.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no records to export.',
+            });
+            return;
+        }
+
+        const dataToExport = records.map(record => {
+            const sanctionedEntity = 
+                record.impositionType === 'aoc' ? (record.sanctionedAoc?.map(s => s.value).join(', ') || '') :
+                record.impositionType === 'personnel' ? (record.sanctionedPersonnel?.map(s => s.value).join(', ') || '') :
+                (record.sanctionedOrganization?.map(s => s.value).join(', ') || '');
+            
+            const references = (record.references || []).map(ref => 
+                `Type: ${ref.sanctionType}, Letter: ${ref.refLetter}, Date: ${ref.dateLetter}`
+            ).join('; ');
+
+            return {
+                'Imposition Type': record.impositionType,
+                'Sanctioned Entity': sanctionedEntity,
+                'References': references,
+                'Created At': record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '',
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Law Enforcement Records');
+        XLSX.writeFile(workbook, 'law_enforcement_records.xlsx');
+    };
 
 
     return (
@@ -164,8 +199,16 @@ export default function LawEnforcementPage() {
                 <TabsContent value="records">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Sanction Records</CardTitle>
-                            <CardDescription>List of all law enforcement records.</CardDescription>
+                             <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>Sanction Records</CardTitle>
+                                    <CardDescription>List of all law enforcement records.</CardDescription>
+                                </div>
+                                <Button variant="outline" onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Export to Excel
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? (
@@ -193,4 +236,3 @@ export default function LawEnforcementPage() {
     );
 }
 
-    
