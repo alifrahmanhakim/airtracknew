@@ -6,7 +6,7 @@ import { User, ChatMessage } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Paperclip, Phone, Send, User as UserIcon, Video } from 'lucide-react';
+import { Phone, Send, User as UserIcon, Video } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { getOrCreateChatRoom, sendMessage } from '@/lib/actions/chat';
@@ -145,7 +145,6 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
 
             <div className="p-4 border-t">
                 <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" type="button"><Paperclip /></Button>
                     <Input 
                         placeholder="Type a message" 
                         className="flex-1"
