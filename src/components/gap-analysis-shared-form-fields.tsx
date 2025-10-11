@@ -42,13 +42,13 @@ const actionRequiredItems = [
 ] as const;
 
 const implementationTaskOptions: ComboboxOption[] = [
-    { value: 'Development of new regulations', label: 'Development of new regulations' },
-    { value: 'Revision of existing regulations', label: 'Revision of existing regulations' },
-    { value: 'Development of guidance material', label: 'Development of guidance material' },
-    { value: 'Revision of guidance material', label: 'Revision of guidance material' },
-    { value: 'Training of technical personnel', label: 'Training of technical personnel' },
-    { value: 'Supervision and surveillance', label: 'Supervision and surveillance' },
-    { value: 'Others', label: 'Others' },
+    { value: 'Identification of the rule-making process necessary to transpose the modified ICAO provisions into the national regulations', label: '1. Identification of the rule-making process necessary to transpose the modified ICAO provisions into the national regulations' },
+    { value: 'Establishment of a national implementation plan that takes into account the modified ICAO provisions', label: '2. Establishment of a national implementation plan that takes into account the modified ICAO provisions' },
+    { value: 'Drafting of the modification(s) to the national regulations and means of compliance', label: '3. Drafting of the modification(s) to the national regulations and means of compliance' },
+    { value: 'Official adoption of the national regulations and means of compliance', label: '4. Official adoption of the national regulations and means of compliance' },
+    { value: 'Filing of State differences with ICAO, if necessary', label: '5. Filing of State differences with ICAO, if necessary' },
+    { value: 'Operator to develop risk assessment process', label: '6. Operator to develop risk assessment process' },
+    { value: 'Review of Operators risk assessment process to ensure confidence in their interpretation of the provision and associated guidance', label: '7. Review of Operators risk assessment process to ensure confidence in their interpretation of the provision and associated guidance' },
 ];
 
 
