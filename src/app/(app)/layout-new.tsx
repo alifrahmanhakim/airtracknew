@@ -65,7 +65,6 @@ const navItems = {
       { href: '/chats', label: 'Chats', icon: MessageSquare },
       { href: '/documents', label: 'Documents', icon: FileText },
       { href: '/team', label: 'Team', icon: Users, requiredRole: 'Sub-Directorate Head' },
-      { href: '/reports', label: 'Reports', icon: LineChart },
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
       { href: '/state-letter', label: 'State Letter', icon: Mail },
