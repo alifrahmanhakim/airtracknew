@@ -63,6 +63,7 @@ import { cn } from '@/lib/utils';
 import { countAllTasks } from '@/lib/data-utils';
 import { Separator } from './ui/separator';
 import Link from 'next/link';
+import { Badge } from './ui/badge';
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
