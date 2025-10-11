@@ -198,7 +198,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
         </CardContent>
       </Card>
       
-      <Card>
+       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>B. Implementation Task List (if applicable)</CardTitle>
              <Button type="button" size="sm" onClick={() => appendTask({ id: `task-${Date.now()}`, description: '', estimatedComplianceDate: '' })}>
@@ -248,7 +248,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>E. EVALUATION</CardTitle>
+            <CardTitle>C. EVALUATION</CardTitle>
             <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
             </Button>
@@ -388,7 +388,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
             </div>
 
             <div>
-              <FormLabel>Verified by a. Sub-directorate</FormLabel>
+              <FormLabel>Verified by</FormLabel>
               <div className="space-y-3 mt-2">
                 {verifierFields.map((field, index) => {
                   const signature = form.watch(`verifiers.${index}.signature`);
