@@ -167,13 +167,10 @@ const StatusCard = ({
 
 export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [deadlinePage, setDeadlinePage] = useState(1);
     const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
     const [statusFilter, setStatusFilter] = useState('all');
     const [tagFilter, setTagFilter] = useState('all');
     const [sort, setSort] = useState<SortDescriptor>({ column: 'endDate', direction: 'asc' });
-
-    const DEADLINES_PER_PAGE = 3;
 
     const stats = useMemo(() => {
         const statusGroups: { [key in Project['status']]: Project[] } = {
@@ -191,8 +188,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         const highPriority = projects.filter(p => p.tags?.includes('High Priority'));
 
         const distribution = [
-            { name: 'Completed', value: statusGroups['Completed'].length, color: 'hsl(var(--chart-1))' },
-            { name: 'On Track', value: statusGroups['On Track'].length, color: 'hsl(var(--chart-2))' },
+            { name: 'Completed', value: statusGroups['Completed'].length, color: 'hsl(var(--chart-2))' },
+            { name: 'On Track', value: statusGroups['On Track'].length, color: 'hsl(var(--chart-1))' },
             { name: 'At Risk', value: statusGroups['At Risk'].length, color: 'hsl(var(--chart-3))' },
             { name: 'Off Track', value: statusGroups['Off Track'].length, color: 'hsl(var(--chart-4))' }
         ];
@@ -209,18 +206,6 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
     const offTrackProjects = useMemo(() => {
         return stats.statusGroups['Off Track'].sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
     }, [stats.statusGroups]);
-    
-    const totalDeadlinePages = Math.ceil(offTrackProjects.length / DEADLINES_PER_PAGE);
-    const paginatedDeadlineProjects = offTrackProjects.slice(
-        (deadlinePage - 1) * DEADLINES_PER_PAGE,
-        deadlinePage * DEADLINES_PER_PAGE
-    );
-
-    const handleDeadlinePageChange = (newPage: number) => {
-        if (newPage >= 1 && newPage <= totalDeadlinePages) {
-            setDeadlinePage(newPage);
-        }
-    };
 
     const allTags = useMemo(() => {
         const tags = new Set<string>();
@@ -269,8 +254,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left Column */}
-                    <div className="space-y-6">
-                        <Card className="h-full">
+                    <div className="space-y-6 flex flex-col">
+                        <Card>
                             <CardHeader><CardTitle>Project Snapshot</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-2 gap-4">
                                 <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
@@ -279,15 +264,15 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                 <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
                             </CardContent>
                         </Card>
-                        <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20 h-full">
+                        <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20 flex-grow">
                             <CardHeader>
                                 <CardTitle className='flex items-center gap-2 text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
-                                <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
+                                <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline and are not yet completed.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                            {paginatedDeadlineProjects.length > 0 ? (
+                            {offTrackProjects.length > 0 ? (
                                 <div className="space-y-3">
-                                    {paginatedDeadlineProjects.map(project => {
+                                    {offTrackProjects.map(project => {
                                         const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                                         return (
                                             <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
@@ -306,30 +291,11 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                     </div>
                             )}
                             </CardContent>
-                            {totalDeadlinePages > 1 && (
-                                <CardFooter>
-                                    <Pagination>
-                                        <PaginationContent>
-                                            <PaginationItem>
-                                                <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage - 1); }} className={deadlinePage === 1 ? 'pointer-events-none opacity-50' : ''} />
-                                            </PaginationItem>
-                                            <PaginationItem>
-                                                <span className="px-4 py-2 text-sm">
-                                                    Page {deadlinePage} of {totalDeadlinePages}
-                                                </span>
-                                            </PaginationItem>
-                                            <PaginationItem>
-                                                <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage + 1); }} className={deadlinePage >= totalDeadlinePages ? 'pointer-events-none opacity-50' : ''} />
-                                            </PaginationItem>
-                                        </PaginationContent>
-                                    </Pagination>
-                                </CardFooter>
-                            )}
                         </Card>
                     </div>
 
                     {/* Right Column */}
-                    <div className="space-y-6">
+                    <div className="space-y-6 flex flex-col">
                        <Card className="h-full">
                             <CardHeader>
                                 <CardTitle>Status Distribution</CardTitle>
