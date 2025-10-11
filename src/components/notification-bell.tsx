@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -8,7 +9,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, UserPlus, Trash2, MessageSquare, UserCog } from 'lucide-react';
 import { collection, query, where, onSnapshot, orderBy, limit, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Notification } from '@/lib/types';
@@ -16,19 +17,28 @@ import { ScrollArea } from './ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { User as UserIcon } from 'lucide-react';
 
 type NotificationBellProps = {
   userId: string | null;
 };
 
-// Create a single, persistent audio instance outside the component
-// to prevent re-creation on every render cycle.
 let notificationAudio: HTMLAudioElement | null = null;
 if (typeof window !== 'undefined') {
     notificationAudio = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.firebasestorage.app/o/icon%2Fnew-notification-09-352705.mp3?alt=media&token=39a21338-150c-428a-893c-72bc2a6f8b80');
     notificationAudio.preload = 'auto';
 }
 
+const getNotificationIcon = (title: string) => {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes('new message')) return <MessageSquare className="h-5 w-5 text-blue-500" />;
+    if (lowerTitle.includes('added to project')) return <UserPlus className="h-5 w-5 text-green-500" />;
+    if (lowerTitle.includes('removed from project')) return <Trash2 className="h-5 w-5 text-red-500" />;
+    if (lowerTitle.includes('task updated')) return <UserCog className="h-5 w-5 text-purple-500" />;
+    if (lowerTitle.includes('new task assigned')) return <UserPlus className="h-5 w-5 text-green-500" />;
+    return <Bell className="h-5 w-5 text-gray-500" />;
+}
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
@@ -65,11 +75,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   }, [userId]);
 
   React.useEffect(() => {
-    // Play sound only when a new notification arrives
     if (unreadCount > prevUnreadCount.current && notificationAudio) {
         notificationAudio.play().catch(error => {
-            // This error can happen if the user hasn't interacted with the page yet.
-            // It's a browser policy to prevent auto-playing audio.
             console.warn("Audio play failed, likely due to browser policy:", error);
         });
     }
@@ -113,15 +120,15 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0">
+        <PopoverContent className="w-96 p-0">
           <div className="flex items-center justify-between p-4 border-b">
-              <h4 className="font-medium text-sm">Notifications</h4>
+              <h4 className="font-medium">Notifications</h4>
               <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>
                   <CheckCheck className="mr-2 h-4 w-4" />
                   Mark all as read
               </Button>
           </div>
-          <ScrollArea className="h-96">
+          <ScrollArea className="h-[28rem]">
             {notifications.length > 0 ? (
               notifications.map((notif) => (
                 <Link
@@ -134,14 +141,22 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                 >
                   <div
                     className={cn(
-                      "p-4 border-b hover:bg-muted/50 cursor-pointer",
+                      "p-4 border-b hover:bg-muted/50 cursor-pointer relative",
                       !notif.isRead && "bg-blue-500/10"
                     )}
                   >
+                    {!notif.isRead && <div className="absolute left-1 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-primary"></div>}
                     <div className="flex items-start gap-3">
-                      {!notif.isRead && <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>}
-                      <div className={cn("flex-grow", notif.isRead && "pl-5")}>
-                          <p className="text-sm font-semibold">{notif.title}</p>
+                      <div className="mt-1">
+                          {notif.actor ? (
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={notif.actor.avatarUrl} alt={notif.actor.name} />
+                                <AvatarFallback><UserIcon /></AvatarFallback>
+                            </Avatar>
+                          ) : getNotificationIcon(notif.title)}
+                      </div>
+                      <div className={cn("flex-grow")}>
+                          <p className="text-sm font-semibold leading-tight">{notif.title}</p>
                           <p className="text-sm text-muted-foreground">{notif.description}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                               {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true }) : ''}

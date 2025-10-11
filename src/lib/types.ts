@@ -1,4 +1,5 @@
 
+
 export type Project = {
     id: string;
     name: string;
@@ -186,12 +187,17 @@ export type GlossaryRecord = {
 
 export type Notification = {
     id: string;
-    userId: string;
+    userId: string; // The user who *receives* the notification
     title: string;
     description: string;
     href: string;
     isRead: boolean;
     createdAt: any; // Firestore Timestamp
+    actor?: { // The user who *caused* the notification
+        id: string;
+        name: string;
+        avatarUrl?: string;
+    }
 };
 
 export type AccidentIncidentRecord = {
