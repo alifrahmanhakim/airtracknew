@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, ArrowLeft, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
+import { RotateCcw, Search, ArrowLeft, Loader2, AlertTriangle, Trash2, FileSpreadsheet } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
 import { aocOptions, taxonomyOptions as staticTaxonomyOptions } from '@/lib/data';
 import Link from 'next/link';
@@ -24,6 +24,7 @@ import { knktReportFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addKnktReport, deleteKnktReport } from '@/lib/actions/knkt';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import * as XLSX from 'xlsx';
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
@@ -172,6 +173,35 @@ export default function LaporanInvestigasiKnktPage() {
         setRecordToDelete(null);
     };
 
+    const handleExportExcel = () => {
+        if (filteredRecords.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no records matching the current filters.',
+            });
+            return;
+        }
+
+        const dataToExport = filteredRecords.map(record => ({
+            'Tanggal Diterbitkan': record.tanggal_diterbitkan,
+            'Nomor Laporan': record.nomor_laporan,
+            'Status': record.status,
+            'Operator': record.operator,
+            'Registrasi': record.registrasi,
+            'Tipe Pesawat': record.tipe_pesawat,
+            'Lokasi': record.lokasi,
+            'Taxonomy': record.taxonomy,
+            'Keterangan': record.keterangan,
+            'File URL': record.fileUrl,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'KNKT Reports');
+        XLSX.writeFile(workbook, 'knkt_reports.xlsx');
+    };
+
     return (
         <main className="p-4 md:p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -223,10 +253,18 @@ export default function LaporanInvestigasiKnktPage() {
                 <TabsContent value="records">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Investigation Reports</CardTitle>
-                            <CardDescription>
-                                Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
-                            </CardDescription>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>Investigation Reports</CardTitle>
+                                    <CardDescription>
+                                        Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
+                                    </CardDescription>
+                                </div>
+                                <Button variant="outline" onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Export to Excel
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? (
@@ -300,5 +338,7 @@ export default function LaporanInvestigasiKnktPage() {
         </main>
     );
 }
+
+    
 
     
