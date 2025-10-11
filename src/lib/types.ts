@@ -314,4 +314,5 @@ export type ChatMessage = {
     senderName: string;
     senderAvatarUrl?: string;
     createdAt: any; // Firestore Timestamp
+    readBy: string[];
 };

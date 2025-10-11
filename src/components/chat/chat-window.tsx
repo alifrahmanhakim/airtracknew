@@ -1,20 +1,22 @@
 
+
 'use client';
 
 import * as React from 'react';
 import { User, ChatMessage } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { Send, User as UserIcon, Users as UsersIcon } from 'lucide-react';
+import { Send, User as UserIcon, Users as UsersIcon, Check, CheckCheck } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { getOrCreateChatRoom, sendMessage } from '@/lib/actions/chat';
+import { getOrCreateChatRoom, sendMessage, updateMessageReadStatus } from '@/lib/actions/chat';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { format } from 'date-fns';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapToolbar } from '../ui/rich-text-input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 interface ChatWindowProps {
     currentUser: User;
@@ -70,6 +72,38 @@ const ChatEditor = ({ content, onUpdate, onEnterPress, disabled }: { content: st
     );
 };
 
+const MessageStatus = ({ message, currentUserId, selectedUserId }: { message: ChatMessage, currentUserId: string, selectedUserId: string | null }) => {
+    if (message.senderId !== currentUserId) {
+        return null;
+    }
+    
+    const isRead = message.readBy && selectedUserId ? message.readBy.includes(selectedUserId) : false;
+
+    if (isRead) {
+        return (
+            <Tooltip>
+                <TooltipTrigger>
+                    <CheckCheck className="h-4 w-4 text-blue-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Read</p>
+                </TooltipContent>
+            </Tooltip>
+        );
+    }
+    
+    return (
+         <Tooltip>
+            <TooltipTrigger>
+                <Check className="h-4 w-4" />
+            </TooltipTrigger>
+            <TooltipContent>
+                <p>Sent</p>
+            </TooltipContent>
+        </Tooltip>
+    );
+};
+
 
 export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -97,11 +131,25 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
             );
 
             unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
-                const fetchedMessages = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as ChatMessage));
+                const fetchedMessages: ChatMessage[] = [];
+                const unreadMessages: { msgId: string, roomId: string }[] = [];
+
+                snapshot.docs.forEach(doc => {
+                    const msg = { id: doc.id, ...doc.data() } as ChatMessage;
+                    fetchedMessages.push(msg);
+                    if (msg.senderId !== currentUser.id && (!msg.readBy || !msg.readBy.includes(currentUser.id))) {
+                        unreadMessages.push({ msgId: msg.id, roomId });
+                    }
+                });
+
                 setMessages(fetchedMessages);
+
+                // Mark messages as read
+                if (unreadMessages.length > 0) {
+                    unreadMessages.forEach(um => {
+                        updateMessageReadStatus(um.roomId, um.msgId, currentUser.id);
+                    });
+                }
             });
         };
 
@@ -154,6 +202,7 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
     const isGlobalChat = selectedUser.id === GLOBAL_CHAT_ROOM_ID;
     
     return (
+        <TooltipProvider>
         <div className="flex-1 flex flex-col h-full">
             <div className="p-4 border-b flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -192,9 +241,10 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                                         <p className="text-xs font-bold mb-1">{msg.senderName}</p>
                                     )}
                                     <div className="text-sm prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: msg.text }} />
-                                     <p className={cn("text-xs mt-1 text-right", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                                         {msg.createdAt ? format(msg.createdAt.toDate(), 'p') : ''}
-                                     </p>
+                                     <div className={cn("text-xs mt-1 flex items-center gap-1.5", isCurrentUser ? "text-primary-foreground/70 justify-end" : "text-muted-foreground")}>
+                                         <span>{msg.createdAt ? format(msg.createdAt.toDate(), 'p') : ''}</span>
+                                          {isCurrentUser && !isGlobalChat && <MessageStatus message={msg} currentUserId={currentUser.id} selectedUserId={selectedUser.id} />}
+                                     </div>
                                 </div>
                                  {isCurrentUser && (
                                     <Avatar className={cn("h-8 w-8", !showAvatar && "invisible")}>
@@ -222,5 +272,6 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                 </form>
             </div>
         </div>
+        </TooltipProvider>
     );
 }

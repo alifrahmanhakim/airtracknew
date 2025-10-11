@@ -1,7 +1,9 @@
+
+
 'use server';
 
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { createNotification } from './notifications';
 import type { User } from '../types';
 
@@ -26,6 +28,7 @@ export async function sendMessage(chatRoomId: string, senderId: string, receiver
             ...messageData,
             senderId: senderId,
             createdAt: serverTimestamp(),
+            readBy: [senderId], // Sender has implicitly "read" it
         });
         
         // Don't send a notification if it's a message to the global chat room
@@ -46,6 +49,19 @@ export async function sendMessage(chatRoomId: string, senderId: string, receiver
         return { success: true };
     } catch (error) {
         console.error("Error sending message:", error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
+
+export async function updateMessageReadStatus(chatRoomId: string, messageId: string, userId: string) {
+    try {
+        const messageRef = doc(db, 'chatRooms', chatRoomId, 'messages', messageId);
+        await updateDoc(messageRef, {
+            readBy: arrayUnion(userId)
+        });
+        return { success: true };
+    } catch (error) {
+         console.error("Error updating read status:", error);
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
