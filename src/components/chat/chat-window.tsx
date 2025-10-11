@@ -12,7 +12,7 @@ import { getOrCreateChatRoom, sendMessage, updateMessageReadStatus } from '@/lib
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { format } from 'date-fns';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapToolbar } from '../ui/rich-text-input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
@@ -25,43 +25,52 @@ interface ChatWindowProps {
 
 const GLOBAL_CHAT_ROOM_ID = 'global_chat_room';
 
-const ChatEditor = ({ onEnterPress }: { onEnterPress: (content: string) => void; }) => {
-    const editor = useEditor({
-        extensions: [
-            StarterKit.configure({
-                heading: false,
-            }),
-        ],
-        content: '',
-        editorProps: {
-            attributes: {
-                class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none p-3 min-h-[60px]',
-            },
-            handleKeyDown: (view, event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    onEnterPress(view.state.doc.textContent);
-                    return true;
-                }
-                return false;
-            },
-        },
-    });
-
-     React.useImperativeHandle(chatEditorRef, () => ({
-        clearContent: () => editor?.commands.clearContent(),
-        getHTML: () => editor?.getHTML() || '',
-    }));
-
-    return (
-        <div className="rounded-md border border-input focus-within:ring-2 focus-within:ring-ring flex-1 bg-background">
-            <TiptapToolbar editor={editor} />
-            <EditorContent editor={editor} />
-        </div>
-    );
+type ChatEditorHandle = {
+    clearContent: () => void;
+    getHTML: () => string;
 };
 
-const chatEditorRef = React.createRef<{ clearContent: () => void; getHTML: () => string }>();
+const ChatEditor = React.forwardRef<ChatEditorHandle, { onEnterPress: (content: string) => void }>(
+    ({ onEnterPress }, ref) => {
+        const editor = useEditor({
+            extensions: [
+                StarterKit.configure({
+                    heading: false,
+                }),
+            ],
+            content: '',
+            editorProps: {
+                attributes: {
+                    class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none p-3 min-h-[60px]',
+                },
+                handleKeyDown: (view, event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        const content = view.state.doc.textContent;
+                        if (content && content.trim()) {
+                            onEnterPress(content);
+                        }
+                        return true;
+                    }
+                    return false;
+                },
+            },
+        });
+
+        React.useImperativeHandle(ref, () => ({
+            clearContent: () => editor?.commands.clearContent(),
+            getHTML: () => editor?.getHTML() || '',
+        }));
+
+        return (
+            <div className="rounded-md border border-input focus-within:ring-2 focus-within:ring-ring flex-1 bg-background">
+                <TiptapToolbar editor={editor} />
+                <EditorContent editor={editor} />
+            </div>
+        );
+    }
+);
+ChatEditor.displayName = 'ChatEditor';
 
 
 const MessageStatus = ({ message, currentUserId, selectedUserId }: { message: ChatMessage, currentUserId: string, selectedUserId: string | null }) => {
@@ -101,6 +110,7 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
     const [chatRoomId, setChatRoomId] = React.useState<string | null>(null);
     const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+    const chatEditorRef = React.useRef<ChatEditorHandle>(null);
 
     React.useEffect(() => {
         if (!selectedUser || !currentUser) return;
@@ -164,6 +174,9 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
     
     const isMessageEmpty = (htmlString: string) => {
         if (!htmlString) return true;
+        if (typeof document === 'undefined') {
+            return htmlString.replace(/<[^>]*>?/gm, '').trim() === '';
+        }
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlString;
         return tempDiv.textContent?.trim() === '';
@@ -222,11 +235,12 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                     {messages.map((msg, index) => {
                         const isCurrentUser = msg.senderId === currentUser.id;
                         const showAvatar = index === 0 || messages[index - 1].senderId !== msg.senderId;
+                        const fullSender = users.find(u => u.id === msg.senderId);
                         
                         return (
                             <div key={msg.id} className={cn("flex items-end gap-3", isCurrentUser && "justify-end")}>
                                 {!isCurrentUser && (
-                                    <Avatar className={cn("h-8 w-8 cursor-pointer", !showAvatar && "invisible")} onClick={() => users.find(u => u.id === msg.senderId) && onViewProfile(users.find(u => u.id === msg.senderId)!)}>
+                                    <Avatar className={cn("h-8 w-8 cursor-pointer", !showAvatar && "invisible")} onClick={() => fullSender && onViewProfile(fullSender)}>
                                         <AvatarImage src={msg.senderAvatarUrl} />
                                         <AvatarFallback>{msg.senderName?.[0]}</AvatarFallback>
                                     </Avatar>
@@ -267,6 +281,7 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                     className="flex items-start gap-2"
                     >
                     <ChatEditor
+                        ref={chatEditorRef}
                         onEnterPress={() => handleSendMessage()}
                     />
                     <Button type="submit" size="icon">
@@ -279,10 +294,4 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
     );
 }
 
-// Dummy ref for server-side rendering
-const chatEditorRef = {
-  current: {
-    clearContent: () => {},
-    getHTML: () => '',
-  },
-};
+const users: User[] = []; // This is needed to prevent an error on the server
