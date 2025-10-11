@@ -57,6 +57,11 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
       control: form.control,
       name: "inspectors",
   });
+  
+  const { fields: actionFields } = useFieldArray({
+    control: form.control,
+    name: "actionRequired",
+  });
 
   return (
     <>
@@ -94,51 +99,51 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
           <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <FormField control={form.control} name="letterSubject" render={({ field }) => ( <FormItem> <FormLabel>Perihal Surat</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           
-           <FormField
-              control={form.control}
-              name="actionRequired"
-              render={() => (
-                <FormItem>
-                  <div className="mb-4">
-                    <FormLabel>Action required</FormLabel>
-                  </div>
-                  {actionRequiredItems.map((item) => (
-                    <FormField
-                      key={item.id}
-                      control={form.control}
-                      name="actionRequired"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={item.id}
-                            className="flex flex-row items-start space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(item.id)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...(field.value || []), item.id])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item.id
-                                        )
-                                      )
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {item.label}
-                            </FormLabel>
-                          </FormItem>
-                        )
-                      }}
-                    />
-                  ))}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           <FormItem>
+                <FormLabel>Action required</FormLabel>
+                <div className="space-y-4 rounded-md border p-4">
+                    {actionFields.map((item, index) => (
+                        <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <FormField
+                                control={form.control}
+                                name={`actionRequired.${index}.checked`}
+                                render={({ field }) => (
+                                    <FormItem className="flex items-center gap-2 flex-1">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <FormLabel className="font-normal leading-snug">
+                                            {actionRequiredItems[index].label}
+                                        </FormLabel>
+                                    </FormItem>
+                                )}
+                            />
+                            {item.id !== 'efod' && (
+                                <FormField
+                                    control={form.control}
+                                    name={`actionRequired.${index}.date`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <Input
+                                                    type="text"
+                                                    placeholder="YYYY-MM-DD"
+                                                    disabled={!form.watch(`actionRequired.${index}.checked`)}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <FormMessage>{form.formState.errors.actionRequired?.root?.message}</FormMessage>
+            </FormItem>
 
           <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium px-1">Standardization Process</legend>

@@ -10,13 +10,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { EvaluationItem, GapAnalysisRecord } from '@/lib/types';
+import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { format, parseISO } from 'date-fns';
 import { Separator } from './ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { User } from 'lucide-react';
 import Image from 'next/image';
+import { Checkbox } from './ui/checkbox';
 
 type DetailRowProps = {
   label: string;
@@ -57,6 +58,13 @@ const EvaluationCard = ({ evaluation }: { evaluation: EvaluationItem }) => (
     </Card>
 )
 
+const actionRequiredLabels: Record<ActionRequiredItem['id'], string> = {
+    disapproval: 'Notify any disapproval before',
+    differences: 'Notify any differences and compliance before',
+    efod: 'Consider the use of the Electronic Filing of Differences (EFOD) System for notification of differences and compliance',
+};
+
+
 type GapAnalysisRecordDetailDialogProps = {
   record: GapAnalysisRecord;
   open: boolean;
@@ -65,6 +73,24 @@ type GapAnalysisRecordDetailDialogProps = {
 
 export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: GapAnalysisRecordDetailDialogProps) {
   if (!record) return null;
+
+  const actionRequiredContent = (
+    <div className="space-y-2">
+      {(record.actionRequired || []).map((item) => (
+          <div key={item.id} className="flex items-start gap-3">
+              <Checkbox checked={item.checked} className="mt-1 pointer-events-none" />
+              <div>
+                  <label className="font-normal">{actionRequiredLabels[item.id]}</label>
+                  {item.checked && item.date && (
+                    <p className="text-xs text-muted-foreground">
+                        Date: {format(parseISO(item.date), 'PPP')}
+                    </p>
+                  )}
+              </div>
+          </div>
+      ))}
+    </div>
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -85,7 +111,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 <DetailRow label="Nama Surat" value={record.letterName} />
                 <DetailRow label="Perihal Surat" value={record.letterSubject} isLongText />
                 <DetailRow label="Tanggal Pelaksanaan" value={record.implementationDate ? format(parseISO(record.implementationDate), 'PPP') : 'N/A'} />
-                <DetailRow label="Action Required" value={record.actionRequired} isLongText />
+                <DetailRow label="Action Required" value={actionRequiredContent} isLongText />
                 <DetailRow label="Effective Date" value={record.effectiveDate ? format(parseISO(record.effectiveDate), 'PPP') : 'N/A'} />
                 <DetailRow label="Applicability Date" value={record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'} />
                 <DetailRow label="Embedded Applicability Date" value={record.embeddedApplicabilityDate ? format(parseISO(record.embeddedApplicabilityDate), 'PPP') : 'N/A'} />

@@ -58,7 +58,11 @@ export const gapAnalysisFormSchema = z.object({
   letterName: z.string().optional(),
   letterSubject: z.string().optional(),
   implementationDate: z.string().optional(),
-  actionRequired: z.array(z.string()).refine(value => value.some(item => item), {
+  actionRequired: z.array(z.object({
+    id: z.enum(['disapproval', 'differences', 'efod']),
+    checked: z.boolean(),
+    date: z.string().optional(),
+  })).refine(value => value.some(item => item.checked), {
     message: "You have to select at least one item.",
   }),
   effectiveDate: z.string().optional(),

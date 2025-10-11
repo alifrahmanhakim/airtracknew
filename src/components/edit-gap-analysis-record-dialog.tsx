@@ -17,7 +17,7 @@ import {
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
-import type { GapAnalysisRecord, Project } from '@/lib/types';
+import type { GapAnalysisRecord, Project, ActionRequiredItem } from '@/lib/types';
 import { GapAnalysisSharedFormFields, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { updateGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { ScrollArea } from './ui/scroll-area';
@@ -30,6 +30,8 @@ type EditGapAnalysisRecordDialogProps = {
   record: GapAnalysisRecord;
   onRecordUpdate: (updatedRecord: GapAnalysisRecord) => void;
 };
+
+const actionRequiredIds: ActionRequiredItem['id'][] = ['disapproval', 'differences', 'efod'];
 
 export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapAnalysisRecordDialogProps) {
   const [open, setOpen] = useState(false);
@@ -61,11 +63,35 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     fetchProjects();
   }, []);
 
+  const getActionRequiredDefault = () => {
+    const defaultActions = [
+      { id: 'disapproval', checked: false, date: '' },
+      { id: 'differences', checked: false, date: '' },
+      { id: 'efod', checked: false, date: '' },
+    ] as const;
+
+    if (Array.isArray(record.actionRequired) && record.actionRequired.every(item => typeof item === 'object' && 'id' in item)) {
+        return defaultActions.map(def => {
+            const found = (record.actionRequired as ActionRequiredItem[]).find(rec => rec.id === def.id);
+            return found || def;
+        })
+    }
+    // Handle old string array format for backwards compatibility
+    if (Array.isArray(record.actionRequired) && record.actionRequired.every(item => typeof item === 'string')) {
+      return defaultActions.map(def => ({
+        ...def,
+        checked: (record.actionRequired as string[]).includes(def.id)
+      }));
+    }
+
+    return defaultActions;
+  };
+
   const form = useForm<GapAnalysisFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...record,
-      actionRequired: Array.isArray(record.actionRequired) ? record.actionRequired : (typeof record.actionRequired === 'string' ? [record.actionRequired] : []),
+      actionRequired: getActionRequiredDefault(),
       inspectors: record.inspectors || [],
     },
   });

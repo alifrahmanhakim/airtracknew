@@ -125,6 +125,12 @@ export type Inspector = {
     signature?: string;
 };
 
+export type ActionRequiredItem = {
+    id: 'disapproval' | 'differences' | 'efod';
+    checked: boolean;
+    date?: string;
+};
+
 export type GapAnalysisRecord = {
     id: string;
     slReferenceNumber: string;
@@ -135,7 +141,7 @@ export type GapAnalysisRecord = {
     letterName: string;
     letterSubject: string;
     implementationDate?: string;
-    actionRequired: string[];
+    actionRequired: ActionRequiredItem[];
     effectiveDate?: string;
     applicabilityDate?: string;
     embeddedApplicabilityDate: string;
