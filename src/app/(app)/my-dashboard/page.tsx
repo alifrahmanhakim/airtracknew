@@ -482,8 +482,16 @@ export default function MyDashboardPage() {
                 <CardContent className="space-y-4">
                     {upcomingTasks.length > 0 ? (
                         upcomingTasks.map((task, index) => {
-                             const daysLeft = differenceInDays(parseISO(task.dueDate), new Date());
+                             const dueDate = parseISO(task.dueDate);
+                             const daysLeft = differenceInDays(dueDate, startOfDay(new Date()));
                              const dueDateColor = daysLeft < 3 ? 'text-red-500' : daysLeft < 7 ? 'text-yellow-600' : 'text-muted-foreground';
+                             
+                             const getRelativeDateText = () => {
+                                if (isToday(dueDate)) return 'Today';
+                                if (daysLeft < 0) return `${Math.abs(daysLeft)}d overdue`;
+                                return `${daysLeft}d left`;
+                             };
+
                             return (
                                 <React.Fragment key={task.id}>
                                     <div className="flex items-start justify-between gap-4">
@@ -504,9 +512,9 @@ export default function MyDashboardPage() {
                                             <p className="text-xs text-muted-foreground">{task.projectName}</p>
                                         </div>
                                         <div className="text-right">
-                                             <p className={cn("text-sm font-bold", dueDateColor)}>{format(parseISO(task.dueDate), 'dd MMM')}</p>
+                                             <p className={cn("text-sm font-bold", dueDateColor)}>{format(dueDate, 'dd MMM')}</p>
                                              <p className={cn("text-xs", dueDateColor)}>
-                                                {daysLeft <= 0 ? 'Today' : `${daysLeft}d left`}
+                                                {getRelativeDateText()}
                                              </p>
                                         </div>
                                     </div>
