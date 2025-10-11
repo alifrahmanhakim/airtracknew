@@ -8,7 +8,8 @@ import { Input } from '../ui/input';
 import { Search, User as UserIcon } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
+import { Separator } from '../ui/separator';
 
 interface ChatSidebarProps {
     users: User[];
@@ -32,12 +33,25 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
         }).filter(item => item.user);
     }, [chatRooms, users, currentUser.id]);
 
-    const filteredUsers = React.useMemo(() => {
+    const usersNotInRooms = React.useMemo(() => {
+        const userIdsInRooms = new Set(otherUsersInRooms.map(item => item.user!.id));
+        return users.filter(user => user.id !== currentUser.id && !userIdsInRooms.has(user.id));
+    }, [users, otherUsersInRooms, currentUser.id]);
+
+
+    const filteredChatRooms = React.useMemo(() => {
         if (!searchTerm) return otherUsersInRooms;
         return otherUsersInRooms.filter(item =>
             item.user?.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [otherUsersInRooms, searchTerm]);
+    
+    const filteredUsers = React.useMemo(() => {
+        if (!searchTerm) return usersNotInRooms;
+        return usersNotInRooms.filter(user =>
+            user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [usersNotInRooms, searchTerm]);
 
     const formatTimestamp = (timestamp: any) => {
         if (!timestamp) return '';
@@ -58,7 +72,7 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                 <div className="relative mt-4">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                        placeholder="Search chats..." 
+                        placeholder="Search chats or users..." 
                         className="pl-9"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -66,28 +80,68 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                 </div>
             </div>
             <ScrollArea className="flex-1">
-                {filteredUsers.map(({ user, lastMessage }) => user && (
-                    <div
-                        key={user.id}
-                        className={cn(
-                            "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
-                            selectedUser?.id === user.id && "bg-muted"
-                        )}
-                        onClick={() => onSelectUser(user)}
-                    >
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.avatarUrl} alt={user.name} />
-                            <AvatarFallback><UserIcon /></AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="font-semibold truncate">{user.name}</p>
-                            <p className="text-sm text-muted-foreground truncate">{lastMessage?.text || 'No messages yet'}</p>
-                        </div>
-                        <div className="text-xs text-muted-foreground self-start">
-                            {formatTimestamp(lastMessage?.createdAt)}
-                        </div>
+                {filteredChatRooms.length > 0 && (
+                     <div>
+                        <h3 className="text-xs font-semibold uppercase text-muted-foreground px-4 pt-4">Chats</h3>
+                        {filteredChatRooms.map(({ user, lastMessage }) => user && (
+                            <div
+                                key={user.id}
+                                className={cn(
+                                    "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
+                                    selectedUser?.id === user.id && "bg-muted"
+                                )}
+                                onClick={() => onSelectUser(user)}
+                            >
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                    <AvatarFallback><UserIcon /></AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 overflow-hidden">
+                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="text-sm text-muted-foreground truncate">{lastMessage?.text || 'No messages yet'}</p>
+                                </div>
+                                <div className="text-xs text-muted-foreground self-start">
+                                    {formatTimestamp(lastMessage?.createdAt)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                ))}
+                )}
+               
+                {(filteredChatRooms.length > 0 && filteredUsers.length > 0) && (
+                    <Separator className="my-2" />
+                )}
+
+                {filteredUsers.length > 0 && (
+                    <div>
+                        <h3 className="text-xs font-semibold uppercase text-muted-foreground px-4 pt-2">Users</h3>
+                        {filteredUsers.map(user => (
+                            <div
+                                key={user.id}
+                                className={cn(
+                                    "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
+                                    selectedUser?.id === user.id && "bg-muted"
+                                )}
+                                onClick={() => onSelectUser(user)}
+                            >
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                    <AvatarFallback><UserIcon /></AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 overflow-hidden">
+                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="text-sm text-muted-foreground truncate">{user.role}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                 {filteredChatRooms.length === 0 && filteredUsers.length === 0 && (
+                    <div className="text-center text-muted-foreground p-8">
+                        <p>No users or chats found.</p>
+                    </div>
+                )}
             </ScrollArea>
         </div>
     );
