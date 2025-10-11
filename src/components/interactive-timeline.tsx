@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -19,10 +20,11 @@ import {
   getISOWeek,
   differenceInCalendarISOWeeks,
   isWithinInterval,
+  getYear,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Task } from '@/lib/types';
-import { ListTodo } from 'lucide-react';
+import type { Task, User } from '@/lib/types';
+import { ListTodo, Search, RotateCcw } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -31,6 +33,9 @@ import {
 } from './ui/tooltip';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 type TimelineTask = Task & { projectName?: string };
@@ -50,7 +55,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
   
-  const { sortedTasks, months, days, weeks, timelineStart, timelineEnd, totalDays, totalWeeks } = React.useMemo(() => {
+  const { sortedTasks, months, days, weeks, timelineStart, timelineEnd, totalGridWidth } = React.useMemo(() => {
     const validTasks = tasks?.filter(t => t.startDate && t.dueDate) || [];
     
     const sorted = [...validTasks].sort((a, b) => {
@@ -74,17 +79,19 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
       tEnd = max([endOfISOWeek(addMonths(latestDate, 1)), tEnd]);
     }
     
+    const dayData = eachDayOfInterval({ start: tStart, end: tEnd });
+    const weekData = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
+
     return { 
         sortedTasks: sorted, 
         months: eachMonthOfInterval({ start: tStart, end: tEnd }), 
-        days: eachDayOfInterval({ start: tStart, end: tEnd }), 
-        weeks: eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 }),
+        days: dayData,
+        weeks: weekData,
         timelineStart: tStart, 
         timelineEnd: tEnd, 
-        totalDays: differenceInDays(tEnd, tEnd) + 1,
-        totalWeeks: differenceInCalendarISOWeeks(tEnd, tEnd) + 1
+        totalGridWidth: viewMode === 'day' ? dayData.length * DAY_WIDTH_DAY_VIEW : weekData.length * WEEK_WIDTH,
     };
-  }, [tasks]);
+  }, [tasks, viewMode]);
 
   React.useEffect(() => {
     const container = timelineContainerRef.current;
@@ -99,22 +106,20 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
     let verticalScrollPosition = 0;
     if (firstActiveTaskIndex !== -1) {
-      // Calculate scroll position to bring the task into view
       const taskTop = firstActiveTaskIndex * ROW_MIN_HEIGHT;
-      verticalScrollPosition = taskTop - container.offsetHeight / 4; // Center it a bit
+      verticalScrollPosition = taskTop - container.offsetHeight / 4;
     }
   
     // --- Horizontal Scroll ---
     const todayPosition = todayMarker.offsetLeft;
     const horizontalScrollPosition = todayPosition - container.offsetWidth / 3;
   
-    // --- Execute Scroll ---
     container.scrollTo({
       top: verticalScrollPosition,
       left: horizontalScrollPosition,
       behavior: 'auto',
     });
-  }, [sortedTasks]);
+  }, [sortedTasks, viewMode]);
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
@@ -123,15 +128,12 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     'Blocked': { color: 'bg-red-500 hover:bg-red-500', label: 'Blocked' },
   };
   
-  const dayWidth = viewMode === 'day' ? DAY_WIDTH_DAY_VIEW : 0;
-  const totalGridWidth = viewMode === 'day' ? days.length * dayWidth : weeks.length * WEEK_WIDTH;
-
   return (
     <TooltipProvider>
       <Card>
         <CardHeader>
-          <CardTitle>My Timeline</CardTitle>
-          <CardDescription>A centralized timeline of all your assigned tasks across all projects.</CardDescription>
+          <CardTitle>Project Timeline</CardTitle>
+          <CardDescription>A centralized timeline of all project tasks.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <div className="p-4 border-y flex justify-between items-center">
@@ -169,11 +171,9 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
               <div className="relative" style={{ width: 'min-content' }}>
                   {/* Headers */}
                   <div className="sticky top-0 z-30 flex bg-card">
-                      {/* Task List Header */}
                       <div className="sticky left-0 z-20 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
                           Tasks / Project
                       </div>
-                      {/* Timeline Header */}
                       <div className="flex-shrink-0 border-b" style={{ width: `${totalGridWidth}px` }}>
                           {viewMode === 'week' && (
                               <div className="flex border-b" style={{ height: `${MONTH_HEADER_HEIGHT}px` }}>
@@ -214,7 +214,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
 
                   {/* Body */}
                   <div className="relative flex">
-                      {/* Task List Body */}
                       <div className="sticky left-0 z-20 flex flex-col bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                           {sortedTasks.map((task) => (
                               <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ minHeight: `${ROW_MIN_HEIGHT}px` }}>
@@ -224,13 +223,11 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                           ))}
                       </div>
 
-                      {/* Timeline Body */}
                       <div className="relative" style={{ width: `${totalGridWidth}px` }}>
-                          {/* Vertical Lines & Horizontal Lines */}
                           <div className="absolute inset-0 z-0">
                               {viewMode === 'day' ? (
                                   days.map((day, index) => (
-                                      <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * dayWidth) + dayWidth - 1}px`}} />
+                                      <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
                                   ))
                               ) : (
                                   weeks.map((week, index) => (
@@ -242,7 +239,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                               ))}
                           </div>
                           
-                          {/* Today Indicator */}
                           {(() => {
                               const today = startOfDay(new Date());
                               if (today < timelineStart || today > timelineEnd) return null;
@@ -250,7 +246,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                               let todayLeft;
                               if (viewMode === 'day') {
                                   const todayOffsetDays = differenceInDays(today, timelineStart);
-                                  todayLeft = todayOffsetDays * dayWidth;
+                                  todayLeft = todayOffsetDays * DAY_WIDTH_DAY_VIEW;
                               } else { 
                                   const todayOffsetWeeks = differenceInCalendarISOWeeks(today, timelineStart);
                                   todayLeft = todayOffsetWeeks * WEEK_WIDTH;
@@ -264,7 +260,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                               );
                           })()}
 
-                           {/* Task Bars */}
                           <div className="relative w-full h-full z-10">
                               {sortedTasks.map((task, index) => {
                                   const taskStart = parseISO(task.startDate);
@@ -274,8 +269,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   if (viewMode === 'day') {
                                       const startOffset = differenceInDays(taskStart, timelineStart);
                                       const duration = differenceInDays(taskEnd, taskStart) + 1;
-                                      left = startOffset * dayWidth;
-                                      width = duration * dayWidth - 2;
+                                      left = startOffset * DAY_WIDTH_DAY_VIEW;
+                                      width = duration * DAY_WIDTH_DAY_VIEW - 2;
                                   } else { 
                                       const startOffset = differenceInCalendarISOWeeks(taskStart, timelineStart);
                                       const duration = differenceInCalendarISOWeeks(taskEnd, taskStart) + 1;
@@ -306,7 +301,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                       </div>
                   </div>
               </div>
-            </div>
           )}
         </CardContent>
       </Card>

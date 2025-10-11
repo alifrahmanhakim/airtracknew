@@ -575,11 +575,7 @@ export default function MyDashboardPage() {
             </Card>
             </TabsContent>
             <TabsContent value="timeline">
-                <Card>
-                    <CardContent className="p-0">
-                        <InteractiveTimeline tasks={assignedTasks} />
-                    </CardContent>
-                </Card>
+              <InteractiveTimeline tasks={assignedTasks} />
             </TabsContent>
             </Tabs>
         </div>
