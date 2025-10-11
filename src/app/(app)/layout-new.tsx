@@ -175,7 +175,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
            <div className="flex items-center gap-2">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={50} height={50} className="object-contain" />
+              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={150} className="object-contain" />
               <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">AirTrack</span>
             </div>
         </SidebarHeader>

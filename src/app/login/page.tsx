@@ -202,7 +202,7 @@ export default function LoginPage() {
                 <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
                     <CardHeader className="text-center">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                             <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={80} height={80} className="object-contain" />
+                             <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={240} className="object-contain" />
                         </div>
                         <CardTitle className="text-2xl">AirTrack Login</CardTitle>
                         <CardDescription className="text-white/80">Enter your credentials to access your dashboard.</CardDescription>
@@ -264,7 +264,7 @@ export default function LoginPage() {
                 <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
                     <CardHeader className="text-center">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                            <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={80} height={80} className="object-contain" />
+                            <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={240} className="object-contain" />
                         </div>
                         <CardTitle className="text-2xl">Create an Account</CardTitle>
                         <CardDescription className="text-white/80">Register to request access.</CardDescription>
