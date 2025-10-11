@@ -23,13 +23,7 @@ import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { RulemakingTable } from './rulemaking-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { countAllTasks } from '@/lib/data-utils';
-
-const statusConfig: { [key in Project['status']]: { icon: React.ElementType, style: string, label: string } } = {
-    'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
-    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'In Progress' },
-    'At Risk': { icon: AlertTriangle, style: 'border-transparent bg-yellow-100 text-yellow-800', label: 'At Risk' },
-    'Off Track': { icon: AlertCircle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
-};
+import { ProjectCard } from './project-card';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -307,124 +301,13 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                 <main className="md:col-span-3">
                      {viewMode === 'card' ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-                            {filteredProjects.map(project => {
-                               const { total: totalTasks, completed: completedTasks } = countAllTasks(project.tasks || []);
-                               const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-                               const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
-                               
-                               const doneTaskTitles = new Set((project.tasks || []).filter(t => t.status === 'Done').map(t => t.title));
-                               const currentTaskIndex = rulemakingTaskOptions.findIndex(option => !doneTaskTitles.has(option.value));
-                               const currentTask = currentTaskIndex !== -1 ? rulemakingTaskOptions[currentTaskIndex] : null;
-                               const nextTask = currentTaskIndex !== -1 && currentTaskIndex < rulemakingTaskOptions.length - 1 ? rulemakingTaskOptions[currentTaskIndex + 1] : null;
-
-                               return (
-                                    <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg h-full block">
-                                        <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
-                                            <CardHeader className="pb-4">
-                                              <div className="flex justify-between items-start">
-                                                <CardTitle className="text-base font-bold">
-                                                    CASR {project.casr}{project.casrRevision ? ` (Rev. ${project.casrRevision})` : ''}
-                                                </CardTitle>
-                                                 <div className="flex items-center gap-2">
-                                                    {project.tags?.includes('High Priority') && (
-                                                        <Badge variant="destructive" className="font-medium">
-                                                            High Priority
-                                                        </Badge>
-                                                    )}
-                                                    <Badge variant="outline" className={cn("text-xs font-semibold gap-1.5 pl-1.5", currentStatus.style)}>
-                                                        <currentStatus.icon className="h-3.5 w-3.5" />
-                                                        {currentStatus.label}
-                                                    </Badge>
-                                                </div>
-                                              </div>
-                                              <CardDescription className="text-xs h-8 line-clamp-2">{project.name}</CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="flex-grow space-y-4 pt-2">
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between text-xs">
-                                                        <span className="font-medium text-muted-foreground">Progress</span>
-                                                        <span className="font-bold">{Math.round(progress)}%</span>
-                                                    </div>
-                                                    <Progress value={progress} className="h-1.5" />
-                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                        <span>{completedTasks}/{totalTasks} Tasks</span>
-                                                        <span>Due: {format(parseISO(project.endDate), 'dd MMM yyyy')}</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="text-xs text-muted-foreground pt-2 border-t">
-                                                    {currentTask ? (
-                                                    <div className="grid grid-cols-2 items-start gap-2">
-                                                        <div className='flex items-start gap-1.5'>
-                                                            <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0"/>
-                                                            <div className="overflow-hidden">
-                                                                <p className="font-semibold uppercase text-muted-foreground/80">Current</p>
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <p className="font-semibold text-foreground truncate">{currentTask.label}</p>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent><p>{currentTask.label}</p></TooltipContent>
-                                                                </Tooltip>
-                                                            </div>
-                                                        </div>
-                                                        <div className="pl-2 border-l flex items-start gap-1.5">
-                                                            <ArrowRight className="h-4 w-4 text-muted-foreground/70 mt-0.5 flex-shrink-0"/>
-                                                            <div className="overflow-hidden">
-                                                                <p className="font-semibold uppercase text-muted-foreground/80">Next</p>
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <p className="font-semibold text-muted-foreground truncate">{nextTask ? nextTask.label : 'Finalization'}</p>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent><p>{nextTask ? nextTask.label : 'Finalization'}</p></TooltipContent>
-                                                                </Tooltip>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    ) : (
-                                                        <div className="flex items-center gap-2">
-                                                            <Flag className="h-4 w-4 text-green-600" />
-                                                            <span className="font-semibold text-foreground">All tasks completed!</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </CardContent>
-                                            <CardFooter className="pt-2 flex justify-between items-center mt-auto">
-                                               <div className="flex items-center gap-2">
-                                                    <div className="flex items-center -space-x-2">
-                                                        {project.team.slice(0, 5).map((member, index) => {
-                                                            const fullUser = allUsers.find(u => u.id === member.id);
-                                                            const isOnline = fullUser?.lastOnline ? (new Date().getTime() - new Date(fullUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
-                                                            return (
-                                                                <Tooltip key={`${member.id}-${index}`}>
-                                                                    <TooltipTrigger asChild>
-                                                                        <Avatar className="h-6 w-6 border-2 border-background" online={isOnline}>
-                                                                            <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
-                                                                            <AvatarFallback>
-                                                                                <UserIcon className="h-3 w-3" />
-                                                                            </AvatarFallback>
-                                                                        </Avatar>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent>{member.name}</TooltipContent>
-                                                                </Tooltip>
-                                                            )
-                                                        })}
-                                                        {project.team.length > 5 && (
-                                                          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-semibold z-10 border-2 border-background">
-                                                            +{project.team.length - 5}
-                                                          </div>
-                                                        )}
-                                                   </div>
-                                                    {project.team.length > 0 && (
-                                                        <span className="text-xs text-muted-foreground font-medium truncate max-w-[100px]">
-                                                            {project.team[0].name}
-                                                        </span>
-                                                    )}
-                                               </div>
-                                            </CardFooter>
-                                        </Card>
-                                    </Link>
-                               );
-                           })}
+                           {filteredProjects.map(project => (
+                               <ProjectCard
+                                   key={project.id}
+                                   project={project}
+                                   allUsers={allUsers}
+                               />
+                           ))}
                         </div>
                     ) : (
                         <RulemakingTable projects={filteredProjects} sort={sort} setSort={setSort} />

@@ -55,6 +55,7 @@ import { Progress } from './ui/progress';
 import { parseISO, getYear } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { cn } from '@/lib/utils';
+import { countAllTasks } from '@/lib/data-utils';
 
 export function DashboardPage() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
@@ -147,8 +148,8 @@ export function DashboardPage() {
         
     const projectStats = {
         totalProjects: filteredProjects.length,
-        completedTasks: filteredProjects.flatMap(p => p.tasks || []).filter(t => t.status === 'Done').length,
-        totalTasks: filteredProjects.flatMap(p => p.tasks || []).length,
+        completedTasks: filteredProjects.flatMap(p => countAllTasks(p.tasks || []).completed).reduce((a, b) => a + b, 0),
+        totalTasks: filteredProjects.flatMap(p => countAllTasks(p.tasks || []).total).reduce((a, b) => a + b, 0),
         atRiskProjects: filteredProjects.filter(p => p.status === 'At Risk').length,
         offTrackProjects: filteredProjects.filter(p => p.status === 'Off Track').length,
     };

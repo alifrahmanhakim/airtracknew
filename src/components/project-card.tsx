@@ -50,10 +50,10 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
     if (hasCritical) {
       return 'At Risk';
     }
-  
+    
     const projectStart = parseISO(startDate);
     const totalDuration = differenceInDays(projectEnd, projectStart);
-    
+  
     // 4. If progress is significantly behind the time elapsed, it's At Risk.
     if (totalDuration > 0) {
       const elapsedDuration = differenceInDays(today, projectStart);
