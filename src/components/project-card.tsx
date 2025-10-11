@@ -14,10 +14,11 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from './ui/progress';
 import type { Project, Task, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { format, parseISO, isAfter } from 'date-fns';
+import { format, parseISO, isAfter, differenceInDays } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle, User as UserIcon } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
+import { countAllTasks } from '@/lib/data-utils';
 
 
 type ProjectCardProps = {
@@ -28,38 +29,13 @@ type ProjectCardProps = {
 export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const { name, status, endDate, tasks, notes, team, projectType, annex, casr, tags } = project;
 
-  const countAllTasks = (tasks: Task[]): { total: number; completed: number, hasCritical: boolean } => {
-    let total = 0;
-    let completed = 0;
-    let hasCritical = false;
-
-    tasks.forEach(task => {
-      total++;
-      if (task.status === 'Done') {
-        completed++;
-      }
-      if (task.criticalIssue) {
-        hasCritical = true;
-      }
-      if (task.subTasks && task.subTasks.length > 0) {
-        const subCounts = countAllTasks(task.subTasks);
-        total += subCounts.total;
-        completed += subCounts.completed;
-        if (subCounts.hasCritical) {
-          hasCritical = true;
-        }
-      }
-    });
-
-    return { total, completed, hasCritical };
-  };
-
   const { total: totalTasks, completed: completedTasks, hasCritical } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const isPastDue = isAfter(new Date(), parseISO(endDate)) && status !== 'Completed';
 
   const getEffectiveStatus = (): Project['status'] => {
+    if (status === 'Completed') return 'Completed';
     if (isPastDue) return 'Off Track';
     if (hasCritical) return 'At Risk';
     return status;
@@ -87,6 +63,8 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const displayName = projectType === 'Rulemaking' ? `CASR ${casr}` : name;
   const displayDescription = projectType === 'Rulemaking' ? `Annex ${annex} - ${name}` : project.description;
   const projectLink = projectType === 'Rulemaking' ? `/projects/${project.id}?type=rulemaking` : `/projects/${project.id}?type=timkerja`;
+  
+  const daysLeft = differenceInDays(parseISO(endDate), new Date());
 
   return (
     <TooltipProvider>
@@ -174,7 +152,9 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
                         <Calendar className="h-5 w-5 text-muted-foreground"/>
                         <div>
                             <p className="font-bold">{format(parseISO(endDate), 'dd MMM yyyy')}</p>
-                            <p className="text-xs text-muted-foreground">Due Date</p>
+                             <p className={cn("text-xs", daysLeft < 0 && effectiveStatus !== 'Completed' ? "text-destructive" : "text-muted-foreground")}>
+                                {effectiveStatus === 'Completed' ? 'Project completed' : (daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`)}
+                             </p>
                         </div>
                     </div>
                 </div>
