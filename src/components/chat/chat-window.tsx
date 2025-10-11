@@ -5,14 +5,16 @@ import * as React from 'react';
 import { User, ChatMessage } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Phone, Send, User as UserIcon, Video, Users as UsersIcon } from 'lucide-react';
+import { Send, User as UserIcon, Users as UsersIcon } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { getOrCreateChatRoom, sendMessage } from '@/lib/actions/chat';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { format } from 'date-fns';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { TiptapToolbar } from '../ui/rich-text-input';
 
 interface ChatWindowProps {
     currentUser: User;
@@ -20,6 +22,54 @@ interface ChatWindowProps {
 }
 
 const GLOBAL_CHAT_ROOM_ID = 'global_chat_room';
+
+const ChatEditor = ({ content, onUpdate, onEnterPress, disabled }: { content: string; onUpdate: (content: string) => void; onEnterPress: () => void; disabled: boolean }) => {
+    const editor = useEditor({
+        extensions: [
+            StarterKit.configure({
+                heading: false,
+            }),
+        ],
+        content: content,
+        editorProps: {
+            attributes: {
+                class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none p-3 min-h-[60px]',
+            },
+            handleKeyDown: (view, event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    onEnterPress();
+                    return true;
+                }
+                return false;
+            },
+        },
+        onUpdate: ({ editor }) => {
+            onUpdate(editor.getHTML());
+        },
+    });
+    
+    React.useEffect(() => {
+        if (editor) {
+            editor.setEditable(!disabled);
+        }
+    }, [disabled, editor]);
+
+     React.useEffect(() => {
+        if (editor && editor.getHTML() !== content) {
+            editor.commands.setContent(content, false);
+        }
+    }, [content, editor]);
+
+
+    return (
+        <div className="rounded-md border border-input focus-within:ring-2 focus-within:ring-ring flex-1 bg-background">
+            <TiptapToolbar editor={editor} />
+            <EditorContent editor={editor} />
+        </div>
+    );
+};
+
 
 export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -72,10 +122,16 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
             });
         }
     }, [messages]);
+    
+    const isMessageEmpty = (htmlString: string) => {
+        if (!htmlString) return true;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlString;
+        return tempDiv.textContent?.trim() === '';
+    };
 
-    const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newMessage.trim() || !chatRoomId || !currentUser || !selectedUser) return;
+    const handleSendMessage = async () => {
+        if (isMessageEmpty(newMessage) || !chatRoomId || !currentUser || !selectedUser) return;
 
         const messageData = {
             text: newMessage,
@@ -135,7 +191,7 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                                     {!isCurrentUser && isGlobalChat && (
                                         <p className="text-xs font-bold mb-1">{msg.senderName}</p>
                                     )}
-                                    <p className="text-sm">{msg.text}</p>
+                                    <div className="text-sm prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: msg.text }} />
                                      <p className={cn("text-xs mt-1 text-right", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
                                          {msg.createdAt ? format(msg.createdAt.toDate(), 'p') : ''}
                                      </p>
@@ -153,14 +209,14 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
             </ScrollArea>
 
             <div className="p-4 border-t">
-                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                    <Input 
-                        placeholder="Type a message" 
-                        className="flex-1"
-                        value={newMessage}
-                        onChange={e => setNewMessage(e.target.value)}
+                <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex items-start gap-2">
+                    <ChatEditor 
+                        content={newMessage}
+                        onUpdate={setNewMessage}
+                        onEnterPress={handleSendMessage}
+                        disabled={!chatRoomId}
                     />
-                    <Button type="submit" size="icon" disabled={!newMessage.trim()}>
+                    <Button type="submit" size="icon" disabled={isMessageEmpty(newMessage)}>
                         <Send />
                     </Button>
                 </form>

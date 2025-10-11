@@ -24,11 +24,11 @@ import { Toggle } from './toggle';
 import { Separator } from './separator';
 import { cn } from '@/lib/utils';
 
-const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
+export const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-input p-2">
+    <div className="flex flex-wrap items-center gap-1 border-b border-input p-2 bg-transparent">
       <Toggle
         size="sm"
         pressed={editor.isActive('bold')}
@@ -54,40 +54,7 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
         <Strikethrough className="h-4 w-4" />
       </Toggle>
       <Separator orientation="vertical" className="h-8 mx-1" />
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('paragraph')}
-        onPressedChange={() => editor.chain().focus().setParagraph().run()}
-        aria-label="Toggle Paragraph"
-      >
-        <Pilcrow className="h-4 w-4" />
-      </Toggle>
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('heading', { level: 1 })}
-        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        aria-label="Toggle Heading 1"
-      >
-        <Heading1 className="h-4 w-4" />
-      </Toggle>
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('heading', { level: 2 })}
-        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        aria-label="Toggle Heading 2"
-      >
-        <Heading2 className="h-4 w-4" />
-      </Toggle>
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('heading', { level: 3 })}
-        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        aria-label="Toggle Heading 3"
-      >
-        <Heading3 className="h-4 w-4" />
-      </Toggle>
-       <Separator orientation="vertical" className="h-8 mx-1" />
-      <Toggle
+       <Toggle
         size="sm"
         pressed={editor.isActive('bulletList')}
         onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
