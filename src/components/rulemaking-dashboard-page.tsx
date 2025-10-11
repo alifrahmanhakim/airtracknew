@@ -265,28 +265,28 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                     <CardTitle>Projects Overview</CardTitle>
                     <CardDescription>A summary of all rulemaking projects.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Column 1: Snapshot & Chart */}
-                    <div className="lg:col-span-1 space-y-6">
+                <CardContent className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    {/* Column 1 & 2: Snapshot & Chart */}
+                    <div className="lg:col-span-2 space-y-6">
                         <div className="space-y-2">
-                             <h3 className="font-semibold">Project Snapshot</h3>
-                             <div className="grid grid-cols-2 gap-4">
+                            <h3 className="font-semibold">Project Snapshot</h3>
+                            <div className="grid grid-cols-2 gap-4">
                                 <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
                                 <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
                                 <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
                                 <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
                                 <StatusCard title="Off Track" count={stats.statusGroups['Off Track'].length} icon={AlertCircle} className="text-red-500" projects={stats.statusGroups['Off Track']} />
-                             </div>
+                            </div>
                         </div>
                         <Separator />
                         <div>
-                             <h3 className="font-semibold">Status Distribution</h3>
-                              <ChartContainer config={{}} className="h-40 w-full mt-2">
+                            <h3 className="font-semibold">Status Distribution</h3>
+                            <ChartContainer config={{}} className="h-40 w-full mt-2">
                                 <ResponsiveContainer>
                                     <PieChart>
                                         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                         <Pie data={stats.distribution} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={2}>
-                                             {stats.distribution.map((entry) => (
+                                            {stats.distribution.map((entry) => (
                                                 <Cell key={`cell-${entry.name}`} fill={entry.color} />
                                             ))}
                                         </Pie>
@@ -303,10 +303,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             </div>
                         </div>
                     </div>
-                     {/* Column 2: Status Logic */}
-                    <div className="lg:col-span-1">
-                       <StatusLogicGuide />
-                    </div>
+
                     {/* Column 3: Off Track */}
                     <div className="lg:col-span-1">
                         <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20 h-full">
@@ -321,10 +318,10 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                         const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                                         return (
                                             <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                                    <div className="flex items-center justify-between gap-4">
-                                                        <p className="font-semibold break-words flex-1">{project.name}</p>
-                                                        <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
-                                                    </div>
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <p className="font-semibold break-words flex-1">{project.name}</p>
+                                                    <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
+                                                </div>
                                             </Link>
                                         )
                                     })}
@@ -356,6 +353,11 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                 </CardFooter>
                             )}
                         </Card>
+                    </div>
+
+                    {/* Column 4: Status Logic */}
+                    <div className="lg:col-span-1">
+                       <StatusLogicGuide />
                     </div>
                 </CardContent>
             </Card>
