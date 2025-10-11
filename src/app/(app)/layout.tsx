@@ -38,8 +38,8 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { User } from '@/lib/types';
-import { doc, onSnapshot, collection } from 'firebase/firestore';
+import type { Project, Task, User } from '@/lib/types';
+import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { format } from 'date-fns';
@@ -51,6 +51,7 @@ import { NotificationBell } from '@/components/notification-bell';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/global-search';
+import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
 
 const navItems = {
     dashboards: [
@@ -69,6 +70,12 @@ const navItems = {
       { href: '/rsi', label: 'RSI', icon: ShieldAlert },
     ]
 }
+
+type AssignedTask = Task & {
+  projectId: string;
+  projectName: string;
+  projectType: Project['projectType'];
+};
 
 function LiveClock() {
     const [time, setTime] = React.useState(new Date());
@@ -107,6 +114,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [userId, setUserId] = React.useState<string | null>(null);
+  
+  const [allProjects, setAllProjects] = React.useState<Project[]>([]);
+  const [profileUser, setProfileUser] = React.useState<User | null>(null);
 
   React.useEffect(() => {
     // This effect runs only once on mount to check for the user ID.
@@ -122,8 +132,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     // This effect runs when the userId is set.
     if (!userId) {
-      // If after the initial check, userId is still null, and we're not checking anymore,
-      // it means the user should be redirected.
       if (!isCheckingAuth) {
         router.push('/login');
       }
@@ -131,10 +139,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
 
     setLoading(true);
-    const userRef = doc(db, 'users', userId);
-    
     const unsubs: (() => void)[] = [];
 
+    const userRef = doc(db, 'users', userId);
     const userUnsub = onSnapshot(userRef, (doc) => {
         if (doc.exists()) {
             setCurrentUser({ id: doc.id, ...doc.data() } as User);
@@ -153,7 +160,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
     unsubs.push(usersUnsub);
 
-    // Set up a recurring task to update the user's online status
+    const fetchProjects = async () => {
+        const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
+        const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
+        
+        const [timKerjaSnapshot, rulemakingSnapshot] = await Promise.all([timKerjaPromise, rulemakingPromise]);
+        
+        const projects: Project[] = [
+            ...timKerjaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project)),
+            ...rulemakingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project)),
+        ];
+        setAllProjects(projects);
+    };
+    fetchProjects();
+
     updateUserOnlineStatus(userId); // Update immediately
     const presenceInterval = setInterval(() => {
         updateUserOnlineStatus(userId);
@@ -169,6 +189,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('loggedInUserId');
     router.push('/login');
   };
+  
+  const assignedTasksForProfileUser = React.useMemo(() => {
+        if (!profileUser || !allProjects) return [];
+
+        const tasks: AssignedTask[] = [];
+        allProjects.forEach(project => {
+            (project.tasks || []).forEach(task => {
+                if (task.assigneeIds && task.assigneeIds.includes(profileUser.id)) {
+                    tasks.push({
+                        ...task,
+                        projectId: project.id,
+                        projectName: project.name,
+                        projectType: project.projectType,
+                    });
+                }
+            });
+        });
+        return tasks.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+    }, [profileUser, allProjects]);
+    
+    const projectsForProfileUser = React.useMemo(() => {
+        if (!profileUser || !allProjects) return [];
+        return allProjects.filter(project => 
+            project.team.some(member => member.id === profileUser.id)
+        );
+    }, [profileUser, allProjects]);
+  
   
   if (isCheckingAuth || loading || !currentUser) {
     return <AppLayoutLoader />;
@@ -239,7 +287,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 m-2 mt-4 flex items-center justify-between rounded-lg border bg-card/80 p-2 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
-            <GlobalSearch />
+            <GlobalSearch onViewProfile={setProfileUser} />
           </div>
           <div className="flex items-center gap-2">
             <LiveClock />
@@ -286,6 +334,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
         </div>
       </SidebarInset>
+       <UserProfileDialog
+            user={profileUser}
+            assignedTasks={assignedTasksForProfileUser}
+            projects={projectsForProfileUser}
+            open={!!profileUser}
+            onOpenChange={(open) => !open && setProfileUser(null)}
+        />
     </SidebarProvider>
   );
 }

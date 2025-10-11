@@ -18,7 +18,11 @@ import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User } from '@/lib/types';
 
-export function GlobalSearch() {
+interface GlobalSearchProps {
+  onViewProfile: (user: User) => void;
+}
+
+export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   const [open, setOpen] = React.useState(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
@@ -61,10 +65,15 @@ export function GlobalSearch() {
     }
   }, [open]);
 
-  const handleSelect = (href: string) => {
+  const handleSelectProject = (href: string) => {
     router.push(href);
     setOpen(false);
   };
+  
+  const handleSelectUser = (user: User) => {
+    onViewProfile(user);
+    setOpen(false);
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -90,7 +99,7 @@ export function GlobalSearch() {
                     {projects.map((project) => (
                     <CommandItem
                         key={project.id}
-                        onSelect={() => handleSelect(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`)}
+                        onSelect={() => handleSelectProject(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`)}
                         value={`Project ${project.name} ${project.casr || ''} ${project.annex || ''}`}
                     >
                         {project.projectType === 'Tim Kerja' ? <Home className="mr-2 h-4 w-4" /> : <Landmark className="mr-2 h-4 w-4" />}
@@ -103,7 +112,7 @@ export function GlobalSearch() {
                     {users.map((user) => (
                     <CommandItem
                         key={user.id}
-                        onSelect={() => handleSelect('/team')}
+                        onSelect={() => handleSelectUser(user)}
                         value={`User ${user.name} ${user.email}`}
                     >
                         <Users className="mr-2 h-4 w-4" />

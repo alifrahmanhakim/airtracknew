@@ -174,13 +174,7 @@ export default function ChatsPage() {
                     />
                 </Card>
             </main>
-            <UserProfileDialog
-                user={profileUser}
-                assignedTasks={assignedTasksForProfileUser}
-                projects={projectsForProfileUser}
-                open={!!profileUser}
-                onOpenChange={(open) => !open && setProfileUser(null)}
-            />
+            {/* The UserProfileDialog is now in the global layout, so it's removed from here */}
         </>
     );
 }
