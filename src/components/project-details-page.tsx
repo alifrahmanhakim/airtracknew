@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import type { Project, Task, User, SubProject, Document as ProjectDocument, GapAnalysisRecord, Attachment } from '@/lib/types';
 import { rulemakingTaskOptions } from '@/lib/data';
-import { findUserById } from '@/lib/data-utils';
+import { findUserById, countAllTasks } from '@/lib/data-utils';
 import {
   Card,
   CardContent,
@@ -178,25 +178,6 @@ type ProjectDetailsPageProps = {
   project: Project;
   users: User[];
   allGapAnalysisRecords: GapAnalysisRecord[];
-};
-
-const countAllTasks = (tasks: Task[]): { total: number; completed: number } => {
-    let total = 0;
-    let completed = 0;
-
-    tasks.forEach(task => {
-        total++;
-        if (task.status === 'Done') {
-            completed++;
-        }
-        if (task.subTasks && task.subTasks.length > 0) {
-            const subCounts = countAllTasks(task.subTasks);
-            total += subCounts.total;
-            completed += subCounts.completed;
-        }
-    });
-
-    return { total, completed };
 };
 
 export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords: initialGapRecords }: ProjectDetailsPageProps) {
@@ -478,7 +459,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             )}
         </div>
       </div>
-        
+      
       <Card>
             <CardHeader><CardTitle>Project Dashboard</CardTitle></CardHeader>
             <CardContent>

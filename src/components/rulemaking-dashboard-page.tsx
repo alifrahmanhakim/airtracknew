@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Project, User } from '@/lib/types';
+import type { Project, User, Task } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
 import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock, LayoutGrid, ListFilter } from 'lucide-react';
@@ -22,6 +22,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { RulemakingTable } from './rulemaking-table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { countAllTasks } from '@/lib/data-utils';
 
 const statusConfig: { [key in Project['status']]: { icon: React.ElementType, style: string, label: string } } = {
     'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
@@ -307,8 +308,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                      {viewMode === 'card' ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
                             {filteredProjects.map(project => {
-                               const totalTasks = project.tasks?.length || 0;
-                               const completedTasks = project.tasks?.filter((task) => task.status === 'Done').length || 0;
+                               const { total: totalTasks, completed: completedTasks } = countAllTasks(project.tasks || []);
                                const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                                const currentStatus = statusConfig[project.status] || statusConfig['On Track'];
                                
