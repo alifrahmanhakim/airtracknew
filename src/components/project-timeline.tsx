@@ -228,7 +228,8 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
       </div>
         <div 
           ref={timelineContainerRef} 
-          className="w-full border-t overflow-auto relative max-h-[70vh]"
+          className="w-full border-t overflow-auto relative"
+          style={{ maxHeight: `${HEADER_HEIGHT + (10.5 * ROW_MIN_HEIGHT)}px` }}
         >
           {sortedTasks.length > 0 ? (
             <div className="grid" style={{ width: 'min-content', gridTemplateColumns: `${TASK_LIST_WIDTH}px 1fr`, gridTemplateRows: `${HEADER_HEIGHT}px repeat(${sortedTasks.length}, auto)` }}>
