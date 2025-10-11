@@ -269,7 +269,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-gradient-to-t from-[#fff1eb] to-[#ace0f9] dark:bg-gradient-to-br dark:from-background dark:to-card">
+      <SidebarInset>
         <header className="absolute top-0 left-0 right-0 flex items-center justify-between p-2 z-10">
             <div className="flex items-center gap-2">
                 <SidebarTrigger />

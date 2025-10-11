@@ -35,7 +35,6 @@
     --chart-7: 170 91.2% 59.8%;
     --chart-8: 20 91.2% 59.8%;
     
-    /* Sidebar colors from dark theme */
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 204 70% 63%;
@@ -96,6 +95,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
   }
