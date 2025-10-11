@@ -236,7 +236,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex items-center justify-between p-2">
+        <header className="sticky top-0 z-10 flex items-center justify-between p-2 bg-card/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
           </div>
