@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { EditCcefodRecordDialog } from './edit-ccefod-record-dialog';
 import { CcefodRecordDetailDialog } from './ccefod-record-detail-dialog';
 import { Highlight } from './ui/highlight';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 
 type SortDescriptor = {
@@ -103,22 +104,30 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
   };
   
-  const columnDefs: { key: keyof CcefodRecord; header: string; width?: string }[] = [
-    { key: 'annex', header: 'Annex' },
-    { key: 'annexReference', header: 'Annex Ref.' },
-    { key: 'standardPractice', header: 'Standard/Practice' },
-    { key: 'legislationReference', header: 'Legislation' },
-    { key: 'implementationLevel', header: 'Implementation Level'},
-    { key: 'status', header: 'Status' },
-    { key: 'adaPerubahan', header: 'Ada Perubahan?'},
-    { key: 'usulanPerubahan', header: 'Usulan Perubahan'},
-    { key: 'isiUsulan', header: 'Isi Usulan'},
-    { key: 'differenceText', header: 'Text of Difference'},
-    { key: 'differenceReason', header: 'Reason for Difference'},
-    { key: 'remarks', header: 'Remarks'},
+  const columnDefs: { key: keyof CcefodRecord; header: string; width?: string; minWidth?: string, className?: string }[] = [
+    { key: 'annex', header: 'Annex', width: '150px' },
+    { key: 'annexReference', header: 'Annex Ref.', width: '150px' },
+    { key: 'standardPractice', header: 'Standard/Practice', minWidth: '400px', className: 'flex-1' },
+    { key: 'legislationReference', header: 'Legislation', width: '200px' },
+    { key: 'implementationLevel', header: 'Implementation Level', width: '200px'},
+    { key: 'status', header: 'Status', width: '100px' },
+    { key: 'adaPerubahan', header: 'Ada Perubahan?', width: '150px'},
+    { key: 'usulanPerubahan', header: 'Usulan Perubahan', width: '200px'},
+    { key: 'isiUsulan', header: 'Isi Usulan', width: '300px'},
+    { key: 'differenceText', header: 'Text of Difference', width: '300px'},
+    { key: 'differenceReason', header: 'Reason for Difference', width: '300px'},
+    { key: 'remarks', header: 'Remarks', width: '300px'},
   ];
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key]);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: sortedRecords.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 65, // Estimate row height
+    overscan: 5,
+  });
 
   if (records.length === 0) {
     return (
@@ -160,80 +169,95 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="border rounded-md w-full overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHeader className="sticky top-0 bg-background/95 z-10">
-              <TableRow>
+        <div ref={tableContainerRef} className="border rounded-md w-full overflow-auto relative h-[600px]">
+          <Table className="min-w-full grid">
+            <TableHeader className="sticky top-0 bg-background/95 z-10 grid">
+              <TableRow className="flex w-full">
                 {visibleColumns.map((col) => (
                     <TableHead 
                         key={col.key} 
-                        className={cn("cursor-pointer align-middle", col.key === 'standardPractice' && 'w-[600px]')} 
+                        className={cn("cursor-pointer flex items-center", col.className)}
+                        style={{ width: col.width, minWidth: col.minWidth }}
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
-                        <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof CcefodRecord)}</div>
+                        {col.header} {renderSortIcon(col.key as keyof CcefodRecord)}
                     </TableHead>
                 ))}
-                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px] align-middle">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95 z-10 flex items-center justify-end" style={{ width: '100px' }}>Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {sortedRecords.map((record) => (
-                <TableRow 
-                    key={record.id} 
-                    className="cursor-pointer" 
-                    onClick={() => setRecordToView(record)}
-                >
-                    {visibleColumns.map((col) => {
-                        const value = record[col.key as keyof CcefodRecord] as string | undefined;
+            <TableBody
+              className="relative grid"
+              style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const record = sortedRecords[virtualRow.index];
+                return (
+                    <TableRow 
+                        key={record.id} 
+                        className="flex w-full absolute"
+                        style={{
+                            height: `${virtualRow.size}px`,
+                            transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                        onClick={() => setRecordToView(record)}
+                    >
+                        {visibleColumns.map((col) => {
+                            const value = record[col.key as keyof CcefodRecord] as string | undefined;
 
-                        return (
-                            <TableCell key={col.key} className="align-middle">
-                                {(() => {
-                                    if (value === null || value === undefined || value === '') {
-                                        return <span className='text-muted-foreground'>—</span>;
-                                    }
-                                    
-                                    if (col.key === 'status') {
-                                        return (<Badge className={cn({
-                                            'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
-                                            'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
-                                            'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
-                                        })}>
-                                            <Highlight text={value} query={searchTerm} />
-                                        </Badge>);
-                                    }
+                            return (
+                                <TableCell 
+                                  key={col.key} 
+                                  className={cn("flex items-center p-2", col.className)}
+                                  style={{ width: col.width, minWidth: col.minWidth }}
+                                >
+                                    <div className="truncate">
+                                    {(() => {
+                                        if (value === null || value === undefined || value === '') {
+                                            return <span className='text-muted-foreground'>—</span>;
+                                        }
+                                        
+                                        if (col.key === 'status') {
+                                            return (<Badge className={cn({
+                                                'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
+                                                'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
+                                                'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                            })}>
+                                                <Highlight text={value} query={searchTerm} />
+                                            </Badge>);
+                                        }
 
-                                    if (col.key === 'standardPractice') {
-                                        const cleanText = value.replace(/<[^>]+>/g, ' ');
-                                        return <Highlight text={cleanText} query={searchTerm} />;
-                                    }
-                                    
-                                    return <Highlight text={value} query={searchTerm} />;
-                                })()}
-                            </TableCell>
-                        )
-                    })}
-                    <TableCell className="text-right sticky right-0 bg-background/95 align-middle">
-                        <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
-                            <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>Delete Record</p></TooltipContent>
-                            </Tooltip>
-                        </div>
-                    </TableCell>
-                </TableRow>
-              ))}
+                                        if (col.key === 'standardPractice') {
+                                            const cleanText = value.replace(/<[^>]+>/g, ' ');
+                                            return <Highlight text={cleanText} query={searchTerm} />;
+                                        }
+                                        
+                                        return <Highlight text={value} query={searchTerm} />;
+                                    })()}
+                                    </div>
+                                </TableCell>
+                            )
+                        })}
+                        <TableCell 
+                          className="text-right sticky right-0 bg-background/95 flex items-center justify-end"
+                          style={{ width: '100px' }}
+                        >
+                            <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+                                <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>Delete Record</p></TooltipContent>
+                                </Tooltip>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
-          {records.length === 0 && (
-            <div className="text-center p-6 text-muted-foreground">
-                <p>No matching records found.</p>
-            </div>
-          )}
         </div>
       </div>
       {recordToView && (

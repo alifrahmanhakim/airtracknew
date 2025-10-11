@@ -95,11 +95,7 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
-    background-image: url('https://i.imgur.com/1QgsJAm.jpeg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    /* Removed the performance-intensive background image */
   }
 }
 

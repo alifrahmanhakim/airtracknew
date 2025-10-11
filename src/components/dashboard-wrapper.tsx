@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // This is crucial to prevent client-side libraries like 'recharts' from causing
 // build errors on the server, which was the source of the "Failed to load chunk" error.
 
-const DashboardPage = dynamic(
+const DashboardPageComponent = dynamic(
   () => import('@/components/dashboard-page').then(mod => mod.DashboardPage),
   {
     ssr: false,
@@ -40,6 +40,10 @@ const DashboardPage = dynamic(
   }
 );
 
+// Note: This wrapper is no longer the primary way to render the dashboard,
+// but is kept in case it's needed for other purposes. The main entry is now
+// the server component in `app/(app)/dashboard/page.tsx`.
 export default function DashboardWrapper() {
-  return <DashboardPage />;
+  // @ts-ignore
+  return <DashboardPageComponent />;
 }

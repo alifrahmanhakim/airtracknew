@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllTimKerjaProjects, updateTask } from '@/lib/actions/project';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -108,11 +108,16 @@ type AssignedTask = Task & {
 
 type WorkloadStatus = 'Overload' | 'Underload' | 'Normal';
 
+type DashboardPageProps = {
+  initialProjects: Project[];
+  initialUsers: User[];
+};
 
-export function DashboardPage() {
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+export function DashboardPage({ initialProjects, initialUsers }: DashboardPageProps) {
+  const [allProjects, setAllProjects] = useState<Project[]>(initialProjects);
+  const [allUsers, setAllUsers] = useState<User[]>(initialUsers);
+  const [isLoading, setIsLoading] = useState(false); // No longer loading initially
   const [userId, setUserId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -127,41 +132,26 @@ export function DashboardPage() {
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     setUserId(loggedInUserId);
-  }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const usersQuerySnapshot = await getDocs(collection(db, "users"));
-        const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+    const user = initialUsers.find(u => u.id === loggedInUserId);
+    if(user) setCurrentUser(user);
+
+    // Set up Firestore listeners for real-time updates
+    const projectsUnsub = onSnapshot(collection(db, "timKerjaProjects"), (snapshot) => {
+        const projectsFromDb: Project[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
+        setAllProjects(projectsFromDb);
+    });
+    
+    const usersUnsub = onSnapshot(collection(db, "users"), (snapshot) => {
+        const usersFromDb: User[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
         setAllUsers(usersFromDb);
+    });
 
-        const projectsQuerySnapshot = await getDocs(collection(db, "timKerjaProjects"));
-        const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
-        
-        const projectsWithDefaults = projectsFromDb.map(p => ({
-          ...p,
-          subProjects: p.subProjects || [],
-          documents: p.documents || [],
-        }));
-
-        setAllProjects(projectsWithDefaults);
-
-        if (userId) {
-          const userDoc = await getDoc(doc(db, 'users', userId));
-          if (userDoc.exists()) {
-            setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data from Firestore:", error);
-      }
-      setIsLoading(false);
+    return () => {
+      projectsUnsub();
+      usersUnsub();
     };
-
-    fetchData();
-  }, [userId]);
+  }, [initialUsers]);
   
   const handleCompleteTask = async () => {
     if (!taskToComplete) return;
@@ -176,16 +166,10 @@ export function DashboardPage() {
     // This destructuring is important. We only want to pass properties that exist on the base Task type.
     const { projectId, projectName, projectType, ...baseTask } = updatedTask;
 
-    const result = await updateTask(projectId, baseTask, projectType);
+    const result = await updateTask(projectId, baseTask, projectType, userId || '');
     
     if (result.success && result.tasks) {
-        // Optimistically update the UI
-        setAllProjects(prevProjects => prevProjects.map(p => {
-            if (p.id === projectId) {
-                return { ...p, tasks: result.tasks! };
-            }
-            return p;
-        }));
+        // Optimistic update handled by Firestore listener
         toast({
             title: 'Task Completed!',
             description: `"${taskToComplete.title}" has been marked as done.`,
@@ -342,7 +326,7 @@ export function DashboardPage() {
         title: 'All Projects Deleted',
         description: `${result.count} Tim Kerja projects have been removed.`,
       });
-      setAllProjects([]);
+      // Firestore listener will update the state
     } else {
       toast({
         variant: 'destructive',
