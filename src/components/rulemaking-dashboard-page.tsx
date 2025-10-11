@@ -228,7 +228,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         <Popover>
             <PopoverTrigger asChild>
                 <Card className="hover:bg-muted/50 cursor-pointer">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium">{title}</CardTitle>
                         <Icon className={cn("h-4 w-4 text-muted-foreground", className)} />
                     </CardHeader>
@@ -242,7 +242,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                  {projects.length > 0 ? (
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                         {projects.map(p => (
-                            <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent">
+                            <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
                                 <p className="font-semibold truncate">{p.name}</p>
                                 <p className="text-xs text-muted-foreground">Due: {format(parseISO(p.endDate), 'dd MMM yyyy')}</p>
                             </Link>
