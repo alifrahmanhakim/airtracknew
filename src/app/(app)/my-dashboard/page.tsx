@@ -20,7 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays, isAfter, isToday, isBefore, startOfDay } from 'date-fns';
-import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX, CheckSquare, XSquare, Clock } from 'lucide-react';
+import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX, CheckSquare, XSquare, Clock, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { InteractiveTimeline } from '@/components/interactive-timeline';
@@ -40,6 +40,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { updateTask } from '@/lib/actions/project';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -233,9 +235,9 @@ export default function MyDashboardPage() {
 
   const todaysFocusStats = React.useMemo(() => {
       const today = startOfDay(new Date());
-      const tasksDueToday = assignedTasks.filter(t => t.status !== 'Done' && isToday(parseISO(t.dueDate))).length;
-      const overdueTasks = assignedTasks.filter(t => t.status !== 'Done' && isBefore(parseISO(t.dueDate), today)).length;
-      const criticalProjects = myProjects.filter(p => p.status !== 'Completed' && (p.tasks || []).some(t => t.criticalIssue)).length;
+      const tasksDueToday = assignedTasks.filter(t => t.status !== 'Done' && isToday(parseISO(t.dueDate)));
+      const overdueTasks = assignedTasks.filter(t => t.status !== 'Done' && isBefore(parseISO(t.dueDate), today));
+      const criticalProjects = myProjects.filter(p => p.status !== 'Completed' && (p.tasks || []).some(t => t.criticalIssue));
       return { tasksDueToday, overdueTasks, criticalProjects };
   }, [assignedTasks, myProjects]);
   
@@ -372,27 +374,104 @@ export default function MyDashboardPage() {
                     <CardTitle>Fokus Hari Ini</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                        <div className='flex items-center gap-3'>
-                            <CheckSquare className="h-6 w-6 text-blue-500" />
-                            <p className='font-semibold'>Tugas Jatuh Tempo Hari Ini</p>
-                        </div>
-                        <p className="text-2xl font-bold text-blue-500"><AnimatedCounter endValue={todaysFocusStats.tasksDueToday} /></p>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                        <div className='flex items-center gap-3'>
-                            <XSquare className="h-6 w-6 text-yellow-500" />
-                            <p className='font-semibold'>Tugas Terlambat</p>
-                        </div>
-                        <p className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={todaysFocusStats.overdueTasks} /></p>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                        <div className='flex items-center gap-3'>
-                            <AlertTriangle className="h-6 w-6 text-red-500" />
-                            <p className='font-semibold'>Proyek Kritis</p>
-                        </div>
-                        <p className="text-2xl font-bold text-red-500"><AnimatedCounter endValue={todaysFocusStats.criticalProjects} /></p>
-                    </div>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 cursor-pointer hover:bg-muted">
+                                <div className='flex items-center gap-3'>
+                                    <CheckSquare className="h-6 w-6 text-blue-500" />
+                                    <p className='font-semibold'>Tugas Jatuh Tempo Hari Ini</p>
+                                </div>
+                                <p className="text-2xl font-bold text-blue-500"><AnimatedCounter endValue={todaysFocusStats.tasksDueToday.length} /></p>
+                            </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                            <div className="font-bold mb-2">Tugas Jatuh Tempo Hari Ini</div>
+                            {todaysFocusStats.tasksDueToday.length > 0 ? (
+                                <ScrollArea className="max-h-60">
+                                <div className="space-y-2">
+                                    {todaysFocusStats.tasksDueToday.map(task => (
+                                        <div key={task.id} className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground flex justify-between items-center">
+                                             <div>
+                                                <p className="font-semibold text-sm">{task.title}</p>
+                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                            </div>
+                                             <Button asChild variant="ghost" size="icon" className="h-7 w-7">
+                                                <Link href={`/projects/${task.projectId}?type=${task.projectType.toLowerCase().replace(' ', '')}`}><ExternalLink className="h-4 w-4" /></Link>
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                                </ScrollArea>
+                            ) : <p className="text-sm text-muted-foreground">Tidak ada tugas yang jatuh tempo hari ini.</p>}
+                        </PopoverContent>
+                    </Popover>
+
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 cursor-pointer hover:bg-muted">
+                                <div className='flex items-center gap-3'>
+                                    <XSquare className="h-6 w-6 text-yellow-500" />
+                                    <p className='font-semibold'>Tugas Terlambat</p>
+                                </div>
+                                <p className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={todaysFocusStats.overdueTasks.length} /></p>
+                            </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                            <div className="font-bold mb-2">Tugas Terlambat</div>
+                            {todaysFocusStats.overdueTasks.length > 0 ? (
+                                <ScrollArea className="max-h-60">
+                                <div className="space-y-2">
+                                    {todaysFocusStats.overdueTasks.map(task => {
+                                        const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
+                                        return (
+                                            <div key={task.id} className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground flex justify-between items-center">
+                                                <div>
+                                                    <p className="font-semibold text-sm">{task.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <Badge variant="destructive" className="text-xs">{daysOverdue}d overdue</Badge>
+                                                     <Button asChild variant="ghost" size="icon" className="h-7 w-7">
+                                                        <Link href={`/projects/${task.projectId}?type=${task.projectType.toLowerCase().replace(' ', '')}`}><ExternalLink className="h-4 w-4" /></Link>
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                </ScrollArea>
+                            ) : <p className="text-sm text-muted-foreground">Tidak ada tugas yang terlambat.</p>}
+                        </PopoverContent>
+                    </Popover>
+
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 cursor-pointer hover:bg-muted">
+                                <div className='flex items-center gap-3'>
+                                    <AlertTriangle className="h-6 w-6 text-red-500" />
+                                    <p className='font-semibold'>Proyek Kritis</p>
+                                </div>
+                                <p className="text-2xl font-bold text-red-500"><AnimatedCounter endValue={todaysFocusStats.criticalProjects.length} /></p>
+                            </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                            <div className="font-bold mb-2">Proyek Kritis</div>
+                             {todaysFocusStats.criticalProjects.length > 0 ? (
+                                <ScrollArea className="max-h-60">
+                                <div className="space-y-2">
+                                    {todaysFocusStats.criticalProjects.map(project => (
+                                        <div key={project.id} className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground flex justify-between items-center">
+                                            <p className="font-semibold text-sm">{project.name}</p>
+                                             <Button asChild variant="ghost" size="icon" className="h-7 w-7">
+                                                <Link href={`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`}><ExternalLink className="h-4 w-4" /></Link>
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                                </ScrollArea>
+                            ) : <p className="text-sm text-muted-foreground">Tidak ada proyek dengan isu kritis.</p>}
+                        </PopoverContent>
+                    </Popover>
                 </CardContent>
             </Card>
              <Card className="border-primary">
@@ -518,5 +597,3 @@ export default function MyDashboardPage() {
     </TooltipProvider>
   );
 }
-
-    
