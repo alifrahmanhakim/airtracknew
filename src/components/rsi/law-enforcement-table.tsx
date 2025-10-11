@@ -177,6 +177,13 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
         );
     };
 
+    const formatUrl = (url: string) => {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            return `https://${url}`;
+        }
+        return url;
+    };
+
 
     return (
         <>
@@ -251,7 +258,7 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                                                     <p><strong className="font-semibold">Date:</strong> <Highlight text={dateDisplay} query={searchTerm} /></p>
                                                     {ref.fileUrl && (
                                                         <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                                                            <a href={ref.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                            <a href={formatUrl(ref.fileUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                                                                 <LinkIcon className="h-3 w-3" /> View File
                                                             </a>
                                                         </Button>
