@@ -52,10 +52,45 @@ import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Progress } from './ui/progress';
-import { parseISO, getYear } from 'date-fns';
+import { parseISO, getYear, isAfter, differenceInDays, startOfToday } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { cn } from '@/lib/utils';
 import { countAllTasks } from '@/lib/data-utils';
+
+const getEffectiveStatus = (project: Project): Project['status'] => {
+    const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
+    const progress = total > 0 ? (completed / total) * 100 : 0;
+  
+    if (progress === 100 || project.status === 'Completed') {
+      return 'Completed';
+    }
+  
+    const today = startOfToday();
+    const projectEnd = parseISO(project.endDate);
+  
+    if (isAfter(today, projectEnd)) {
+      return 'Off Track';
+    }
+  
+    if (hasCritical) {
+      return 'At Risk';
+    }
+    
+    const projectStart = parseISO(project.startDate);
+    const totalDuration = differenceInDays(projectEnd, projectStart);
+  
+    if (totalDuration > 0) {
+      const elapsedDuration = differenceInDays(today, projectStart);
+      const timeProgress = (elapsedDuration / totalDuration) * 100;
+  
+      if (progress < timeProgress - 20) {
+        return 'At Risk';
+      }
+    }
+    
+    return 'On Track';
+};
+
 
 export function DashboardPage() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
@@ -121,10 +156,17 @@ export function DashboardPage() {
   }, [allProjects, selectedYear]);
 
   const { projectStatusData, teamWorkloadData, stats } = useMemo(() => {
-    const statusCounts = filteredProjects.reduce((acc, project) => {
-      acc[project.status] = (acc[project.status] || 0) + 1;
-      return acc;
-    }, {} as Record<Project['status'], number>);
+    const statusCounts: Record<Project['status'], number> = {
+        'On Track': 0,
+        'At Risk': 0,
+        'Off Track': 0,
+        'Completed': 0,
+    };
+    
+    filteredProjects.forEach(project => {
+        const effectiveStatus = getEffectiveStatus(project);
+        statusCounts[effectiveStatus]++;
+    });
 
     const workloadCounts: { [userId: string]: { user: User, tasks: number } } = {};
     
@@ -150,8 +192,8 @@ export function DashboardPage() {
         totalProjects: filteredProjects.length,
         completedTasks: filteredProjects.flatMap(p => countAllTasks(p.tasks || []).completed).reduce((a, b) => a + b, 0),
         totalTasks: filteredProjects.flatMap(p => countAllTasks(p.tasks || []).total).reduce((a, b) => a + b, 0),
-        atRiskProjects: filteredProjects.filter(p => p.status === 'At Risk').length,
-        offTrackProjects: filteredProjects.filter(p => p.status === 'Off Track').length,
+        atRiskProjects: statusCounts['At Risk'],
+        offTrackProjects: statusCounts['Off Track'],
     };
 
     return {
@@ -353,7 +395,7 @@ export function DashboardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight mb-4">Active Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProjects.filter(p => p.status !== 'Completed').map((project) => (
+            {filteredProjects.filter(p => getEffectiveStatus(p) !== 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} allUsers={allUsers}/>
             ))}
           </div>
@@ -362,7 +404,7 @@ export function DashboardPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">Completed Projects</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProjects.filter(p => p.status === 'Completed').map((project) => (
+            {filteredProjects.filter(p => getEffectiveStatus(p) === 'Completed').map((project) => (
               <ProjectCard key={project.id} project={project} allUsers={allUsers}/>
             ))}
           </div>

@@ -33,20 +33,22 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const getEffectiveStatus = (): Project['status'] => {
-    // 1. If progress is 100% or status is manually set to Completed, it's Completed.
-    if (progress === 100 || status === 'Completed') {
+    if (progress === 100) {
       return 'Completed';
+    }
+    
+    // Manual override takes precedence over automatic calculation (except for completion)
+    if (status && status !== 'On Track') {
+      return status;
     }
   
     const today = startOfToday();
     const projectEnd = parseISO(endDate);
   
-    // 2. Highest priority after completion: If the end date is in the past, it's Off Track.
     if (isAfter(today, projectEnd)) {
       return 'Off Track';
     }
   
-    // 3. If there is a critical issue, it's At Risk.
     if (hasCritical) {
       return 'At Risk';
     }
@@ -54,7 +56,6 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
     const projectStart = parseISO(startDate);
     const totalDuration = differenceInDays(projectEnd, projectStart);
   
-    // 4. If progress is significantly behind the time elapsed, it's At Risk.
     if (totalDuration > 0) {
       const elapsedDuration = differenceInDays(today, projectStart);
       const timeProgress = (elapsedDuration / totalDuration) * 100;
@@ -64,7 +65,6 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
       }
     }
     
-    // 5. If none of the above severe conditions are met, it's On Track.
     return 'On Track';
   };
   
