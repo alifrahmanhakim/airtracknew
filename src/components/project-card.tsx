@@ -32,42 +32,47 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const { total: totalTasks, completed: completedTasks, hasCritical } = countAllTasks(tasks || []);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
-
   const getEffectiveStatus = (): Project['status'] => {
-    // 1. If explicitly completed or progress is 100%, it's Completed.
-    if (status === 'Completed' || progress === 100) return 'Completed';
-
+    // 1. If progress is 100% or status is manually set to Completed, it's Completed.
+    if (progress === 100 || status === 'Completed') {
+      return 'Completed';
+    }
+  
     const today = startOfToday();
     const projectEnd = parseISO(endDate);
-
-    // 2. If the end date is in the past, it's Off Track. This is the highest priority issue.
-    if (isAfter(today, projectEnd)) return 'Off Track';
-    
+  
+    // 2. Highest priority after completion: If the end date is in the past, it's Off Track.
+    if (isAfter(today, projectEnd)) {
+      return 'Off Track';
+    }
+  
     // 3. If there is a critical issue, it's At Risk.
-    if (hasCritical) return 'At Risk';
-
+    if (hasCritical) {
+      return 'At Risk';
+    }
+  
     const projectStart = parseISO(startDate);
     const totalDuration = differenceInDays(projectEnd, projectStart);
     
     // 4. If progress is significantly behind the time elapsed, it's At Risk.
     if (totalDuration > 0) {
-        const elapsedDuration = differenceInDays(today, projectStart);
-        const timeProgress = (elapsedDuration / totalDuration) * 100;
-
-        if (progress < timeProgress - 20) {
-          return 'At Risk';
-        }
+      const elapsedDuration = differenceInDays(today, projectStart);
+      const timeProgress = (elapsedDuration / totalDuration) * 100;
+  
+      if (progress < timeProgress - 20) {
+        return 'At Risk';
+      }
     }
     
-    // 5. If none of the above, it's On Track.
+    // 5. If none of the above severe conditions are met, it's On Track.
     return 'On Track';
-  }
+  };
   
   const effectiveStatus = getEffectiveStatus();
 
   const statusConfig = {
     'Completed': { icon: CheckCircle, style: 'border-transparent bg-green-100 text-green-800', label: 'Completed' },
-    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'In Progress' },
+    'On Track': { icon: Clock, style: 'border-transparent bg-blue-100 text-blue-800', label: 'On Track' },
     'At Risk': { icon: AlertTriangle, style: 'border-transparent bg-yellow-100 text-yellow-800', label: 'At Risk' },
     'Off Track': { icon: AlertCircle, style: 'border-transparent bg-red-100 text-red-800', label: 'Off Track' },
   };
