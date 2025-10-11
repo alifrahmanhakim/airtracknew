@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -202,7 +203,7 @@ export default function LoginPage() {
 
       <div className="center">
         <div className="relative flex flex-col items-center gap-4">
-            <Card className="w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden transition-all hover:border-primary/50 hover:bg-gradient-to-t hover:from-primary/10">
+            <Card className="w-full max-w-sm bg-black/20 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden transition-all hover:border-primary/50 hover:bg-gradient-to-t hover:from-primary/10">
                 <div className="grid [grid-template-areas:'card-content']">
                     {/* Login Form */}
                     <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
@@ -330,6 +331,7 @@ export default function LoginPage() {
   );
 
     
+
 
 
 
