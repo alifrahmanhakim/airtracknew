@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -66,16 +67,15 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || !chatRoomId || !currentUser) return;
+        if (!newMessage.trim() || !chatRoomId || !currentUser || !selectedUser) return;
 
         const messageData = {
             text: newMessage,
-            senderId: currentUser.id,
             senderName: currentUser.name,
             senderAvatarUrl: currentUser.avatarUrl,
         };
 
-        await sendMessage(chatRoomId, messageData);
+        await sendMessage(chatRoomId, currentUser.id, selectedUser.id, messageData);
         setNewMessage('');
     };
 

@@ -7,6 +7,7 @@ import { db } from '../firebase';
 import { collection, getDocs, query, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, arrayUnion, writeBatch, getDoc, where } from 'firebase/firestore';
 import type { Document as ProjectDocument, Project, SubProject, Task, ChecklistItem, User } from '../types';
 import { createNotification } from './notifications';
+import { headers } from 'next/headers';
 
 // Helper function to find a task by ID in a nested structure
 const findTaskById = (tasks: Task[], taskId: string): Task | null => {
@@ -33,6 +34,17 @@ const replaceTaskById = (tasks: Task[], updatedTask: Task): Task[] => {
     });
 };
 
+const getCurrentUser = async (userId: string): Promise<User | null> => {
+    if (!userId) return null;
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+        return { id: userSnap.id, ...userSnap.data() } as User;
+    }
+    return null;
+}
+
+
 export async function addRulemakingProject(projectData: unknown) {
     const projectSchema = z.object({
         name: z.string().min(1, 'Project name is required.'),
@@ -56,6 +68,8 @@ export async function addRulemakingProject(projectData: unknown) {
             error: parsed.error.errors.map(e => e.message).join(', '),
         };
     }
+    
+    const actor = await getCurrentUser(parsed.data.ownerId);
 
     // Fetch full user objects for the team
     const teamUsers: User[] = [];
@@ -81,11 +95,13 @@ export async function addRulemakingProject(projectData: unknown) {
         
         // Create notifications for team members
         for (const user of teamUsers) {
+             if (user.id === actor?.id) continue;
             await createNotification({
                 userId: user.id,
                 title: 'Added to New Project',
                 description: `You have been added to the rulemaking project: "${parsed.data.name}".`,
                 href: `/projects/${docRef.id}?type=rulemaking`,
+                actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
             });
         }
         
@@ -101,6 +117,7 @@ export async function addRulemakingProject(projectData: unknown) {
 
 export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist' | 'team'> & { team: string[] }) {
     try {
+        const actor = await getCurrentUser(projectData.ownerId);
         // Fetch full user objects for the team
         const teamUsers: User[] = [];
         if (projectData.team.length > 0) {
@@ -124,11 +141,13 @@ export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'proj
         
         // Create notifications for team members
         for (const user of teamUsers) {
+            if (user.id === actor?.id) continue;
             await createNotification({
                 userId: user.id,
                 title: 'Added to New Project',
                 description: `You have been added to the Tim Kerja project: "${projectData.name}".`,
                 href: `/projects/${docRef.id}?type=timkerja`,
+                actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
             });
         }
 
@@ -155,11 +174,12 @@ export async function deleteAllTimKerjaProjects() {
     }
 }
 
-export async function updateProject(projectId: string, projectType: Project['projectType'], projectData: Partial<Omit<Project, 'id'>>) {
+export async function updateProject(projectId: string, projectType: Project['projectType'], projectData: Partial<Omit<Project, 'id'>>, actorId: string) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
     
     try {
+        const actor = await getCurrentUser(actorId);
         const currentProjectSnap = await getDoc(projectRef);
         if (!currentProjectSnap.exists()) {
             return { success: false, error: "Project not found." };
@@ -177,21 +197,25 @@ export async function updateProject(projectId: string, projectType: Project['pro
             
             const addedMembers = projectData.team.filter(member => !currentTeamIds.has(member.id));
             for (const newMember of addedMembers) {
+                 if (newMember.id === actor?.id) continue;
                  await createNotification({
                     userId: newMember.id,
                     title: 'Added to Project',
                     description: `You have been added to the project: "${projectName}".`,
                     href: projectLink,
+                    actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
                 });
             }
 
             const removedMemberIds = [...currentTeamIds].filter(id => !newTeamIds.has(id));
              for (const removedId of removedMemberIds) {
+                 if (removedId === actor?.id) continue;
                  await createNotification({
                     userId: removedId,
                     title: 'Removed from Project',
                     description: `You have been removed from the project: "${projectName}".`,
                     href: projectLink,
+                    actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
                 });
             }
         }
@@ -340,11 +364,12 @@ function findAndAddSubTask(tasks: Task[], parentId: string, subTask: Task): Task
     });
 }
 
-export async function addTask(projectId: string, task: Task, projectType: Project['projectType'], parentId: string | null = null) {
+export async function addTask(projectId: string, task: Task, projectType: Project['projectType'], parentId: string | null = null, actorId: string) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
 
     try {
+        const actor = await getCurrentUser(actorId);
         const projectSnap = await getDoc(projectRef);
         if (!projectSnap.exists()) {
             return { success: false, error: 'Project not found' };
@@ -363,11 +388,13 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
 
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         for (const userId of task.assigneeIds) {
+             if (userId === actorId) continue;
             await createNotification({
                 userId: userId,
                 title: 'New Task Assigned',
                 description: `You have been assigned a new task "${task.title}" in project "${projectData.name}".`,
                 href: projectLink,
+                actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
             });
         }
 
@@ -377,11 +404,12 @@ export async function addTask(projectId: string, task: Task, projectType: Projec
     }
 }
 
-export async function updateTask(projectId: string, updatedTaskData: Partial<Task> & { id: string }, projectType: Project['projectType']) {
+export async function updateTask(projectId: string, updatedTaskData: Partial<Task> & { id: string }, projectType: Project['projectType'], actorId: string) {
     const collectionName = projectType === 'Rulemaking' ? 'rulemakingProjects' : 'timKerjaProjects';
     const projectRef = doc(db, collectionName, projectId);
     
     try {
+        const actor = await getCurrentUser(actorId);
         const projectSnap = await getDoc(projectRef);
         if (!projectSnap.exists()) {
             return { success: false, error: 'Project not found' };
@@ -405,34 +433,44 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
         
         const addedAssignees = [...newAssigneeIds].filter(id => !oldAssigneeIds.has(id));
         const removedAssignees = [...oldAssigneeIds].filter(id => !newAssigneeIds.has(id));
-        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id) && oldTask.assigneeIds.includes(id));
+        const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id));
+
+        const notificationPromises: Promise<any>[] = [];
 
         for (const userId of addedAssignees) {
-            await createNotification({
+            if (userId === actor?.id) continue;
+            notificationPromises.push(createNotification({
                 userId: userId,
                 title: 'New Task Assigned',
                 description: `You have been assigned to task "${updatedTask.title}" in project "${projectData.name}".`,
                 href: projectLink,
-            });
+                actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
+            }));
         }
 
         for (const userId of removedAssignees) {
-            await createNotification({
+             if (userId === actor?.id) continue;
+            notificationPromises.push(createNotification({
                 userId: userId,
                 title: 'Unassigned from Task',
                 description: `You have been unassigned from task "${updatedTask.title}" in project "${projectData.name}".`,
                 href: projectLink,
-            });
+                actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
+            }));
         }
         
         for (const userId of keptAssignees) {
-             await createNotification({
+             if (userId === actor?.id) continue;
+             notificationPromises.push(createNotification({
                 userId: userId,
                 title: 'Task Updated',
                 description: `The task "${updatedTask.title}" in project "${projectData.name}" has been updated.`,
                 href: projectLink,
-            });
+                actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
+            }));
         }
+
+        await Promise.all(notificationPromises);
         
         const finalTasks = replaceTaskById(currentTasks, updatedTask);
         await updateDoc(projectRef, { tasks: finalTasks });
