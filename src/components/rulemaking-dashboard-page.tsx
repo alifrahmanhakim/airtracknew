@@ -152,7 +152,7 @@ const StatusCard = ({
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                     {projects.map(p => (
                         <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
-                            <p className="font-semibold">{`CASR ${p.casr} - ${p.name}`}</p>
+                            <p className="font-semibold">{p.name}</p>
                             <p className="text-xs text-muted-foreground">Due: {format(parseISO(p.endDate), 'dd MMM yyyy')}</p>
                         </Link>
                     ))}
@@ -319,12 +319,15 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                 </ChartContainer>
                             </CardContent>
                              <CardFooter className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
-                                {stats.distribution.filter(d => d.value > 0).map(item => (
-                                    <div key={item.name} className="flex items-center gap-1.5">
-                                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-                                        <span>{item.name}</span>
-                                    </div>
-                                ))}
+                                {stats.distribution.filter(d => d.value > 0).map(item => {
+                                    const percentage = stats.total > 0 ? (item.value / stats.total) * 100 : 0;
+                                    return (
+                                        <div key={item.name} className="flex items-center gap-1.5">
+                                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                            <span>{item.name} ({percentage.toFixed(0)}%)</span>
+                                        </div>
+                                    )
+                                })}
                             </CardFooter>
                         </Card>
                     </div>
