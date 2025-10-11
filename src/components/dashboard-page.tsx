@@ -337,8 +337,8 @@ export function DashboardPage() {
                     />
                     <ChartLegend content={<ChartLegendContent />} />
                     <Bar dataKey="count" radius={8}>
-                        {projectStatusData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                        {projectStatusData.map((entry) => (
+                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                         ))}
                     </Bar>
                   </BarChart>

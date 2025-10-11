@@ -34,11 +34,12 @@
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-ring: 204 70% 63%;
 
-    --chart-1: 204 70% 53%;
-    --chart-2: 120 73% 75%;
-    --chart-3: 48 96% 58%;
-    --chart-4: 298.1 52.5% 50.2%;
-    --chart-5: 217.2 91.2% 59.8%;
+    /* New Pastel Chart Colors */
+    --chart-1: 142 60% 70%; /* On Track - Green */
+    --chart-2: 48 96% 70%; /* At Risk - Yellow */
+    --chart-3: 0 84% 70%; /* Off Track - Red */
+    --chart-4: 204 70% 70%; /* Completed - Blue */
+    --chart-5: 298.1 52.5% 50.2%;
     --chart-6: 350 91.2% 59.8%;
     --chart-7: 170 91.2% 59.8%;
     --chart-8: 20 91.2% 59.8%;
@@ -74,11 +75,12 @@
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-ring: 204 70% 63%;
     
-    --chart-1: 204 70% 53%;
-    --chart-2: 120 73% 75%;
-    --chart-3: 48 96% 58%;
-    --chart-4: 298.1 52.5% 50.2%;
-    --chart-5: 217.2 91.2% 59.8%;
+    /* New Pastel Chart Colors - Dark Mode */
+    --chart-1: 142 50% 50%; /* On Track - Green */
+    --chart-2: 48 86% 55%; /* At Risk - Yellow */
+    --chart-3: 0 74% 55%; /* Off Track - Red */
+    --chart-4: 204 60% 55%; /* Completed - Blue */
+    --chart-5: 298.1 52.5% 50.2%;
     --chart-6: 350 91.2% 59.8%;
     --chart-7: 170 91.2% 59.8%;
     --chart-8: 20 91.2% 59.8%;
