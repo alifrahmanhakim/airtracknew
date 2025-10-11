@@ -58,7 +58,7 @@ import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Progress } from './ui/progress';
-import { parseISO, getYear, isAfter, differenceInDays, startOfToday, format } from 'date-fns';
+import { parseISO, getYear, isAfter, differenceInDays, startOfToday, format, max as maxDate, min as minDate } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { cn } from '@/lib/utils';
 import { countAllTasks } from '@/lib/data-utils';
@@ -108,6 +108,8 @@ type AssignedTask = Task & {
   projectId: string;
   projectType: Project['projectType'];
 };
+
+type WorkloadStatus = 'Overload' | 'Underload' | 'Normal';
 
 
 export function DashboardPage() {
@@ -228,10 +230,10 @@ export function DashboardPage() {
         statusCounts[effectiveStatus]++;
     });
 
-    const workloadCounts: { [userId: string]: { user: User, tasks: number } } = {};
+    const workloadCounts: { [userId: string]: { user: User, tasks: number, openTasks: number, totalRemainingDays: number } } = {};
     
     allUsers.forEach(user => {
-        workloadCounts[user.id] = { user, tasks: 0 };
+        workloadCounts[user.id] = { user, tasks: 0, openTasks: 0, totalRemainingDays: 0 };
     });
     
     const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0 };
@@ -243,9 +245,19 @@ export function DashboardPage() {
         tasks.forEach(task => {
             totalTasksCount++;
             taskStatusCounts[task.status]++;
-            if(workloadCounts[task.assigneeIds[0]]) {
-                workloadCounts[task.assigneeIds[0]].tasks += 1;
-            }
+
+            task.assigneeIds.forEach(assigneeId => {
+                if (workloadCounts[assigneeId]) {
+                    workloadCounts[assigneeId].tasks++;
+                    if (task.status !== 'Done') {
+                        workloadCounts[assigneeId].openTasks++;
+                        const remainingDays = differenceInDays(parseISO(task.dueDate), today);
+                        // Even overdue tasks contribute to the "pressure", so we use max(1, ...)
+                        workloadCounts[assigneeId].totalRemainingDays += Math.max(1, remainingDays);
+                    }
+                }
+            });
+            
             if (task.status !== 'Done' && isAfter(today, parseISO(task.dueDate))) {
                 overdueTasks.push({ ...task, projectName, projectId, projectType });
             }
@@ -256,6 +268,23 @@ export function DashboardPage() {
     }
 
     filteredProjects.forEach(p => countTasksRecursively(p.tasks || [], p.name, p.id, p.projectType));
+
+    const finalWorkloadData = Object.values(workloadCounts)
+      .filter(item => item.tasks > 0)
+      .map(item => {
+          let workloadStatus: WorkloadStatus = 'Normal';
+          if (item.openTasks > 0) {
+              const tasksPerDay = item.openTasks / (item.totalRemainingDays || 1); // Avoid division by zero
+              if (tasksPerDay > 1) { // More than 1 task per day on average
+                  workloadStatus = 'Overload';
+              } else if (tasksPerDay < 0.2) { // Less than 1 task every 5 days
+                  workloadStatus = 'Underload';
+              }
+          }
+          return { ...item, workloadStatus };
+      })
+      .sort((a,b) => b.tasks - a.tasks);
+
 
     const projectStats = {
         totalProjects: filteredProjects.length,
@@ -273,7 +302,7 @@ export function DashboardPage() {
         { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'hsl(var(--chart-3))' },
         { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'hsl(var(--chart-4))' },
       ],
-      teamWorkloadData: Object.values(workloadCounts).filter(item => item.tasks > 0).sort((a,b) => b.tasks - a.tasks),
+      teamWorkloadData: finalWorkloadData,
       stats: projectStats,
       offTrackTasks: overdueTasks.sort((a,b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime()),
     };
@@ -396,7 +425,7 @@ export function DashboardPage() {
         </div>
         
         {offTrackTasks.length > 0 && (
-            <Collapsible defaultOpen={false}>
+            <Collapsible defaultOpen={offTrackTasks.length <= 3}>
                 <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60">
                     <CardHeader>
                         <div className="flex justify-between items-center">
@@ -408,7 +437,7 @@ export function DashboardPage() {
                                     These tasks have passed their due date but are not completed.
                                 </CardDescription>
                             </div>
-                             <CollapsibleTrigger asChild>
+                            <CollapsibleTrigger asChild>
                                 <Button variant="ghost">
                                     Show all <ChevronDown className="ml-2 h-4 w-4" />
                                 </Button>
@@ -519,7 +548,7 @@ export function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {teamWorkloadData.map(({ user, tasks }) => {
+                        {teamWorkloadData.map(({ user, tasks, workloadStatus }) => {
                              const isOnline = user.lastOnline ? (new Date().getTime() - new Date(user.lastOnline).getTime()) / (1000 * 60) < 5 : false;
                             return (
                                 <TableRow key={user.id}>
@@ -535,6 +564,11 @@ export function DashboardPage() {
                                                 <p className="font-medium text-sm">{user.name}</p>
                                                 <p className="text-xs text-muted-foreground">{user.role}</p>
                                             </div>
+                                            <Badge variant="outline" className={cn({
+                                                'border-red-500/50 bg-red-50 text-red-700': workloadStatus === 'Overload',
+                                                'border-blue-500/50 bg-blue-50 text-blue-700': workloadStatus === 'Underload',
+                                                'border-green-500/50 bg-green-50 text-green-700': workloadStatus === 'Normal',
+                                            })}>{workloadStatus}</Badge>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-center font-bold">{tasks}</TableCell>
