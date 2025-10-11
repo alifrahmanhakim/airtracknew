@@ -200,13 +200,14 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
     }
 
     const isGlobalChat = selectedUser.id === GLOBAL_CHAT_ROOM_ID;
-    
+    const isSelectedUserOnline = selectedUser.lastOnline ? (new Date().getTime() - new Date(selectedUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+
     return (
         <TooltipProvider>
         <div className="flex-1 flex flex-col h-full">
             <div className="p-4 border-b flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-10 w-10" online={isGlobalChat ? undefined : isSelectedUserOnline}>
                         <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name} />
                         <AvatarFallback>{isGlobalChat ? <UsersIcon /> : <UserIcon />}</AvatarFallback>
                     </Avatar>

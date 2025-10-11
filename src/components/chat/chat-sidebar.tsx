@@ -72,6 +72,10 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
         }
         return format(date, 'PP');
     };
+    
+    const isUserOnline = (user: User) => {
+        return user.lastOnline ? (new Date().getTime() - new Date(user.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+    }
 
     return (
         <div className="w-1/3 border-r h-full flex flex-col">
@@ -114,28 +118,32 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                 {filteredChatRooms.length > 0 && (
                      <div>
                         <h3 className="text-xs font-semibold uppercase text-muted-foreground px-4 pt-2">Chats</h3>
-                        {filteredChatRooms.map(({ user, lastMessage }) => user && (
-                            <div
-                                key={user.id}
-                                className={cn(
-                                    "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
-                                    selectedUser?.id === user.id && "bg-muted"
-                                )}
-                                onClick={() => onSelectUser(user)}
-                            >
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                    <AvatarFallback><UserIcon /></AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 overflow-hidden">
-                                    <p className="font-semibold truncate">{user.name || user.email}</p>
-                                    <p className="text-sm text-muted-foreground truncate">{stripHtml(lastMessage?.text) || 'No messages yet'}</p>
+                        {filteredChatRooms.map(({ user, lastMessage }) => {
+                            if (!user) return null;
+                            const online = isUserOnline(user);
+                            return (
+                                <div
+                                    key={user.id}
+                                    className={cn(
+                                        "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
+                                        selectedUser?.id === user.id && "bg-muted"
+                                    )}
+                                    onClick={() => onSelectUser(user)}
+                                >
+                                    <Avatar className="h-10 w-10" online={online}>
+                                        <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                        <AvatarFallback><UserIcon /></AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 overflow-hidden">
+                                        <p className="font-semibold truncate">{user.name || user.email}</p>
+                                        <p className="text-sm text-muted-foreground truncate">{stripHtml(lastMessage?.text) || 'No messages yet'}</p>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground self-start">
+                                        {formatTimestamp(lastMessage?.createdAt)}
+                                    </div>
                                 </div>
-                                <div className="text-xs text-muted-foreground self-start">
-                                    {formatTimestamp(lastMessage?.createdAt)}
-                                </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 )}
                
@@ -146,25 +154,28 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                 {filteredUsers.length > 0 && (
                     <div>
                         <h3 className="text-xs font-semibold uppercase text-muted-foreground px-4 pt-2">Users</h3>
-                        {filteredUsers.map(user => (
-                            <div
-                                key={user.id}
-                                className={cn(
-                                    "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
-                                    selectedUser?.id === user.id && "bg-muted"
-                                )}
-                                onClick={() => onSelectUser(user)}
-                            >
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                    <AvatarFallback><UserIcon /></AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 overflow-hidden">
-                                    <p className="font-semibold truncate">{user.name || user.email}</p>
-                                    <p className="text-sm text-muted-foreground truncate">{user.role}</p>
+                        {filteredUsers.map(user => {
+                            const online = isUserOnline(user);
+                            return (
+                                <div
+                                    key={user.id}
+                                    className={cn(
+                                        "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
+                                        selectedUser?.id === user.id && "bg-muted"
+                                    )}
+                                    onClick={() => onSelectUser(user)}
+                                >
+                                    <Avatar className="h-10 w-10" online={online}>
+                                        <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                        <AvatarFallback><UserIcon /></AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 overflow-hidden">
+                                        <p className="font-semibold truncate">{user.name || user.email}</p>
+                                        <p className="text-sm text-muted-foreground truncate">{user.role}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 )}
 
