@@ -104,7 +104,7 @@ function AssociatedGapAnalysisCard({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <GitCompareArrows /> Associated GAP Analysis
+              <GitCompareArrows /> Associated Revision with State Letter
             </CardTitle>
             <CardDescription>
               These GAP analysis records are linked to this CASR.
@@ -136,7 +136,7 @@ function AssociatedGapAnalysisCard({
                           {record.statusItem}
                         </Badge>
                       </td>
-                      <td className="p-2">{format(parseISO(record.dateOfEvaluation), 'PPP')}</td>
+                      <td className="p-2">{record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'}</td>
                       <td className="text-right p-2 print:hidden">
                         <Tooltip>
                               <TooltipTrigger asChild>
@@ -213,11 +213,11 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
   const associatedGapRecords = React.useMemo(() => {
     if (project.projectType !== 'Rulemaking' || !project.casr) return [];
-
+  
     // Create a pattern to match "CASR {number}"
     const casrNumber = project.casr;
-    const casrPattern = new RegExp(`^CASR\\s+${casrNumber}\\b`, 'i');
-
+    const casrPattern = new RegExp(`CASR\\s+${casrNumber}\\b`, 'i');
+  
     return allGapAnalysisRecords.filter(record => 
         record.evaluations.some(e => casrPattern.test(e.casrAffected))
     );
