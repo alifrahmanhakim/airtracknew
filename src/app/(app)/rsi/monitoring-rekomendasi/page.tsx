@@ -183,13 +183,14 @@ export default function MonitoringRekomendasiPage() {
         }
 
         const dataToExport = filteredRecords.flatMap(record => {
+            const penerimaText = Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi.join(', ') : '';
             if (record.rekomendasi && record.rekomendasi.length > 0) {
                 return record.rekomendasi.map(rec => ({
                     'Judul Laporan': record.judulLaporan,
                     'Nomor Laporan': record.nomorLaporan,
                     'Tanggal Kejadian': record.tanggalKejadian,
                     'Tanggal Terbit': record.tanggalTerbit || '',
-                    'Penerima Rekomendasi': record.penerimaRekomendasi.join(', '),
+                    'Penerima Rekomendasi': penerimaText,
                     'Nomor Rekomendasi': rec.nomor,
                     'Deskripsi Rekomendasi': rec.deskripsi,
                     'Tindak Lanjut DKPPU': record.tindakLanjutDkppu,
@@ -203,7 +204,7 @@ export default function MonitoringRekomendasiPage() {
                 'Nomor Laporan': record.nomorLaporan,
                 'Tanggal Kejadian': record.tanggalKejadian,
                 'Tanggal Terbit': record.tanggalTerbit || '',
-                'Penerima Rekomendasi': record.penerimaRekomendasi.join(', '),
+                'Penerima Rekomendasi': penerimaText,
                 'Nomor Rekomendasi': '',
                 'Deskripsi Rekomendasi': '',
                 'Tindak Lanjut DKPPU': record.tindakLanjutDkppu,
@@ -357,4 +358,3 @@ export default function MonitoringRekomendasiPage() {
     );
 }
 
-    
