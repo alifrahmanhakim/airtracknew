@@ -423,9 +423,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              return { success: false, error: 'Original task not found for update.' };
         }
         
-        // Create a complete updated task object by merging old and new data
         const updatedTask: Task = { ...oldTask, ...updatedTaskData };
-
         const projectLink = `/projects/${projectId}?type=${projectType.toLowerCase().replace(' ', '')}`;
         
         const oldAssigneeIds = new Set(oldTask.assigneeIds || []);
@@ -436,6 +434,20 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
         const keptAssignees = [...newAssigneeIds].filter(id => oldAssigneeIds.has(id));
 
         const notificationPromises: Promise<any>[] = [];
+        
+        // --- Generate descriptive notification ---
+        let updateDescription = `Task "${updatedTask.title}" updated.`;
+        const changes: string[] = [];
+        if (oldTask.status !== updatedTask.status) {
+            changes.push(`status changed from "${oldTask.status}" to "${updatedTask.status}"`);
+        }
+        if (oldTask.dueDate !== updatedTask.dueDate) {
+            changes.push(`due date changed to ${updatedTask.dueDate}`);
+        }
+        if (changes.length > 0) {
+            updateDescription = `For task "${updatedTask.title}": ${changes.join(', ')}.`;
+        }
+        // --- End of new logic ---
 
         for (const userId of addedAssignees) {
             if (userId === actor?.id) continue;
@@ -464,7 +476,7 @@ export async function updateTask(projectId: string, updatedTaskData: Partial<Tas
              notificationPromises.push(createNotification({
                 userId: userId,
                 title: 'Task Updated',
-                description: `The task "${updatedTask.title}" in project "${projectData.name}" has been updated.`,
+                description: updateDescription, // Use the new descriptive message
                 href: projectLink,
                 actor: actor ? { id: actor.id, name: actor.name, avatarUrl: actor.avatarUrl } : undefined,
             }));
