@@ -5,7 +5,7 @@ import * as React from 'react';
 import { User, ChatMessage } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { Send, User as UserIcon, Users as UsersIcon, Check, CheckCheck } from 'lucide-react';
+import { Send, User as UserIcon, Users as UsersIcon, Check, CheckCheck, Video } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { getOrCreateChatRoom, sendMessage, updateMessageReadStatus } from '@/lib/actions/chat';
@@ -245,6 +245,18 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                          )}
                     </div>
                 </div>
+                 {!isGlobalChat && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <Button variant="ghost" size="icon">
+                                <Video className="h-5 w-5" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Create Google Meet</p>
+                        </TooltipContent>
+                    </Tooltip>
+                )}
             </div>
             
             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
