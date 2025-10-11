@@ -321,8 +321,8 @@ export function DashboardPage() {
   
   const chartConfig = {
     projects: { label: 'Projects', color: 'hsl(var(--chart-1))' },
-    tasks: { label: 'Tasks', color: 'hsl(var(--chart-5))' },
-    'To Do': { label: 'To Do', color: 'hsl(var(--muted))' }
+    tasks: { label: 'Active/Overdue', color: 'hsl(var(--chart-5))' },
+    'To Do': { label: 'To Do', color: 'hsl(var(--destructive))' }
   };
   
   const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
@@ -545,7 +545,7 @@ export function DashboardPage() {
                             ))}
                         </Bar>
                         <Line type="monotone" dataKey="tasks" name="Active/Overdue" yAxisId="right" strokeWidth={2} stroke="hsl(var(--chart-5))" />
-                        <Line type="monotone" dataKey="To Do" yAxisId="right" strokeWidth={2} stroke="hsl(var(--muted))" />
+                        <Line type="monotone" dataKey="To Do" yAxisId="right" strokeWidth={2} stroke="hsl(var(--destructive))" />
                     </ComposedChart>
                 </ResponsiveContainer>
               </ChartContainer>
