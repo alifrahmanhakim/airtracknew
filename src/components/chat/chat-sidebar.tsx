@@ -135,10 +135,12 @@ export function ChatSidebar({ users, currentUser, onSelectUser, onViewProfile, c
                                     )}
                                     onClick={() => onSelectUser(user)}
                                 >
-                                    <Avatar className="h-10 w-10 cursor-pointer" online={online} onClick={(e) => { e.stopPropagation(); onViewProfile(user);}}>
-                                        <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                        <AvatarFallback><UserIcon /></AvatarFallback>
-                                    </Avatar>
+                                    <div onClick={(e) => { e.stopPropagation(); onViewProfile(user); }} className="cursor-pointer">
+                                        <Avatar className="h-10 w-10" online={online}>
+                                            <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                            <AvatarFallback><UserIcon /></AvatarFallback>
+                                        </Avatar>
+                                    </div>
                                     <div className="flex-1 overflow-hidden">
                                         <p className="font-semibold truncate">{user.name || user.email}</p>
                                         <p className="text-sm text-muted-foreground truncate">{stripHtml(lastMessage?.text) || 'No messages yet'}</p>
@@ -170,10 +172,12 @@ export function ChatSidebar({ users, currentUser, onSelectUser, onViewProfile, c
                                     )}
                                     onClick={() => onSelectUser(user)}
                                 >
-                                    <Avatar className="h-10 w-10 cursor-pointer" online={online} onClick={(e) => { e.stopPropagation(); onViewProfile(user);}}>
-                                        <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                        <AvatarFallback><UserIcon /></AvatarFallback>
-                                    </Avatar>
+                                    <div onClick={(e) => { e.stopPropagation(); onViewProfile(user); }} className="cursor-pointer">
+                                        <Avatar className="h-10 w-10" online={online}>
+                                            <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                            <AvatarFallback><UserIcon /></AvatarFallback>
+                                        </Avatar>
+                                    </div>
                                     <div className="flex-1 overflow-hidden">
                                         <p className="font-semibold truncate">{user.name || user.email}</p>
                                         <p className="text-sm text-muted-foreground truncate">{user.role}</p>

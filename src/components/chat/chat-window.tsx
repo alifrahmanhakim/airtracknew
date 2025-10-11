@@ -223,10 +223,12 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
         <div className="flex-1 flex flex-col h-full">
             <div className="p-4 border-b flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Avatar className="h-10 w-10" online={isGlobalChat ? undefined : isSelectedUserOnline}>
-                        <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name} />
-                        <AvatarFallback>{isGlobalChat ? <UsersIcon /> : <UserIcon />}</AvatarFallback>
-                    </Avatar>
+                    <div onClick={() => !isGlobalChat && onViewProfile(selectedUser)} className={cn(!isGlobalChat && "cursor-pointer")}>
+                        <Avatar className="h-10 w-10" online={isGlobalChat ? undefined : isSelectedUserOnline}>
+                            <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name} />
+                            <AvatarFallback>{isGlobalChat ? <UsersIcon /> : <UserIcon />}</AvatarFallback>
+                        </Avatar>
+                    </div>
                     <div>
                         <p className="font-semibold">{selectedUser.name}</p>
                          {isGlobalChat ? (
@@ -243,9 +245,6 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                          )}
                     </div>
                 </div>
-                {!isGlobalChat && (
-                     <Button variant="ghost" onClick={() => onViewProfile(selectedUser)}>View Profile</Button>
-                )}
             </div>
             
             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
@@ -258,10 +257,12 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                         return (
                             <div key={msg.id} className={cn("flex items-end gap-3", isCurrentUser && "justify-end")}>
                                 {!isCurrentUser && (
-                                    <Avatar className={cn("h-8 w-8 cursor-pointer", !showAvatar && "invisible")} onClick={() => fullSender && onViewProfile(fullSender)}>
-                                        <AvatarImage src={msg.senderAvatarUrl} />
-                                        <AvatarFallback>{msg.senderName?.[0]}</AvatarFallback>
-                                    </Avatar>
+                                    <div className={cn("cursor-pointer", !showAvatar && "invisible")} onClick={() => fullSender && onViewProfile(fullSender)}>
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={msg.senderAvatarUrl} />
+                                            <AvatarFallback>{msg.senderName?.[0]}</AvatarFallback>
+                                        </Avatar>
+                                    </div>
                                 )}
                                 <div className={cn(
                                     "p-3 rounded-lg max-w-xs md:max-w-md",
@@ -279,10 +280,12 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                                      </div>
                                 </div>
                                  {isCurrentUser && (
-                                    <Avatar className={cn("h-8 w-8 cursor-pointer", !showAvatar && "invisible")} onClick={() => onViewProfile(currentUser)}>
-                                        <AvatarImage src={msg.senderAvatarUrl} />
-                                        <AvatarFallback>{msg.senderName?.[0]}</AvatarFallback>
-                                    </Avatar>
+                                     <div className={cn("cursor-pointer", !showAvatar && "invisible")} onClick={() => onViewProfile(currentUser)}>
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={msg.senderAvatarUrl} />
+                                            <AvatarFallback>{msg.senderName?.[0]}</AvatarFallback>
+                                        </Avatar>
+                                    </div>
                                 )}
                             </div>
                         )
