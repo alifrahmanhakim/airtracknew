@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TindakLanjutRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { aocOptions } from '@/lib/data';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import * as XLSX from 'xlsx';
 
 
 const TindakLanjutForm = dynamic(() => import('@/components/rsi/tindak-lanjut-form').then(mod => mod.TindakLanjutForm), { 
@@ -170,6 +171,52 @@ export default function MonitoringRekomendasiPage() {
         setPenerimaFilter('all');
         setYearFilter('all');
     };
+    
+    const handleExportExcel = () => {
+        if (filteredRecords.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no records matching the current filters.',
+            });
+            return;
+        }
+
+        const dataToExport = filteredRecords.flatMap(record => {
+            if (record.rekomendasi && record.rekomendasi.length > 0) {
+                return record.rekomendasi.map(rec => ({
+                    'Judul Laporan': record.judulLaporan,
+                    'Nomor Laporan': record.nomorLaporan,
+                    'Tanggal Kejadian': record.tanggalKejadian,
+                    'Tanggal Terbit': record.tanggalTerbit || '',
+                    'Penerima Rekomendasi': record.penerimaRekomendasi.join(', '),
+                    'Nomor Rekomendasi': rec.nomor,
+                    'Deskripsi Rekomendasi': rec.deskripsi,
+                    'Tindak Lanjut DKPPU': record.tindakLanjutDkppu,
+                    'Tindak Lanjut Operator': record.tindakLanjutOperator,
+                    'Status': record.status,
+                }));
+            }
+            // If no recommendations, export the main record info once
+            return [{
+                'Judul Laporan': record.judulLaporan,
+                'Nomor Laporan': record.nomorLaporan,
+                'Tanggal Kejadian': record.tanggalKejadian,
+                'Tanggal Terbit': record.tanggalTerbit || '',
+                'Penerima Rekomendasi': record.penerimaRekomendasi.join(', '),
+                'Nomor Rekomendasi': '',
+                'Deskripsi Rekomendasi': '',
+                'Tindak Lanjut DKPPU': record.tindakLanjutDkppu,
+                'Tindak Lanjut Operator': record.tindakLanjutOperator,
+                'Status': record.status,
+            }];
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Tindak Lanjut KNKT');
+        XLSX.writeFile(workbook, 'tindak_lanjut_knkt.xlsx');
+    };
 
     return (
         <main className="p-4 md:p-8">
@@ -222,8 +269,16 @@ export default function MonitoringRekomendasiPage() {
                 <TabsContent value="records">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Records</CardTitle>
-                            <CardDescription>List of all recommendation follow-ups.</CardDescription>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>Records</CardTitle>
+                                    <CardDescription>List of all recommendation follow-ups.</CardDescription>
+                                </div>
+                                <Button variant="outline" onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Export to Excel
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                            {isLoading ? (
