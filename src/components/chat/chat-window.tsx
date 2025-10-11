@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -21,18 +20,19 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 interface ChatWindowProps {
     currentUser: User;
     selectedUser: User | null;
+    onViewProfile: (user: User) => void;
 }
 
 const GLOBAL_CHAT_ROOM_ID = 'global_chat_room';
 
-const ChatEditor = ({ content, onUpdate, onEnterPress, disabled }: { content: string; onUpdate: (content: string) => void; onEnterPress: () => void; disabled: boolean }) => {
+const ChatEditor = ({ onEnterPress }: { onEnterPress: (content: string) => void; }) => {
     const editor = useEditor({
         extensions: [
             StarterKit.configure({
                 heading: false,
             }),
         ],
-        content: content,
+        content: '',
         editorProps: {
             attributes: {
                 class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none p-3 min-h-[60px]',
@@ -40,29 +40,18 @@ const ChatEditor = ({ content, onUpdate, onEnterPress, disabled }: { content: st
             handleKeyDown: (view, event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
-                    onEnterPress();
+                    onEnterPress(view.state.doc.textContent);
                     return true;
                 }
                 return false;
             },
         },
-        onUpdate: ({ editor }) => {
-            onUpdate(editor.getHTML());
-        },
     });
-    
-    React.useEffect(() => {
-        if (editor) {
-            editor.setEditable(!disabled);
-        }
-    }, [disabled, editor]);
 
-     React.useEffect(() => {
-        if (editor && editor.getHTML() !== content) {
-            editor.commands.setContent(content, false);
-        }
-    }, [content, editor]);
-
+     React.useImperativeHandle(chatEditorRef, () => ({
+        clearContent: () => editor?.commands.clearContent(),
+        getHTML: () => editor?.getHTML() || '',
+    }));
 
     return (
         <div className="rounded-md border border-input focus-within:ring-2 focus-within:ring-ring flex-1 bg-background">
@@ -71,6 +60,9 @@ const ChatEditor = ({ content, onUpdate, onEnterPress, disabled }: { content: st
         </div>
     );
 };
+
+const chatEditorRef = React.createRef<{ clearContent: () => void; getHTML: () => string }>();
+
 
 const MessageStatus = ({ message, currentUserId, selectedUserId }: { message: ChatMessage, currentUserId: string, selectedUserId: string | null }) => {
     if (message.senderId !== currentUserId) {
@@ -105,9 +97,8 @@ const MessageStatus = ({ message, currentUserId, selectedUserId }: { message: Ch
 };
 
 
-export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
+export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWindowProps) {
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
-    const [newMessage, setNewMessage] = React.useState('');
     const [chatRoomId, setChatRoomId] = React.useState<string | null>(null);
     const scrollAreaRef = React.useRef<HTMLDivElement>(null);
 
@@ -179,16 +170,17 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
     };
 
     const handleSendMessage = async () => {
-        if (isMessageEmpty(newMessage) || !chatRoomId || !currentUser || !selectedUser) return;
+        const messageContent = chatEditorRef.current?.getHTML() || '';
+        if (isMessageEmpty(messageContent) || !chatRoomId || !currentUser || !selectedUser) return;
 
         const messageData = {
-            text: newMessage,
+            text: messageContent,
             senderName: currentUser.name,
             senderAvatarUrl: currentUser.avatarUrl,
         };
 
         await sendMessage(chatRoomId, currentUser.id, selectedUser.id, messageData);
-        setNewMessage('');
+        chatEditorRef.current?.clearContent();
     };
 
     if (!selectedUser) {
@@ -213,9 +205,16 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                     </Avatar>
                     <div>
                         <p className="font-semibold">{selectedUser.name}</p>
-                         {isGlobalChat ? <p className="text-sm text-muted-foreground">Public channel for all users</p> : null}
+                         {isGlobalChat ? (
+                             <p className="text-sm text-muted-foreground">Public channel for all users</p>
+                         ) : (
+                             <p className="text-sm text-muted-foreground">{isSelectedUserOnline ? 'Online' : 'Offline'}</p>
+                         )}
                     </div>
                 </div>
+                {!isGlobalChat && (
+                     <Button variant="ghost" onClick={() => onViewProfile(selectedUser)}>View Profile</Button>
+                )}
             </div>
             
             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
@@ -227,7 +226,7 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                         return (
                             <div key={msg.id} className={cn("flex items-end gap-3", isCurrentUser && "justify-end")}>
                                 {!isCurrentUser && (
-                                    <Avatar className={cn("h-8 w-8", !showAvatar && "invisible")}>
+                                    <Avatar className={cn("h-8 w-8 cursor-pointer", !showAvatar && "invisible")} onClick={() => users.find(u => u.id === msg.senderId) && onViewProfile(users.find(u => u.id === msg.senderId)!)}>
                                         <AvatarImage src={msg.senderAvatarUrl} />
                                         <AvatarFallback>{msg.senderName?.[0]}</AvatarFallback>
                                     </Avatar>
@@ -248,7 +247,7 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                                      </div>
                                 </div>
                                  {isCurrentUser && (
-                                    <Avatar className={cn("h-8 w-8", !showAvatar && "invisible")}>
+                                    <Avatar className={cn("h-8 w-8 cursor-pointer", !showAvatar && "invisible")} onClick={() => onViewProfile(currentUser)}>
                                         <AvatarImage src={msg.senderAvatarUrl} />
                                         <AvatarFallback>{msg.senderName?.[0]}</AvatarFallback>
                                     </Avatar>
@@ -260,14 +259,17 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
             </ScrollArea>
 
             <div className="p-4 border-t">
-                <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex items-start gap-2">
-                    <ChatEditor 
-                        content={newMessage}
-                        onUpdate={setNewMessage}
-                        onEnterPress={handleSendMessage}
-                        disabled={!chatRoomId}
+                 <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSendMessage();
+                    }}
+                    className="flex items-start gap-2"
+                    >
+                    <ChatEditor
+                        onEnterPress={() => handleSendMessage()}
                     />
-                    <Button type="submit" size="icon" disabled={isMessageEmpty(newMessage)}>
+                    <Button type="submit" size="icon">
                         <Send />
                     </Button>
                 </form>
@@ -276,3 +278,11 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
         </TooltipProvider>
     );
 }
+
+// Dummy ref for server-side rendering
+const chatEditorRef = {
+  current: {
+    clearContent: () => {},
+    getHTML: () => '',
+  },
+};

@@ -15,6 +15,7 @@ interface ChatSidebarProps {
     users: User[];
     currentUser: User;
     onSelectUser: (user: User) => void;
+    onViewProfile: (user: User) => void;
     chatRooms: any[];
     selectedUser: User | null;
     globalChatUser: User;
@@ -22,10 +23,14 @@ interface ChatSidebarProps {
 
 const stripHtml = (html: string | undefined) => {
     if (!html) return '';
-    return html.replace(/<[^>]*>?/gm, '');
+    if (typeof document === 'undefined') {
+        return html.replace(/<[^>]*>?/gm, '');
+    }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
 };
 
-export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selectedUser, globalChatUser }: ChatSidebarProps) {
+export function ChatSidebar({ users, currentUser, onSelectUser, onViewProfile, chatRooms, selectedUser, globalChatUser }: ChatSidebarProps) {
     const [searchTerm, setSearchTerm] = React.useState('');
 
     const otherUsersInRooms = React.useMemo(() => {
@@ -130,7 +135,7 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                                     )}
                                     onClick={() => onSelectUser(user)}
                                 >
-                                    <Avatar className="h-10 w-10" online={online}>
+                                    <Avatar className="h-10 w-10 cursor-pointer" online={online} onClick={(e) => { e.stopPropagation(); onViewProfile(user);}}>
                                         <AvatarImage src={user.avatarUrl} alt={user.name} />
                                         <AvatarFallback><UserIcon /></AvatarFallback>
                                     </Avatar>
@@ -165,7 +170,7 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                                     )}
                                     onClick={() => onSelectUser(user)}
                                 >
-                                    <Avatar className="h-10 w-10" online={online}>
+                                    <Avatar className="h-10 w-10 cursor-pointer" online={online} onClick={(e) => { e.stopPropagation(); onViewProfile(user);}}>
                                         <AvatarImage src={user.avatarUrl} alt={user.name} />
                                         <AvatarFallback><UserIcon /></AvatarFallback>
                                     </Avatar>
