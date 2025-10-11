@@ -243,7 +243,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                         {projects.map(p => (
                             <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
-                                <p className="font-semibold truncate">{p.name}</p>
+                                <p className="font-semibold">{p.name}</p>
                                 <p className="text-xs text-muted-foreground">Due: {format(parseISO(p.endDate), 'dd MMM yyyy')}</p>
                             </Link>
                         ))}
@@ -354,7 +354,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                     <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20">
                         <CardHeader>
                             <CardTitle className='flex items-center gap-2 text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
-                            <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
+                            <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline and are not yet completed.</CardDescription>
                         </CardHeader>
                         <CardContent>
                            {paginatedDeadlineProjects.length > 0 ? (
@@ -363,8 +363,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                        const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                                        return (
                                            <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <p className="font-semibold truncate flex-1">{project.name}</p>
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <p className="font-semibold flex-1 break-words">{project.name}</p>
                                                     <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
                                                 </div>
                                            </Link>
