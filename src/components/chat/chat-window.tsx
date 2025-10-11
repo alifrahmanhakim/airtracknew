@@ -5,7 +5,7 @@ import * as React from 'react';
 import { User, ChatMessage } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { Send, User as UserIcon, Users as UsersIcon, Check, CheckCheck, Video } from 'lucide-react';
+import { Send, User as UserIcon, Users as UsersIcon, Check, CheckCheck, Video, Loader2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { getOrCreateChatRoom, sendMessage, updateMessageReadStatus } from '@/lib/actions/chat';
@@ -16,6 +16,8 @@ import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapToolbar } from '../ui/rich-text-input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { createGoogleMeet } from '@/lib/actions/meet';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatWindowProps {
     currentUser: User;
@@ -115,6 +117,8 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
     const scrollAreaRef = React.useRef<HTMLDivElement>(null);
     const chatEditorRef = React.useRef<ChatEditorHandle>(null);
     const [allUsers, setAllUsers] = React.useState<User[]>([]);
+    const [isMeetLoading, setIsMeetLoading] = React.useState(false);
+    const { toast } = useToast();
 
     React.useEffect(() => {
         const usersUnsub = onSnapshot(collection(db, 'users'), (snapshot) => {
@@ -207,6 +211,36 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
         chatEditorRef.current?.clearContent();
     };
 
+    const handleCreateMeet = async () => {
+        if (!selectedUser || isGlobalChat) return;
+
+        setIsMeetLoading(true);
+        const result = await createGoogleMeet({
+            summary: `Meeting with ${selectedUser.name}`,
+            description: `Quick meeting arranged via AirTrack.`,
+            attendees: [
+                { email: currentUser.email! },
+                { email: selectedUser.email! }
+            ]
+        });
+        setIsMeetLoading(false);
+
+        if (result.authUrl) {
+            // Redirect user to Google for consent
+            window.location.href = result.authUrl;
+        } else if (result.meetLink && chatRoomId) {
+            const meetMessage = `I've created a Google Meet for us: <a href="${result.meetLink}" target="_blank" rel="noopener noreferrer" style="color: hsl(var(--primary)); text-decoration: underline;">${result.meetLink}</a>`;
+            handleSendMessage(meetMessage);
+        } else if (result.error) {
+            toast({
+                variant: 'destructive',
+                title: 'Could not create meeting',
+                description: result.error,
+            });
+        }
+    };
+
+
     if (!selectedUser) {
         return (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
@@ -248,8 +282,8 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                  {!isGlobalChat && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                             <Button variant="ghost" size="icon">
-                                <Video className="h-5 w-5" />
+                             <Button variant="ghost" size="icon" onClick={handleCreateMeet} disabled={isMeetLoading}>
+                                {isMeetLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Video className="h-5 w-5" />}
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
