@@ -103,15 +103,15 @@ const StatusLogicGuide = () => {
     return (
         <Card className="h-full">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                     <HelpCircle className="h-5 w-5" />
                     Status Logic Guide
                 </CardTitle>
             </CardHeader>
-            <CardContent className='space-y-4'>
+            <CardContent className='space-y-3'>
                 {statuses.map(status => (
                     <div key={status.title} className="flex items-start gap-3">
-                        <status.icon className={cn("h-5 w-5 mt-0.5 flex-shrink-0", status.color)} />
+                        <status.icon className={cn("h-4 w-4 mt-0.5 flex-shrink-0", status.color)} />
                         <div>
                             <p className="font-semibold text-sm">{status.title}</p>
                             <p className="text-xs text-muted-foreground">{status.description}</p>
@@ -152,7 +152,7 @@ const StatusCard = ({
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                     {projects.map(p => (
                         <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
-                            <p className="font-semibold">{p.name}</p>
+                            <p className="font-semibold">{`CASR ${p.casr} - ${p.name}`}</p>
                             <p className="text-xs text-muted-foreground">Due: {format(parseISO(p.endDate), 'dd MMM yyyy')}</p>
                         </Link>
                     ))}
@@ -247,29 +247,29 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                 <p className="text-muted-foreground">Central hub for tracking compliance and progress of all CASRs.</p>
             </div>
             
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle>Projects Overview</CardTitle>
                     <CardDescription>A summary of all rulemaking projects.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="space-y-6 flex flex-col">
-                        <Card>
-                            <CardHeader><CardTitle>Project Snapshot</CardTitle></CardHeader>
-                            <CardContent className="grid grid-cols-2 gap-4">
-                                <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
-                                <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
-                                <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
-                                <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
-                            </CardContent>
-                        </Card>
-                        <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20 flex-grow">
+                <CardContent className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-1 space-y-4">
+                       <Card className="h-full">
+                           <CardHeader><CardTitle className="text-base">Project Snapshot</CardTitle></CardHeader>
+                           <CardContent className="grid grid-cols-1 gap-3">
+                               <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
+                               <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
+                               <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
+                               <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
+                           </CardContent>
+                       </Card>
+                    </div>
+                    <div className="lg:col-span-1 space-y-4">
+                        <Card className="h-full border-red-500/50 bg-red-50 dark:bg-red-900/20 flex flex-col">
                             <CardHeader>
-                                <CardTitle className='flex items-center gap-2 text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
-                                <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline and are not yet completed.</CardDescription>
+                                <CardTitle className='flex items-center gap-2 text-base text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="flex-grow">
                             {offTrackProjects.length > 0 ? (
                                 <div className="space-y-3">
                                     {offTrackProjects.map(project => {
@@ -277,7 +277,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                         return (
                                             <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
                                                 <div className="flex items-center justify-between gap-4">
-                                                    <p className="font-semibold break-words flex-1">{project.name}</p>
+                                                    <p className="font-semibold break-words flex-1 text-sm">{`CASR ${project.casr} - ${project.name}`}</p>
                                                     <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
                                                 </div>
                                             </Link>
@@ -285,7 +285,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                     })}
                                 </div>
                             ) : (
-                                    <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4">
+                                    <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4 h-full flex flex-col justify-center items-center">
                                         <CheckCircle className="mx-auto h-8 w-8 mb-2" />
                                         No projects are off track.
                                     </div>
@@ -293,12 +293,10 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             </CardContent>
                         </Card>
                     </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-6 flex flex-col">
-                       <Card className="h-full">
+                     <div className="lg:col-span-1 space-y-4">
+                         <Card className="h-full">
                             <CardHeader>
-                                <CardTitle>Status Distribution</CardTitle>
+                                <CardTitle className="text-base">Status Distribution</CardTitle>
                             </CardHeader>
                             <CardContent className="h-48 flex items-center justify-center">
                                 <ChartContainer config={{}} className="w-full h-full">
@@ -314,15 +312,17 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                     </ResponsiveContainer>
                                 </ChartContainer>
                             </CardContent>
-                             <CardFooter className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs">
+                             <CardFooter className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
                                 {stats.distribution.filter(d => d.value > 0).map(item => (
-                                    <div key={item.name} className="flex items-center gap-2">
-                                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                                        <span>{item.name} ({stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(0) : 0}%)</span>
+                                    <div key={item.name} className="flex items-center gap-1.5">
+                                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                        <span>{item.name}</span>
                                     </div>
                                 ))}
                             </CardFooter>
                         </Card>
+                    </div>
+                    <div className="lg:col-span-1 space-y-4">
                         <StatusLogicGuide />
                     </div>
                 </CardContent>
