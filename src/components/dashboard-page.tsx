@@ -344,32 +344,42 @@ export function DashboardPage() {
         </div>
         
         {offTrackTasks.length > 0 && (
-          <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800/80">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                <CalendarX /> Off Track Tasks ({offTrackTasks.length})
-              </CardTitle>
-              <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
-                These tasks have passed their due date but are not completed.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {offTrackTasks.map(task => {
-                     const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
-                     return (
-                         <div key={task.id} className="p-3 rounded-md bg-card border">
-                             <p className="font-semibold text-sm truncate">{task.title}</p>
-                             <p className="text-xs text-muted-foreground truncate">{task.projectName}</p>
-                             <Badge variant="destructive" className="mt-2 text-xs">
-                                Overdue by {daysOverdue} day(s)
-                             </Badge>
-                         </div>
-                     )
-                  })}
-                </div>
-            </CardContent>
-          </Card>
+            <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                        <CalendarX /> Off Track Tasks ({offTrackTasks.length})
+                    </CardTitle>
+                    <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
+                        These tasks have passed their due date but are not completed.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {offTrackTasks.map((task, index) => {
+                            const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
+                            return (
+                                <div key={task.id}>
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 font-bold">
+                                                {daysOverdue}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-sm">{task.title}</p>
+                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                            </div>
+                                        </div>
+                                        <Badge variant="destructive" className="whitespace-nowrap mt-1">
+                                            {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
+                                        </Badge>
+                                    </div>
+                                    {index < offTrackTasks.length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
         )}
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
