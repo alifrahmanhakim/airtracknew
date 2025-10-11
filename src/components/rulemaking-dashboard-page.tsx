@@ -15,7 +15,7 @@ import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { format, parseISO, differenceInDays, isAfter, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { AddRulemakingProjectDialog } from './add-rulemaking-project-dialog';
+import { AddRulemakingProjectDialog } from '@/components/add-rulemaking-project-dialog';
 import { rulemakingTaskOptions } from '@/lib/data';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './ui/pagination';
@@ -399,3 +399,5 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         </TooltipProvider>
     );
 }
+
+    

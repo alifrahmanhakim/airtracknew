@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -61,7 +60,6 @@ export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulema
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const userOptions: MultiSelectOption[] = allUsers.map(user => ({
     value: user.id,
@@ -371,5 +369,3 @@ export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulema
     </Dialog>
   );
 }
-
-    
