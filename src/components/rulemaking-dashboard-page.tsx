@@ -89,7 +89,7 @@ const StatusLogicGuide = () => {
         {
             icon: AlertTriangle,
             title: 'At Risk',
-            description: 'Progres tertinggal dari linimasa atau ada isu kritis.',
+            description: 'Progres penyelesaian tugas tertinggal lebih dari 20% dari linimasa waktu, atau terdapat tugas yang ditandai sebagai isu kritis.',
             color: 'text-yellow-500',
         },
         {
