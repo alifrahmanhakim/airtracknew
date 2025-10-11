@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -109,12 +110,6 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                          {isGlobalChat ? <p className="text-sm text-muted-foreground">Public channel for all users</p> : null}
                     </div>
                 </div>
-                 {!isGlobalChat && (
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon"><Phone /></Button>
-                        <Button variant="ghost" size="icon"><Video /></Button>
-                    </div>
-                )}
             </div>
             
             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
