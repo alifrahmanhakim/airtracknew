@@ -52,7 +52,7 @@ import {
   Clock,
   CheckCircle,
 } from 'lucide-react';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays, isAfter } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { EditProjectDialog } from './edit-project-dialog';
 import Link from 'next/link';
@@ -212,12 +212,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
   const associatedGapRecords = React.useMemo(() => {
     if (project.projectType !== 'Rulemaking' || !project.casr) return [];
-  
+
     const casrNumber = project.casr;
+    // This regex looks for "CASR" followed by the number, ensuring it's a whole word.
     const casrPattern = new RegExp(`CASR\\s+${casrNumber}\\b`, 'i');
-  
+
     return allGapAnalysisRecords.filter(record => 
-      (record.evaluations || []).some(e => e.casrAffected && casrPattern.test(e.casrAffected))
+        (record.evaluations || []).some(e => 
+            e.casrAffected && casrPattern.test(e.casrAffected)
+        )
     );
   }, [allGapAnalysisRecords, project.casr, project.projectType]);
 
@@ -406,6 +409,29 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     return counts;
   }, [tasks]);
 
+  const effectiveStatus = React.useMemo(() => {
+    if (project.status === 'Completed') return 'Completed';
+
+    const today = new Date();
+    const startDate = parseISO(project.startDate);
+    const endDate = parseISO(project.endDate);
+
+    if (isAfter(today, endDate)) {
+        return 'Off Track';
+    }
+
+    const totalDuration = differenceInDays(endDate, startDate);
+    const elapsedDuration = differenceInDays(today, startDate);
+    const timeProgress = totalDuration > 0 ? (elapsedDuration / totalDuration) * 100 : 0;
+    
+    // Consider it "At Risk" if task progress is significantly behind time progress (e.g., 20%)
+    if (progress < timeProgress - 20) {
+      return 'At Risk';
+    }
+    
+    return 'On Track';
+  }, [project.status, project.startDate, project.endDate, progress]);
+
 
   return (
     <TooltipProvider>
@@ -429,10 +455,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             )}
         </div>
       </div>
-
-      <div className="grid grid-cols-1 gap-6">
         
-        <Card>
+      <Card>
             <CardHeader><CardTitle>Project Dashboard</CardTitle></CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -454,7 +478,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                             <Flag className="h-5 w-5 text-muted-foreground mt-1" />
                             <div>
                                 <p className="text-sm text-muted-foreground">Status</p>
-                                <Badge variant="outline" className={cn("text-sm font-semibold", { 'border-transparent bg-green-100 text-green-800': project.status === 'Completed', 'border-transparent bg-blue-100 text-blue-800': project.status === 'On Track', 'border-transparent bg-yellow-100 text-yellow-800': project.status === 'At Risk', 'border-transparent bg-red-100 text-red-800': project.status === 'Off Track' })}>{project.status}</Badge>
+                                <Badge variant="outline" className={cn("text-sm font-semibold", { 'border-transparent bg-green-100 text-green-800': effectiveStatus === 'Completed', 'border-transparent bg-blue-100 text-blue-800': effectiveStatus === 'On Track', 'border-transparent bg-yellow-100 text-yellow-800': effectiveStatus === 'At Risk', 'border-transparent bg-red-100 text-red-800': effectiveStatus === 'Off Track' })}>{effectiveStatus}</Badge>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
@@ -523,6 +547,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                 </div>
             </CardContent>
         </Card>
+        
+      <div className="grid grid-cols-1 gap-6">
         
         {project.projectType === 'Rulemaking' && (
           <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
