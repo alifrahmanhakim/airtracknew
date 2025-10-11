@@ -198,7 +198,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
         </CardContent>
       </Card>
       
-       <Card>
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>B. Implementation Task List (if applicable)</CardTitle>
              <Button type="button" size="sm" onClick={() => appendTask({ id: `task-${Date.now()}`, description: '', estimatedComplianceDate: '' })}>
@@ -472,5 +472,6 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
     </>
   );
 }
+
 
 
