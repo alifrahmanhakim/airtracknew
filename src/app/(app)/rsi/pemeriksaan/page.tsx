@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PemeriksaanRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { Loader2, Search, RotateCcw, ArrowLeft } from 'lucide-react';
+import { Loader2, Search, RotateCcw, ArrowLeft, FileSpreadsheet } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { pemeriksaanFormSchema } from '@/lib/schemas';
@@ -23,6 +23,7 @@ import { getYear, parseISO } from 'date-fns';
 import Link from 'next/link';
 import { aocOptions } from '@/lib/data';
 import { Combobox, ComboboxOption } from '@/components/ui/combobox';
+import * as XLSX from 'xlsx';
 
 const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form').then(mod => mod.PemeriksaanForm), { 
     ssr: false,
@@ -147,6 +148,38 @@ export default function PemeriksaanPage() {
         setYearFilter('all');
         setOperatorFilter('all');
     };
+    
+    const handleExportExcel = () => {
+        if (filteredRecords.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no records matching the current filters.',
+            });
+            return;
+        }
+
+        const dataToExport = filteredRecords.map(record => ({
+            'Kategori': record.kategori,
+            'Jenis Pesawat': record.jenisPesawat,
+            'Registrasi': record.registrasi,
+            'Tahun Pembuatan': record.tahunPembuatan,
+            'Operator': record.operator,
+            'Tanggal': record.tanggal,
+            'Lokasi': record.lokasi,
+            'Korban': record.korban,
+            'Ringkasan Kejadian': record.ringkasanKejadian,
+            'Status Penanganan': record.statusPenanganan,
+            'Tindak Lanjut': record.tindakLanjut,
+            'File URL': record.filePemeriksaanUrl,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Pemeriksaan Records');
+        XLSX.writeFile(workbook, 'pemeriksaan_records.xlsx');
+    };
+
 
     return (
         <main className="p-4 md:p-8">
@@ -199,8 +232,16 @@ export default function PemeriksaanPage() {
                 <TabsContent value="records">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Examination Records</CardTitle>
-                            <CardDescription>List of all examination records.</CardDescription>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>Examination Records</CardTitle>
+                                    <CardDescription>List of all examination records.</CardDescription>
+                                </div>
+                                <Button variant="outline" onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Export to Excel
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isLoading ? (
