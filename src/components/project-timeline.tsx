@@ -232,7 +232,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
           style={{ maxHeight: `${HEADER_HEIGHT + (10.5 * ROW_MIN_HEIGHT)}px` }}
         >
           {sortedTasks.length > 0 ? (
-            <div className="grid" style={{ width: 'min-content', gridTemplateColumns: `${TASK_LIST_WIDTH}px 1fr`, gridTemplateRows: `${HEADER_HEIGHT}px repeat(${sortedTasks.length}, auto)` }}>
+            <div className="grid" style={{ width: 'min-content', gridTemplateColumns: `${TASK_LIST_WIDTH}px 1fr`, gridTemplateRows: `${HEADER_HEIGHT}px repeat(${sortedTasks.length}, minmax(${ROW_MIN_HEIGHT}px, auto))` }}>
              {/* Header for Task List */}
              <div className="sticky left-0 z-40 bg-card border-b border-r flex items-center px-4 font-semibold" style={{gridColumn: 1, gridRow: 1}}>
                 Tasks
@@ -280,7 +280,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                 <div 
                     key={task.id} 
                     className="sticky left-0 bg-card flex flex-col justify-center px-2 py-2 border-b border-r z-30" 
-                    style={{ gridColumn: 1, gridRow: index + 2, minHeight: `${ROW_MIN_HEIGHT}px`, paddingLeft: `${(task.parentId ? 1.5 : 0) + 0.5}rem` }}
+                    style={{ gridColumn: 1, gridRow: index + 2 }}
                 >
                   <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
                 </div>
@@ -337,7 +337,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
                 })()}
 
                  {/* Task Bars */}
-                 <div className="relative w-full h-full z-10" style={{gridRow: `1 / span ${sortedTasks.length}`}}>
+                 <div className="relative w-full h-full z-10">
                     {sortedTasks.map((task, index) => {
                       const taskStart = parseISO(task.startDate);
                       const taskEnd = parseISO(task.dueDate);
