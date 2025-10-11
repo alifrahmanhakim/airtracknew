@@ -571,73 +571,47 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         {project.projectType === 'Rulemaking' && (
           <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
         )}
-
-        {tasksWithoutAttachments.length > 0 && (
-          <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800/80">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                    <AlertTriangle /> Attachment Alert
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-                    <div className="flex-1 space-y-2">
-                         <div className="flex justify-between items-baseline">
-                            <p className="font-semibold text-yellow-900 dark:text-yellow-200">
-                                {tasksWithoutAttachments.length} of {totalTasks} tasks are missing attachments.
-                            </p>
-                            <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
-                                <AnimatedCounter endValue={animatedAttachmentCompletion} decimals={0} />%
-                            </p>
-                        </div>
-                        <p className="text-sm text-yellow-800/80 dark:text-yellow-400/80">
-                            Ensure all tasks have necessary documentation for compliance and record-keeping.
-                        </p>
-                        <div className="pt-2">
-                            <Progress value={animatedAttachmentCompletion} indicatorClassName="bg-yellow-500" className="h-2 bg-yellow-200 dark:bg-yellow-800/50" />
-                        </div>
+        
+        {(offTrackTasks.length > 0 || tasksWithoutAttachments.length > 0) && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive" /> Project Alerts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {offTrackTasks.length > 0 && (
+                            <div className="border border-destructive/50 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                                <h3 className="font-semibold text-red-800 dark:text-red-300">
+                                    {offTrackTasks.length} Off Track Task{offTrackTasks.length > 1 ? 's' : ''}
+                                </h3>
+                                <p className="text-xs text-red-700/80 dark:text-red-400/80 mb-2">These tasks have passed their due date.</p>
+                                <ScrollArea className="h-32">
+                                    <ul className="list-disc pl-5 space-y-1 text-sm text-red-800 dark:text-red-300">
+                                        {offTrackTasks.map(task => <li key={task.id}>{task.title}</li>)}
+                                    </ul>
+                                </ScrollArea>
+                            </div>
+                        )}
+                        {tasksWithoutAttachments.length > 0 && (
+                            <div className="border border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800/80 p-4 rounded-lg">
+                                <h3 className="font-semibold text-yellow-900 dark:text-yellow-200">
+                                    Attachment Alert
+                                </h3>
+                                <div className="flex justify-between items-baseline text-sm text-yellow-800/80 dark:text-yellow-400/80">
+                                  <p>{tasksWithoutAttachments.length} task{tasksWithoutAttachments.length > 1 ? 's' : ''} missing attachments.</p>
+                                  <p className="font-bold"><AnimatedCounter endValue={animatedAttachmentCompletion} decimals={0} />% Complete</p>
+                                </div>
+                                <Progress value={animatedAttachmentCompletion} indicatorClassName="bg-yellow-500" className="h-2 mt-2 bg-yellow-200 dark:bg-yellow-800/50" />
+                                <ScrollArea className="h-24 mt-2">
+                                    <ul className="list-disc pl-5 space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
+                                        {tasksWithoutAttachments.map(task => <li key={task.id}>{task.title}</li>)}
+                                    </ul>
+                                </ScrollArea>
+                            </div>
+                        )}
                     </div>
-                    <div className="md:w-1/2">
-                         <h4 className="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">Tasks to review:</h4>
-                         <ScrollArea className="h-32">
-                             <ul className="list-disc pl-5 space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
-                                {tasksWithoutAttachments.map(task => (
-                                    <li key={task.id}>{task.title}</li>
-                                ))}
-                            </ul>
-                         </ScrollArea>
-                    </div>
-                </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {offTrackTasks.length > 0 && (
-          <Card className="border-destructive/50 bg-red-50 dark:bg-red-900/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-300">
-                <AlertTriangle /> Off Track Tasks
-              </CardTitle>
-              <CardDescription className="text-red-700/80 dark:text-red-400/80">
-                These tasks have passed their due date but are not marked as 'Done'.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-48">
-                <ul className="space-y-2">
-                  {offTrackTasks.map(task => (
-                    <li key={task.id} className="flex items-center justify-between gap-4 p-2 border-b border-red-200/50 dark:border-red-800/50 last:border-b-0">
-                      <div>
-                        <p className="font-semibold">{task.title}</p>
-                        <p className="text-xs text-muted-foreground">{format(parseISO(task.dueDate), 'PPP')}</p>
-                      </div>
-                      <Badge variant="destructive">Overdue</Badge>
-                    </li>
-                  ))}
-                </ul>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+                </CardContent>
+            </Card>
         )}
 
         <Card>
