@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { StatusIndicator } from '@/components/status-indicator';
+import Image from 'next/image';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -201,9 +202,7 @@ export default function LoginPage() {
                 <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
                     <CardHeader className="text-center">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                            <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
-                                <Plane className="h-6 w-6" />
-                            </div>
+                             <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={64} height={64} className="h-16 w-16" />
                         </div>
                         <CardTitle className="text-2xl">AirTrack Login</CardTitle>
                         <CardDescription className="text-white/80">Enter your credentials to access your dashboard.</CardDescription>
@@ -265,9 +264,7 @@ export default function LoginPage() {
                 <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
                     <CardHeader className="text-center">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                            <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
-                                <Plane className="h-6 w-6" />
-                            </div>
+                            <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={64} height={64} className="h-16 w-16" />
                         </div>
                         <CardTitle className="text-2xl">Create an Account</CardTitle>
                         <CardDescription className="text-white/80">Register to request access.</CardDescription>

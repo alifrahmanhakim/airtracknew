@@ -25,6 +25,7 @@ import {
   ShieldAlert,
   Mail,
 } from 'lucide-react';
+import Image from 'next/image';
 
 import {
   SidebarProvider,
@@ -174,9 +175,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground">
-                <Plane className="h-5 w-5" />
-              </div>
+              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={40} height={40} className="h-10 w-10" />
               <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">AirTrack</span>
             </div>
         </SidebarHeader>
