@@ -204,7 +204,6 @@ export default function LoginPage() {
                         <div className="flex items-center justify-center gap-2 mb-2">
                              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={240} className="object-contain" />
                         </div>
-                        <CardTitle className="text-2xl">AirTrack Login</CardTitle>
                         <CardDescription className="text-white/80">Enter your credentials to access your dashboard.</CardDescription>
                     </CardHeader>
                     <CardContent>
