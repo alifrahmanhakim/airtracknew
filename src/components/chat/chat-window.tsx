@@ -212,22 +212,26 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
     };
 
     const handleCreateMeet = async () => {
-        if (!selectedUser || isGlobalChat) return;
+        if (!selectedUser || !currentUser.email || !selectedUser.email || isGlobalChat) return;
 
         setIsMeetLoading(true);
         const result = await createGoogleMeet({
             summary: `Meeting with ${selectedUser.name}`,
             description: `Quick meeting arranged via AirTrack.`,
             attendees: [
-                { email: currentUser.email! },
-                { email: selectedUser.email! }
+                { email: currentUser.email },
+                { email: selectedUser.email }
             ]
         });
         setIsMeetLoading(false);
 
         if (result.authUrl) {
-            // Redirect user to Google for consent
-            window.location.href = result.authUrl;
+            // This can be improved by opening a popup, but for now, we'll redirect.
+            window.open(result.authUrl, '_blank');
+            toast({
+                title: 'Authorization Required',
+                description: 'Please authorize access to your Google Calendar in the new tab.',
+            });
         } else if (result.meetLink && chatRoomId) {
             const meetMessage = `I've created a Google Meet for us: <a href="${result.meetLink}" target="_blank" rel="noopener noreferrer" style="color: hsl(var(--primary)); text-decoration: underline;">${result.meetLink}</a>`;
             handleSendMessage(meetMessage);

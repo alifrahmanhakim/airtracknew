@@ -10,7 +10,8 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 function getOAuth2Client() {
     const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } = process.env;
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI) {
-        throw new Error('Google OAuth credentials are not configured in .env');
+        // We return null instead of throwing an error to be handled gracefully.
+        return null;
     }
     return new google.auth.OAuth2(
         GOOGLE_CLIENT_ID,
@@ -24,6 +25,9 @@ function getOAuth2Client() {
 // For now, let's assume we can get the code and store the token.
 export async function handleGoogleCallback(code: string, userId: string) {
     const oauth2Client = getOAuth2Client();
+    if (!oauth2Client) {
+        return { success: false, error: 'Google OAuth credentials are not configured.' };
+    }
     try {
         const { tokens } = await oauth2Client.getToken(code);
         
@@ -53,6 +57,10 @@ export async function createGoogleMeet(params: CreateMeetParams) {
     const userId = '...'; // TODO: Replace with actual user ID from session
 
     const oauth2Client = getOAuth2Client();
+    if (!oauth2Client) {
+        return { success: false, error: 'Google OAuth credentials are not configured in the .env file.' };
+    }
+
     const tokenRef = doc(db, 'user_tokens', userId);
     const tokenSnap = await getDoc(tokenRef);
 
