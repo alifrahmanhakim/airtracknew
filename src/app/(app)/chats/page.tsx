@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { collection, query, where, onSnapshot, orderBy, collectionGroup } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, collectionGroup, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { User, ChatMessage } from '@/lib/types';
 import { Card } from '@/components/ui/card';
