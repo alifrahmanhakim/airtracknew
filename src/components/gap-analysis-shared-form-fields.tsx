@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
@@ -13,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from './ui/button';
-import { CalendarIcon, Plus, Trash2, Edit } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2, Edit, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Combobox, ComboboxOption } from './ui/combobox';
@@ -65,6 +66,11 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
   const { fields: inspectorFields, append: appendInspector, remove: removeInspector, update: updateInspector } = useFieldArray({
       control: form.control,
       name: "inspectors",
+  });
+
+  const { fields: verifierFields, append: appendVerifier, remove: removeVerifier, update: updateVerifier } = useFieldArray({
+      control: form.control,
+      name: "verifiers",
   });
   
   const { fields: actionFields } = useFieldArray({
@@ -242,7 +248,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
       
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>E. EVALUATION</CardTitle>
+            <CardTitle>C. EVALUATION</CardTitle>
             <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
             </Button>
@@ -305,7 +311,12 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                 </FormItem>
             )}/>
             <FormField control={form.control} name="summary" render={({ field }) => ( <FormItem> <FormLabel>SUMMARY</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader><CardTitle>E. DGCA AUTHORIZATION</CardTitle></CardHeader>
+        <CardContent className="space-y-6">
             <div>
               <FormLabel>Inspector Names & Signatures</FormLabel>
               <div className="space-y-3 mt-2">
@@ -376,6 +387,86 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
               </div>
             </div>
 
+            <div>
+              <FormLabel>Verified by a. Sub-directorate</FormLabel>
+              <div className="space-y-3 mt-2">
+                {verifierFields.map((field, index) => {
+                  const signature = form.watch(`verifiers.${index}.signature`);
+                  return (
+                    <div key={field.id} className="flex items-start gap-4 p-4 border rounded-md">
+                        <div className='flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4'>
+                          <FormField
+                              control={form.control}
+                              name={`verifiers.${index}.name`}
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel className="text-xs">Verifier Name {index + 1}</FormLabel>
+                                  <FormControl>
+                                      <Input placeholder="Full Name" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                           <FormField
+                              control={form.control}
+                              name={`verifiers.${index}.date`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-xs">Date</FormLabel>
+                                   <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          <FormItem>
+                            <FormLabel className="text-xs">Digital Signature</FormLabel>
+                             <FormControl>
+                                <div>
+                                {signature ? (
+                                    <div className='relative group'>
+                                        <div className="bg-white p-2 border rounded-md aspect-video max-w-[200px]">
+                                            <Image src={signature} alt="Signature" width={200} height={100} className='w-full h-auto' />
+                                        </div>
+                                        <SignaturePadDialog
+                                            onSave={(newSignature) => updateVerifier(index, { ...field, signature: newSignature })}
+                                            trigger={
+                                                <Button size="icon" variant="outline" className='absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity'>
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            }
+                                        />
+                                    </div>
+                                ) : (
+                                    <SignaturePadDialog
+                                        onSave={(newSignature) => updateVerifier(index, { ...field, signature: newSignature })}
+                                        trigger={
+                                            <Button type="button" variant="outline">Add Signature</Button>
+                                        }
+                                    />
+                                )}
+                                </div>
+                             </FormControl>
+                            <FormMessage />
+                           </FormItem>
+                        </div>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeVerifier(index)} className='text-destructive hover:text-destructive'>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+                 <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => appendVerifier({ id: `verifier-${Date.now()}`, name: '', signature: '', date: '' })}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Verifier
+                </Button>
+              </div>
+            </div>
         </CardContent>
       </Card>
     </>

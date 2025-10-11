@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem, ImplementationTaskItem } from '@/lib/types';
+import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem, ImplementationTaskItem, Verifier } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { format, parseISO } from 'date-fns';
 import { Separator } from './ui/separator';
@@ -153,9 +153,10 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 <DetailRow label="Status Item" value={<Badge variant={record.statusItem === 'CLOSED' ? 'default' : 'destructive'}>{record.statusItem}</Badge>} />
                 <DetailRow label="Summary" value={record.summary} isLongText />
                 
-                <div className="py-3 border-b">
-                    <dt className="font-semibold text-muted-foreground mb-2 flex items-center gap-2"><User className="h-4 w-4" /> Inspectors</dt>
+                 <div className="py-3 border-b">
+                    <dt className="font-semibold text-muted-foreground mb-2 flex items-center gap-2"><User className="h-4 w-4" /> DGCA Authorization</dt>
                     <dd className="space-y-4">
+                        <p className='text-sm font-medium'>Inspectors:</p>
                         {record.inspectors?.map((inspector) => (
                         <div key={inspector.id} className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-4 border p-3 rounded-md">
                             <p><span className="font-medium">Name:</span> {inspector.name}</p>
@@ -164,6 +165,25 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                                 {inspector.signature ? (
                                     <div className="bg-white p-2 border rounded-md max-w-[200px]">
                                         <Image src={inspector.signature} alt={`Signature of ${inspector.name}`} width={200} height={100} className="w-full h-auto" />
+                                    </div>
+                                ) : (
+                                    <span>N/A</span>
+                                )}
+                            </div>
+                        </div>
+                        ))}
+                         <p className='text-sm font-medium pt-2'>Verified by:</p>
+                        {record.verifiers?.map((verifier) => (
+                        <div key={verifier.id} className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-4 border p-3 rounded-md">
+                           <div>
+                                <p><span className="font-medium">Name:</span> {verifier.name}</p>
+                                <p><span className="font-medium">Date:</span> {verifier.date ? format(parseISO(verifier.date), 'PPP') : 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="font-medium mb-1">Signature:</p>
+                                {verifier.signature ? (
+                                    <div className="bg-white p-2 border rounded-md max-w-[200px]">
+                                        <Image src={verifier.signature} alt={`Signature of ${verifier.name}`} width={200} height={100} className="w-full h-auto" />
                                     </div>
                                 ) : (
                                     <span>N/A</span>

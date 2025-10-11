@@ -125,6 +125,13 @@ export type Inspector = {
     signature?: string;
 };
 
+export type Verifier = {
+    id: string;
+    name: string;
+    signature?: string;
+    date?: string;
+}
+
 export type ActionRequiredItem = {
     id: 'disapproval' | 'differences' | 'efod';
     checked: boolean;
@@ -155,6 +162,7 @@ export type GapAnalysisRecord = {
     statusItem: 'OPEN' | 'CLOSED';
     summary: string;
     inspectors: Inspector[];
+    verifiers?: Verifier[];
     implementationTasks?: ImplementationTaskItem[];
     createdAt: string;
 };

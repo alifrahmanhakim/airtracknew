@@ -1,4 +1,5 @@
 
+
 import { z } from 'zod';
 
 export const ccefodFormSchema = z.object({
@@ -49,6 +50,13 @@ const inspectorSchema = z.object({
   signature: z.string().optional(),
 });
 
+const verifierSchema = z.object({
+    id: z.string(),
+    name: z.string().min(1, 'Verifier name is required'),
+    signature: z.string().optional(),
+    date: z.string().optional(),
+});
+
 export const gapAnalysisFormSchema = z.object({
   slReferenceNumber: z.string().min(1, 'SL Reference Number is required'),
   annex: z.string().min(1, 'Annex is required'),
@@ -84,6 +92,7 @@ export const gapAnalysisFormSchema = z.object({
   statusItem: z.enum(['OPEN', 'CLOSED']),
   summary: z.string().optional(),
   inspectors: z.array(inspectorSchema).optional(),
+  verifiers: z.array(verifierSchema).optional(),
   implementationTasks: z.array(z.object({
     id: z.string(),
     description: z.string().min(1, 'Task description is required.'),

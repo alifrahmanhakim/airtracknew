@@ -18,7 +18,7 @@ import {
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
-import type { GapAnalysisRecord, Project, ActionRequiredItem } from '@/lib/types';
+import type { GapAnalysisRecord, Project, ActionRequiredItem, ImplementationTaskItem } from '@/lib/types';
 import { GapAnalysisSharedFormFields, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { updateGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { ScrollArea } from './ui/scroll-area';
@@ -94,6 +94,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
       ...record,
       actionRequired: getActionRequiredDefault(),
       inspectors: record.inspectors || [],
+      verifiers: record.verifiers || [],
       implementationTasks: record.implementationTasks || [],
     },
   });

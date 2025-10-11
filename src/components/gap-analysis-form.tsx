@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -74,6 +75,9 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     summary: '',
     inspectors: [
         { id: 'inspector-1', name: '', signature: '' }
+    ],
+    verifiers: [
+        { id: 'verifier-1', name: '', signature: '', date: '' }
     ],
     implementationTasks: [
         { id: 'task-1', description: '', estimatedComplianceDate: '' }
