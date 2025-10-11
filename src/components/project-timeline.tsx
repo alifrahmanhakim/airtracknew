@@ -379,7 +379,7 @@ export function ProjectTimeline({ projectId, projectType, tasks, teamMembers, on
 
                       return (
                           <div ref={todayRef} className="absolute top-0 bottom-0 w-1.5 bg-primary/70 z-20" style={{ left: `${todayLeft}px` }} >
-                              <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
+                              <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-6 py-1 rounded-b-md">
                                   Today
                               </div>
                           </div>
