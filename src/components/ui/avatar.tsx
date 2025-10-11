@@ -10,7 +10,7 @@ const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> & { online?: boolean; className?: string }
 >(({ className, online, ...props }, ref) => (
-  <div className={cn("relative rounded-full", className)}>
+  <div className={cn("relative rounded-full aspect-square", className)}>
     <AvatarPrimitive.Root
       ref={ref}
       className={cn(
