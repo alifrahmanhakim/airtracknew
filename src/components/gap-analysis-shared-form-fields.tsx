@@ -17,15 +17,12 @@ import { Button } from './ui/button';
 import { CalendarIcon, Plus, Trash2, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { Calendar } from './ui/calendar';
 import { Combobox, ComboboxOption } from './ui/combobox';
 import { useState } from 'react';
 import { SignaturePadDialog } from './signature-pad';
 import Image from 'next/image';
 import { gapAnalysisFormSchema } from '@/lib/schemas';
+import { Checkbox } from './ui/checkbox';
 
 
 export type GapAnalysisFormValues = z.infer<typeof gapAnalysisFormSchema>;
@@ -37,6 +34,13 @@ const complianceStatusOptions: GapAnalysisFormValues['evaluations'][0]['complian
     'Less protective or partially implemented or not implemented',
     'Not Applicable',
 ];
+
+const actionRequiredItems = [
+  { id: 'disapproval', label: 'Notify any disapproval before' },
+  { id: 'differences', label: 'Notify any differences and compliance before' },
+  { id: 'efod', label: 'Consider the use of the Electronic Filing of Differences (EFOD) System for notification of differences and compliance' },
+] as const;
+
 
 type GapAnalysisSharedFormFieldsProps = {
   form: ReturnType<typeof useFormContext<GapAnalysisFormValues>>;
@@ -67,31 +71,9 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
               control={form.control}
               name="dateOfEvaluation"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Date of Evaluation</FormLabel>
-                   <Popover modal={false}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                      </PopoverContent>
-                    </Popover>
+                   <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -101,31 +83,9 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
               control={form.control}
               name="implementationDate"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Tanggal Pelaksanaan</FormLabel>
-                   <Popover modal={false}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                      </PopoverContent>
-                    </Popover>
+                   <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -133,45 +93,67 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
           </div>
           <FormField control={form.control} name="subject" render={({ field }) => ( <FormItem> <FormLabel>Subject</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <FormField control={form.control} name="letterSubject" render={({ field }) => ( <FormItem> <FormLabel>Perihal Surat</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="actionRequired" render={({ field }) => ( <FormItem> <FormLabel>Action required</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          
+           <FormField
+              control={form.control}
+              name="actionRequired"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel>Action required</FormLabel>
+                  </div>
+                  {actionRequiredItems.map((item) => (
+                    <FormField
+                      key={item.id}
+                      control={form.control}
+                      name="actionRequired"
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={item.id}
+                            className="flex flex-row items-start space-x-3 space-y-0"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(item.id)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...(field.value || []), item.id])
+                                    : field.onChange(
+                                        field.value?.filter(
+                                          (value) => value !== item.id
+                                        )
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {item.label}
+                            </FormLabel>
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  ))}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
           <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium px-1">Standardization Process</legend>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
                 <FormField control={form.control} name="effectiveDate" render={({ field }) => ( 
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Effective Date</FormLabel>
-                     <Popover modal={false}>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                        </PopoverContent>
-                      </Popover>
+                     <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem> 
                 )}/>
                 <FormField control={form.control} name="applicabilityDate" render={({ field }) => ( 
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Applicability Date</FormLabel>
-                     <Popover modal={false}>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                        </PopoverContent>
-                      </Popover>
+                     <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem> 
                 )}/>
@@ -179,36 +161,9 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                   control={form.control}
                   name="embeddedApplicabilityDate"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Embedded applicability date(s)</FormLabel>
-                      <Popover modal={false}>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

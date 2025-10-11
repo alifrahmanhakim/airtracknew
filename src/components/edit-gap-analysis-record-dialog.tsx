@@ -21,7 +21,6 @@ import type { GapAnalysisRecord, Project } from '@/lib/types';
 import { GapAnalysisSharedFormFields, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { updateGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { ScrollArea } from './ui/scroll-area';
-import { parseISO } from 'date-fns';
 import { ComboboxOption } from './ui/combobox';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -66,11 +65,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...record,
-      dateOfEvaluation: record.dateOfEvaluation ? parseISO(record.dateOfEvaluation) : undefined,
-      effectiveDate: record.effectiveDate ? parseISO(record.effectiveDate) : undefined,
-      applicabilityDate: record.applicabilityDate ? parseISO(record.applicabilityDate) : undefined,
-      implementationDate: record.implementationDate ? parseISO(record.implementationDate) : undefined,
-      embeddedApplicabilityDate: record.embeddedApplicabilityDate ? parseISO(record.embeddedApplicabilityDate) : new Date(),
+      actionRequired: Array.isArray(record.actionRequired) ? record.actionRequired : (typeof record.actionRequired === 'string' ? [record.actionRequired] : []),
       inspectors: record.inspectors || [],
     },
   });

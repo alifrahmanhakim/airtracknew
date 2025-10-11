@@ -50,7 +50,7 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     fetchProjects();
   }, []);
 
-  const defaultFormValues: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate?: Date } = {
+  const defaultFormValues: Omit<GapAnalysisFormValues, 'embeddedApplicabilityDate'> & { embeddedApplicabilityDate?: string, actionRequired: string[] } = {
     slReferenceNumber: '',
     annex: '',
     typeOfStateLetter: '',
@@ -59,7 +59,7 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     letterName: '',
     letterSubject: '',
     implementationDate: undefined,
-    actionRequired: '',
+    actionRequired: [],
     effectiveDate: undefined,
     applicabilityDate: undefined,
     embeddedApplicabilityDate: undefined,

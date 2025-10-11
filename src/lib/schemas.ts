@@ -58,10 +58,12 @@ export const gapAnalysisFormSchema = z.object({
   letterName: z.string().optional(),
   letterSubject: z.string().optional(),
   implementationDate: z.string().optional(),
-  actionRequired: z.string().min(1, 'Action Required is required'),
+  actionRequired: z.array(z.string()).refine(value => value.some(item => item), {
+    message: "You have to select at least one item.",
+  }),
   effectiveDate: z.string().optional(),
   applicabilityDate: z.string().optional(),
-  embeddedApplicabilityDate: z.string({ required_error: 'Embedded applicability date is required.' }),
+  embeddedApplicabilityDate: z.string().optional(),
   evaluations: z.array(z.object({
     id: z.string(),
     icaoSarp: z.string().min(1, 'ICAO SARP is required'),

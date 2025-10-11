@@ -135,7 +135,7 @@ export type GapAnalysisRecord = {
     letterName: string;
     letterSubject: string;
     implementationDate?: string;
-    actionRequired: string;
+    actionRequired: string[];
     effectiveDate?: string;
     applicabilityDate?: string;
     embeddedApplicabilityDate: string;
