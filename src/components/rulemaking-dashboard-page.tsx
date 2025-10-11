@@ -4,7 +4,7 @@
 import type { Project, User, Task } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock, LayoutGrid, ListFilter } from 'lucide-react';
+import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock, LayoutGrid, ListFilter, HelpCircle } from 'lucide-react';
 import { useMemo, useState, useRef } from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -40,7 +40,6 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
     const progress = total > 0 ? (completed / total) * 100 : 0;
   
-    // 1. If progress is 100% or status is manually set to Completed, it's Completed.
     if (progress === 100 || project.status === 'Completed') {
       return 'Completed';
     }
@@ -48,12 +47,10 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     const today = startOfToday();
     const projectEnd = parseISO(project.endDate);
   
-    // 2. Highest priority after completion: If the end date is in the past, it's Off Track.
     if (isAfter(today, projectEnd)) {
       return 'Off Track';
     }
   
-    // 3. If there is a critical issue, it's At Risk.
     if (hasCritical) {
       return 'At Risk';
     }
@@ -61,7 +58,6 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     const projectStart = parseISO(project.startDate);
     const totalDuration = differenceInDays(projectEnd, projectStart);
   
-    // 4. If progress is significantly behind the time elapsed, it's At Risk.
     if (totalDuration > 0) {
       const elapsedDuration = differenceInDays(today, projectStart);
       const timeProgress = (elapsedDuration / totalDuration) * 100;
@@ -71,7 +67,6 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
       }
     }
     
-    // 5. If none of the above severe conditions are met, it's On Track.
     return 'On Track';
 };
 
@@ -113,7 +108,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
             total, 
             completed: statusCounts['Completed'],
             onTrack: statusCounts['On Track'],
-            atRiskOrOffTrack: statusCounts['At Risk'] + statusCounts['Off Track'],
+            atRisk: statusCounts['At Risk'],
+            offTrack: statusCounts['Off Track'],
             highPriority, 
             distribution 
         };
@@ -251,8 +247,15 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                                 <AlertTriangle className="h-6 w-6 text-yellow-500" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.atRiskOrOffTrack}</p>
-                                    <p className="text-sm text-muted-foreground">At Risk / Off Track</p>
+                                    <p className="text-2xl font-bold">{stats.atRisk}</p>
+                                    <p className="text-sm text-muted-foreground">At Risk</p>
+                                </div>
+                            </div>
+                             <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
+                                <AlertCircle className="h-6 w-6 text-red-500" />
+                                <div>
+                                    <p className="text-2xl font-bold">{stats.offTrack}</p>
+                                    <p className="text-sm text-muted-foreground">Off Track</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -288,69 +291,39 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className='flex items-center gap-2'><Flag className='text-red-500' /> High Priority Items</CardTitle>
+                            <CardTitle className='flex items-center gap-2'><HelpCircle className='text-blue-500' /> Status Logic</CardTitle>
+                            <CardDescription>How project status is automatically determined.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                           {stats.highPriority.length > 0 ? stats.highPriority.map(p => (
-                               <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`}>
-                                <div className='p-3 rounded-md bg-red-50 border border-red-200 hover:bg-red-100 cursor-pointer dark:bg-red-900/20 dark:border-red-500/30 dark:hover:bg-red-900/30 flex items-center gap-2'>
-                                    <ArrowRight className='h-4 w-4 text-red-500'/>
-                                    <div>
-                                        <p className='font-bold text-red-800 dark:text-red-300'>CASR {p.casr}</p>
-                                        <p className='text-sm text-red-700 dark:text-red-400 truncate'>{p.name}</p>
-                                    </div>
+                        <CardContent className="space-y-4 text-xs">
+                            <div className="flex items-start gap-3">
+                                <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="font-semibold text-green-600 dark:text-green-400">Completed</p>
+                                    <p className="text-muted-foreground">All tasks are 100% done.</p>
                                 </div>
-                               </Link>
-                           )) : (
-                               <p className="text-sm text-muted-foreground text-center py-4">No high priority items.</p>
-                           )}
-                        </CardContent>
-                    </Card>
-                     <Card className="flex flex-col">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-destructive"><AlertCircle className="h-5 w-5"/> Off Track Projects</CardTitle>
-                            <CardDescription>Projects that have passed their deadline.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3 flex-grow">
-                            {paginatedDeadlineProjects.length > 0 ? (
-                                paginatedDeadlineProjects.map(project => {
-                                    const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
-                                    return (
-                                        <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-muted/50 p-2 rounded-md">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <p className="font-semibold truncate flex-1">CASR {project.casr}</p>
-                                                <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
-                                            </div>
-                                             <p className="text-xs text-muted-foreground truncate">{project.name}</p>
-                                        </Link>
-                                    )
-                                })
-                            ) : (
-                                <div className="text-center text-sm text-muted-foreground py-4">
-                                    <CalendarClock className="mx-auto h-8 w-8 mb-2" />
-                                    No off track projects. Great job!
+                            </div>
+                             <div className="flex items-start gap-3">
+                                <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="font-semibold text-red-600 dark:text-red-400">Off Track</p>
+                                    <p className="text-muted-foreground">The project has passed its due date but isn't complete.</p>
                                 </div>
-                            )}
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="font-semibold text-yellow-600 dark:text-yellow-400">At Risk</p>
+                                    <p className="text-muted-foreground">A task has a critical issue, OR progress is &gt;20% behind the timeline.</p>
+                                </div>
+                            </div>
+                             <div className="flex items-start gap-3">
+                                <Clock className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="font-semibold text-blue-600 dark:text-blue-400">On Track</p>
+                                    <p className="text-muted-foreground">The project is on schedule and has no critical issues.</p>
+                                </div>
+                            </div>
                         </CardContent>
-                         {totalDeadlinePages > 1 && (
-                             <CardFooter className="pt-4 mt-auto">
-                                <Pagination>
-                                    <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage - 1); }} className={deadlinePage === 1 ? 'pointer-events-none opacity-50' : ''} />
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <span className="px-4 py-2 text-sm">
-                                            Page {deadlinePage} of {totalDeadlinePages}
-                                        </span>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage + 1); }} className={deadlinePage >= totalDeadlinePages ? 'pointer-events-none opacity-50' : ''} />
-                                    </PaginationItem>
-                                    </PaginationContent>
-                                </Pagination>
-                            </CardFooter>
-                        )}
                     </Card>
                 </aside>
                 
