@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { countAllTasks } from '@/lib/data-utils';
 import { ProjectCard } from './project-card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Separator } from './ui/separator';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -74,16 +75,10 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
 const StatusLogicGuide = () => {
     const statuses = [
         {
-            icon: Clock,
-            title: 'On Track',
-            description: 'Proyek berjalan sesuai jadwal dan progres.',
-            color: 'text-blue-500',
-        },
-        {
-            icon: AlertTriangle,
-            title: 'At Risk',
-            description: 'Progres tertinggal dari linimasa atau ada isu kritis.',
-            color: 'text-yellow-500',
+            icon: CheckCircle,
+            title: 'Completed',
+            description: 'Progres penyelesaian tugas telah mencapai 100%.',
+            color: 'text-green-500',
         },
         {
             icon: AlertCircle,
@@ -92,35 +87,80 @@ const StatusLogicGuide = () => {
             color: 'text-red-500',
         },
         {
-            icon: CheckCircle,
-            title: 'Completed',
-            description: 'Semua tugas dalam proyek telah selesai (progres 100%).',
-            color: 'text-green-500',
+            icon: AlertTriangle,
+            title: 'At Risk',
+            description: 'Progres tertinggal dari linimasa atau ada isu kritis.',
+            color: 'text-yellow-500',
+        },
+        {
+            icon: Clock,
+            title: 'On Track',
+            description: 'Proyek berjalan sesuai jadwal dan progres.',
+            color: 'text-blue-500',
         },
     ];
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <HelpCircle className="h-5 w-5" />
-                    Status Logic Guide
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+        <div className='space-y-4'>
+             <h3 className="font-semibold flex items-center gap-2">
+                <HelpCircle className="h-5 w-5" />
+                Status Logic Guide
+            </h3>
+            <div className="space-y-3">
                 {statuses.map(status => (
                     <div key={status.title} className="flex items-start gap-3">
                         <status.icon className={cn("h-5 w-5 mt-0.5 flex-shrink-0", status.color)} />
                         <div>
-                            <p className="font-semibold">{status.title}</p>
+                            <p className="font-semibold text-sm">{status.title}</p>
                             <p className="text-xs text-muted-foreground">{status.description}</p>
                         </div>
                     </div>
                 ))}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 };
+
+const StatusCard = ({
+    title,
+    count,
+    icon: Icon,
+    className,
+    projects,
+}: {
+    title: string,
+    count: number,
+    icon: React.ElementType,
+    className?: string,
+    projects: Project[]
+}) => (
+    <Popover>
+        <PopoverTrigger asChild>
+            <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted">
+                <Icon className={cn("h-6 w-6 text-muted-foreground", className)} />
+                <div>
+                    <p className="text-2xl font-bold">{count}</p>
+                    <p className="text-sm font-medium text-muted-foreground">{title}</p>
+                </div>
+            </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-80">
+            <div className="font-bold mb-2">{title} Projects</div>
+             {projects.length > 0 ? (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {projects.map(p => (
+                        <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
+                            <p className="font-semibold">{p.name}</p>
+                            <p className="text-xs text-muted-foreground">Due: {format(parseISO(p.endDate), 'dd MMM yyyy')}</p>
+                        </Link>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-sm text-muted-foreground">No projects with this status.</p>
+            )}
+        </PopoverContent>
+    </Popover>
+);
 
 
 export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: RulemakingDashboardPageProps) {
@@ -212,49 +252,6 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         return filtered;
     }, [projects, searchTerm, statusFilter, tagFilter]);
 
-    const StatusCard = ({
-        title,
-        count,
-        icon: Icon,
-        className,
-        projects,
-    }: {
-        title: string,
-        count: number,
-        icon: React.ElementType,
-        className?: string,
-        projects: Project[]
-    }) => (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Card className="hover:bg-muted/50 cursor-pointer">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                        <Icon className={cn("h-4 w-4 text-muted-foreground", className)} />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{count}</div>
-                    </CardContent>
-                </Card>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-                <div className="font-bold mb-2">{title} Projects</div>
-                 {projects.length > 0 ? (
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {projects.map(p => (
-                            <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md hover:bg-accent hover:text-accent-foreground">
-                                <p className="font-semibold">{p.name}</p>
-                                <p className="text-xs text-muted-foreground">Due: {format(parseISO(p.endDate), 'dd MMM yyyy')}</p>
-                            </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground">No projects with this status.</p>
-                )}
-            </PopoverContent>
-        </Popover>
-    );
-
     return (
         <TooltipProvider>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -263,35 +260,108 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                 <p className="text-muted-foreground">Central hub for tracking compliance and progress of all CASRs.</p>
             </div>
             
-            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4'>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
-                     <div className="relative w-full sm:max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            placeholder="Search by CASR ID, title, etc..." 
-                            className="pl-9"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Projects Overview</CardTitle>
+                    <CardDescription>A summary of all rulemaking projects.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Column 1: Snapshot & Chart */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="space-y-2">
+                             <h3 className="font-semibold">Project Snapshot</h3>
+                             <div className="grid grid-cols-2 gap-4">
+                                <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
+                                <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
+                                <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
+                                <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
+                                <StatusCard title="Off Track" count={stats.statusGroups['Off Track'].length} icon={AlertCircle} className="text-red-500" projects={stats.statusGroups['Off Track']} />
+                             </div>
+                        </div>
+                        <Separator />
+                        <div>
+                             <h3 className="font-semibold">Status Distribution</h3>
+                              <ChartContainer config={{}} className="h-40 w-full mt-2">
+                                <ResponsiveContainer>
+                                    <PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                        <Pie data={stats.distribution} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={2}>
+                                             {stats.distribution.map((entry) => (
+                                                <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-2 text-xs">
+                                {stats.distribution.filter(d => d.value > 0).map(item => (
+                                    <div key={item.name} className="flex items-center gap-2">
+                                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                                        <span>{item.name} ({stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(0) : 0}%)</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Statuses</SelectItem>
-                            <SelectItem value="On Track">On Track</SelectItem>
-                            <SelectItem value="At Risk">At Risk</SelectItem>
-                            <SelectItem value="Off Track">Off Track</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                        </SelectContent>
-                    </Select>
-                     <Select value={tagFilter} onValueChange={setTagFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by tag..." /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Tags</SelectItem>
-                            {allTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
+                     {/* Column 2: Status Logic */}
+                    <div className="lg:col-span-1">
+                       <StatusLogicGuide />
+                    </div>
+                    {/* Column 3: Off Track */}
+                    <div className="lg:col-span-1">
+                        <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20 h-full">
+                            <CardHeader>
+                                <CardTitle className='flex items-center gap-2 text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
+                                <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline and are not yet completed.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                            {paginatedDeadlineProjects.length > 0 ? (
+                                <div className="space-y-3">
+                                    {paginatedDeadlineProjects.map(project => {
+                                        const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
+                                        return (
+                                            <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
+                                                    <div className="flex items-center justify-between gap-4">
+                                                        <p className="font-semibold break-words flex-1">{project.name}</p>
+                                                        <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
+                                                    </div>
+                                            </Link>
+                                        )
+                                    })}
+                                </div>
+                            ) : (
+                                    <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4">
+                                        <CheckCircle className="mx-auto h-8 w-8 mb-2" />
+                                        No projects are off track.
+                                    </div>
+                            )}
+                            </CardContent>
+                            {totalDeadlinePages > 1 && (
+                                <CardFooter>
+                                    <Pagination>
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage - 1); }} className={deadlinePage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                                            </PaginationItem>
+                                            <PaginationItem>
+                                                <span className="px-4 py-2 text-sm">
+                                                    Page {deadlinePage} of {totalDeadlinePages}
+                                                </span>
+                                            </PaginationItem>
+                                            <PaginationItem>
+                                                <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage + 1); }} className={deadlinePage >= totalDeadlinePages ? 'pointer-events-none opacity-50' : ''} />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
+                                </CardFooter>
+                            )}
+                        </Card>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mt-8 mb-4 gap-4'>
+                 <h2 className="text-2xl font-bold tracking-tight">All Regulations</h2>
                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                     <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'card' | 'table')} aria-label="View mode">
                         <ToggleGroupItem value="card" aria-label="Card view">
@@ -304,119 +374,50 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                     <AddRulemakingProjectDialog allUsers={allUsers} onProjectAdd={onProjectAdd} />
                  </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 flex-1">
-                {/* Left Sidebar */}
-                <aside className="md:col-span-1 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Project Snapshot</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                           <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
-                           <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
-                           <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
-                           <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
-                           <StatusCard title="Off Track" count={stats.statusGroups['Off Track'].length} icon={AlertCircle} className="text-red-500" projects={stats.statusGroups['Off Track']} />
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Status Distribution</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={{}} className="h-48 w-full">
-                                <ResponsiveContainer>
-                                    <PieChart>
-                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                        <Pie data={stats.distribution} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={2}>
-                                             {stats.distribution.map((entry) => (
-                                                <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
-                                {stats.distribution.filter(d => d.value > 0).map(item => (
-                                    <div key={item.name} className="flex items-center gap-2">
-                                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                                        <span>{item.name} ({stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(0) : 0}%)</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <StatusLogicGuide />
-
-                    <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20">
-                        <CardHeader>
-                            <CardTitle className='flex items-center gap-2 text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
-                            <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline and are not yet completed.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                           {paginatedDeadlineProjects.length > 0 ? (
-                               <div className="space-y-3">
-                                   {paginatedDeadlineProjects.map(project => {
-                                       const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
-                                       return (
-                                           <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <p className="font-semibold flex-1 break-words">{project.name}</p>
-                                                    <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
-                                                </div>
-                                           </Link>
-                                       )
-                                   })}
-                               </div>
-                           ) : (
-                                <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4">
-                                    <CheckCircle className="mx-auto h-8 w-8 mb-2" />
-                                    No projects are off track.
-                                </div>
-                           )}
-                        </CardContent>
-                        {totalDeadlinePages > 1 && (
-                            <CardFooter>
-                                <Pagination>
-                                    <PaginationContent>
-                                        <PaginationItem>
-                                            <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage - 1); }} className={deadlinePage === 1 ? 'pointer-events-none opacity-50' : ''} />
-                                        </PaginationItem>
-                                        <PaginationItem>
-                                            <span className="px-4 py-2 text-sm">
-                                                Page {deadlinePage} of {totalDeadlinePages}
-                                            </span>
-                                        </PaginationItem>
-                                        <PaginationItem>
-                                            <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleDeadlinePageChange(deadlinePage + 1); }} className={deadlinePage >= totalDeadlinePages ? 'pointer-events-none opacity-50' : ''} />
-                                        </PaginationItem>
-                                    </PaginationContent>
-                                </Pagination>
-                            </CardFooter>
-                        )}
-                    </Card>
-                </aside>
-                
-                {/* Main Content */}
-                <main className="md:col-span-3">
-                     {viewMode === 'card' ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-                           {filteredProjects.map(project => (
-                               <ProjectCard
-                                   key={project.id}
-                                   project={project}
-                                   allUsers={allUsers}
-                               />
-                           ))}
-                        </div>
-                    ) : (
-                        <RulemakingTable projects={filteredProjects} sort={sort} setSort={setSort} />
-                    )}
-                </main>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-6">
+                <div className="relative w-full sm:max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search by CASR ID, title, etc..." 
+                        className="pl-9"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="On Track">On Track</SelectItem>
+                        <SelectItem value="At Risk">At Risk</SelectItem>
+                        <SelectItem value="Off Track">Off Track</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Select value={tagFilter} onValueChange={setTagFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by tag..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Tags</SelectItem>
+                        {allTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
+                    </SelectContent>
+                </Select>
             </div>
+            
+            <main>
+                 {viewMode === 'card' ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                       {filteredProjects.map(project => (
+                           <ProjectCard
+                               key={project.id}
+                               project={project}
+                               allUsers={allUsers}
+                           />
+                       ))}
+                    </div>
+                ) : (
+                    <RulemakingTable projects={filteredProjects} sort={sort} setSort={setSort} />
+                )}
+            </main>
         </main>
         </TooltipProvider>
     );
