@@ -40,6 +40,7 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
     const progress = total > 0 ? (completed / total) * 100 : 0;
   
+    // 1. If progress is 100% or status is manually set to Completed, it's Completed.
     if (progress === 100 || project.status === 'Completed') {
       return 'Completed';
     }
@@ -47,10 +48,12 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     const today = startOfToday();
     const projectEnd = parseISO(project.endDate);
   
+    // 2. Highest priority after completion: If the end date is in the past, it's Off Track.
     if (isAfter(today, projectEnd)) {
       return 'Off Track';
     }
-    
+  
+    // 3. If there is a critical issue, it's At Risk.
     if (hasCritical) {
       return 'At Risk';
     }
@@ -58,6 +61,7 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     const projectStart = parseISO(project.startDate);
     const totalDuration = differenceInDays(projectEnd, projectStart);
   
+    // 4. If progress is significantly behind the time elapsed, it's At Risk.
     if (totalDuration > 0) {
       const elapsedDuration = differenceInDays(today, projectStart);
       const timeProgress = (elapsedDuration / totalDuration) * 100;
@@ -67,6 +71,7 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
       }
     }
     
+    // 5. If none of the above severe conditions are met, it's On Track.
     return 'On Track';
 };
 
@@ -115,13 +120,13 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
     }, [projects]);
 
 
-    const projectsNearDeadline = useMemo(() => {
-        return projects.filter(p => p.status !== 'Completed')
+    const offTrackProjects = useMemo(() => {
+        return projects.filter(p => getEffectiveStatus(p) === 'Off Track')
         .sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
     }, [projects]);
     
-    const totalDeadlinePages = Math.ceil(projectsNearDeadline.length / DEADLINES_PER_PAGE);
-    const paginatedDeadlineProjects = projectsNearDeadline.slice(
+    const totalDeadlinePages = Math.ceil(offTrackProjects.length / DEADLINES_PER_PAGE);
+    const paginatedDeadlineProjects = offTrackProjects.slice(
         (deadlinePage - 1) * DEADLINES_PER_PAGE,
         deadlinePage * DEADLINES_PER_PAGE
     );
@@ -303,18 +308,18 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                     </Card>
                      <Card className="flex flex-col">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Upcoming Deadlines</CardTitle>
-                            <CardDescription>All upcoming CASR deadlines, sorted by urgency.</CardDescription>
+                            <CardTitle className="flex items-center gap-2 text-destructive"><AlertCircle className="h-5 w-5"/> Off Track Projects</CardTitle>
+                            <CardDescription>Projects that have passed their deadline.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3 flex-grow">
                             {paginatedDeadlineProjects.length > 0 ? (
                                 paginatedDeadlineProjects.map(project => {
-                                    const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
+                                    const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                                     return (
                                         <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-muted/50 p-2 rounded-md">
                                             <div className="flex items-center justify-between gap-4">
                                                 <p className="font-semibold truncate flex-1">CASR {project.casr}</p>
-                                                <Badge variant="destructive" className="whitespace-nowrap">{daysLeft} days left</Badge>
+                                                <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
                                             </div>
                                              <p className="text-xs text-muted-foreground truncate">{project.name}</p>
                                         </Link>
@@ -323,7 +328,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             ) : (
                                 <div className="text-center text-sm text-muted-foreground py-4">
                                     <CalendarClock className="mx-auto h-8 w-8 mb-2" />
-                                    No projects nearing their deadline.
+                                    No off track projects. Great job!
                                 </div>
                             )}
                         </CardContent>
