@@ -138,7 +138,7 @@ const StatusCard = ({
 }) => (
     <Popover>
         <PopoverTrigger asChild>
-            <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted">
+             <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted">
                 <Icon className={cn("h-6 w-6 text-muted-foreground", className)} />
                 <div>
                     <p className="text-2xl font-bold">{count}</p>
@@ -247,14 +247,14 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                 <p className="text-muted-foreground">Central hub for tracking compliance and progress of all CASRs.</p>
             </div>
             
-             <Card>
+            <Card>
                 <CardHeader>
                     <CardTitle>Projects Overview</CardTitle>
                     <CardDescription>A summary of all rulemaking projects.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <div className="lg:col-span-1 space-y-4">
-                       <Card className="h-full">
+                    <div className="lg:col-span-1">
+                        <Card className="h-full">
                            <CardHeader><CardTitle className="text-base">Project Snapshot</CardTitle></CardHeader>
                            <CardContent className="grid grid-cols-1 gap-3">
                                <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
@@ -264,10 +264,11 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                            </CardContent>
                        </Card>
                     </div>
-                    <div className="lg:col-span-1 space-y-4">
+                     <div className="lg:col-span-1">
                         <Card className="h-full border-red-500/50 bg-red-50 dark:bg-red-900/20 flex flex-col">
                             <CardHeader>
                                 <CardTitle className='flex items-center gap-2 text-base text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
+                                <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-grow">
                             {offTrackProjects.length > 0 ? (
@@ -277,7 +278,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                         return (
                                             <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
                                                 <div className="flex items-center justify-between gap-4">
-                                                    <p className="font-semibold break-words flex-1 text-sm">{`CASR ${project.casr} - ${project.name}`}</p>
+                                                    <p className="font-semibold text-sm">{project.name}</p>
                                                     <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
                                                 </div>
                                             </Link>
@@ -293,7 +294,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             </CardContent>
                         </Card>
                     </div>
-                     <div className="lg:col-span-1 space-y-4">
+                     <div className="lg:col-span-1">
                          <Card className="h-full">
                             <CardHeader>
                                 <CardTitle className="text-base">Status Distribution</CardTitle>
@@ -322,7 +323,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             </CardFooter>
                         </Card>
                     </div>
-                    <div className="lg:col-span-1 space-y-4">
+                   <div className="lg:col-span-1">
                         <StatusLogicGuide />
                     </div>
                 </CardContent>
