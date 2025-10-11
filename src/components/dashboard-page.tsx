@@ -278,7 +278,10 @@ export function DashboardPage() {
     filteredProjects.forEach(p => countTasksRecursively(p.tasks || [], p.name, p.id, p.projectType));
 
     const finalWorkloadData = Object.values(workloadCounts)
-      .filter(item => item.tasks > 0)
+      .filter(item => {
+        // Show item if it has tasks OR if it doesn't have tasks but the user is not a Sub-Directorate Head
+        return item.tasks > 0 || item.user.role !== 'Sub-Directorate Head';
+      })
       .map(item => {
           let workloadStatus: WorkloadStatus = 'Normal';
           if (item.workloadScore >= 15) { // Threshold for Overload
