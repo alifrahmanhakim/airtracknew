@@ -180,7 +180,24 @@ type ProjectDetailsPageProps = {
   allGapAnalysisRecords: GapAnalysisRecord[];
 };
 
+const countAllTasks = (tasks: Task[]): { total: number; completed: number } => {
+    let total = 0;
+    let completed = 0;
 
+    tasks.forEach(task => {
+        total++;
+        if (task.status === 'Done') {
+            completed++;
+        }
+        if (task.subTasks && task.subTasks.length > 0) {
+            const subCounts = countAllTasks(task.subTasks);
+            total += subCounts.total;
+            completed += subCounts.completed;
+        }
+    });
+
+    return { total, completed };
+};
 
 export function ProjectDetailsPage({ project: initialProject, users, allGapAnalysisRecords: initialGapRecords }: ProjectDetailsPageProps) {
   const [project, setProject] = useState<Project>(initialProject);
@@ -215,7 +232,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
     const casrNumber = project.casr;
     // This regex looks for "CASR" followed by the number, ensuring it's a whole word.
-    const casrPattern = new RegExp(`CASR\\s+${casrNumber}\\b`, 'i');
+    const casrPattern = new RegExp(`\\bCASR\\s+${casrNumber}\\b`, 'i');
 
     return allGapAnalysisRecords.filter(record => 
         (record.evaluations || []).some(e => 
@@ -323,8 +340,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   
   const projectManager = findUserById(project.ownerId || users[0].id, users);
   const tasks = project.tasks || [];
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((task) => task.status === 'Done').length;
+  
+  const { total: totalTasks, completed: completedTasks } = countAllTasks(tasks);
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const documentsCardTitle = project.projectType === 'Rulemaking' ? 'Documents' : 'Project Documents';
@@ -403,9 +420,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       'Blocked': 0,
       'Done': 0,
     };
-    tasks.forEach(task => {
-      counts[task.status]++;
-    });
+    const countTasks = (tasksToCount: Task[]) => {
+        tasksToCount.forEach(task => {
+            counts[task.status]++;
+            if (task.subTasks) {
+                countTasks(task.subTasks);
+            }
+        });
+    }
+    countTasks(tasks);
     return counts;
   }, [tasks]);
 
@@ -493,8 +516,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                             <div>
                                 <p className="text-sm text-muted-foreground">Timeline</p>
                                 <p className="font-semibold">{format(parseISO(project.startDate), 'dd MMM')} - {format(parseISO(project.endDate), 'dd MMM yyyy')}</p>
-                                <p className={cn("text-xs", daysLeft < 0 && effectiveStatus !== 'Completed' ? "text-destructive" : "text-muted-foreground")}>
-                                  {effectiveStatus === 'Completed' ? 'Project completed' : (daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`)}
+                                <p className={cn("text-xs", daysLeft < 0 && project.status !== 'Completed' ? "text-destructive" : "text-muted-foreground")}>
+                                  {project.status === 'Completed' ? 'Project completed' : (daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`)}
                                 </p>
                             </div>
                         </div>
@@ -646,7 +669,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                     <div className="flex-1 space-y-2">
                          <div className="flex justify-between items-baseline">
                             <p className="font-semibold text-yellow-900 dark:text-yellow-200">
-                                {tasksWithoutAttachments.length} of {tasks.length} tasks are missing attachments.
+                                {tasksWithoutAttachments.length} of {totalTasks} tasks are missing attachments.
                             </p>
                             <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
                                 <AnimatedCounter endValue={animatedAttachmentCompletion} decimals={0} />%
