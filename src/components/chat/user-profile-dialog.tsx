@@ -15,12 +15,13 @@ import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Separator } from '../ui/separator';
-import { User as UserIcon, Briefcase, Mail, Calendar, Building, ListTodo, ExternalLink, ChevronDown, FolderKanban } from 'lucide-react';
+import { User as UserIcon, Briefcase, Mail, Calendar, Building, ListTodo, ExternalLink, ChevronDown, FolderKanban, CheckCircle } from 'lucide-react';
 import { format, parseISO, differenceInDays, startOfToday } from 'date-fns';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Progress } from '../ui/progress';
 
 
 type AssignedTask = Task & {
@@ -89,6 +90,11 @@ export function UserProfileDialog({ user, assignedTasks, projects, open, onOpenC
     const rulemakingProjects = projects.filter(p => p.projectType === 'Rulemaking');
     const timKerjaProjects = projects.filter(p => p.projectType === 'Tim Kerja');
 
+    const totalTasks = assignedTasks.length;
+    const completedTasks = assignedTasks.filter(t => t.status === 'Done').length;
+    const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-lg">
@@ -120,6 +126,21 @@ export function UserProfileDialog({ user, assignedTasks, projects, open, onOpenC
                                     <Building className="h-4 w-4 text-muted-foreground" />
                                     <span>{user.department || 'N/A'}</span>
                                 </div>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <CheckCircle className="h-4 w-4" /> Task Completion
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm text-muted-foreground">{completedTasks} of {totalTasks} tasks completed</span>
+                                    <span className="font-bold text-sm">{completionPercentage.toFixed(0)}%</span>
+                                </div>
+                                <Progress value={completionPercentage} className="h-2" />
                             </CardContent>
                         </Card>
 
