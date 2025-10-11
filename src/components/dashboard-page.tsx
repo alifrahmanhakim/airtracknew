@@ -235,7 +235,7 @@ export function DashboardPage() {
         workloadCounts[user.id] = { user, openTasks: 0, doneTasks: 0, workloadScore: 0 };
     });
     
-    const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0 };
+    const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0, 'Off Track': 0 };
     let totalTasksCount = 0;
     const today = startOfToday();
     const overdueTasks: AssignedTask[] = [];
@@ -245,14 +245,22 @@ export function DashboardPage() {
         if (daysUntilDue < 0) return 5; // Overdue
         if (daysUntilDue <= 3) return 4; // Due in 3 days
         if (daysUntilDue <= 7) return 3; // Due this week
-        if (daysUntilDue <= 30) return 2; // Due this month
+        if (daysUntilDue <= 30) return 2; // Due later
         return 1; // Due later
     };
 
     const countTasksRecursively = (tasks: Task[], projectName: string, projectId: string, projectType: Project['projectType']) => {
         tasks.forEach(task => {
             totalTasksCount++;
-            taskStatusCounts[task.status]++;
+            
+            const isOverdue = task.status !== 'Done' && isAfter(today, parseISO(task.dueDate));
+
+            if (isOverdue) {
+                taskStatusCounts['Off Track']++;
+                overdueTasks.push({ ...task, projectName, projectId, projectType });
+            } else {
+                taskStatusCounts[task.status]++;
+            }
 
             const pressure = getTaskPressure(task);
             (task.assigneeIds || []).forEach(assigneeId => {
@@ -266,9 +274,6 @@ export function DashboardPage() {
                 }
             });
             
-            if (task.status !== 'Done' && isAfter(today, parseISO(task.dueDate))) {
-                overdueTasks.push({ ...task, projectName, projectId, projectType });
-            }
             if (task.subTasks && task.subTasks.length > 0) {
                 countTasksRecursively(task.subTasks, projectName, projectId, projectType);
             }
@@ -300,7 +305,6 @@ export function DashboardPage() {
         atRiskProjects: statusCounts['At Risk'],
         offTrackProjects: statusCounts['Off Track'],
         taskStatusCounts,
-        offTrackTasks: overdueTasks.length,
         totalTasks: totalTasksCount
     };
 
@@ -412,7 +416,7 @@ export function DashboardPage() {
                       {stats.taskStatusCounts['To Do']} To Do ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['To Do'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
                     </p>
                     <p className="text-xs text-yellow-500">
-                      {stats.offTrackTasks} Off Track ({stats.totalTasks > 0 ? ((stats.offTrackTasks / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                      {stats.taskStatusCounts['Off Track']} Off Track ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Off Track'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
                     </p>
                     <p className="text-xs text-destructive">
                       {stats.taskStatusCounts['Blocked']} Blocked ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Blocked'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
