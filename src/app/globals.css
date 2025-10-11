@@ -34,6 +34,16 @@
     --chart-6: 350 91.2% 59.8%;
     --chart-7: 170 91.2% 59.8%;
     --chart-8: 20 91.2% 59.8%;
+    
+    /* Sidebar colors from dark theme */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 204 70% 63%;
+    --sidebar-primary-foreground: 355.7 100% 97.3%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 204 70% 63%;
   }
 
   .dark {
@@ -83,19 +93,22 @@
     border-color: hsl(var(--border));
   }
   
-  .dark body {
-    background-color: hsl(var(--background));
-    background-size: 400% 400%;
-    animation: gradient-move 120s ease infinite;
-    background-attachment: fixed;
-  }
-  
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
     min-height: 100vh;
+  }
+  
+  .dark body {
+    background-image: linear-gradient(to right, hsl(var(--background)), hsl(var(--card)));
+    background-size: 400% 400%;
+    animation: gradient-move 120s ease infinite;
     background-attachment: fixed;
+  }
+  
+  main.bg-gradient-to-t {
+     background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
   }
 }
 
