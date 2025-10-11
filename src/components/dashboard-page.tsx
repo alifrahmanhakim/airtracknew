@@ -231,10 +231,10 @@ export function DashboardPage() {
         statusCounts[effectiveStatus]++;
     });
 
-    const workloadCounts: { [userId: string]: { user: User; tasks: number; workloadScore: number } } = {};
+    const workloadCounts: { [userId: string]: { user: User; openTasks: number; doneTasks: number; workloadScore: number } } = {};
     
     allUsers.forEach(user => {
-        workloadCounts[user.id] = { user, tasks: 0, workloadScore: 0 };
+        workloadCounts[user.id] = { user, openTasks: 0, doneTasks: 0, workloadScore: 0 };
     });
     
     const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0 };
@@ -259,9 +259,11 @@ export function DashboardPage() {
             const pressure = getTaskPressure(task);
             task.assigneeIds.forEach(assigneeId => {
                 if (workloadCounts[assigneeId]) {
-                    workloadCounts[assigneeId].tasks++;
-                    if (task.status !== 'Done') {
-                      workloadCounts[assigneeId].workloadScore += pressure;
+                    if (task.status === 'Done') {
+                        workloadCounts[assigneeId].doneTasks++;
+                    } else {
+                        workloadCounts[assigneeId].openTasks++;
+                        workloadCounts[assigneeId].workloadScore += pressure;
                     }
                 }
             });
@@ -279,8 +281,8 @@ export function DashboardPage() {
 
     const finalWorkloadData = Object.values(workloadCounts)
       .filter(item => {
-        // Show item if it has tasks OR if it doesn't have tasks but the user is not a Sub-Directorate Head
-        return item.tasks > 0 || item.user.role !== 'Sub-Directorate Head';
+        const totalTasks = item.openTasks + item.doneTasks;
+        return totalTasks > 0 || item.user.role !== 'Sub-Directorate Head';
       })
       .map(item => {
           let workloadStatus: WorkloadStatus = 'Normal';
@@ -312,7 +314,7 @@ export function DashboardPage() {
       ],
       teamWorkloadData: finalWorkloadData,
       stats: projectStats,
-      offTrackTasks: overdueTasks.sort((a,b) => parseISO(a.dueDate).getTime() - parseISO(b.dueDate).getTime()),
+      offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
     };
   }, [filteredProjects, allUsers]);
   
@@ -551,12 +553,13 @@ export function DashboardPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Member</TableHead>
-                            <TableHead>Tasks</TableHead>
+                            <TableHead>Open Tasks</TableHead>
+                            <TableHead>Done</TableHead>
                             <TableHead className="w-[120px]">Workload</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {teamWorkloadData.map(({ user, tasks, workloadStatus, workloadScore }) => {
+                        {teamWorkloadData.map(({ user, openTasks, doneTasks, workloadStatus, workloadScore }) => {
                              const isOnline = user.lastOnline ? (new Date().getTime() - new Date(user.lastOnline).getTime()) / (1000 * 60) < 5 : false;
                             return (
                                 <TableRow key={user.id}>
@@ -579,7 +582,8 @@ export function DashboardPage() {
                                             })}>{workloadStatus}</Badge>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-center font-bold">{tasks}</TableCell>
+                                    <TableCell className="text-center font-bold">{openTasks}</TableCell>
+                                    <TableCell className="text-center font-bold text-green-600">{doneTasks}</TableCell>
                                     <TableCell>
                                         <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2" />
                                     </TableCell>
