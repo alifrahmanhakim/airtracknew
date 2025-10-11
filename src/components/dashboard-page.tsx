@@ -216,111 +216,112 @@ export function DashboardPage() {
   }, [allProjects, selectedYear]);
 
   const { projectStatusData, teamWorkloadData, stats, offTrackTasks } = useMemo(() => {
-    const statusCounts: Record<Project['status'], number> = {
-        'On Track': 0,
-        'At Risk': 0,
-        'Off Track': 0,
-        'Completed': 0,
-    };
-    
-    filteredProjects.forEach(project => {
-        const effectiveStatus = getEffectiveStatus(project);
-        statusCounts[effectiveStatus]++;
-    });
+      const today = startOfToday();
+      const statusCounts: Record<Project['status'], number> = {
+          'On Track': 0, 'At Risk': 0, 'Off Track': 0, 'Completed': 0,
+      };
+      
+      const taskStatusCounts = { 
+          'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0, 'Off Track': 0,
+          'todoOnTrack': 0, 'todoAtRisk': 0, 'todoOffTrack': 0,
+      };
 
-    const workloadCounts: { [userId: string]: { user: User; openTasks: number; doneTasks: number; workloadScore: number } } = {};
-    
-    allUsers.forEach(user => {
-        workloadCounts[user.id] = { user, openTasks: 0, doneTasks: 0, workloadScore: 0 };
-    });
-    
-    const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0, 'Off Track': 0 };
-    let totalTasksCount = 0;
-    const today = startOfToday();
-    const overdueTasks: AssignedTask[] = [];
+      let totalTasksCount = 0;
+      const overdueTasks: AssignedTask[] = [];
 
-    const getTaskPressure = (task: Task): number => {
-        const daysUntilDue = differenceInDays(parseISO(task.dueDate), today);
-        if (daysUntilDue < 0) return 5; // Overdue
-        if (daysUntilDue <= 3) return 4; // Due in 3 days
-        if (daysUntilDue <= 7) return 3; // Due this week
-        if (daysUntilDue <= 30) return 2; // Due later
-        return 1; // Due later
-    };
+      filteredProjects.forEach(project => {
+          const effectiveStatus = getEffectiveStatus(project);
+          statusCounts[effectiveStatus]++;
 
-    const countTasksRecursively = (tasks: Task[], projectName: string, projectId: string, projectType: Project['projectType']) => {
-        tasks.forEach(task => {
-            totalTasksCount++;
-            
-            const isOverdue = task.status !== 'Done' && isAfter(today, parseISO(task.dueDate));
+          const tasks = project.tasks || [];
+          (function countTasksRecursively(tasks: Task[]) {
+              tasks.forEach(task => {
+                  totalTasksCount++;
+                  const dueDate = parseISO(task.dueDate);
+                  const isOverdue = isAfter(today, dueDate) && task.status !== 'Done';
 
-            if (isOverdue) {
-                taskStatusCounts['Off Track']++;
-                overdueTasks.push({ ...task, projectName, projectId, projectType });
-            } else {
-                taskStatusCounts[task.status]++;
-            }
+                  if (isOverdue) {
+                      taskStatusCounts['Off Track']++;
+                      overdueTasks.push({ ...task, projectName: project.name, projectId: project.id, projectType: project.projectType });
+                  } else {
+                      taskStatusCounts[task.status]++;
+                  }
 
-            const pressure = getTaskPressure(task);
-            (task.assigneeIds || []).forEach(assigneeId => {
-                if (workloadCounts[assigneeId]) {
-                    if (task.status === 'Done') {
-                        workloadCounts[assigneeId].doneTasks++;
-                    } else {
-                        workloadCounts[assigneeId].openTasks++;
-                        workloadCounts[assigneeId].workloadScore += pressure;
+                  if (task.status === 'To Do' && !isOverdue) {
+                      const daysUntilDue = differenceInDays(dueDate, today);
+                      if (daysUntilDue <= 7) {
+                          taskStatusCounts.todoAtRisk++;
+                      } else {
+                          taskStatusCounts.todoOnTrack++;
+                      }
+                  }
+              });
+          })(tasks);
+      });
+      
+      const workloadCounts: { [userId: string]: { user: User; openTasks: number; doneTasks: number; workloadScore: number } } = {};
+      allUsers.forEach(user => {
+          workloadCounts[user.id] = { user, openTasks: 0, doneTasks: 0, workloadScore: 0 };
+      });
+      
+      const getTaskPressure = (task: Task): number => {
+          const daysUntilDue = differenceInDays(parseISO(task.dueDate), today);
+          if (daysUntilDue < 0) return 5;
+          if (daysUntilDue <= 3) return 4;
+          if (daysUntilDue <= 7) return 3;
+          if (daysUntilDue <= 30) return 2;
+          return 1;
+      };
+
+      filteredProjects.forEach(p => {
+        const tasks = p.tasks || [];
+        (function processWorkload(tasks: Task[]) {
+            tasks.forEach(task => {
+                const pressure = getTaskPressure(task);
+                (task.assigneeIds || []).forEach(assigneeId => {
+                    if (workloadCounts[assigneeId]) {
+                        if (task.status === 'Done') {
+                            workloadCounts[assigneeId].doneTasks++;
+                        } else {
+                            workloadCounts[assigneeId].openTasks++;
+                            workloadCounts[assigneeId].workloadScore += pressure;
+                        }
                     }
-                }
+                });
+                if (task.subTasks) processWorkload(task.subTasks);
             });
-            
-            if (task.subTasks && task.subTasks.length > 0) {
-                countTasksRecursively(task.subTasks, projectName, projectId, projectType);
-            }
-        });
-    }
+        })(tasks);
+      });
 
-    filteredProjects.forEach(p => countTasksRecursively(p.tasks || [], p.name, p.id, p.projectType));
-
-    const finalWorkloadData = Object.values(workloadCounts)
-      .filter(item => {
-        const totalTasks = item.openTasks + item.doneTasks;
-        // Include user if they have tasks OR if they are not a Sub-Directorate Head
-        return totalTasks > 0 || item.user.role !== 'Sub-Directorate Head';
-      })
-      .map(item => {
+      const finalWorkloadData = Object.values(workloadCounts).filter(item => item.user.role !== 'Sub-Directorate Head' || (item.openTasks + item.doneTasks) > 0).map(item => {
           let workloadStatus: WorkloadStatus = 'Normal';
-          if (item.workloadScore >= 15) { // Threshold for Overload
-              workloadStatus = 'Overload';
-          } else if (item.workloadScore === 0 && item.openTasks === 0) {
-              workloadStatus = 'Underload';
-          }
+          if (item.workloadScore >= 15) workloadStatus = 'Overload';
+          else if (item.workloadScore === 0 && item.openTasks === 0) workloadStatus = 'Underload';
           return { ...item, workloadStatus };
-      })
-      .sort((a,b) => b.workloadScore - a.workloadScore);
+      }).sort((a,b) => b.workloadScore - a.workloadScore);
 
+      const projectStats = {
+          totalProjects: filteredProjects.length,
+          atRiskProjects: statusCounts['At Risk'],
+          offTrackProjects: statusCounts['Off Track'],
+          taskStatusCounts,
+          totalTasks: totalTasksCount
+      };
+      
+      const chartData = [
+          { name: 'On Track', projects: statusCounts['On Track'], tasks: taskStatusCounts['In Progress'], 'To Do': taskStatusCounts.todoOnTrack, fill: 'hsl(var(--chart-1))' },
+          { name: 'At Risk', projects: statusCounts['At Risk'], tasks: taskStatusCounts['Blocked'], 'To Do': taskStatusCounts.todoAtRisk, fill: 'hsl(var(--chart-2))' },
+          { name: 'Off Track', projects: statusCounts['Off Track'], tasks: taskStatusCounts['Off Track'], 'To Do': taskStatusCounts.todoOffTrack, fill: 'hsl(var(--chart-3))' },
+          { name: 'Completed', projects: statusCounts['Completed'], tasks: taskStatusCounts['Done'], 'To Do': undefined, fill: 'hsl(var(--chart-4))' },
+      ];
 
-    const projectStats = {
-        totalProjects: filteredProjects.length,
-        atRiskProjects: statusCounts['At Risk'],
-        offTrackProjects: statusCounts['Off Track'],
-        taskStatusCounts,
-        totalTasks: totalTasksCount
-    };
-
-    const chartData = [
-        { name: 'On Track', projects: statusCounts['On Track'] || 0, tasks: taskStatusCounts['In Progress'], 'To Do': taskStatusCounts['To Do'], fill: 'hsl(var(--chart-1))' },
-        { name: 'At Risk', projects: statusCounts['At Risk'] || 0, tasks: taskStatusCounts['Blocked'], 'To Do': taskStatusCounts['To Do'], fill: 'hsl(var(--chart-2))' },
-        { name: 'Off Track', projects: statusCounts['Off Track'] || 0, tasks: taskStatusCounts['Off Track'], 'To Do': taskStatusCounts['To Do'], fill: 'hsl(var(--chart-3))' },
-        { name: 'Completed', projects: statusCounts['Completed'] || 0, tasks: taskStatusCounts['Done'], 'To Do': undefined, fill: 'hsl(var(--chart-4))' },
-    ];
-
-    return {
-      projectStatusData: chartData,
-      teamWorkloadData: finalWorkloadData,
-      stats: projectStats,
-      offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
-    };
-  }, [filteredProjects, allUsers]);
+      return {
+        projectStatusData: chartData,
+        teamWorkloadData: finalWorkloadData,
+        stats: projectStats,
+        offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
+      };
+    }, [filteredProjects, allUsers]);
   
   const chartConfig = {
     projects: { label: 'Projects', color: 'hsl(var(--chart-1))' },
@@ -414,7 +415,7 @@ export function DashboardPage() {
                     <p className="text-xs text-gray-500">
                       {stats.taskStatusCounts['To Do']} To Do ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['To Do'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
                     </p>
-                    <p className="text-xs text-yellow-500">
+                     <p className="text-xs text-yellow-500">
                       {stats.taskStatusCounts['Off Track']} Off Track ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Off Track'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
                     </p>
                     <p className="text-xs text-destructive">
@@ -547,7 +548,7 @@ export function DashboardPage() {
                                 <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                             ))}
                         </Bar>
-                        <Line type="monotone" dataKey="tasks" name="Active/Overdue" yAxisId="right" strokeWidth={2} stroke="hsl(var(--chart-5))" />
+                        <Line type="monotone" dataKey="tasks" name="Active Tasks" yAxisId="right" strokeWidth={2} stroke="hsl(var(--chart-5))" />
                         <Line type="monotone" dataKey="To Do" yAxisId="right" strokeWidth={2} stroke="hsl(var(--destructive))" connectNulls={false} />
                     </ComposedChart>
                 </ResponsiveContainer>
