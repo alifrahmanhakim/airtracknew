@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
 
 export async function sendMessage(chatRoomId: string, messageData: { text: string; senderId: string; senderName: string; senderAvatarUrl?: string }) {
     try {
