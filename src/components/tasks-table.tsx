@@ -549,8 +549,8 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                     </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                    <ScrollArea className="h-[400px] w-full">
-                        <Table className="min-w-[900px]">
+                    <div className="h-[400px] w-full overflow-auto">
+                        <Table className="min-w-[900px] overflow-x-auto">
                             <TableHeader>
                                 <TableRow>
                                 <TableHead className="w-[50px]">No.</TableHead>
@@ -592,7 +592,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 )}
                             </TableBody>
                         </Table>
-                    </ScrollArea>
+                    </div>
                 </CardContent>
             </Card>
 
