@@ -50,7 +50,7 @@ export default function LoginPage() {
   
   const handleSuccessfullLogin = (userId: string) => {
     localStorage.setItem('loggedInUserId', userId);
-    window.location.href = '/dashboard';
+    window.location.href = '/my-dashboard';
   };
   
   const handleGoogleSignIn = async () => {
