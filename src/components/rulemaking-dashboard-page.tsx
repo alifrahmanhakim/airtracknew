@@ -107,8 +107,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         return { 
             total, 
             completed: statusCounts['Completed'],
-            inProgress: statusCounts['On Track'], // Renamed for card display
-            reviewPending: statusCounts['At Risk'] + statusCounts['Off Track'], // Combined for card display
+            onTrack: statusCounts['On Track'],
+            atRiskOrOffTrack: statusCounts['At Risk'] + statusCounts['Off Track'],
             highPriority, 
             distribution 
         };
@@ -239,14 +239,14 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                                 <Clock className="h-6 w-6 text-blue-500" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.inProgress}</p>
+                                    <p className="text-2xl font-bold">{stats.onTrack}</p>
                                     <p className="text-sm text-muted-foreground">On Track</p>
                                 </div>
                             </div>
                              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                                 <AlertTriangle className="h-6 w-6 text-yellow-500" />
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.reviewPending}</p>
+                                    <p className="text-2xl font-bold">{stats.atRiskOrOffTrack}</p>
                                     <p className="text-sm text-muted-foreground">At Risk / Off Track</p>
                                 </div>
                             </div>
