@@ -1,9 +1,9 @@
 
-'use client'
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import type { Project, User } from '@/lib/types';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RulemakingDashboardPage } from '@/components/rulemaking-dashboard-page';
@@ -13,34 +13,42 @@ export default function RulemakingDashboard() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(() => {
     setIsLoading(true);
-    try {
-      // Fetch users
-      const usersQuerySnapshot = await getDocs(collection(db, "users"));
-      const usersFromDb: User[] = usersQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-      setAllUsers(usersFromDb);
 
-      // Fetch Rulemaking projects
-      const projectsQuerySnapshot = await getDocs(collection(db, "rulemakingProjects"));
-      const projectsFromDb: Project[] = projectsQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project));
-      
-      const projectsWithDefaults = projectsFromDb.map(p => ({
-        ...p,
-        subProjects: p.subProjects || [],
-        documents: p.documents || [],
-      }));
+    const usersQuery = query(collection(db, "users"));
+    const projectsQuery = query(collection(db, "rulemakingProjects"));
 
-      // Show all projects to all users
-      setRulemakingProjects(projectsWithDefaults);
-    } catch (error) {
-      console.error("Error fetching projects from Firestore:", error);
-    }
-    setIsLoading(false);
+    const usersUnsub = onSnapshot(usersQuery, (snapshot) => {
+        const usersFromDb: User[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setAllUsers(usersFromDb);
+    });
+
+    const projectsUnsub = onSnapshot(projectsQuery, (snapshot) => {
+        const projectsFromDb: Project[] = snapshot.docs.map(doc => ({ 
+            id: doc.id, 
+            ...doc.data(), 
+            projectType: 'Rulemaking',
+            subProjects: doc.data().subProjects || [],
+            documents: doc.data().documents || [],
+        } as Project));
+        
+        setRulemakingProjects(projectsFromDb);
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching rulemaking projects:", error);
+        setIsLoading(false);
+    });
+
+    return () => {
+        usersUnsub();
+        projectsUnsub();
+    };
   }, []);
 
   useEffect(() => {
-    fetchData();
+    const unsubscribe = fetchData();
+    return () => unsubscribe();
   }, [fetchData]);
 
 
@@ -73,5 +81,5 @@ export default function RulemakingDashboard() {
     );
   }
 
-  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={allUsers} />;
+  return <RulemakingDashboardPage projects={rulemakingProjects} allUsers={allUsers} onProjectAdd={fetchData} />;
 }
