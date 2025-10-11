@@ -270,17 +270,16 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                 <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left Column */}
                     <div className="space-y-6">
-                        <div className="space-y-2">
-                            <h3 className="font-semibold">Project Snapshot</h3>
-                            <div className="grid grid-cols-2 gap-4">
+                        <Card className="h-full">
+                            <CardHeader><CardTitle>Project Snapshot</CardTitle></CardHeader>
+                            <CardContent className="grid grid-cols-2 gap-4">
                                 <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
                                 <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
                                 <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
                                 <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
-                                <StatusCard title="Off Track" count={stats.statusGroups['Off Track'].length} icon={AlertCircle} className="text-red-500" projects={stats.statusGroups['Off Track']} />
-                            </div>
-                        </div>
-                         <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20">
+                            </CardContent>
+                        </Card>
+                        <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20 h-full">
                             <CardHeader>
                                 <CardTitle className='flex items-center gap-2 text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
                                 <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
@@ -329,31 +328,35 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                         </Card>
                     </div>
 
-                     {/* Right Column */}
+                    {/* Right Column */}
                     <div className="space-y-6">
-                        <div>
-                            <h3 className="font-semibold">Status Distribution</h3>
-                            <ChartContainer config={{}} className="h-40 w-full mt-2">
-                                <ResponsiveContainer>
-                                    <PieChart>
-                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                        <Pie data={stats.distribution} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={2}>
-                                            {stats.distribution.map((entry) => (
-                                                <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-2 text-xs">
+                       <Card className="h-full">
+                            <CardHeader>
+                                <CardTitle>Status Distribution</CardTitle>
+                            </CardHeader>
+                            <CardContent className="h-48 flex items-center justify-center">
+                                <ChartContainer config={{}} className="w-full h-full">
+                                    <ResponsiveContainer>
+                                        <PieChart>
+                                            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                            <Pie data={stats.distribution} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={2}>
+                                                {stats.distribution.map((entry) => (
+                                                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                                                ))}
+                                            </Pie>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </ChartContainer>
+                            </CardContent>
+                             <CardFooter className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs">
                                 {stats.distribution.filter(d => d.value > 0).map(item => (
                                     <div key={item.name} className="flex items-center gap-2">
                                         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                                         <span>{item.name} ({stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(0) : 0}%)</span>
                                     </div>
                                 ))}
-                            </div>
-                        </div>
+                            </CardFooter>
+                        </Card>
                         <StatusLogicGuide />
                     </div>
                 </CardContent>
