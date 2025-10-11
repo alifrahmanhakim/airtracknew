@@ -48,6 +48,8 @@ import { StatusIndicator } from '@/components/status-indicator';
 import { updateUserOnlineStatus } from '@/lib/actions/user';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from '@/components/notification-bell';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 const navItems = {
     dashboards: [
@@ -228,43 +230,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter className="flex flex-col gap-3">
             <SidebarSeparator />
-            <div className='flex items-center justify-between gap-2 px-2'>
-                <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-                    <Avatar className="h-9 w-9" online={isCurrentUserOnline}>
-                        <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                        <AvatarFallback>
-                            <UserIcon className="h-5 w-5" />
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                        <span className='text-sm font-semibold'>{currentUser.name ? currentUser.name.split(' ')[0] : ''}</span>
-                        <span className='text-xs text-muted-foreground'>{currentUser.role}</span>
-                    </div>
-                </div>
-                 <div className="group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
-                    <ThemeToggle />
-                </div>
-            </div>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={pathname === '/profile'}>
-                        <Link href="/profile">
-                            <Settings />
-                            <span>Profile</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={handleLogout} className="text-red-500 hover:bg-red-500/10 hover:text-red-500 dark:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400">
-                        <LogOut />
-                        <span>Logout</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-            <div className='px-2'>
-                <StatusIndicator />
-            </div>
-            <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
+             <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
                 stdatabase © 2025
             </div>
         </SidebarFooter>
@@ -275,13 +241,51 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
             </div>
             <div className="flex items-center gap-2">
-                <NotificationBell userId={userId} />
                 <LiveClock />
+                <NotificationBell userId={userId} />
+                <ThemeToggle />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                            <Avatar className="h-9 w-9" online={isCurrentUserOnline}>
+                                <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                                <AvatarFallback>
+                                    <UserIcon className="h-5 w-5" />
+                                </AvatarFallback>
+                            </Avatar>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem asChild>
+                                <Link href="/profile">
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    <span>Profile</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Logout</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
-        <div className="animate-in fade-in-50 duration-500 pt-12">
+        <div className="animate-in fade-in-50 duration-500 pt-16">
             {children}
         </div>
+        <footer className="fixed bottom-0 right-0 p-2 z-10">
+             <StatusIndicator className="w-full max-w-sm" />
+        </footer>
       </SidebarInset>
     </SidebarProvider>
   );
