@@ -12,7 +12,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem, ImplementationTaskItem, Verifier } from '@/lib/types';
 import { Badge } from './ui/badge';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from './ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { User, ListChecks } from 'lucide-react';
@@ -109,6 +109,29 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
       ))}
     </div>
   );
+  
+  const getFormattedDate = (dateValue: string | Date | { toDate: () => Date } | undefined): string => {
+    if (!dateValue) return 'N/A';
+    try {
+      if (typeof dateValue === 'string') {
+        const parsedDate = parseISO(dateValue);
+        if (isValid(parsedDate)) {
+          return format(parsedDate, 'PPP p');
+        }
+      }
+      if (dateValue instanceof Date) {
+        return format(dateValue, 'PPP p');
+      }
+      if (typeof dateValue === 'object' && 'toDate' in dateValue && typeof dateValue.toDate === 'function') {
+        return format(dateValue.toDate(), 'PPP p');
+      }
+    } catch (e) {
+      console.error('Date formatting failed:', e);
+      return 'Invalid Date';
+    }
+    return String(dateValue);
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -213,7 +236,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                     </dd>
                 </div>
                 
-                <DetailRow label="Created At" value={format(parseISO(record.createdAt), 'PPP p')} />
+                <DetailRow label="Created At" value={getFormattedDate(record.createdAt)} />
             </dl>
         </ScrollArea>
       </DialogContent>
