@@ -1,7 +1,8 @@
+
 'use client';
 
 import * as React from 'react';
-import type { User, Task } from '@/lib/types';
+import type { User, Task, Project } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Separator } from '../ui/separator';
-import { User as UserIcon, Briefcase, Mail, Calendar, Building, ListTodo, ExternalLink, ChevronDown } from 'lucide-react';
+import { User as UserIcon, Briefcase, Mail, Calendar, Building, ListTodo, ExternalLink, ChevronDown, FolderKanban } from 'lucide-react';
 import { format, parseISO, differenceInDays, startOfToday } from 'date-fns';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import Link from 'next/link';
@@ -31,6 +32,7 @@ type AssignedTask = Task & {
 interface UserProfileDialogProps {
   user: User | null;
   assignedTasks: AssignedTask[];
+  projects: Project[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -74,7 +76,7 @@ const TaskItem = ({ task }: { task: AssignedTask }) => {
     );
 };
 
-export function UserProfileDialog({ user, assignedTasks, open, onOpenChange }: UserProfileDialogProps) {
+export function UserProfileDialog({ user, assignedTasks, projects, open, onOpenChange }: UserProfileDialogProps) {
     const [isTasksExpanded, setIsTasksExpanded] = React.useState(false);
     if (!user) return null;
 
@@ -83,6 +85,9 @@ export function UserProfileDialog({ user, assignedTasks, open, onOpenChange }: U
     const openTasks = assignedTasks.filter(t => t.status !== 'Done');
     
     const tasksToShow = isTasksExpanded ? openTasks : openTasks.slice(0, 3);
+    
+    const rulemakingProjects = projects.filter(p => p.projectType === 'Rulemaking');
+    const timKerjaProjects = projects.filter(p => p.projectType === 'Tim Kerja');
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,6 +120,46 @@ export function UserProfileDialog({ user, assignedTasks, open, onOpenChange }: U
                                     <Building className="h-4 w-4 text-muted-foreground" />
                                     <span>{user.department || 'N/A'}</span>
                                 </div>
+                            </CardContent>
+                        </Card>
+
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <FolderKanban className="h-4 w-4" /> Project Memberships ({projects.length})
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {projects.length > 0 ? (
+                                    <>
+                                        {rulemakingProjects.length > 0 && (
+                                            <div>
+                                                <h4 className="font-semibold text-sm mb-2">Rulemaking Projects</h4>
+                                                <div className="space-y-2">
+                                                {rulemakingProjects.map(p => (
+                                                    <Link key={p.id} href={`/projects/${p.id}?type=rulemaking`} className="block p-2 rounded-md bg-muted/50 hover:bg-muted">
+                                                        <p className="font-medium text-sm">{p.name}</p>
+                                                    </Link>
+                                                ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {timKerjaProjects.length > 0 && (
+                                            <div>
+                                                <h4 className="font-semibold text-sm mb-2">Tim Kerja Projects</h4>
+                                                <div className="space-y-2">
+                                                {timKerjaProjects.map(p => (
+                                                    <Link key={p.id} href={`/projects/${p.id}?type=timkerja`} className="block p-2 rounded-md bg-muted/50 hover:bg-muted">
+                                                        <p className="font-medium text-sm">{p.name}</p>
+                                                    </Link>
+                                                ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">Not a member of any projects.</p>
+                                )}
                             </CardContent>
                         </Card>
 

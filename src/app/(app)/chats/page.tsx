@@ -133,6 +133,13 @@ export default function ChatsPage() {
         return tasks.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
     }, [profileUser, allProjects]);
+    
+    const projectsForProfileUser = React.useMemo(() => {
+        if (!profileUser || !allProjects) return [];
+        return allProjects.filter(project => 
+            project.team.some(member => member.id === profileUser.id)
+        );
+    }, [profileUser, allProjects]);
 
 
     if (isLoading) {
@@ -170,6 +177,7 @@ export default function ChatsPage() {
             <UserProfileDialog
                 user={profileUser}
                 assignedTasks={assignedTasksForProfileUser}
+                projects={projectsForProfileUser}
                 open={!!profileUser}
                 onOpenChange={(open) => !open && setProfileUser(null)}
             />
