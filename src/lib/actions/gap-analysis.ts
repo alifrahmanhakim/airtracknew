@@ -9,8 +9,8 @@ import type { GapAnalysisRecord, Project } from '../types';
 import { gapAnalysisFormSchema } from '../schemas';
 import { format, parse } from 'date-fns';
 
-function formatDateForStorage(dateString?: string): string | undefined {
-    if (!dateString) return undefined;
+function formatDateForStorage(dateString?: string): string | null {
+    if (!dateString) return null;
     try {
         // Handle YYYY-MM-DD (from direct input) or DD-MM-YYYY (from manual edit)
         if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
@@ -19,7 +19,7 @@ function formatDateForStorage(dateString?: string): string | undefined {
         const date = parse(dateString, 'dd-MM-yyyy', new Date());
         return format(date, 'yyyy-MM-dd');
     } catch (e) {
-        return dateString; // Return original if parsing fails
+        return null; // Return null if parsing fails
     }
 }
 
@@ -46,7 +46,7 @@ export async function addGapAnalysisRecord(data: z.infer<typeof gapAnalysisFormS
               ...t,
               estimatedComplianceDate: formatDateForStorage(t.estimatedComplianceDate)
           })),
-          createdAt: new Date().toISOString(),
+          createdAt: serverTimestamp(),
         };
 
         const docRef = await addDoc(collection(db, 'gapAnalysisRecords'), dataToSubmit);
