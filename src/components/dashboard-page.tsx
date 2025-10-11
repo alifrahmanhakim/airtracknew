@@ -420,23 +420,22 @@ export function DashboardPage() {
                             const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
                             return (
                                 <div key={task.id}>
-                                    <div className="flex items-start justify-between gap-4">
-                                        <Checkbox
-                                            id={`off-track-complete-${task.id}`}
-                                            className="mt-1"
-                                            onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setTaskToComplete(task);
-                                                }
-                                            }}
-                                        />
-                                        <div className="flex-1">
-                                            <p className="font-semibold text-sm">{task.title}</p>
-                                            <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-start gap-4">
+                                            <span className="font-bold text-yellow-700 dark:text-yellow-300 mt-1">{index + 1}.</span>
+                                            <div>
+                                                <p className="font-semibold text-sm">{task.title}</p>
+                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                            </div>
                                         </div>
-                                        <Badge variant="destructive" className="whitespace-nowrap mt-1">
-                                            {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
-                                        </Badge>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="destructive" className="whitespace-nowrap">
+                                                {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
+                                            </Badge>
+                                             <Button size="sm" variant="outline" onClick={() => setTaskToComplete(task)}>
+                                                Done
+                                            </Button>
+                                        </div>
                                     </div>
                                     {index < offTrackTasks.slice(0, 3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
                                 </div>
@@ -450,23 +449,22 @@ export function DashboardPage() {
                                 const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
                                 return (
                                     <div key={task.id}>
-                                        <div className="flex items-start justify-between gap-4">
-                                            <Checkbox
-                                                id={`off-track-complete-${task.id}`}
-                                                className="mt-1"
-                                                onCheckedChange={(checked) => {
-                                                    if (checked) {
-                                                        setTaskToComplete(task);
-                                                    }
-                                                }}
-                                            />
-                                            <div className="flex-1">
-                                                <p className="font-semibold text-sm">{task.title}</p>
-                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex items-start gap-4">
+                                                <span className="font-bold text-yellow-700 dark:text-yellow-300 mt-1">{index + 4}.</span>
+                                                <div>
+                                                    <p className="font-semibold text-sm">{task.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                                </div>
                                             </div>
-                                            <Badge variant="destructive" className="whitespace-nowrap mt-1">
-                                                {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
-                                            </Badge>
+                                             <div className="flex items-center gap-2">
+                                                <Badge variant="destructive" className="whitespace-nowrap">
+                                                    {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
+                                                </Badge>
+                                                <Button size="sm" variant="outline" onClick={() => setTaskToComplete(task)}>
+                                                    Done
+                                                </Button>
+                                            </div>
                                         </div>
                                         {index < offTrackTasks.slice(3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
                                     </div>
