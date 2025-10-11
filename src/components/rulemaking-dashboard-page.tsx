@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays, isAfter, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { AddRulemakingProjectDialog } from './add-rulemaking-project-dialog';
@@ -36,6 +36,40 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
+const getEffectiveStatus = (project: Project): Project['status'] => {
+    const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
+    const progress = total > 0 ? (completed / total) * 100 : 0;
+  
+    if (progress === 100 || project.status === 'Completed') {
+      return 'Completed';
+    }
+  
+    const today = startOfToday();
+    const projectEnd = parseISO(project.endDate);
+  
+    if (isAfter(today, projectEnd)) {
+      return 'Off Track';
+    }
+    
+    if (hasCritical) {
+      return 'At Risk';
+    }
+    
+    const projectStart = parseISO(project.startDate);
+    const totalDuration = differenceInDays(projectEnd, projectStart);
+  
+    if (totalDuration > 0) {
+      const elapsedDuration = differenceInDays(today, projectStart);
+      const timeProgress = (elapsedDuration / totalDuration) * 100;
+  
+      if (progress < timeProgress - 20) {
+        return 'At Risk';
+      }
+    }
+    
+    return 'On Track';
+};
+
 
 export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -49,19 +83,37 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
 
     const stats = useMemo(() => {
         const total = projects.length;
-        const completed = projects.filter(p => p.status === 'Completed').length;
-        const inProgress = projects.filter(p => p.status === 'On Track').length;
-        const reviewPending = projects.filter(p => p.status === 'At Risk' || p.status === 'Off Track').length;
+        let statusCounts = {
+            'Completed': 0,
+            'On Track': 0,
+            'At Risk': 0,
+            'Off Track': 0,
+        };
+
+        projects.forEach(p => {
+            const status = getEffectiveStatus(p);
+            statusCounts[status]++;
+        });
+
         const highPriority = projects.filter(p => p.tags?.includes('High Priority'));
 
         const distribution = [
-            { name: 'Completed', value: completed, color: 'hsl(var(--chart-1))' },
-            { name: 'In Progress', value: inProgress, color: 'hsl(var(--chart-2))' },
-            { name: 'Review Needed', value: reviewPending, color: 'hsl(var(--chart-3))' }
+            { name: 'Completed', value: statusCounts['Completed'], color: 'hsl(var(--chart-1))' },
+            { name: 'On Track', value: statusCounts['On Track'], color: 'hsl(var(--chart-2))' },
+            { name: 'At Risk', value: statusCounts['At Risk'], color: 'hsl(var(--chart-3))' },
+            { name: 'Off Track', value: statusCounts['Off Track'], color: 'hsl(var(--chart-4))' }
         ];
 
-        return { total, completed, inProgress, reviewPending, highPriority, distribution };
+        return { 
+            total, 
+            completed: statusCounts['Completed'],
+            inProgress: statusCounts['On Track'], // Renamed for card display
+            reviewPending: statusCounts['At Risk'] + statusCounts['Off Track'], // Combined for card display
+            highPriority, 
+            distribution 
+        };
     }, [projects]);
+
 
     const projectsNearDeadline = useMemo(() => {
         return projects.filter(p => p.status !== 'Completed')
@@ -102,7 +154,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         }
 
         if (statusFilter !== 'all') {
-            filtered = filtered.filter(p => p.status === statusFilter);
+            filtered = filtered.filter(p => getEffectiveStatus(p) === statusFilter);
         }
         
         if (tagFilter !== 'all') {
@@ -188,14 +240,14 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                 <Clock className="h-6 w-6 text-blue-500" />
                                 <div>
                                     <p className="text-2xl font-bold">{stats.inProgress}</p>
-                                    <p className="text-sm text-muted-foreground">In Progress</p>
+                                    <p className="text-sm text-muted-foreground">On Track</p>
                                 </div>
                             </div>
                              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
                                 <AlertTriangle className="h-6 w-6 text-yellow-500" />
                                 <div>
                                     <p className="text-2xl font-bold">{stats.reviewPending}</p>
-                                    <p className="text-sm text-muted-foreground">Review/Pending</p>
+                                    <p className="text-sm text-muted-foreground">At Risk / Off Track</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -219,7 +271,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                 </ResponsiveContainer>
                             </ChartContainer>
                             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
-                                {stats.distribution.map(item => (
+                                {stats.distribution.filter(d => d.value > 0).map(item => (
                                     <div key={item.name} className="flex items-center gap-2">
                                         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                                         <span>{item.name} ({stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(0) : 0}%)</span>
