@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   AlarmClockOff,
@@ -66,7 +67,6 @@ import { Separator } from './ui/separator';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { Checkbox } from './ui/checkbox';
 
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
@@ -176,7 +176,8 @@ export function DashboardPage() {
         doneDate: format(new Date(), 'yyyy-MM-dd'),
     };
 
-    const { projectId, projectType, ...baseTask } = updatedTask;
+    // This destructuring is important. We only want to pass properties that exist on the base Task type.
+    const { projectId, projectName, projectType, ...baseTask } = updatedTask;
 
     const result = await updateTask(projectId, baseTask, projectType);
     
@@ -230,10 +231,10 @@ export function DashboardPage() {
         statusCounts[effectiveStatus]++;
     });
 
-    const workloadCounts: { [userId: string]: { user: User, tasks: number, openTasks: number, totalRemainingDays: number } } = {};
+    const workloadCounts: { [userId: string]: { user: User; tasks: number; workloadScore: number } } = {};
     
     allUsers.forEach(user => {
-        workloadCounts[user.id] = { user, tasks: 0, openTasks: 0, totalRemainingDays: 0 };
+        workloadCounts[user.id] = { user, tasks: 0, workloadScore: 0 };
     });
     
     const taskStatusCounts = { 'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0 };
@@ -241,19 +242,26 @@ export function DashboardPage() {
     const today = startOfToday();
     const overdueTasks: AssignedTask[] = [];
 
+    const getTaskPressure = (task: Task): number => {
+        const daysUntilDue = differenceInDays(parseISO(task.dueDate), today);
+        if (daysUntilDue < 0) return 5; // Overdue
+        if (daysUntilDue <= 3) return 4; // Due in 3 days
+        if (daysUntilDue <= 7) return 3; // Due this week
+        if (daysUntilDue <= 30) return 2; // Due this month
+        return 1; // Due later
+    };
+
     const countTasksRecursively = (tasks: Task[], projectName: string, projectId: string, projectType: Project['projectType']) => {
         tasks.forEach(task => {
             totalTasksCount++;
             taskStatusCounts[task.status]++;
 
+            const pressure = getTaskPressure(task);
             task.assigneeIds.forEach(assigneeId => {
                 if (workloadCounts[assigneeId]) {
                     workloadCounts[assigneeId].tasks++;
                     if (task.status !== 'Done') {
-                        workloadCounts[assigneeId].openTasks++;
-                        const remainingDays = differenceInDays(parseISO(task.dueDate), today);
-                        // Even overdue tasks contribute to the "pressure", so we use max(1, ...)
-                        workloadCounts[assigneeId].totalRemainingDays += Math.max(1, remainingDays);
+                      workloadCounts[assigneeId].workloadScore += pressure;
                     }
                 }
             });
@@ -273,17 +281,14 @@ export function DashboardPage() {
       .filter(item => item.tasks > 0)
       .map(item => {
           let workloadStatus: WorkloadStatus = 'Normal';
-          if (item.openTasks > 0) {
-              const tasksPerDay = item.openTasks / (item.totalRemainingDays || 1); // Avoid division by zero
-              if (tasksPerDay > 1) { // More than 1 task per day on average
-                  workloadStatus = 'Overload';
-              } else if (tasksPerDay < 0.2) { // Less than 1 task every 5 days
-                  workloadStatus = 'Underload';
-              }
+          if (item.workloadScore >= 15) { // Threshold for Overload
+              workloadStatus = 'Overload';
+          } else if (item.workloadScore <= 2) { // Threshold for Underload
+              workloadStatus = 'Underload';
           }
           return { ...item, workloadStatus };
       })
-      .sort((a,b) => b.tasks - a.tasks);
+      .sort((a,b) => b.workloadScore - a.workloadScore);
 
 
     const projectStats = {
@@ -340,7 +345,7 @@ export function DashboardPage() {
     }
   };
 
-  const maxTasks = teamWorkloadData.length > 0 ? Math.max(...teamWorkloadData.map(item => item.tasks)) : 0;
+  const maxWorkloadScore = teamWorkloadData.length > 0 ? Math.max(...teamWorkloadData.map(item => item.workloadScore)) : 0;
   
   const cardHoverClasses = "transition-all duration-300 hover:shadow-lg hover:border-primary group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20";
 
@@ -548,7 +553,7 @@ export function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {teamWorkloadData.map(({ user, tasks, workloadStatus }) => {
+                        {teamWorkloadData.map(({ user, tasks, workloadStatus, workloadScore }) => {
                              const isOnline = user.lastOnline ? (new Date().getTime() - new Date(user.lastOnline).getTime()) / (1000 * 60) < 5 : false;
                             return (
                                 <TableRow key={user.id}>
@@ -573,7 +578,7 @@ export function DashboardPage() {
                                     </TableCell>
                                     <TableCell className="text-center font-bold">{tasks}</TableCell>
                                     <TableCell>
-                                        <Progress value={maxTasks > 0 ? (tasks / maxTasks) * 100 : 0} className="h-2" />
+                                        <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2" />
                                     </TableCell>
                                 </TableRow>
                             )
