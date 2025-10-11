@@ -9,9 +9,9 @@ import { Send, User as UserIcon, Users as UsersIcon, Check, CheckCheck } from 'l
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { getOrCreateChatRoom, sendMessage, updateMessageReadStatus } from '@/lib/actions/chat';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapToolbar } from '../ui/rich-text-input';
@@ -43,19 +43,22 @@ const ChatEditor = React.forwardRef<ChatEditorHandle, { onEnterPress: (content: 
                 attributes: {
                     class: 'prose dark:prose-invert prose-sm sm:prose-base max-w-none focus:outline-none p-3 min-h-[60px]',
                 },
-                handleKeyDown: (view, event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                        event.preventDefault();
-                        const content = view.state.doc.textContent;
-                        if (content && content.trim()) {
-                            onEnterPress(content);
-                        }
-                        return true;
-                    }
-                    return false;
-                },
             },
         });
+
+        React.useEffect(() => {
+            const handleKeyDown = (event: KeyboardEvent) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    if (editor && editor.getText().trim()) {
+                       onEnterPress(editor.getHTML());
+                    }
+                }
+            };
+            editor?.view.dom.addEventListener('keydown', handleKeyDown);
+            return () => editor?.view.dom.removeEventListener('keydown', handleKeyDown);
+        }, [editor, onEnterPress]);
+
 
         React.useImperativeHandle(ref, () => ({
             clearContent: () => editor?.commands.clearContent(),
@@ -111,6 +114,15 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
     const [chatRoomId, setChatRoomId] = React.useState<string | null>(null);
     const scrollAreaRef = React.useRef<HTMLDivElement>(null);
     const chatEditorRef = React.useRef<ChatEditorHandle>(null);
+    const [allUsers, setAllUsers] = React.useState<User[]>([]);
+
+    React.useEffect(() => {
+        const usersUnsub = onSnapshot(collection(db, 'users'), (snapshot) => {
+            const usersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+            setAllUsers(usersList);
+        });
+        return () => usersUnsub();
+    }, []);
 
     React.useEffect(() => {
         if (!selectedUser || !currentUser) return;
@@ -182,12 +194,11 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
         return tempDiv.textContent?.trim() === '';
     };
 
-    const handleSendMessage = async () => {
-        const messageContent = chatEditorRef.current?.getHTML() || '';
-        if (isMessageEmpty(messageContent) || !chatRoomId || !currentUser || !selectedUser) return;
+    const handleSendMessage = async (content: string) => {
+        if (isMessageEmpty(content) || !chatRoomId || !currentUser || !selectedUser) return;
 
         const messageData = {
-            text: messageContent,
+            text: content,
             senderName: currentUser.name,
             senderAvatarUrl: currentUser.avatarUrl,
         };
@@ -221,7 +232,14 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                          {isGlobalChat ? (
                              <p className="text-sm text-muted-foreground">Public channel for all users</p>
                          ) : (
-                             <p className="text-sm text-muted-foreground">{isSelectedUserOnline ? 'Online' : 'Offline'}</p>
+                             <p className="text-sm text-muted-foreground">
+                                {isSelectedUserOnline 
+                                    ? 'Online' 
+                                    : selectedUser.lastOnline 
+                                        ? `Offline - last seen ${formatDistanceToNow(new Date(selectedUser.lastOnline), { addSuffix: true })}`
+                                        : 'Offline'
+                                }
+                            </p>
                          )}
                     </div>
                 </div>
@@ -235,7 +253,7 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                     {messages.map((msg, index) => {
                         const isCurrentUser = msg.senderId === currentUser.id;
                         const showAvatar = index === 0 || messages[index - 1].senderId !== msg.senderId;
-                        const fullSender = users.find(u => u.id === msg.senderId);
+                        const fullSender = allUsers.find(u => u.id === msg.senderId);
                         
                         return (
                             <div key={msg.id} className={cn("flex items-end gap-3", isCurrentUser && "justify-end")}>
@@ -276,13 +294,15 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                  <form
                     onSubmit={(e) => {
                         e.preventDefault();
-                        handleSendMessage();
+                        if (chatEditorRef.current) {
+                           handleSendMessage(chatEditorRef.current.getHTML());
+                        }
                     }}
                     className="flex items-start gap-2"
                     >
                     <ChatEditor
                         ref={chatEditorRef}
-                        onEnterPress={() => handleSendMessage()}
+                        onEnterPress={handleSendMessage}
                     />
                     <Button type="submit" size="icon">
                         <Send />
@@ -293,5 +313,3 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
         </TooltipProvider>
     );
 }
-
-const users: User[] = []; // This is needed to prevent an error on the server
