@@ -18,7 +18,7 @@ import {
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil } from 'lucide-react';
-import type { GapAnalysisRecord, Project, ActionRequiredItem, ImplementationTaskItem } from '@/lib/types';
+import type { GapAnalysisRecord, Project, ActionRequiredItem, ImplementationTaskItem, Verifier } from '@/lib/types';
 import { GapAnalysisSharedFormFields, type GapAnalysisFormValues } from './gap-analysis-shared-form-fields';
 import { updateGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { ScrollArea } from './ui/scroll-area';
@@ -26,6 +26,7 @@ import { ComboboxOption } from './ui/combobox';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { gapAnalysisFormSchema as formSchema } from '@/lib/schemas';
+import { format, parseISO } from 'date-fns';
 
 type EditGapAnalysisRecordDialogProps = {
   record: GapAnalysisRecord;
@@ -33,6 +34,15 @@ type EditGapAnalysisRecordDialogProps = {
 };
 
 const actionRequiredIds: ActionRequiredItem['id'][] = ['disapproval', 'differences', 'efod'];
+
+const formatToInputDate = (dateString?: string) => {
+    if (!dateString) return '';
+    try {
+        return format(parseISO(dateString), 'dd-MM-yyyy');
+    } catch {
+        return dateString;
+    }
+}
 
 export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapAnalysisRecordDialogProps) {
   const [open, setOpen] = useState(false);
@@ -74,7 +84,7 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     if (Array.isArray(record.actionRequired) && record.actionRequired.every(item => typeof item === 'object' && 'id' in item)) {
         return defaultActions.map(def => {
             const found = (record.actionRequired as ActionRequiredItem[]).find(rec => rec.id === def.id);
-            return found || def;
+            return found ? { ...found, date: formatToInputDate(found.date) } : def;
         })
     }
     // Handle old string array format for backwards compatibility
@@ -92,10 +102,15 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...record,
+      dateOfEvaluation: formatToInputDate(record.dateOfEvaluation),
+      implementationDate: formatToInputDate(record.implementationDate),
+      effectiveDate: formatToInputDate(record.effectiveDate),
+      applicabilityDate: formatToInputDate(record.applicabilityDate),
+      embeddedApplicabilityDate: formatToInputDate(record.embeddedApplicabilityDate),
       actionRequired: getActionRequiredDefault(),
       inspectors: record.inspectors || [],
-      verifiers: record.verifiers || [],
-      implementationTasks: record.implementationTasks || [],
+      verifiers: record.verifiers?.map(v => ({...v, date: formatToInputDate(v.date)})) || [],
+      implementationTasks: record.implementationTasks?.map(t => ({...t, estimatedComplianceDate: formatToInputDate(t.estimatedComplianceDate)})) || [],
     },
   });
 
