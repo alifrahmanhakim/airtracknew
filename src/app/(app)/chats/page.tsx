@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -9,10 +8,19 @@ import { Card } from '@/components/ui/card';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatWindow } from '@/components/chat/chat-window';
 
+const GLOBAL_CHAT_USER: User = {
+    id: 'global_chat_room',
+    name: 'Global Chat',
+    email: 'all@everyone',
+    role: 'Functional',
+    isApproved: true,
+    avatarUrl: `https://placehold.co/100x100/87CEEB/FFFFFF?text=All`,
+};
+
 export default function ChatsPage() {
     const [users, setUsers] = React.useState<User[]>([]);
     const [currentUser, setCurrentUser] = React.useState<User | null>(null);
-    const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
+    const [selectedUser, setSelectedUser] = React.useState<User | null>(GLOBAL_CHAT_USER);
     const [isLoading, setIsLoading] = React.useState(true);
     const [chatRooms, setChatRooms] = React.useState<any[]>([]);
 
@@ -104,6 +112,7 @@ export default function ChatsPage() {
                     onSelectUser={handleSelectUser}
                     chatRooms={chatRooms}
                     selectedUser={selectedUser}
+                    globalChatUser={GLOBAL_CHAT_USER}
                 />
                 <ChatWindow 
                     currentUser={currentUser} 

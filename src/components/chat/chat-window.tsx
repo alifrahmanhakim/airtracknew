@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import * as React from 'react';
@@ -7,7 +5,7 @@ import { User, ChatMessage } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Phone, Send, User as UserIcon, Video } from 'lucide-react';
+import { Phone, Send, User as UserIcon, Video, Users as UsersIcon } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { getOrCreateChatRoom, sendMessage } from '@/lib/actions/chat';
@@ -20,6 +18,8 @@ interface ChatWindowProps {
     selectedUser: User | null;
 }
 
+const GLOBAL_CHAT_ROOM_ID = 'global_chat_room';
+
 export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = React.useState('');
@@ -29,8 +29,15 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
     React.useEffect(() => {
         if (!selectedUser || !currentUser) return;
 
+        let unsubscribe: (() => void) | undefined;
+
         const setupChatRoom = async () => {
-            const roomId = await getOrCreateChatRoom(currentUser.id, selectedUser.id);
+            let roomId: string;
+            if (selectedUser.id === GLOBAL_CHAT_ROOM_ID) {
+                roomId = GLOBAL_CHAT_ROOM_ID;
+            } else {
+                roomId = await getOrCreateChatRoom(currentUser.id, selectedUser.id);
+            }
             setChatRoomId(roomId);
 
             const messagesQuery = query(
@@ -38,21 +45,21 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                 orderBy('createdAt', 'asc')
             );
 
-            const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+            unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
                 const fetchedMessages = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 } as ChatMessage));
                 setMessages(fetchedMessages);
             });
-
-            return unsubscribe;
         };
 
-        const unsubscribePromise = setupChatRoom();
+        setupChatRoom();
 
         return () => {
-            unsubscribePromise.then(unsub => unsub && unsub());
+            if (unsubscribe) {
+                unsubscribe();
+            }
         };
     }, [selectedUser, currentUser]);
     
@@ -86,6 +93,8 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
             </div>
         );
     }
+
+    const isGlobalChat = selectedUser.id === GLOBAL_CHAT_ROOM_ID;
     
     return (
         <div className="flex-1 flex flex-col h-full">
@@ -93,17 +102,19 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                 <div className="flex items-center gap-4">
                     <Avatar className="h-10 w-10">
                         <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name} />
-                        <AvatarFallback><UserIcon /></AvatarFallback>
+                        <AvatarFallback>{isGlobalChat ? <UsersIcon /> : <UserIcon />}</AvatarFallback>
                     </Avatar>
                     <div>
                         <p className="font-semibold">{selectedUser.name}</p>
-                        {/* Could add online status here */}
+                         {isGlobalChat ? <p className="text-sm text-muted-foreground">Public channel for all users</p> : null}
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon"><Phone /></Button>
-                    <Button variant="ghost" size="icon"><Video /></Button>
-                </div>
+                 {!isGlobalChat && (
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon"><Phone /></Button>
+                        <Button variant="ghost" size="icon"><Video /></Button>
+                    </div>
+                )}
             </div>
             
             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
@@ -126,8 +137,11 @@ export function ChatWindow({ currentUser, selectedUser }: ChatWindowProps) {
                                         ? "bg-primary text-primary-foreground rounded-br-none"
                                         : "bg-muted rounded-bl-none"
                                 )}>
+                                    {!isCurrentUser && isGlobalChat && (
+                                        <p className="text-xs font-bold mb-1">{msg.senderName}</p>
+                                    )}
                                     <p className="text-sm">{msg.text}</p>
-                                     <p className={cn("text-xs mt-1", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                                     <p className={cn("text-xs mt-1 text-right", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
                                          {msg.createdAt ? format(msg.createdAt.toDate(), 'p') : ''}
                                      </p>
                                 </div>

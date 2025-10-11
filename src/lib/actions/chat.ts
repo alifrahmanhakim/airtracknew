@@ -1,11 +1,11 @@
-
-
 'use server';
 
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { createNotification } from './notifications';
 import type { User } from '../types';
+
+const GLOBAL_CHAT_ROOM_ID = 'global_chat_room';
 
 const getCurrentUser = async (userId: string): Promise<User | null> => {
     if (!userId) return null;
@@ -28,7 +28,8 @@ export async function sendMessage(chatRoomId: string, senderId: string, receiver
             createdAt: serverTimestamp(),
         });
         
-        if (sender) {
+        // Don't send a notification if it's a message to the global chat room
+        if (sender && chatRoomId !== GLOBAL_CHAT_ROOM_ID) {
             await createNotification({
                 userId: receiverId,
                 title: `New message from ${sender.name}`,

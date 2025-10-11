@@ -1,11 +1,10 @@
-
 'use client';
 
 import * as React from 'react';
 import { User } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
-import { Search, User as UserIcon } from 'lucide-react';
+import { Search, User as UserIcon, Users as UsersIcon } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -17,9 +16,10 @@ interface ChatSidebarProps {
     onSelectUser: (user: User) => void;
     chatRooms: any[];
     selectedUser: User | null;
+    globalChatUser: User;
 }
 
-export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selectedUser }: ChatSidebarProps) {
+export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selectedUser, globalChatUser }: ChatSidebarProps) {
     const [searchTerm, setSearchTerm] = React.useState('');
 
     const otherUsersInRooms = React.useMemo(() => {
@@ -82,9 +82,32 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                 </div>
             </div>
             <ScrollArea className="flex-1">
+                <div>
+                    <h3 className="text-xs font-semibold uppercase text-muted-foreground px-4 pt-4">Channels</h3>
+                    <div
+                        key={globalChatUser.id}
+                        className={cn(
+                            "flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50",
+                            selectedUser?.id === globalChatUser.id && "bg-muted"
+                        )}
+                        onClick={() => onSelectUser(globalChatUser)}
+                    >
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={globalChatUser.avatarUrl} alt={globalChatUser.name} />
+                            <AvatarFallback><UsersIcon /></AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 overflow-hidden">
+                            <p className="font-semibold truncate">{globalChatUser.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">Chat with everyone</p>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator className="my-2" />
+
                 {filteredChatRooms.length > 0 && (
                      <div>
-                        <h3 className="text-xs font-semibold uppercase text-muted-foreground px-4 pt-4">Chats</h3>
+                        <h3 className="text-xs font-semibold uppercase text-muted-foreground px-4 pt-2">Chats</h3>
                         {filteredChatRooms.map(({ user, lastMessage }) => user && (
                             <div
                                 key={user.id}
@@ -139,9 +162,14 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                     </div>
                 )}
 
-                 {filteredChatRooms.length === 0 && filteredUsers.length === 0 && (
+                 {filteredChatRooms.length === 0 && filteredUsers.length === 0 && !searchTerm && (
                     <div className="text-center text-muted-foreground p-8">
-                        <p>No users or chats found.</p>
+                        <p>No other users found.</p>
+                    </div>
+                )}
+                 {filteredChatRooms.length === 0 && filteredUsers.length === 0 && searchTerm && (
+                    <div className="text-center text-muted-foreground p-8">
+                        <p>No users or chats found for "{searchTerm}".</p>
                     </div>
                 )}
             </ScrollArea>
