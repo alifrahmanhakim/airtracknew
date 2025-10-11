@@ -23,6 +23,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  CalendarClock,
 } from 'lucide-react';
 import type { Project, User, Task } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -135,7 +136,7 @@ export function DashboardPage() {
         if (userId) {
           const userDoc = await getDoc(doc(db, 'users', userId));
           if (userDoc.exists()) {
-            setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
+            setCurrentUser({ id: userDoc.id, ...doc.data() } as User);
           }
         }
       } catch (error) {
@@ -186,12 +187,18 @@ export function DashboardPage() {
         'Done': 0,
         'Blocked': 0
     };
+    
+    let offTrackTasksCount = 0;
+    const today = startOfToday();
 
     const countTasksRecursively = (tasks: Task[]) => {
         tasks.forEach(task => {
             taskStatusCounts[task.status]++;
             if(workloadCounts[task.assigneeIds[0]]) {
                 workloadCounts[task.assigneeIds[0]].tasks += 1;
+            }
+            if (task.status !== 'Done' && isAfter(today, parseISO(task.dueDate))) {
+                offTrackTasksCount++;
             }
             if (task.subTasks && task.subTasks.length > 0) {
                 countTasksRecursively(task.subTasks);
@@ -201,15 +208,12 @@ export function DashboardPage() {
 
     countTasksRecursively(allTasks);
 
-    const workloadArray = Object.values(workloadCounts)
-        .filter(item => item.tasks > 0)
-        .sort((a,b) => b.tasks - a.tasks);
-        
     const projectStats = {
         totalProjects: filteredProjects.length,
         atRiskProjects: statusCounts['At Risk'],
         offTrackProjects: statusCounts['Off Track'],
         taskStatusCounts,
+        offTrackTasks: offTrackTasksCount,
     };
 
     return {
@@ -219,7 +223,7 @@ export function DashboardPage() {
         { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'hsl(var(--chart-3))' },
         { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'hsl(var(--chart-4))' },
       ],
-      teamWorkloadData: workloadArray,
+      teamWorkloadData: Object.values(workloadCounts).filter(item => item.tasks > 0).sort((a,b) => b.tasks - a.tasks),
       stats: projectStats,
     };
   }, [filteredProjects, allUsers]);
@@ -313,7 +317,8 @@ export function DashboardPage() {
                     <p className="text-xs text-green-500">{stats.taskStatusCounts['Done']} Completed</p>
                     <p className="text-xs text-blue-500">{stats.taskStatusCounts['In Progress']} In Progress</p>
                     <p className="text-xs text-gray-500">{stats.taskStatusCounts['To Do']} To Do</p>
-                    <p className="text-xs text-red-500">{stats.taskStatusCounts['Blocked']} Blocked</p>
+                    <p className="text-xs text-red-500">{stats.offTrackTasks} Off Track</p>
+                    <p className="text-xs text-destructive">{stats.taskStatusCounts['Blocked']} Blocked</p>
                 </div>
             </CardContent>
         </Card>
