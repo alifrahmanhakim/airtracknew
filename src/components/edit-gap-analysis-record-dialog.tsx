@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -26,7 +24,7 @@ import { ComboboxOption } from './ui/combobox';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { gapAnalysisFormSchema as formSchema } from '@/lib/schemas';
-import { format, parse, isValid } from 'date-fns';
+import { format, parse, isValid, parseISO } from 'date-fns';
 
 type EditGapAnalysisRecordDialogProps = {
   record: GapAnalysisRecord;
@@ -38,7 +36,7 @@ const actionRequiredIds: ActionRequiredItem['id'][] = ['disapproval', 'differenc
 const formatToInputDate = (dateString?: string): string => {
     if (!dateString) return '';
     try {
-        const date = parse(dateString, 'yyyy-MM-dd', new Date());
+        const date = parseISO(dateString);
         if (isValid(date)) {
             return format(date, 'dd-MM-yyyy');
         }
@@ -79,16 +77,19 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
   }, []);
 
   const getActionRequiredDefault = () => {
-    const defaultActions = [
+    const defaultActions: ActionRequiredItem[] = [
       { id: 'disapproval', checked: false, date: '' },
       { id: 'differences', checked: false, date: '' },
-      { id: 'efod', checked: false },
-    ] as const;
+      { id: 'efod', checked: false, date: '' },
+    ];
 
     if (Array.isArray(record.actionRequired) && record.actionRequired.every(item => typeof item === 'object' && 'id' in item)) {
         return defaultActions.map(def => {
             const found = (record.actionRequired as ActionRequiredItem[]).find(rec => rec.id === def.id);
-            return found ? { ...found, date: formatToInputDate(found.date) } : def;
+            if (found) {
+              return { ...found, date: formatToInputDate(found.date) };
+            }
+            return def;
         })
     }
     // Handle old string array format for backwards compatibility

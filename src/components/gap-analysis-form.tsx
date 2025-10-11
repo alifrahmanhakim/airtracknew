@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -63,7 +61,7 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     actionRequired: [
       { id: 'disapproval', checked: false, date: '' },
       { id: 'differences', checked: false, date: '' },
-      { id: 'efod', checked: false },
+      { id: 'efod', checked: false, date: '' },
     ],
     effectiveDate: '',
     applicabilityDate: '',
