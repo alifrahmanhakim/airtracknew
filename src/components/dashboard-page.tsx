@@ -34,10 +34,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, Tooltip, ComposedChart, Line, Legend } from 'recharts';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AddTimKerjaProjectDialog } from './add-tim-kerja-project-dialog';
@@ -288,7 +286,7 @@ export function DashboardPage() {
           let workloadStatus: WorkloadStatus = 'Normal';
           if (item.workloadScore >= 15) { // Threshold for Overload
               workloadStatus = 'Overload';
-          } else if (item.workloadScore <= 2) { // Threshold for Underload
+          } else if (item.workloadScore <= 2 && item.openTasks === 0) { // Threshold for Underload
               workloadStatus = 'Underload';
           }
           return { ...item, workloadStatus };
@@ -305,13 +303,15 @@ export function DashboardPage() {
         totalTasks: totalTasksCount
     };
 
+    const chartData = [
+        { name: 'On Track', projects: statusCounts['On Track'] || 0, tasks: taskStatusCounts['In Progress'], fill: 'hsl(var(--chart-1))' },
+        { name: 'At Risk', projects: statusCounts['At Risk'] || 0, tasks: taskStatusCounts['Blocked'], fill: 'hsl(var(--chart-2))' },
+        { name: 'Off Track', projects: statusCounts['Off Track'] || 0, tasks: overdueTasks.length, fill: 'hsl(var(--chart-3))' },
+        { name: 'Completed', projects: statusCounts['Completed'] || 0, tasks: taskStatusCounts['Done'], fill: 'hsl(var(--chart-4))' },
+    ];
+
     return {
-      projectStatusData: [
-        { name: 'On Track', count: statusCounts['On Track'] || 0, fill: 'hsl(var(--chart-1))' },
-        { name: 'At Risk', count: statusCounts['At Risk'] || 0, fill: 'hsl(var(--chart-2))' },
-        { name: 'Off Track', count: statusCounts['Off Track'] || 0, fill: 'hsl(var(--chart-3))' },
-        { name: 'Completed', count: statusCounts['Completed'] || 0, fill: 'hsl(var(--chart-4))' },
-      ],
+      projectStatusData: chartData,
       teamWorkloadData: finalWorkloadData,
       stats: projectStats,
       offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
@@ -319,12 +319,8 @@ export function DashboardPage() {
   }, [filteredProjects, allUsers]);
   
   const chartConfig = {
-    count: { label: 'Projects' },
-    'On Track': { label: 'On Track', color: 'hsl(var(--chart-1))' },
-    'At Risk': { label: 'At Risk', color: 'hsl(var(--chart-2))' },
-    'Off Track': { label: 'Off Track', color: 'hsl(var(--chart-3))' },
-    'Completed': { label: 'Completed', color: 'hsl(var(--chart-4))' },
-    tasks: { label: 'Tasks', color: 'hsl(var(--chart-1))' },
+    projects: { label: 'Projects', color: 'hsl(var(--chart-1))' },
+    tasks: { label: 'Tasks', color: 'hsl(var(--chart-5))' },
   };
   
   const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
@@ -517,28 +513,27 @@ export function DashboardPage() {
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
           <Card className={cn(cardHoverClasses)}>
-            <CardHeader>
-              <CardTitle>Project Status Overview</CardTitle>
-              <CardDescription>A look at the health of all projects in the portfolio.</CardDescription>
+             <CardHeader>
+              <CardTitle>Project & Task Status Overview</CardTitle>
+              <CardDescription>A combined look at project and task health.</CardDescription>
             </CardHeader>
             <CardContent className="h-[350px] w-full pl-2">
               <ChartContainer config={chartConfig} className="h-full w-full">
                 <ResponsiveContainer>
-                  <BarChart data={projectStatusData} margin={{ top: 20, right: 20, bottom: 20, left: -10 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                    <ChartTooltip 
-                      cursor={false}
-                      content={<ChartTooltipContent indicator="dot" />} 
-                    />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Bar dataKey="count" radius={8}>
-                        {projectStatusData.map((entry) => (
-                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                        ))}
-                    </Bar>
-                  </BarChart>
+                   <ComposedChart data={projectStatusData} margin={{ top: 20, right: 20, bottom: 20, left: -10 }}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                        <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))" tickLine={false} axisLine={false} />
+                        <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-5))" tickLine={false} axisLine={false} />
+                        <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+                        <Legend />
+                        <Bar dataKey="projects" yAxisId="left" radius={8}>
+                             {projectStatusData.map((entry) => (
+                                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                            ))}
+                        </Bar>
+                        <Line type="monotone" dataKey="tasks" yAxisId="right" strokeWidth={2} stroke="hsl(var(--chart-5))" />
+                    </ComposedChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
@@ -546,7 +541,7 @@ export function DashboardPage() {
           <Card className={cn(cardHoverClasses)}>
             <CardHeader>
                 <CardTitle>Team Workload</CardTitle>
-                <CardDescription>Distribution of tasks among team members.</CardDescription>
+                <CardDescription>Distribution of open tasks among team members based on due date proximity.</CardDescription>
             </CardHeader>
             <CardContent className="h-[350px] overflow-auto">
                 <Table>
