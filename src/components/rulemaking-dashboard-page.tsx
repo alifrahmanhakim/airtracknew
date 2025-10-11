@@ -71,6 +71,57 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     return 'On Track';
 };
 
+const StatusLogicGuide = () => {
+    const statuses = [
+        {
+            icon: Clock,
+            title: 'On Track',
+            description: 'Proyek berjalan sesuai jadwal dan progres.',
+            color: 'text-blue-500',
+        },
+        {
+            icon: AlertTriangle,
+            title: 'At Risk',
+            description: 'Progres tertinggal dari linimasa atau ada isu kritis.',
+            color: 'text-yellow-500',
+        },
+        {
+            icon: AlertCircle,
+            title: 'Off Track',
+            description: 'Proyek telah melewati tenggat waktu yang ditentukan.',
+            color: 'text-red-500',
+        },
+        {
+            icon: CheckCircle,
+            title: 'Completed',
+            description: 'Semua tugas dalam proyek telah selesai (progres 100%).',
+            color: 'text-green-500',
+        },
+    ];
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <HelpCircle className="h-5 w-5" />
+                    Status Logic Guide
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                {statuses.map(status => (
+                    <div key={status.title} className="flex items-start gap-3">
+                        <status.icon className={cn("h-5 w-5 mt-0.5 flex-shrink-0", status.color)} />
+                        <div>
+                            <p className="font-semibold">{status.title}</p>
+                            <p className="text-xs text-muted-foreground">{status.description}</p>
+                        </div>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+    );
+};
+
 
 export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -114,9 +165,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
 
 
     const offTrackProjects = useMemo(() => {
-        return projects.filter(p => getEffectiveStatus(p) === 'Off Track')
-        .sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
-    }, [projects]);
+        return stats.statusGroups['Off Track'].sort((a,b) => parseISO(a.endDate).getTime() - parseISO(b.endDate).getTime());
+    }, [stats.statusGroups]);
     
     const totalDeadlinePages = Math.ceil(offTrackProjects.length / DEADLINES_PER_PAGE);
     const paginatedDeadlineProjects = offTrackProjects.slice(
@@ -298,6 +348,8 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             </div>
                         </CardContent>
                     </Card>
+
+                    <StatusLogicGuide />
 
                     <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20">
                         <CardHeader>
