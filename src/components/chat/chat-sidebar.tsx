@@ -42,14 +42,16 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
     const filteredChatRooms = React.useMemo(() => {
         if (!searchTerm) return otherUsersInRooms;
         return otherUsersInRooms.filter(item =>
-            item.user?.name.toLowerCase().includes(searchTerm.toLowerCase())
+            (item.user?.name && item.user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (item.user?.email && item.user.email.toLowerCase().includes(searchTerm.toLowerCase()))
         );
     }, [otherUsersInRooms, searchTerm]);
     
     const filteredUsers = React.useMemo(() => {
         if (!searchTerm) return usersNotInRooms;
         return usersNotInRooms.filter(user =>
-            user.name.toLowerCase().includes(searchTerm.toLowerCase())
+            (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
         );
     }, [usersNotInRooms, searchTerm]);
 
@@ -97,7 +99,7 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                                     <AvatarFallback><UserIcon /></AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 overflow-hidden">
-                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="font-semibold truncate">{user.name || user.email}</p>
                                     <p className="text-sm text-muted-foreground truncate">{lastMessage?.text || 'No messages yet'}</p>
                                 </div>
                                 <div className="text-xs text-muted-foreground self-start">
@@ -129,7 +131,7 @@ export function ChatSidebar({ users, currentUser, onSelectUser, chatRooms, selec
                                     <AvatarFallback><UserIcon /></AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 overflow-hidden">
-                                    <p className="font-semibold truncate">{user.name}</p>
+                                    <p className="font-semibold truncate">{user.name || user.email}</p>
                                     <p className="text-sm text-muted-foreground truncate">{user.role}</p>
                                 </div>
                             </div>
