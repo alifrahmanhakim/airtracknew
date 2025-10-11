@@ -349,7 +349,10 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                             <Image src={signature} alt="Signature" width={200} height={100} className='w-full h-auto' />
                                         </div>
                                         <SignaturePadDialog
-                                            onSave={(newSignature) => updateInspector(index, { ...field, signature: newSignature })}
+                                            onSave={(newSignature) => {
+                                                const currentName = form.getValues(`inspectors.${index}.name`);
+                                                updateInspector(index, { id: field.id, name: currentName, signature: newSignature });
+                                            }}
                                             trigger={
                                                 <Button size="icon" variant="outline" className='absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity'>
                                                     <Edit className="h-4 w-4" />
@@ -359,7 +362,10 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                     </div>
                                 ) : (
                                     <SignaturePadDialog
-                                        onSave={(newSignature) => updateInspector(index, { ...field, signature: newSignature })}
+                                        onSave={(newSignature) => {
+                                            const currentName = form.getValues(`inspectors.${index}.name`);
+                                            updateInspector(index, { id: field.id, name: currentName, signature: newSignature });
+                                        }}
                                         trigger={
                                             <Button type="button" variant="outline">Add Signature</Button>
                                         }
@@ -430,7 +436,11 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                             <Image src={signature} alt="Signature" width={200} height={100} className='w-full h-auto' />
                                         </div>
                                         <SignaturePadDialog
-                                            onSave={(newSignature) => updateVerifier(index, { ...field, signature: newSignature })}
+                                            onSave={(newSignature) => {
+                                                const currentName = form.getValues(`verifiers.${index}.name`);
+                                                const currentDate = form.getValues(`verifiers.${index}.date`);
+                                                updateVerifier(index, { id: field.id, name: currentName, date: currentDate, signature: newSignature });
+                                            }}
                                             trigger={
                                                 <Button size="icon" variant="outline" className='absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity'>
                                                     <Edit className="h-4 w-4" />
@@ -440,7 +450,11 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                                     </div>
                                 ) : (
                                     <SignaturePadDialog
-                                        onSave={(newSignature) => updateVerifier(index, { ...field, signature: newSignature })}
+                                        onSave={(newSignature) => {
+                                            const currentName = form.getValues(`verifiers.${index}.name`);
+                                            const currentDate = form.getValues(`verifiers.${index}.date`);
+                                            updateVerifier(index, { id: field.id, name: currentName, date: currentDate, signature: newSignature });
+                                        }}
                                         trigger={
                                             <Button type="button" variant="outline">Add Signature</Button>
                                         }
@@ -473,6 +487,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
     </>
   );
 }
+
 
 
 
