@@ -505,77 +505,85 @@ export default function MyDashboardPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="projects" className="w-full">
-          <TabsList className="mb-4">
-          <TabsTrigger value="projects">My Projects ({myProjects.length})</TabsTrigger>
-          <TabsTrigger value="tasks">My Tasks ({assignedTasks.length})</TabsTrigger>
-          <TabsTrigger value="timeline">My Timeline</TabsTrigger>
-          </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-3">
+            <Tabs defaultValue="projects" className="w-full">
+            <TabsList className="mb-4">
+            <TabsTrigger value="projects">My Projects ({myProjects.length})</TabsTrigger>
+            <TabsTrigger value="tasks">My Tasks ({assignedTasks.length})</TabsTrigger>
+            <TabsTrigger value="timeline">My Timeline</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="projects">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {myProjects.length > 0 ? (
-                      myProjects.map(project => <ProjectCard key={project.id} project={project} allUsers={allUsers} />)
-                  ) : (
-                      <div className="col-span-full text-center text-muted-foreground py-16 bg-muted/50 rounded-lg">
-                          <FolderKanban className="mx-auto h-12 w-12 mb-4" />
-                          <p className="font-semibold">No Projects Assigned</p>
-                          <p className="text-sm">You are not a member of any projects yet.</p>
-                      </div>
-                  )}
-              </div>
-          </TabsContent>
-          <TabsContent value="tasks">
-          <Card>
-              <CardHeader>
-              <CardTitle>My Assigned Tasks</CardTitle>
-              <CardDescription>All tasks assigned to you across all projects, sorted by due date.</CardDescription>
-              </CardHeader>
-              <CardContent>
-              <Table>
-                  <TableHeader>
-                  <TableRow>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Project</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead>Status</TableHead>
-                  </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                  {assignedTasks.length > 0 ? (
-                      assignedTasks.map(task => (
-                      <TableRow key={task.id}>
-                          <TableCell className="font-medium">{task.title}</TableCell>
-                          <TableCell>
-                          <Link href={`/projects/${task.projectId}?type=${task.projectType === 'Rulemaking' ? 'rulemaking' : 'timkerja'}`} className="flex items-center gap-2 hover:underline text-muted-foreground hover:text-primary">
-                              <Folder className="h-4 w-4" />
-                              {task.projectName}
-                          </Link>
-                          </TableCell>
-                          <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
-                          <TableCell>
-                          <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
-                              {task.status}
-                          </Badge>
-                          </TableCell>
-                      </TableRow>
-                      ))
-                  ) : (
-                      <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center">
-                          You have no assigned tasks.
-                      </TableCell>
-                      </TableRow>
-                  )}
-                  </TableBody>
-              </Table>
-              </CardContent>
-          </Card>
-          </TabsContent>
-          <TabsContent value="timeline">
-              <InteractiveTimeline tasks={assignedTasks} />
-          </TabsContent>
-      </Tabs>
+            <TabsContent value="projects">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {myProjects.length > 0 ? (
+                        myProjects.map(project => <ProjectCard key={project.id} project={project} allUsers={allUsers} />)
+                    ) : (
+                        <div className="col-span-full text-center text-muted-foreground py-16 bg-muted/50 rounded-lg">
+                            <FolderKanban className="mx-auto h-12 w-12 mb-4" />
+                            <p className="font-semibold">No Projects Assigned</p>
+                            <p className="text-sm">You are not a member of any projects yet.</p>
+                        </div>
+                    )}
+                </div>
+            </TabsContent>
+            <TabsContent value="tasks">
+            <Card>
+                <CardHeader>
+                <CardTitle>My Assigned Tasks</CardTitle>
+                <CardDescription>All tasks assigned to you across all projects, sorted by due date.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Project</TableHead>
+                        <TableHead>Due Date</TableHead>
+                        <TableHead>Status</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {assignedTasks.length > 0 ? (
+                        assignedTasks.map(task => (
+                        <TableRow key={task.id}>
+                            <TableCell className="font-medium">{task.title}</TableCell>
+                            <TableCell>
+                            <Link href={`/projects/${task.projectId}?type=${task.projectType === 'Rulemaking' ? 'rulemaking' : 'timkerja'}`} className="flex items-center gap-2 hover:underline text-muted-foreground hover:text-primary">
+                                <Folder className="h-4 w-4" />
+                                {task.projectName}
+                            </Link>
+                            </TableCell>
+                            <TableCell>{format(parseISO(task.dueDate), 'PPP')}</TableCell>
+                            <TableCell>
+                            <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
+                                {task.status}
+                            </Badge>
+                            </TableCell>
+                        </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center">
+                            You have no assigned tasks.
+                        </TableCell>
+                        </TableRow>
+                    )}
+                    </TableBody>
+                </Table>
+                </CardContent>
+            </Card>
+            </TabsContent>
+            <TabsContent value="timeline">
+                <Card>
+                    <CardContent className="p-0">
+                        <InteractiveTimeline tasks={assignedTasks} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            </Tabs>
+        </div>
+      </div>
 
        <AlertDialog open={!!taskToComplete} onOpenChange={() => setTaskToComplete(null)}>
         <AlertDialogContent>
