@@ -192,11 +192,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex items-center justify-center min-h-screen bg-cover bg-center p-4" style={{ backgroundImage: 'url(https://i.postimg.cc/k4xR2GSP/Untitled-design.png)' }}>
+    <main className="relative flex items-center justify-center min-h-screen p-4" style={{ background: 'linear-gradient(135deg, midnightblue, #111)' }}>
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
-      <div className="absolute inset-0 bg-black/50" />
+      
+      <section className="login-section">
+        <div className="noise"></div>
+        <div className="center">
+            {/* The circle element can be placed here if desired */}
+            {/* <div className="circle"></div> */}
+        </div>
+      </section>
+
       <div className="relative flex flex-col items-center gap-4">
         <Card className="w-full max-w-sm bg-card/10 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden transition-all hover:border-primary/50 hover:bg-gradient-to-t hover:from-primary/10">
             <div className="grid [grid-template-areas:'card-content']">
