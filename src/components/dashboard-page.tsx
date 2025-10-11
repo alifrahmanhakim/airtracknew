@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -310,9 +309,9 @@ export function DashboardPage() {
 
     const chartData = [
         { name: 'On Track', projects: statusCounts['On Track'] || 0, tasks: taskStatusCounts['In Progress'], 'To Do': taskStatusCounts['To Do'], fill: 'hsl(var(--chart-1))' },
-        { name: 'At Risk', projects: statusCounts['At Risk'] || 0, tasks: taskStatusCounts['Blocked'], 'To Do': 0, fill: 'hsl(var(--chart-2))' },
-        { name: 'Off Track', projects: statusCounts['Off Track'] || 0, tasks: overdueTasks.length, 'To Do': 0, fill: 'hsl(var(--chart-3))' },
-        { name: 'Completed', projects: statusCounts['Completed'] || 0, tasks: taskStatusCounts['Done'], 'To Do': 0, fill: 'hsl(var(--chart-4))' },
+        { name: 'At Risk', projects: statusCounts['At Risk'] || 0, tasks: taskStatusCounts['Blocked'], 'To Do': taskStatusCounts['To Do'], fill: 'hsl(var(--chart-2))' },
+        { name: 'Off Track', projects: statusCounts['Off Track'] || 0, tasks: taskStatusCounts['Off Track'], 'To Do': taskStatusCounts['To Do'], fill: 'hsl(var(--chart-3))' },
+        { name: 'Completed', projects: statusCounts['Completed'] || 0, tasks: taskStatusCounts['Done'], 'To Do': undefined, fill: 'hsl(var(--chart-4))' },
     ];
 
     return {
@@ -549,7 +548,7 @@ export function DashboardPage() {
                             ))}
                         </Bar>
                         <Line type="monotone" dataKey="tasks" name="Active/Overdue" yAxisId="right" strokeWidth={2} stroke="hsl(var(--chart-5))" />
-                        <Line type="monotone" dataKey="To Do" yAxisId="right" strokeWidth={2} stroke="hsl(var(--destructive))" />
+                        <Line type="monotone" dataKey="To Do" yAxisId="right" strokeWidth={2} stroke="hsl(var(--destructive))" connectNulls={false} />
                     </ComposedChart>
                 </ResponsiveContainer>
               </ChartContainer>
