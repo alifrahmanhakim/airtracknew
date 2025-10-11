@@ -19,6 +19,7 @@ const CHART_COLORS = [
     'hsl(var(--chart-3))',
     'hsl(var(--chart-4))',
     'hsl(var(--chart-5))',
+    'hsl(var(--muted))',
 ];
 
 const COMPLIANCE_STATUS_ORDER: { status: EvaluationItem['complianceStatus']; color: string }[] = [
@@ -57,6 +58,29 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
         { name: 'OPEN', value: openRecords, fill: 'hsl(var(--chart-4))' },
         { name: 'CLOSED', value: closedRecords, fill: 'hsl(var(--chart-2))' },
     ].filter(d => d.value > 0);
+
+    const casrAffectedCounts = allEvaluations.reduce((acc, evaluation) => {
+        if(evaluation.casrAffected) {
+            acc[evaluation.casrAffected] = (acc[evaluation.casrAffected] || 0) + 1;
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
+    const casrAffectedData = Object.entries(casrAffectedCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a,b) => b.value - a.value)
+      .slice(0, 10);
+
+    const typeOfLetterCounts = records.reduce((acc, record) => {
+        if (record.typeOfStateLetter) {
+            acc[record.typeOfStateLetter] = (acc[record.typeOfStateLetter] || 0) + 1;
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
+    const typeOfLetterData = Object.entries(typeOfLetterCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a,b) => b.value - a.value);
     
     return {
       totalRecords,
@@ -64,6 +88,8 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
       closedRecords,
       complianceStatusData,
       followUpStatusData,
+      casrAffectedData,
+      typeOfLetterData,
       totalEvaluations
     };
   }, [records]);
@@ -87,6 +113,14 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
     acc[item.name] = { label: item.name, color: item.fill };
     return acc;
   }, {} as any);
+
+  const chartConfig = (data: {name: string, value: number}[]) => ({
+      value: { label: 'Count' },
+      ...data.reduce((acc, item, index) => {
+          acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
+          return acc;
+      }, {} as any)
+  });
 
   return (
     <div className="space-y-6">
@@ -116,49 +150,93 @@ export function GapAnalysisAnalyticsDashboard({ records }: GapAnalysisAnalyticsD
                 </CardContent>
             </Card>
         </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Follow Up Status Distribution</CardTitle>
+                    <CardDescription>
+                        Breakdown of all records by their final follow up status (OPEN/CLOSED).
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={followUpChartConfig} className="mx-auto aspect-square h-[250px]">
+                        <PieChart>
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                            <Pie data={analyticsData.followUpStatusData} dataKey="value" nameKey="name" innerRadius="60%">
+                                {analyticsData.followUpStatusData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                                ))}
+                            </Pie>
+                             <ChartLegend
+                                content={<ChartLegendContent nameKey="name" />}
+                                className="-translate-y-[2rem] flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                            />
+                        </PieChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Compliance/Differences Status</CardTitle>
+                    <CardDescription>
+                        Breakdown across all {analyticsData.totalEvaluations} evaluation items.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={complianceChartConfig} className="h-[250px] w-full">
+                        <ResponsiveContainer>
+                            <BarChart data={analyticsData.complianceStatusData} margin={{ top: 20 }}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="name" tick={false} />
+                                <YAxis allowDecimals={false} />
+                                <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                                <ChartLegend content={<ChartLegendContent />} />
+                                <Bar dataKey="value" radius={4}>
+                                    {analyticsData.complianceStatusData.map((entry) => (
+                                        <Cell key={entry.name} fill={entry.fill} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+        </div>
         <Card>
             <CardHeader>
-                <CardTitle>Follow Up Status Distribution</CardTitle>
-                <CardDescription>
-                    Breakdown of all records by their final follow up status (OPEN/CLOSED).
-                </CardDescription>
+                <CardTitle>Top 10 CASR to be Affected</CardTitle>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={followUpChartConfig} className="mx-auto aspect-square h-[250px]">
-                    <PieChart>
-                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                        <Pie data={analyticsData.followUpStatusData} dataKey="value" nameKey="name" innerRadius="60%">
-                            {analyticsData.followUpStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                        </Pie>
-                         <ChartLegend
-                            content={<ChartLegendContent nameKey="name" />}
-                            className="-translate-y-[2rem] flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-                        />
-                    </PieChart>
+                <ChartContainer config={chartConfig(analyticsData.casrAffectedData)} className="h-[400px] w-full">
+                    <ResponsiveContainer>
+                        <BarChart data={analyticsData.casrAffectedData} layout="vertical" margin={{ left: 50, right: 30 }}>
+                            <YAxis dataKey="name" type="category" width={100} interval={0} tick={{ fontSize: 12 }}/>
+                            <XAxis type="number" allowDecimals={false}/>
+                            <Tooltip content={<ChartTooltipContent />} />
+                            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                                {analyticsData.casrAffectedData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>
         </Card>
-        <Card>
+         <Card>
             <CardHeader>
-                <CardTitle>Compliance/Differences Status Distribution</CardTitle>
-                <CardDescription>
-                    Breakdown of compliance status across all evaluation items ({analyticsData.totalEvaluations} total items).
-                </CardDescription>
+                <CardTitle>State Letters by Type</CardTitle>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={complianceChartConfig} className="h-[250px] w-full">
+                <ChartContainer config={chartConfig(analyticsData.typeOfLetterData)} className="h-[300px] w-full">
                     <ResponsiveContainer>
-                        <BarChart data={analyticsData.complianceStatusData} margin={{ top: 20 }}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="name" tick={false} />
-                            <YAxis allowDecimals={false} />
-                            <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
-                            <ChartLegend content={<ChartLegendContent />} />
+                        <BarChart data={analyticsData.typeOfLetterData}>
+                            <XAxis dataKey="name" />
+                            <YAxis allowDecimals={false}/>
+                            <Tooltip content={<ChartTooltipContent />} />
                             <Bar dataKey="value" radius={4}>
-                                {analyticsData.complianceStatusData.map((entry) => (
-                                    <Cell key={entry.name} fill={entry.fill} />
+                                {analyticsData.typeOfLetterData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                 ))}
                             </Bar>
                         </BarChart>
