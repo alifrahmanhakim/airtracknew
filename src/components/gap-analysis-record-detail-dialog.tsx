@@ -47,12 +47,30 @@ const EvaluationCard = ({ evaluation }: { evaluation: EvaluationItem }) => (
                 <p className="text-sm text-muted-foreground">{evaluation.review}</p>
             </div>
              <div>
-                <h4 className="font-semibold text-sm mb-1">Compliance Status</h4>
-                <p className="text-sm text-muted-foreground">{evaluation.complianceStatus}</p>
+                <h4 className="font-semibold text-sm mb-1">Follow Up</h4>
+                <p className="text-sm text-muted-foreground">{evaluation.followUp || '-'}</p>
+            </div>
+             <div>
+                <h4 className="font-semibold text-sm mb-1">Proposed Amendment</h4>
+                <p className="text-sm text-muted-foreground">{evaluation.proposedAmendment || '-'}</p>
+            </div>
+             <div>
+                <h4 className="font-semibold text-sm mb-1">Reason/Remark</h4>
+                <p className="text-sm text-muted-foreground">{evaluation.reasonOrRemark || '-'}</p>
+            </div>
+            <div>
+                <h4 className="font-semibold text-sm mb-1">Status Item</h4>
+                <Badge variant={evaluation.status === 'CLOSED' ? 'default' : 'destructive'}>
+                    {evaluation.status || 'N/A'}
+                </Badge>
             </div>
              <div>
                 <h4 className="font-semibold text-sm mb-1">CASR Affected</h4>
                 <p className="text-sm text-muted-foreground">{evaluation.casrAffected}</p>
+            </div>
+            <div>
+                <h4 className="font-semibold text-sm mb-1">Compliance Status</h4>
+                <p className="text-sm text-muted-foreground">{evaluation.complianceStatus}</p>
             </div>
         </CardContent>
     </Card>

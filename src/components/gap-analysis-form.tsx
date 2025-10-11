@@ -63,13 +63,13 @@ export function GapAnalysisForm({ onFormSubmit, rulemakingProjects }: GapAnalysi
     actionRequired: [
       { id: 'disapproval', checked: false, date: '' },
       { id: 'differences', checked: false, date: '' },
-      { id: 'efod', checked: false, date: '' },
+      { id: 'efod', checked: false },
     ],
     effectiveDate: '',
     applicabilityDate: '',
     embeddedApplicabilityDate: '',
     evaluations: [
-      { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' }
+      { id: 'eval-1', icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '', followUp: '', proposedAmendment: '', reasonOrRemark: '', status: 'OPEN' }
     ],
     statusItem: 'OPEN',
     summary: '',

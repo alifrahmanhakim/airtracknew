@@ -26,7 +26,7 @@ import { ComboboxOption } from './ui/combobox';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { gapAnalysisFormSchema as formSchema } from '@/lib/schemas';
-import { format, parseISO } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 
 type EditGapAnalysisRecordDialogProps = {
   record: GapAnalysisRecord;
@@ -35,10 +35,14 @@ type EditGapAnalysisRecordDialogProps = {
 
 const actionRequiredIds: ActionRequiredItem['id'][] = ['disapproval', 'differences', 'efod'];
 
-const formatToInputDate = (dateString?: string) => {
+const formatToInputDate = (dateString?: string): string => {
     if (!dateString) return '';
     try {
-        return format(parseISO(dateString), 'dd-MM-yyyy');
+        const date = parse(dateString, 'yyyy-MM-dd', new Date());
+        if (isValid(date)) {
+            return format(date, 'dd-MM-yyyy');
+        }
+        return dateString;
     } catch {
         return dateString;
     }
@@ -111,6 +115,13 @@ export function EditGapAnalysisRecordDialog({ record, onRecordUpdate }: EditGapA
       inspectors: record.inspectors || [],
       verifiers: record.verifiers?.map(v => ({...v, date: formatToInputDate(v.date)})) || [],
       implementationTasks: record.implementationTasks?.map(t => ({...t, estimatedComplianceDate: formatToInputDate(t.estimatedComplianceDate)})) || [],
+      evaluations: record.evaluations.map(e => ({
+          ...e,
+          followUp: e.followUp || '',
+          proposedAmendment: e.proposedAmendment || '',
+          reasonOrRemark: e.reasonOrRemark || '',
+          status: e.status || 'OPEN',
+      }))
     },
   });
 

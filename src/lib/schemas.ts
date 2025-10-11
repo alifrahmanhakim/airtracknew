@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { isValid, parse } from 'date-fns';
 
-const dateSchema = z.string().optional().refine(val => {
+const dateSchema = z.string().optional().nullable().refine(val => {
     if (!val || val.trim() === '') return true; // Allow empty strings
     // Check for DD-MM-YYYY format
     if (!/^\d{2}-\d{2}-\d{4}$/.test(val)) return false;
@@ -101,6 +101,10 @@ export const gapAnalysisFormSchema = z.object({
       'Not Applicable',
     ]),
     casrAffected: z.string().min(1, 'CASR to be affected is required'),
+    followUp: z.string().optional(),
+    proposedAmendment: z.string().optional(),
+    reasonOrRemark: z.string().optional(),
+    status: z.enum(['OPEN', 'CLOSED']).default('OPEN'),
   })).min(1, 'At least one evaluation item is required'),
   statusItem: z.enum(['OPEN', 'CLOSED']),
   summary: z.string().optional(),

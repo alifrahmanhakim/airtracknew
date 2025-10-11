@@ -117,6 +117,10 @@ export type EvaluationItem = {
     review: string;
     complianceStatus: 'No Differences' | 'More Exacting or Exceeds' | 'Different in character or other means of compliance' | 'Less protective or partially implemented or not implemented' | 'Not Applicable';
     casrAffected: string;
+    followUp?: string;
+    proposedAmendment?: string;
+    reasonOrRemark?: string;
+    status?: 'OPEN' | 'CLOSED';
 };
 
 export type Inspector = {

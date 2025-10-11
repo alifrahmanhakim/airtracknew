@@ -250,7 +250,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>C. EVALUATION</CardTitle>
-            <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '' })}>
+            <Button type="button" size="sm" onClick={() => append({ id: `eval-${Date.now()}`, icaoSarp: '', review: '', complianceStatus: 'No Differences', casrAffected: '', status: 'OPEN' })}>
                 <Plus className="mr-2 h-4 w-4" /> Add Evaluation Item
             </Button>
         </CardHeader>
@@ -261,6 +261,21 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
                     <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
                     <FormField control={form.control} name={`evaluations.${index}.icaoSarp`} render={({ field }) => ( <FormItem> <FormLabel>ICAO SARP</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={form.control} name={`evaluations.${index}.review`} render={({ field }) => ( <FormItem> <FormLabel>REVIEW</FormLabel> <FormControl><Textarea autoComplete="off" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`evaluations.${index}.followUp`} render={({ field }) => ( <FormItem> <FormLabel>Follow Up</FormLabel> <FormControl><Textarea placeholder="Follow up actions..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`evaluations.${index}.proposedAmendment`} render={({ field }) => ( <FormItem> <FormLabel>Proposed Amendment</FormLabel> <FormControl><Textarea placeholder="Details of the proposed amendment..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`evaluations.${index}.reasonOrRemark`} render={({ field }) => ( <FormItem> <FormLabel>Reason/Remark</FormLabel> <FormControl><Textarea placeholder="Reason or remark for the evaluation..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`evaluations.${index}.status`} render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Status Item</FormLabel>
+                             <FormControl>
+                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex items-center space-x-4">
+                                    <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="OPEN" /></FormControl><FormLabel className="font-normal">OPEN</FormLabel></FormItem>
+                                    <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="CLOSED" /></FormControl><FormLabel className="font-normal">CLOSED</FormLabel></FormItem>
+                                </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
                     <FormField
                         control={form.control}
                         name={`evaluations.${index}.casrAffected`}
@@ -315,7 +330,7 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
         </CardContent>
       </Card>
       
-      <Card>
+       <Card>
         <CardHeader><CardTitle>E. DGCA AUTHORIZATION</CardTitle></CardHeader>
         <CardContent className="space-y-6">
             <div>
@@ -487,8 +502,3 @@ export function GapAnalysisSharedFormFields({ form, casrOptions }: GapAnalysisSh
     </>
   );
 }
-
-
-
-
-
