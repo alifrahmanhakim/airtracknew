@@ -275,7 +275,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-background/20 backdrop-blur-lg">
+      <SidebarInset className="bg-transparent">
         <header className="absolute top-0 left-0 right-0 flex items-center justify-between p-2 z-10">
             <div className="flex items-center gap-2">
                 <SidebarTrigger />
