@@ -255,7 +255,7 @@ export function DashboardPage() {
             taskStatusCounts[task.status]++;
 
             const pressure = getTaskPressure(task);
-            task.assigneeIds.forEach(assigneeId => {
+            (task.assigneeIds || []).forEach(assigneeId => {
                 if (workloadCounts[assigneeId]) {
                     if (task.status === 'Done') {
                         workloadCounts[assigneeId].doneTasks++;
@@ -280,13 +280,14 @@ export function DashboardPage() {
     const finalWorkloadData = Object.values(workloadCounts)
       .filter(item => {
         const totalTasks = item.openTasks + item.doneTasks;
+        // Include user if they have tasks OR if they are not a Sub-Directorate Head
         return totalTasks > 0 || item.user.role !== 'Sub-Directorate Head';
       })
       .map(item => {
           let workloadStatus: WorkloadStatus = 'Normal';
           if (item.workloadScore >= 15) { // Threshold for Overload
               workloadStatus = 'Overload';
-          } else if (item.workloadScore <= 2 && item.openTasks === 0) { // Threshold for Underload
+          } else if (item.openTasks === 0) { // Keep simple for underload
               workloadStatus = 'Underload';
           }
           return { ...item, workloadStatus };
@@ -399,12 +400,22 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-center">
                 <div className="text-2xl font-bold">{stats.totalTasks} Total</div>
-                <div className="mt-2 space-y-1">
-                    <p className="text-xs text-green-500">{stats.taskStatusCounts['Done']} Completed</p>
-                    <p className="text-xs text-blue-500">{stats.taskStatusCounts['In Progress']} In Progress</p>
-                    <p className="text-xs text-gray-500">{stats.taskStatusCounts['To Do']} To Do</p>
-                    <p className="text-xs text-yellow-500">{stats.offTrackTasks} Off Track</p>
-                    <p className="text-xs text-destructive">{stats.taskStatusCounts['Blocked']} Blocked</p>
+                 <div className="mt-2 space-y-1">
+                    <p className="text-xs text-green-500">
+                      {stats.taskStatusCounts['Done']} Completed ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Done'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                    </p>
+                    <p className="text-xs text-blue-500">
+                      {stats.taskStatusCounts['In Progress']} In Progress ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['In Progress'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {stats.taskStatusCounts['To Do']} To Do ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['To Do'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                    </p>
+                    <p className="text-xs text-yellow-500">
+                      {stats.offTrackTasks} Off Track ({stats.totalTasks > 0 ? ((stats.offTrackTasks / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                    </p>
+                    <p className="text-xs text-destructive">
+                      {stats.taskStatusCounts['Blocked']} Blocked ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Blocked'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                    </p>
                 </div>
             </CardContent>
         </Card>
