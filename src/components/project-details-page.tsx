@@ -493,8 +493,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                             <div>
                                 <p className="text-sm text-muted-foreground">Timeline</p>
                                 <p className="font-semibold">{format(parseISO(project.startDate), 'dd MMM')} - {format(parseISO(project.endDate), 'dd MMM yyyy')}</p>
-                                <p className={cn("text-xs", daysLeft < 0 && project.status !== 'Completed' ? "text-destructive" : "text-muted-foreground")}>
-                                  {project.status === 'Completed' ? 'Project completed' : (daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`)}
+                                <p className={cn("text-xs", daysLeft < 0 && effectiveStatus !== 'Completed' ? "text-destructive" : "text-muted-foreground")}>
+                                  {effectiveStatus === 'Completed' ? 'Project completed' : (daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days remaining`)}
                                 </p>
                             </div>
                         </div>
