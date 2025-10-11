@@ -252,10 +252,12 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                     <CardTitle>Projects Overview</CardTitle>
                     <CardDescription>A summary of all rulemaking projects.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                 <CardContent className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div className="lg:col-span-1">
-                        <Card className="h-full">
-                           <CardHeader><CardTitle className="text-base">Project Snapshot</CardTitle></CardHeader>
+                       <Card className="h-full">
+                           <CardHeader>
+                               <CardTitle className="text-base">Project Snapshot</CardTitle>
+                           </CardHeader>
                            <CardContent className="grid grid-cols-1 gap-3">
                                <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
                                <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
@@ -264,10 +266,13 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                            </CardContent>
                        </Card>
                     </div>
-                     <div className="lg:col-span-1">
+                    <div className="lg:col-span-1">
                         <Card className="h-full border-red-500/50 bg-red-50 dark:bg-red-900/20 flex flex-col">
-                            <CardHeader>
-                                <CardTitle className='flex items-center gap-2 text-base text-red-800 dark:text-red-300'><CalendarX /> Off Track Projects</CardTitle>
+                             <CardHeader>
+                                <CardTitle className='flex items-center gap-2 text-base text-red-800 dark:text-red-300'>
+                                    <CalendarX /> 
+                                    Off Track Projects ({offTrackProjects.length})
+                                </CardTitle>
                                 <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-grow">
@@ -278,7 +283,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                                         return (
                                             <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
                                                 <div className="flex items-center justify-between gap-4">
-                                                    <p className="font-semibold text-sm">{project.name}</p>
+                                                    <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
                                                     <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
                                                 </div>
                                             </Link>
