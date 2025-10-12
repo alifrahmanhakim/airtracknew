@@ -45,7 +45,7 @@ type ProjectTimelineProps = {
 
 type ViewMode = 'week' | 'day';
 
-const ROW_MIN_HEIGHT = 50; 
+const ROW_HEIGHT = 50; 
 const HEADER_HEIGHT = 64;
 const TASK_LIST_WIDTH = 250;
 const WEEK_WIDTH = 60;
@@ -171,6 +171,9 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
   };
 
   const areFiltersActive = searchTerm !== '' || assigneeFilter !== 'all' || yearFilter !== 'all';
+  
+  const containerHeight = Math.min(10, sortedTasks.length) * ROW_HEIGHT + HEADER_HEIGHT;
+
 
   if (tasks.length === 0) {
     return (
@@ -238,8 +241,8 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
           ))}
         </div>
       </div>
-      <div ref={timelineContainerRef} className="w-full overflow-auto relative">
-        <div style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px` }}>
+      <div ref={timelineContainerRef} className="w-full overflow-auto relative" style={{ height: `${containerHeight}px` }}>
+        <div style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${HEADER_HEIGHT + sortedTasks.length * ROW_HEIGHT}px` }}>
             {/* STICKY HEADER */}
             <div className="sticky top-0 z-30 flex bg-card">
                 <div className="sticky left-0 z-20 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
@@ -286,20 +289,18 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
             {/* BODY */}
             <div className="relative">
                 {/* Background Grid Lines */}
-                <div className="absolute inset-0 z-0">
-                    <div className="relative h-full" style={{ left: `${TASK_LIST_WIDTH}px`, width: `${totalGridWidth}px` }}>
-                         {viewMode === 'day' ? (
-                            days.map((_, index) => (
-                                <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
-                            ))
-                        ) : (
-                            weeks.map((_, index) => (
-                                <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border" style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} />
-                            ))
-                        )}
-                    </div>
+                <div className="absolute inset-y-0 z-0" style={{ top: `${HEADER_HEIGHT}px`, left: `${TASK_LIST_WIDTH}px`, width: `${totalGridWidth}px` }}>
+                    {viewMode === 'day' ? (
+                        days.map((_, index) => (
+                            <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
+                        ))
+                    ) : (
+                        weeks.map((_, index) => (
+                            <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border" style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} />
+                        ))
+                    )}
                 </div>
-
+                
                 {/* Today Marker */}
                 {(() => {
                     const today = startOfDay(new Date());
@@ -314,7 +315,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                         todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                     }
                     return (
-                        <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${TASK_LIST_WIDTH + todayLeft}px` }} >
+                        <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ top: `${HEADER_HEIGHT}px`, left: `${TASK_LIST_WIDTH + todayLeft}px` }} >
                             <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                 Today
                             </div>
@@ -323,7 +324,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                 })()}
 
                 {/* Rows and Bars */}
-                {sortedTasks.map((task) => {
+                {sortedTasks.map((task, rowIndex) => {
                     const taskStart = parseISO(task.startDate);
                     const taskEnd = parseISO(task.dueDate);
 
@@ -341,8 +342,8 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                     }
 
                     return (
-                        <div key={task.id} className="flex border-b">
-                            <div className="sticky left-0 z-20 flex items-center px-4 py-2 border-r bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
+                        <div key={task.id} className="flex border-b" style={{ height: `${ROW_HEIGHT}px` }}>
+                            <div className="sticky left-0 z-10 flex items-center px-4 py-2 border-r bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
@@ -360,8 +361,8 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                                                 "h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", 
                                                 statusConfig[task.status].color
                                             )}>
-                                                 <p className="text-[10px] text-center font-bold text-white/90 leading-tight">
-                                                    {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
+                                                 <p className="text-[10px] text-center font-bold text-white/90 leading-tight truncate">
+                                                     {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
                                                 </p>
                                             </div>
                                         </div>
