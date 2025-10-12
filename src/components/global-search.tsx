@@ -27,9 +27,14 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   const [open, setOpen] = React.useState(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
+  const [modifierKey, setModifierKey] = React.useState('⌘');
   const router = useRouter();
 
   React.useEffect(() => {
+    // Detect OS to show correct modifier key.
+    const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+    setModifierKey(isMac ? '⌘' : 'Ctrl');
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === 'k' && (e.metaKey || e.ctrlKey))) {
         e.preventDefault();
@@ -90,7 +95,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                 <span className="hidden lg:inline-flex">Search...</span>
                 <span className="inline-flex lg:hidden">Search...</span>
                  <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                    <span className="text-xs">⌘</span>K
+                    <span className="text-xs">{modifierKey}</span>K
                 </kbd>
             </Button>
         </div>
