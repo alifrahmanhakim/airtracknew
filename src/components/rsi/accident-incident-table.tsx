@@ -14,7 +14,7 @@ import {
 import type { AccidentIncidentRecord } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, ArrowUpDown, Search, Info, AlertTriangle, Loader2, Link as LinkIcon } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Info, AlertTriangle, Loader2, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -27,10 +27,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { format, parseISO } from 'date-fns';
-import { Input } from '../ui/input';
 import { deleteAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { EditAccidentIncidentRecordDialog } from './edit-accident-incident-dialog';
 import { Highlight } from '../ui/highlight';
+import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext } from '../ui/pagination';
 
 type AccidentIncidentTableProps = {
   records: AccidentIncidentRecord[];
@@ -43,11 +43,14 @@ type SortDescriptor = {
     direction: 'asc' | 'desc';
 } | null;
 
+const RECORDS_PER_PAGE = 5;
+
 export function AccidentIncidentTable({ records, onUpdate, searchTerm }: AccidentIncidentTableProps) {
     const { toast } = useToast();
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<AccidentIncidentRecord | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
+    const [currentPage, setCurrentPage] = React.useState(1);
 
     const handleSort = (column: keyof AccidentIncidentRecord) => {
         setSort(prevSort => {
@@ -84,8 +87,18 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
         
         return sorted;
     }, [records, sort]);
+    
+    const totalPages = Math.ceil(sortedRecords.length / RECORDS_PER_PAGE);
+    const paginatedRecords = sortedRecords.slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE);
 
-    const handleDeleteRequest = (record: AccidentIncidentRecord) => {
+    const handlePageChange = (newPage: number) => {
+      if (newPage >= 1 && newPage <= totalPages) {
+        setCurrentPage(newPage);
+      }
+    };
+
+    const handleDeleteRequest = (e: React.MouseEvent, record: AccidentIncidentRecord) => {
+        e.stopPropagation();
         setRecordToDelete(record);
     };
 
@@ -115,15 +128,13 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                             <TableHead>Tipe Pesawat</TableHead>
                             <TableHead>Lokasi</TableHead>
                             <TableHead>Taxonomy</TableHead>
-                            <TableHead>Keterangan Kejadian</TableHead>
-                            <TableHead>Korban Jiwa</TableHead>
                             <TableHead>File</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedRecords.length > 0 ? sortedRecords.map((record) => (
-                            <TableRow key={record.id}>
+                        {paginatedRecords.length > 0 ? paginatedRecords.map((record) => (
+                            <TableRow key={record.id} onClick={() => onUpdate(record)} className="cursor-pointer">
                                 <TableCell><Highlight text={format(parseISO(record.tanggal), 'dd-MMM-yy')} query={searchTerm} /></TableCell>
                                 <TableCell>
                                     <Badge variant={record.kategori === 'Accident (A)' ? 'destructive' : 'secondary'}>
@@ -135,12 +146,10 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                                 <TableCell><Highlight text={record.tipePesawat} query={searchTerm} /></TableCell>
                                 <TableCell><Highlight text={record.lokasi} query={searchTerm} /></TableCell>
                                 <TableCell><Highlight text={record.taxonomy} query={searchTerm} /></TableCell>
-                                <TableCell className="whitespace-normal"><Highlight text={record.keteranganKejadian || ''} query={searchTerm} /></TableCell>
-                                <TableCell><Highlight text={record.korbanJiwa} query={searchTerm} /></TableCell>
                                 <TableCell>
                                     {record.fileUrl ? (
                                         <Button asChild variant="ghost" size="icon">
-                                            <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
+                                            <a href={record.fileUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                                 <LinkIcon className="h-4 w-4" />
                                             </a>
                                         </Button>
@@ -149,15 +158,14 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                                     )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <EditAccidentIncidentRecordDialog record={record} onRecordUpdate={onUpdate} />
-                                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteRequest(record)}>
+                                    <Button variant="ghost" size="icon" className="text-destructive" onClick={(e) => handleDeleteRequest(e, record)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </TableCell>
                             </TableRow>
                         )) : (
                             <TableRow>
-                                <TableCell colSpan={11} className="text-center h-24">
+                                <TableCell colSpan={9} className="text-center h-24">
                                      <Info className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
                                      No records found for the current filters.
                                 </TableCell>
@@ -166,6 +174,21 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                     </TableBody>
                 </Table>
             </div>
+             <Pagination className="mt-4">
+                <PaginationContent>
+                <PaginationItem>
+                    <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''} />
+                </PaginationItem>
+                <PaginationItem>
+                    <span className="px-4 py-2 text-sm">
+                    Page {currentPage} of {totalPages}
+                    </span>
+                </PaginationItem>
+                <PaginationItem>
+                    <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''} />
+                </PaginationItem>
+                </PaginationContent>
+            </Pagination>
              <AlertDialog open={!!recordToDelete} onOpenChange={(open) => setRecordToDelete(open ? recordToDelete : null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader className="text-center items-center">

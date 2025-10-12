@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -12,10 +13,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Pencil } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { AccidentIncidentRecord } from '@/lib/types';
 import { AccidentIncidentForm } from './accident-incident-form';
 import { updateAccidentIncidentRecord } from '@/lib/actions/accident-incident';
@@ -75,29 +75,22 @@ export function EditAccidentIncidentRecordDialog({ record, onRecordUpdate }: Edi
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Pencil className="h-4 w-4" />
+      <DialogHeader>
+        <DialogTitle>Edit Accident/Incident Record</DialogTitle>
+        <DialogDescription>
+          Make changes to the record for registration: <span className="font-semibold">{record.registrasiPesawat}</span>
+        </DialogDescription>
+      </DialogHeader>
+      <div className="max-h-[70vh] overflow-y-auto p-1">
+        <AccidentIncidentForm form={form} />
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Save Changes
         </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>Edit Accident/Incident Record</DialogTitle>
-          <DialogDescription>
-            Make changes to the record for registration: <span className="font-semibold">{record.registrasiPesawat}</span>
-          </DialogDescription>
-        </DialogHeader>
-        <div className="max-h-[70vh] overflow-y-auto p-1">
-          <AccidentIncidentForm form={form} onSubmit={onSubmit} />
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      </DialogFooter>
     </Dialog>
   );
 }

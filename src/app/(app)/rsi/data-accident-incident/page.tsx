@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -15,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RotateCcw, Search, Loader2, ArrowLeft, FileSpreadsheet } from 'lucide-react';
 import { getYear, parseISO, format } from 'date-fns';
-import { ComboboxOption } from '@/components/ui/combobox';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { accidentIncidentFormSchema } from '@/lib/schemas';
@@ -23,8 +23,8 @@ import type { z } from 'zod';
 import { addAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { aocOptions } from '@/lib/data';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
+import { EditAccidentIncidentRecordDialog } from '@/components/rsi/edit-accident-incident-dialog';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -44,6 +44,7 @@ export default function DataAccidentIncidentPage() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
+    const [recordToEdit, setRecordToEdit] = React.useState<AccidentIncidentRecord | null>(null);
 
     // Filter states
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -107,6 +108,7 @@ export default function DataAccidentIncidentPage() {
     
     const handleRecordUpdate = (updatedRecord: AccidentIncidentRecord) => {
         setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+        setRecordToEdit(null);
     };
 
     const resetTableFilters = () => {
@@ -230,10 +232,10 @@ export default function DataAccidentIncidentPage() {
                             <CardDescription>Fill out the form to add a new accident or serious incident record.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <AccidentIncidentForm form={form} onSubmit={onFormSubmit} />
+                            <AccidentIncidentForm form={form} />
                         </CardContent>
                         <CardFooter className="flex justify-end">
-                            <Button type="submit" form="accident-incident-form" disabled={isSubmitting}>
+                            <Button type="button" form="accident-incident-form" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Submit Record
                             </Button>
@@ -297,7 +299,7 @@ export default function DataAccidentIncidentPage() {
                                         </Button>
                                     )}
                                 </div>
-                                <AccidentIncidentTable records={filteredRecords} onUpdate={handleRecordUpdate} searchTerm={searchTerm} />
+                                <AccidentIncidentTable records={filteredRecords} onUpdate={setRecordToEdit} searchTerm={searchTerm} />
                                 </>
                             )}
                         </CardContent>
@@ -312,6 +314,12 @@ export default function DataAccidentIncidentPage() {
                     )}
                 </TabsContent>
             </Tabs>
+             {recordToEdit && (
+                <EditAccidentIncidentRecordDialog
+                    record={recordToEdit}
+                    onRecordUpdate={handleRecordUpdate}
+                />
+            )}
         </main>
     );
 }

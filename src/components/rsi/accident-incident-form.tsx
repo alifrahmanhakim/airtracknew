@@ -1,8 +1,8 @@
 
+
 'use client';
 
 import { useForm, type UseFormReturn } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
   FormControl,
@@ -19,32 +19,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarIcon } from 'lucide-react';
 import { accidentIncidentFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { Calendar } from '../ui/calendar';
-import { Combobox, ComboboxOption } from '../ui/combobox';
+import { Combobox } from '../ui/combobox';
 import { Textarea } from '../ui/textarea';
 import { indonesianAircraftTypes, aocOptions, taxonomyOptions } from '@/lib/data';
-import { Button } from '../ui/button';
 
 type AccidentIncidentFormValues = z.infer<typeof accidentIncidentFormSchema>;
 
 type AccidentIncidentFormProps = {
   form: UseFormReturn<AccidentIncidentFormValues>;
-  onSubmit: (data: AccidentIncidentFormValues) => void;
 };
 
-export function AccidentIncidentForm({ form, onSubmit }: AccidentIncidentFormProps) {
+export function AccidentIncidentForm({ form }: AccidentIncidentFormProps) {
   
   const watchAdaKorban = form.watch('adaKorbanJiwa');
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" id="accident-incident-form">
+      <form id="accident-incident-form" className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FormField
               control={form.control}
