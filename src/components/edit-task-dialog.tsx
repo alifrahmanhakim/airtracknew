@@ -176,8 +176,8 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-grow pr-6 -mr-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col">
+            <ScrollArea className="flex-1 pr-6 -mr-6">
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -496,7 +496,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                 </div>
               </div>
             </ScrollArea>
-            <DialogFooter className='pt-4 mt-4 border-t flex-shrink-0'>
+            <DialogFooter className='pt-4 mt-auto border-t'>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
