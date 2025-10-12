@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -470,10 +471,10 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                 </CardHeader>
                 <CardContent className="pt-0">
                     <div className="h-[400px] w-full overflow-auto">
-                        <Table className="min-w-[900px] overflow-x-auto">
+                        <Table>
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[50px]">No.</TableHead>
+                                <TableHead className="w-[80px]">No.</TableHead>
                                 <TableHead className="w-[30%]" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>

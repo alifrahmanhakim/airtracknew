@@ -211,7 +211,7 @@ export function PqsRecordsTable({
         ) : (
         <>
           <div className="border rounded-md w-full overflow-x-auto">
-            <Table className="min-w-full">
+            <Table>
               <TableHeader className="sticky top-0 bg-background/95 z-10">
                 <TableRow>
                   {visibleColumns.map((col) => (
@@ -234,7 +234,7 @@ export function PqsRecordsTable({
                       onClick={() => setRecordToView(record)}
                   >
                       {visibleColumns.map((col) => (
-                          <TableCell key={col.key} className="align-middle whitespace-normal">
+                          <TableCell key={col.key} className="align-middle">
                               {(() => {
                                   const value = record[col.key as keyof PqRecord] as string | undefined;
                                   
@@ -254,7 +254,7 @@ export function PqsRecordsTable({
                                       return <span className='text-muted-foreground'>—</span>;
                                   }
                                   
-                                  return <div className="truncate-multiline">{value}</div>;
+                                  return value;
                               })()}
                           </TableCell>
                       ))}
