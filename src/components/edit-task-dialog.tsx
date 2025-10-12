@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -178,7 +177,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-             <ScrollArea className="flex-1 pr-6 -mr-6">
+            <ScrollArea className="flex-grow pr-6 -mr-6">
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -497,7 +496,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                 </div>
               </div>
             </ScrollArea>
-            <DialogFooter className='pt-4 border-t mt-4 flex-shrink-0'>
+            <DialogFooter className='pt-4 mt-4 border-t flex-shrink-0'>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
