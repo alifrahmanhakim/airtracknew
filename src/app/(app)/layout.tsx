@@ -49,7 +49,7 @@ import { updateUserOnlineStatus } from '@/lib/actions/user';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from '@/components/notification-bell';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/global-search';
 import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
 
@@ -115,10 +115,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [userId, setUserId] = React.useState<string | null>(null);
   
-  // State for UserProfileDialog moved to chats page
-  // const [allProjects, setAllProjects] = React.useState<Project[]>([]);
-  // const [profileUser, setProfileUser] = React.useState<User | null>(null);
-
   React.useEffect(() => {
     // This effect runs only once on mount to check for the user ID.
     const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -199,14 +195,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenu>
                     {navItems.dashboards.map((item) => (
                     <SidebarMenuItem key={item.href}>
-                         <Link href={item.href} className={buttonVariants({
-                            variant: pathname.startsWith(item.href) ? 'secondary' : 'ghost',
-                            size: 'default',
-                            className: 'justify-start w-full'
-                        })}>
-                            <item.icon />
-                            <span>{item.label}</span>
-                        </Link>
+                         <SidebarMenuButton
+                            asChild
+                            isActive={pathname.startsWith(item.href)}
+                        >
+                            <Link href={item.href}>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </Link>
+                        </SidebarMenuButton>
                     </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
@@ -220,14 +217,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       }
                       return (
                         <SidebarMenuItem key={item.href}>
-                             <Link href={item.href} className={buttonVariants({
-                                variant: pathname.startsWith(item.href) ? 'secondary' : 'ghost',
-                                size: 'default',
-                                className: 'justify-start w-full'
-                            })}>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </Link>
+                             <SidebarMenuButton
+                                asChild
+                                isActive={pathname.startsWith(item.href)}
+                            >
+                                <Link href={item.href}>
+                                    <item.icon />
+                                    <span>{item.label}</span>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                       )
                     })}
