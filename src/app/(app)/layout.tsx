@@ -197,7 +197,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <SidebarMenuItem key={item.href}>
                          <SidebarMenuButton
                             asChild
-                            size="lg"
                             isActive={pathname.startsWith(item.href)}
                         >
                             <Link href={item.href}>
@@ -220,7 +219,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         <SidebarMenuItem key={item.href}>
                              <SidebarMenuButton
                                 asChild
-                                size="lg"
                                 isActive={pathname.startsWith(item.href)}
                             >
                                 <Link href={item.href}>
