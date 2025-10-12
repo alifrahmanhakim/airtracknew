@@ -192,7 +192,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarContent>
             <SidebarGroup>
                 <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
-                <SidebarMenu className="gap-2">
+                <SidebarMenu>
                     {navItems.dashboards.map((item) => (
                     <SidebarMenuItem key={item.href}>
                          <SidebarMenuButton
@@ -211,7 +211,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
              <SidebarGroup>
                 <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-                <SidebarMenu className="gap-2">
+                <SidebarMenu>
                     {navItems.workspace.map((item) => {
                       if (item.requiredRole && !isAdmin) {
                         return null;
