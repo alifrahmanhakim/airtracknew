@@ -155,7 +155,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
       left: horizontalScrollPosition,
       behavior: 'auto',
     });
-  }, [viewMode]); // Only scroll horizontally on view mode change
+  }, [viewMode]); 
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
@@ -285,9 +285,9 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
 
             {/* BODY */}
             <div className="relative">
-                {/* Today Marker and Grid Lines */}
-                <div className="absolute inset-0 z-10 pointer-events-none">
-                    <div className="relative h-full" style={{ width: `${totalGridWidth}px` }}>
+                {/* Background Grid Lines */}
+                <div className="absolute inset-0 z-0">
+                    <div className="relative h-full" style={{ left: `${TASK_LIST_WIDTH}px`, width: `${totalGridWidth}px` }}>
                          {viewMode === 'day' ? (
                             days.map((_, index) => (
                                 <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
@@ -297,28 +297,30 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                                 <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border" style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} />
                             ))
                         )}
-                        {(() => {
-                            const today = startOfDay(new Date());
-                            if (today < timelineStart || today > timelineEnd) return null;
-                            
-                            let todayLeft;
-                            if (viewMode === 'day') {
-                                const todayOffsetDays = differenceInDays(today, timelineStart);
-                                todayLeft = todayOffsetDays * DAY_WIDTH_DAY_VIEW;
-                            } else { 
-                                const todayOffsetWeeks = differenceInCalendarISOWeeks(today, timelineStart);
-                                todayLeft = todayOffsetWeeks * WEEK_WIDTH;
-                            }
-                            return (
-                                <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary" style={{ left: `${todayLeft}px` }} >
-                                    <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
-                                        Today
-                                    </div>
-                                </div>
-                            );
-                        })()}
                     </div>
                 </div>
+
+                {/* Today Marker */}
+                {(() => {
+                    const today = startOfDay(new Date());
+                    if (today < timelineStart || today > timelineEnd) return null;
+                    
+                    let todayLeft;
+                    if (viewMode === 'day') {
+                        const todayOffsetDays = differenceInDays(today, timelineStart);
+                        todayLeft = todayOffsetDays * DAY_WIDTH_DAY_VIEW;
+                    } else { 
+                        const todayOffsetWeeks = differenceInCalendarISOWeeks(today, timelineStart);
+                        todayLeft = todayOffsetWeeks * WEEK_WIDTH;
+                    }
+                    return (
+                        <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${TASK_LIST_WIDTH + todayLeft}px` }} >
+                            <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
+                                Today
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Rows and Bars */}
                 {sortedTasks.map((task) => {
@@ -340,8 +342,15 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
 
                     return (
                         <div key={task.id} className="flex border-b">
-                            <div className="sticky left-0 z-20 flex items-center px-4 py-2 border-r bg-card" style={{ width: `${TASK_LIST_WIDTH}px`, minHeight: `${ROW_MIN_HEIGHT}px` }}>
-                                <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
+                            <div className="sticky left-0 z-20 flex items-center px-4 py-2 border-r bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {task.title}
+                                  </TooltipContent>
+                                </Tooltip>
                             </div>
                             <div className="relative" style={{ width: `${totalGridWidth}px` }}>
                                 <Tooltip>
@@ -351,6 +360,9 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                                                 "h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", 
                                                 statusConfig[task.status].color
                                             )}>
+                                                 <p className="text-[10px] text-center font-bold text-white/90 leading-tight">
+                                                    {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
+                                                </p>
                                             </div>
                                         </div>
                                     </TooltipTrigger>
