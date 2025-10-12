@@ -24,7 +24,7 @@ export const Highlight: React.FC<HighlightProps> = ({ text, query }) => {
     <span>
       {parts.map((part, index) =>
         regex.test(part) ? (
-          <mark key={index} className="bg-yellow-300 text-black p-0 m-0 rounded">
+          <mark key={index} className="bg-primary/20 text-primary-foreground border border-primary/50 px-1 py-0.5 rounded-md">
             {part}
           </mark>
         ) : (
