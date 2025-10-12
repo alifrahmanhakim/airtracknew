@@ -299,7 +299,7 @@ export default function DataAccidentIncidentPage() {
                                         </Button>
                                     )}
                                 </div>
-                                <AccidentIncidentTable records={filteredRecords} onUpdate={setRecordToEdit} searchTerm={searchTerm} />
+                                <AccidentIncidentTable records={filteredRecords} onEdit={setRecordToEdit} searchTerm={searchTerm} />
                                 </>
                             )}
                         </CardContent>
@@ -318,6 +318,8 @@ export default function DataAccidentIncidentPage() {
                 <EditAccidentIncidentRecordDialog
                     record={recordToEdit}
                     onRecordUpdate={handleRecordUpdate}
+                    open={!!recordToEdit}
+                    onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
                 />
             )}
         </main>

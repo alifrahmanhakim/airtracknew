@@ -28,13 +28,12 @@ import {
 } from "@/components/ui/alert-dialog"
 import { format, parseISO } from 'date-fns';
 import { deleteAccidentIncidentRecord } from '@/lib/actions/accident-incident';
-import { EditAccidentIncidentRecordDialog } from './edit-accident-incident-dialog';
 import { Highlight } from '../ui/highlight';
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext } from '../ui/pagination';
 
 type AccidentIncidentTableProps = {
   records: AccidentIncidentRecord[];
-  onUpdate: (record: AccidentIncidentRecord) => void;
+  onEdit: (record: AccidentIncidentRecord) => void;
   searchTerm: string;
 };
 
@@ -45,7 +44,7 @@ type SortDescriptor = {
 
 const RECORDS_PER_PAGE = 5;
 
-export function AccidentIncidentTable({ records, onUpdate, searchTerm }: AccidentIncidentTableProps) {
+export function AccidentIncidentTable({ records, onEdit, searchTerm }: AccidentIncidentTableProps) {
     const { toast } = useToast();
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'tanggal', direction: 'desc' });
     const [recordToDelete, setRecordToDelete] = React.useState<AccidentIncidentRecord | null>(null);
@@ -134,7 +133,7 @@ export function AccidentIncidentTable({ records, onUpdate, searchTerm }: Acciden
                     </TableHeader>
                     <TableBody>
                         {paginatedRecords.length > 0 ? paginatedRecords.map((record) => (
-                            <TableRow key={record.id} onClick={() => onUpdate(record)} className="cursor-pointer">
+                            <TableRow key={record.id} onClick={() => onEdit(record)} className="cursor-pointer">
                                 <TableCell><Highlight text={format(parseISO(record.tanggal), 'dd-MMM-yy')} query={searchTerm} /></TableCell>
                                 <TableCell>
                                     <Badge variant={record.kategori === 'Accident (A)' ? 'destructive' : 'secondary'}>
