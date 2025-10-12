@@ -244,12 +244,6 @@ export default function MyDashboardPage() {
     .filter(t => t.status !== 'Done')
     .slice(0, 3);
     
-  const workspaceCards = [
-    { title: "CC/EFOD", value: workspaceAnalytics.ccefod, icon: ClipboardCheck, href: "/ccefod", color: "text-blue-500", description: "Compliance Checklist / Electronic Filing of Differences" },
-    { title: "PQs", value: workspaceAnalytics.pqs, icon: CircleHelp, href: "/pqs", color: "text-green-500", description: "Protocol Questions Monitoring" },
-    { title: "GAP Analysis", value: workspaceAnalytics.gapAnalysis, icon: GitCompareArrows, href: "/gap-analysis", color: "text-yellow-500", description: "GAP Analysis based on State Letters" },
-    { title: "Glossary", value: workspaceAnalytics.glossary, icon: BookText, href: "/glossary", color: "text-purple-500", description: "Centralized Translation Analysis" },
-  ]
   
   const projectsNearDeadline = React.useMemo(() => {
     return myProjects.filter(p => {
@@ -290,7 +284,7 @@ export default function MyDashboardPage() {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="bg-gradient-to-br from-primary/20 via-background to-background">
             <CardHeader>
                 <CardTitle>Fokus Hari Ini</CardTitle>
@@ -476,30 +470,6 @@ export default function MyDashboardPage() {
                         No projects nearing their deadline.
                     </div>
                 )}
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Workspace Overview</CardTitle>
-                <CardDescription>At-a-glance view of key modules.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-                {workspaceCards.map(item => (
-                    <Tooltip key={item.title}>
-                        <TooltipTrigger asChild>
-                            <Link href={item.href}>
-                                <div className="p-3 rounded-lg border bg-background hover:bg-muted/80 hover:shadow-sm transition-all text-center">
-                                    <item.icon className={cn("h-8 w-8 mx-auto mb-2", item.color)} />
-                                    <p className="font-bold text-lg"><AnimatedCounter endValue={item.value} /></p>
-                                    <p className="text-xs font-medium text-muted-foreground">{item.title}</p>
-                                </div>
-                            </Link>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{item.description}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                ))}
             </CardContent>
         </Card>
       </div>
