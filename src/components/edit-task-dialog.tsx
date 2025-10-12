@@ -44,6 +44,7 @@ import { Separator } from './ui/separator';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { Checkbox } from './ui/checkbox';
 import { Textarea } from './ui/textarea';
+import { ScrollArea } from './ui/scroll-area';
 
 const attachmentSchema = z.object({
   id: z.string(),
@@ -168,7 +169,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
             <span className="sr-only">Edit Task</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
@@ -176,145 +177,240 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Task Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Start Date</FormLabel>
-                    <Popover modal={false}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'PPP')
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="dueDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Due Date</FormLabel>
-                    <Popover modal={false}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'PPP')
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-             <FormField
-                control={form.control}
-                name="assigneeIds"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assignees</FormLabel>
-                     <MultiSelect
-                      options={userOptions}
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      placeholder="Select team members..."
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
+            <ScrollArea className="flex-grow pr-6 -mr-6">
+              <div className="space-y-4">
                 <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={handleStatusChange} value={field.value}>
-                        <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a status" />
-                        </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                        <SelectItem value="To Do">To Do</SelectItem>
-                        <SelectItem value="In Progress">In Progress</SelectItem>
-                        <SelectItem value="Blocked">Blocked</SelectItem>
-                        <SelectItem value="Done">Done</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
+                      <FormLabel>Task Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
-                )}
+                  )}
                 />
-                {watchedStatus === 'Done' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Start Date</FormLabel>
+                        <Popover modal={false}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP')
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="dueDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Due Date</FormLabel>
+                        <Popover modal={false}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP')
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                    control={form.control}
+                    name="assigneeIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Assignees</FormLabel>
+                        <MultiSelect
+                          options={userOptions}
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          placeholder="Select team members..."
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={handleStatusChange} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="To Do">To Do</SelectItem>
+                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="Blocked">Blocked</SelectItem>
+                            <SelectItem value="Done">Done</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    {watchedStatus === 'Done' && (
+                        <FormField
+                            control={form.control}
+                            name="doneDate"
+                            render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Completion Date</FormLabel>
+                                <Popover modal={false}>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                    <Button
+                                        variant={'outline'}
+                                        className={cn(
+                                        'w-full pl-3 text-left font-normal',
+                                        !field.value && 'text-muted-foreground'
+                                        )}
+                                    >
+                                        {field.value ? (
+                                        format(field.value, 'PPP')
+                                        ) : (
+                                        <span>Pick a date</span>
+                                        )}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    initialFocus
+                                    />
+                                </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    )}
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="isCritical"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-destructive/10 border-destructive/20">
+                        <FormControl>
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                className="mt-1"
+                            />
+                        </FormControl>
+                        <div className="space-y-1 leading-none w-full">
+                            <FormLabel className="text-destructive font-bold flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4" /> Mark as Critical Issue
+                            </FormLabel>
+                            {isCritical && (
+                                <FormField
+                                    control={form.control}
+                                    name="criticalIssue"
+                                    render={({ field }) => (
+                                        <FormItem className="pt-2">
+                                            <FormControl>
+                                                <Textarea {...field} placeholder="Describe the critical issue..." rows={3}/>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                        </div>
+                    </FormItem>
+                  )}
+                />
+
+                <Separator />
+                
+                <div className="space-y-4">
+                    <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
                     <FormField
                         control={form.control}
-                        name="doneDate"
+                        name="namaSurat"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Nama Surat</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., Undangan Rapat..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    <FormField
+                        control={form.control}
+                        name="tanggalPelaksanaan"
                         render={({ field }) => (
                         <FormItem className="flex flex-col">
-                            <FormLabel>Completion Date</FormLabel>
+                            <FormLabel>Tanggal Pelaksanaan</FormLabel>
                             <Popover modal={false}>
                             <PopoverTrigger asChild>
                                 <FormControl>
@@ -347,153 +443,61 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                         </FormItem>
                         )}
                     />
-                )}
-            </div>
+                </div>
 
-            <FormField
-              control={form.control}
-              name="isCritical"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-destructive/10 border-destructive/20">
-                    <FormControl>
-                        <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="mt-1"
-                        />
-                    </FormControl>
-                    <div className="space-y-1 leading-none w-full">
-                        <FormLabel className="text-destructive font-bold flex items-center gap-2">
-                           <AlertTriangle className="h-4 w-4" /> Mark as Critical Issue
-                        </FormLabel>
-                        {isCritical && (
+                <Separator />
+
+                <div>
+                  <FormLabel>Attachments (e.g., Google Drive, OneDrive links)</FormLabel>
+                  <div className="space-y-3 mt-2">
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="flex items-center gap-2 p-2 border rounded-md">
+                        <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                        <div className='flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2'>
                             <FormField
                                 control={form.control}
-                                name="criticalIssue"
+                                name={`attachments.${index}.name`}
                                 render={({ field }) => (
-                                    <FormItem className="pt-2">
-                                        <FormControl>
-                                            <Textarea {...field} placeholder="Describe the critical issue..." rows={3}/>
-                                        </FormControl>
-                                        <FormMessage />
+                                    <FormItem>
+                                    <FormControl>
+                                        <Input placeholder="Attachment Name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                        )}
-                    </div>
-                </FormItem>
-              )}
-            />
-
-            <Separator />
-            
-            <div className="space-y-4">
-                 <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
-                 <FormField
-                    control={form.control}
-                    name="namaSurat"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Nama Surat</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., Undangan Rapat..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                <FormField
-                    control={form.control}
-                    name="tanggalPelaksanaan"
-                    render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                        <FormLabel>Tanggal Pelaksanaan</FormLabel>
-                        <Popover modal={false}>
-                        <PopoverTrigger asChild>
-                            <FormControl>
-                            <Button
-                                variant={'outline'}
-                                className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
+                            <FormField
+                                control={form.control}
+                                name={`attachments.${index}.url`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormControl>
+                                        <Input placeholder="https://..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
                                 )}
-                            >
-                                {field.value ? (
-                                format(field.value, 'PPP')
-                                ) : (
-                                <span>Pick a date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
                             />
-                        </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-            </div>
-
-            <Separator />
-
-            <div>
-              <FormLabel>Attachments (e.g., Google Drive, OneDrive links)</FormLabel>
-              <div className="space-y-3 mt-2">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2 p-2 border rounded-md">
-                     <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                     <div className='flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2'>
-                        <FormField
-                            control={form.control}
-                            name={`attachments.${index}.name`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormControl>
-                                    <Input placeholder="Attachment Name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name={`attachments.${index}.url`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormControl>
-                                    <Input placeholder="https://..." {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                     </div>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className='text-destructive hover:text-destructive'>
-                      <Trash2 className="h-4 w-4" />
+                        </div>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className='text-destructive hover:text-destructive'>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => append({ id: `att-${Date.now()}`, name: '', url: '' })}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Attachment
                     </Button>
                   </div>
-                ))}
-                 <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => append({ id: `att-${Date.now()}`, name: '', url: '' })}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Attachment
-                </Button>
+                </div>
               </div>
-            </div>
-
-            <DialogFooter className='pt-4'>
+            </ScrollArea>
+            <DialogFooter className='pt-4 border-t mt-4 flex-shrink-0'>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
