@@ -62,30 +62,19 @@ export default function MyDashboardPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [allUsers, setAllUsers] = React.useState<User[]>([]);
-  const [userId, setUserId] = React.useState<string | null>(null);
-  const [workspaceAnalytics, setWorkspaceAnalytics] = React.useState<WorkspaceAnalytics>({
-      ccefod: 0,
-      pqs: 0,
-      gapAnalysis: 0,
-      glossary: 0,
-  });
   const [taskToComplete, setTaskToComplete] = React.useState<AssignedTask | null>(null);
   const [isUpdatingTask, setIsUpdatingTask] = React.useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
-    const id = localStorage.getItem('loggedInUserId');
-    setUserId(id);
-  }, []);
-
-  React.useEffect(() => {
-    if (!userId) {
-      setIsLoading(false);
-      return;
-    };
-
     const fetchUserData = async () => {
       setIsLoading(true);
+      const userId = localStorage.getItem('loggedInUserId');
+      if (!userId) {
+        setIsLoading(false);
+        // Handle not logged in case, maybe redirect
+        return;
+      }
       
       const userRef = doc(db, 'users', userId);
       const userSnap = await getDoc(userRef);
@@ -97,40 +86,19 @@ export default function MyDashboardPage() {
         const usersPromise = getDocs(collection(db, 'users'));
         const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
         const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
-        
-        // Use getCountFromServer for efficient counting
-        const ccefodPromise = getCountFromServer(collection(db, 'ccefodRecords'));
-        const pqsPromise = getCountFromServer(collection(db, 'pqsRecords'));
-        const gapAnalysisPromise = getCountFromServer(collection(db, 'gapAnalysisRecords'));
-        const glossaryPromise = getCountFromServer(collection(db, 'glossaryRecords'));
 
         const [
             usersSnapshot,
             timKerjaSnapshot,
             rulemakingSnapshot,
-            ccefodSnapshot,
-            pqsSnapshot,
-            gapAnalysisSnapshot,
-            glossarySnapshot,
         ] = await Promise.all([
             usersPromise,
             timKerjaPromise,
             rulemakingPromise,
-            ccefodPromise,
-            pqsPromise,
-            gapAnalysisPromise,
-            glossaryPromise
         ]);
 
         const usersFromDb: User[] = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
         setAllUsers(usersFromDb);
-        
-        setWorkspaceAnalytics({
-            ccefod: ccefodSnapshot.data().count,
-            pqs: pqsSnapshot.data().count,
-            gapAnalysis: gapAnalysisSnapshot.data().count,
-            glossary: glossarySnapshot.data().count,
-        });
 
         const timKerjaProjects = timKerjaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project));
         const rulemakingProjects = rulemakingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project));
@@ -170,7 +138,7 @@ export default function MyDashboardPage() {
     };
 
     fetchUserData();
-  }, [userId]);
+  }, []); // Empty dependency array to run only once
 
   const handleCompleteTask = async () => {
     if (!taskToComplete) return;
@@ -184,7 +152,7 @@ export default function MyDashboardPage() {
     
     // Remove properties that are not part of the base Task type
     const { projectId, projectName, projectType, projectTags, ...baseTask } = updatedTask;
-
+    const userId = localStorage.getItem('loggedInUserId');
     const result = await updateTask(projectId, baseTask, projectType, userId || '');
     
     if (result.success) {
