@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -80,10 +81,12 @@ type EditTaskDialogProps = {
   task: Task;
   onTaskUpdate: (updatedTasks: Task[]) => void;
   teamMembers: User[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  trigger?: React.ReactNode;
 };
 
-export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, teamMembers }: EditTaskDialogProps) {
-  const [open, setOpen] = useState(false);
+export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, teamMembers, open, onOpenChange, trigger }: EditTaskDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -150,7 +153,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
         title: 'Task Updated',
         description: `"${data.title}" has been successfully updated.`,
       });
-      setOpen(false);
+      onOpenChange(false);
     } else {
         toast({
             variant: 'destructive',
@@ -161,13 +164,8 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-7 w-7">
-            <Pencil className="h-4 w-4" />
-            <span className="sr-only">Edit Task</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
@@ -176,8 +174,8 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto pr-6 -mr-6">
-            <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} id="edit-task-form" className="space-y-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} id={`edit-task-form-${task.id}`} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="title"
@@ -497,7 +495,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
             </Form>
         </div>
         <DialogFooter className='pt-4 border-t'>
-            <Button type="submit" form="edit-task-form" disabled={isSubmitting}>
+            <Button type="submit" form={`edit-task-form-${task.id}`} disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes
             </Button>
@@ -506,5 +504,3 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
     </Dialog>
   );
 }
-
-    

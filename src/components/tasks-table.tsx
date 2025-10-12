@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -23,15 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Trash2,
@@ -42,7 +33,6 @@ import {
   Network,
   Link as LinkIcon,
   User as UserIcon,
-  Eye,
   ArrowUpDown,
   Search,
   RotateCcw,
@@ -57,80 +47,11 @@ import { deleteTask } from '@/lib/actions/project';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import Link from 'next/link';
 import { ScrollArea } from './ui/scroll-area';
-import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import * as XLSX from 'xlsx';
-
-const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
-    if (!value) return null;
-    return (
-        <div className="grid grid-cols-3 gap-2 py-2 border-b">
-            <dt className="font-semibold text-muted-foreground">{label}</dt>
-            <dd className="col-span-2 text-sm">{value}</dd>
-        </div>
-    );
-};
-
-const TaskDetailDialog = ({ task, teamMembers, open, onOpenChange }: { task: Task | null; teamMembers: User[]; open: boolean; onOpenChange: (open: boolean) => void; }) => {
-    if (!task) return null;
-
-    const assignees = (task.assigneeIds || []).map(id => findUserById(id, teamMembers)).filter(Boolean) as User[];
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Task Details</DialogTitle>
-                    <DialogDescription>{task.title}</DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="max-h-[60vh] pr-4">
-                    <dl className="space-y-2">
-                        <DetailRow label="Nama Surat" value={task.namaSurat || '-'} />
-                        <DetailRow label="Tanggal Pelaksanaan" value={task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : '-'} />
-                        <Separator className="my-2" />
-                        <DetailRow label="Assignees" value={
-                            assignees.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                    {assignees.map(a => (
-                                        <Badge key={a.id} variant="secondary" className="gap-2">
-                                            <Avatar className="h-4 w-4">
-                                                <AvatarImage src={a.avatarUrl} />
-                                                <AvatarFallback><UserIcon className="h-3 w-3" /></AvatarFallback>
-                                            </Avatar>
-                                            {a.name}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            ) : <span className="text-muted-foreground">Unassigned</span>
-                        } />
-                        <DetailRow label="Start Date" value={task.startDate ? format(parseISO(task.startDate), 'PPP') : 'N/A'} />
-                        <DetailRow label="Due Date" value={task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'} />
-                        <DetailRow label="Status" value={<Badge variant="outline" className={cn({ 'border-transparent bg-green-100 text-green-800': task.status === 'Done', 'border-transparent bg-blue-100 text-blue-800': task.status === 'In Progress', 'border-transparent bg-gray-100 text-gray-800': task.status === 'To Do', 'border-transparent bg-red-100 text-red-800': task.status === 'Blocked' })}>{task.status}</Badge>} />
-                         {task.doneDate && <DetailRow label="Completed On" value={format(parseISO(task.doneDate), 'PPP')} />}
-                         {task.criticalIssue && <DetailRow label="Critical Issue" value={<span className="text-destructive font-semibold">{task.criticalIssue}</span>} />}
-                        <Separator className="my-2" />
-                        <DetailRow label="Attachments" value={
-                            (task.attachments || []).length > 0 ? (
-                                <div className="flex flex-col gap-2">
-                                    {(task.attachments || []).map(att => (
-                                        <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
-                                            <LinkIcon className="h-4 w-4" /> {att.name}
-                                        </a>
-                                    ))}
-                                </div>
-                            ) : <span className="text-muted-foreground">No attachments</span>
-                        } />
-                    </dl>
-                </ScrollArea>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
 
 type TaskRowProps = {
   task: Task;
@@ -140,14 +61,14 @@ type TaskRowProps = {
   projectType: Project['projectType'];
   onTaskUpdate: (tasks: Task[]) => void;
   onTaskDelete: (taskId: string) => void;
-  onViewTask: (task: Task) => void;
   isDeleting: boolean;
   taskNumber: string;
   visibleColumns: Record<string, boolean>;
 };
 
-const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, onViewTask, isDeleting, taskNumber, visibleColumns }: TaskRowProps) => {
+const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting, taskNumber, visibleColumns }: TaskRowProps) => {
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(true);
     
     const hasSubtasks = task.subTasks && task.subTasks.length > 0;
@@ -161,10 +82,10 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
 
     return (
         <React.Fragment>
-            <TableRow className="border-b">
+            <TableRow className="border-b cursor-pointer" onClick={() => setIsEditDialogOpen(true)}>
                  <TableCell>
                     <div className="flex items-center" style={{ paddingLeft: `${level * 1.5}rem` }}>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(!isOpen)} disabled={!hasSubtasks}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }} disabled={!hasSubtasks}>
                             {hasSubtasks ? (
                                 <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-90")} />
                             ) : (
@@ -179,7 +100,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     <span>{task.title}</span>
                     {task.criticalIssue && (
                             <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger onClick={(e) => e.stopPropagation()}>
                                 <AlertTriangle className="h-4 w-4 text-destructive" />
                             </TooltipTrigger>
                             <TooltipContent>
@@ -196,7 +117,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     {(task.attachments || []).length > 0 ? (
                         <div className="flex flex-col gap-1 items-start">
                             {(task.attachments || []).map(att => (
-                                <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline truncate">
+                                <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline truncate" onClick={(e) => e.stopPropagation()}>
                                     <LinkIcon className="h-3 w-3" />
                                     <span className="truncate">{att.name}</span>
                                 </a>
@@ -212,15 +133,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                         {task.status}
                     </Badge>
                 </TableCell>
-                <TableCell className="text-right flex justify-end items-center gap-1 print:hidden">
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onViewTask(task)}>
-                                <Eye className="h-4 w-4"/>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>View Details</TooltipContent>
-                    </Tooltip>
+                <TableCell className="text-right flex justify-end items-center gap-1 print:hidden" onClick={(e) => e.stopPropagation()}>
                     <Tooltip>
                         <TooltipTrigger asChild>
                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsSubtaskDialogOpen(true)}>
@@ -229,7 +142,16 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                         </TooltipTrigger>
                         <TooltipContent>Add Subtask</TooltipContent>
                     </Tooltip>
-                    <EditTaskDialog projectId={projectId} projectType={projectType} task={task} teamMembers={teamMembers} onTaskUpdate={onTaskUpdate} />
+                     <EditTaskDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} projectId={projectId} projectType={projectType} task={task} teamMembers={teamMembers} onTaskUpdate={onTaskUpdate} trigger={
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7">
+                                    <Pencil className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit Task</TooltipContent>
+                        </Tooltip>
+                     } />
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => onTaskDelete(task.id)} disabled={isDeleting}>
@@ -250,7 +172,6 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     projectType={projectType}
                     onTaskUpdate={onTaskUpdate}
                     onTaskDelete={onTaskDelete}
-                    onViewTask={onViewTask}
                     isDeleting={isDeleting}
                     taskNumber={`${taskNumber}.${subIndex + 1}`}
                     visibleColumns={visibleColumns}
@@ -286,7 +207,6 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState(false);
     const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
-    const [taskToView, setTaskToView] = React.useState<Task | null>(null);
 
     // Filter and sort state
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -580,7 +500,6 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                         projectType={projectType}
                                         onTaskUpdate={onTasksChange}
                                         onTaskDelete={handleDeleteRequest}
-                                        onViewTask={setTaskToView}
                                         isDeleting={isDeleting && taskToDelete?.id === task.id}
                                         taskNumber={`${index + 1}`}
                                         visibleColumns={columnVisibility}
@@ -595,13 +514,6 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                     </div>
                 </CardContent>
             </Card>
-
-            <TaskDetailDialog 
-                task={taskToView}
-                teamMembers={teamMembers}
-                open={!!taskToView}
-                onOpenChange={(open) => !open && setTaskToView(null)}
-            />
 
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
