@@ -141,7 +141,7 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
         tanggalPelaksanaan: data.tanggalPelaksanaan ? format(data.tanggalPelaksanaan, 'yyyy-MM-dd') : undefined,
     };
     
-    const result = await updateTask(projectId, updatedTaskData, projectType);
+    const result = await updateTask(projectId, updatedTaskData, projectType, ''); // actorId is placeholder
     setIsSubmitting(false);
 
     if (result.success && result.tasks) {
@@ -175,10 +175,9 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
             Make changes to the task. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col">
-            <ScrollArea className="flex-1 pr-6 -mr-6">
-              <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto pr-6 -mr-6">
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} id="edit-task-form" className="space-y-4">
                 <FormField
                   control={form.control}
                   name="title"
@@ -494,17 +493,18 @@ export function EditTaskDialog({ projectId, projectType, task, onTaskUpdate, tea
                     </Button>
                   </div>
                 </div>
-              </div>
-            </ScrollArea>
-            <DialogFooter className='pt-4 mt-auto border-t'>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              </form>
+            </Form>
+        </div>
+        <DialogFooter className='pt-4 border-t'>
+            <Button type="submit" form="edit-task-form" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+            </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+    
