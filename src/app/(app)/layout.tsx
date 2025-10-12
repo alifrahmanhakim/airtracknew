@@ -192,11 +192,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarContent>
             <SidebarGroup>
                 <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
-                <SidebarMenu>
+                <SidebarMenu className="gap-2">
                     {navItems.dashboards.map((item) => (
                     <SidebarMenuItem key={item.href}>
                          <SidebarMenuButton
                             asChild
+                            size="lg"
                             isActive={pathname.startsWith(item.href)}
                         >
                             <Link href={item.href}>
@@ -210,7 +211,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
              <SidebarGroup>
                 <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-                <SidebarMenu>
+                <SidebarMenu className="gap-2">
                     {navItems.workspace.map((item) => {
                       if (item.requiredRole && !isAdmin) {
                         return null;
@@ -219,6 +220,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         <SidebarMenuItem key={item.href}>
                              <SidebarMenuButton
                                 asChild
+                                size="lg"
                                 isActive={pathname.startsWith(item.href)}
                             >
                                 <Link href={item.href}>
