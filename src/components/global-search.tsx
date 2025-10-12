@@ -72,7 +72,9 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   };
   
   const handleSelectUser = (user: User) => {
-    onViewProfile(user);
+    // This functionality is now handled on the chats page directly
+    // onViewProfile(user);
+    router.push('/chats');
     setOpen(false);
   }
 
@@ -87,13 +89,13 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                 <Search className="mr-2 h-4 w-4" />
                 <span className="hidden lg:inline-flex">Search...</span>
                 <span className="inline-flex lg:hidden">Search...</span>
+                 <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                    <span className="text-xs">⌘</span>K
+                </kbd>
             </Button>
-            <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                <span className="text-xs">⌘</span>K
-            </kbd>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
             <CommandInput placeholder="Type a command or search..." />
             <CommandList>

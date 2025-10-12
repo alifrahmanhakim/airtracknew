@@ -23,7 +23,6 @@ import { format, parseISO, differenceInDays, isAfter, isToday, isBefore, startOf
 import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX, CheckSquare, XSquare, Clock, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { InteractiveTimeline } from '@/components/interactive-timeline';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -186,7 +185,7 @@ export default function MyDashboardPage() {
     // Remove properties that are not part of the base Task type
     const { projectId, projectName, projectType, projectTags, ...baseTask } = updatedTask;
 
-    const result = await updateTask(projectId, baseTask, projectType);
+    const result = await updateTask(projectId, baseTask, projectType, userId || '');
     
     if (result.success) {
         setAssignedTasks(prev => prev.map(t => t.id === taskToComplete.id ? { ...t, status: 'Done' } : t));
@@ -511,7 +510,6 @@ export default function MyDashboardPage() {
             <TabsList className="mb-4">
             <TabsTrigger value="projects">My Projects ({myProjects.length})</TabsTrigger>
             <TabsTrigger value="tasks">My Tasks ({assignedTasks.length})</TabsTrigger>
-            <TabsTrigger value="timeline">My Timeline</TabsTrigger>
             </TabsList>
 
             <TabsContent value="projects">
@@ -573,9 +571,6 @@ export default function MyDashboardPage() {
                 </Table>
                 </CardContent>
             </Card>
-            </TabsContent>
-            <TabsContent value="timeline">
-              <InteractiveTimeline tasks={assignedTasks} />
             </TabsContent>
             </Tabs>
         </div>

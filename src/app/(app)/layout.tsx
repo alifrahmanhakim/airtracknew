@@ -49,7 +49,7 @@ import { updateUserOnlineStatus } from '@/lib/actions/user';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationBell } from '@/components/notification-bell';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/global-search';
 import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
 
@@ -115,8 +115,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [userId, setUserId] = React.useState<string | null>(null);
   
-  const [allProjects, setAllProjects] = React.useState<Project[]>([]);
-  const [profileUser, setProfileUser] = React.useState<User | null>(null);
+  // State for UserProfileDialog moved to chats page
+  // const [allProjects, setAllProjects] = React.useState<Project[]>([]);
+  // const [profileUser, setProfileUser] = React.useState<User | null>(null);
 
   React.useEffect(() => {
     // This effect runs only once on mount to check for the user ID.
@@ -160,20 +161,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
     unsubs.push(usersUnsub);
 
-    const fetchProjects = async () => {
-        const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
-        const rulemakingPromise = getDocs(collection(db, 'rulemakingProjects'));
-        
-        const [timKerjaSnapshot, rulemakingSnapshot] = await Promise.all([timKerjaPromise, rulemakingPromise]);
-        
-        const projects: Project[] = [
-            ...timKerjaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project)),
-            ...rulemakingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project)),
-        ];
-        setAllProjects(projects);
-    };
-    fetchProjects();
-
     updateUserOnlineStatus(userId); // Update immediately
     const presenceInterval = setInterval(() => {
         updateUserOnlineStatus(userId);
@@ -189,34 +176,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('loggedInUserId');
     router.push('/login');
   };
-  
-  const assignedTasksForProfileUser = React.useMemo(() => {
-        if (!profileUser || !allProjects) return [];
-
-        const tasks: AssignedTask[] = [];
-        allProjects.forEach(project => {
-            (project.tasks || []).forEach(task => {
-                if (task.assigneeIds && task.assigneeIds.includes(profileUser.id)) {
-                    tasks.push({
-                        ...task,
-                        projectId: project.id,
-                        projectName: project.name,
-                        projectType: project.projectType,
-                    });
-                }
-            });
-        });
-        return tasks.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
-
-    }, [profileUser, allProjects]);
-    
-    const projectsForProfileUser = React.useMemo(() => {
-        if (!profileUser || !allProjects) return [];
-        return allProjects.filter(project => 
-            project.team.some(member => member.id === profileUser.id)
-        );
-    }, [profileUser, allProjects]);
-  
   
   if (isCheckingAuth || loading || !currentUser) {
     return <AppLayoutLoader />;
@@ -240,15 +199,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenu>
                     {navItems.dashboards.map((item) => (
                     <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith(item.href)}
-                        >
-                        <Link href={item.href}>
+                         <Link href={item.href} className={buttonVariants({
+                            variant: pathname.startsWith(item.href) ? 'secondary' : 'ghost',
+                            size: 'default',
+                            className: 'justify-start w-full'
+                        })}>
                             <item.icon />
                             <span>{item.label}</span>
                         </Link>
-                        </SidebarMenuButton>
                     </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
@@ -262,15 +220,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       }
                       return (
                         <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton
-                            asChild
-                            isActive={pathname.startsWith(item.href)}
-                            >
-                            <Link href={item.href}>
+                             <Link href={item.href} className={buttonVariants({
+                                variant: pathname.startsWith(item.href) ? 'secondary' : 'ghost',
+                                size: 'default',
+                                className: 'justify-start w-full'
+                            })}>
                                 <item.icon />
                                 <span>{item.label}</span>
                             </Link>
-                            </SidebarMenuButton>
                         </SidebarMenuItem>
                       )
                     })}
@@ -287,7 +244,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 m-2 mt-4 flex items-center justify-between rounded-lg border bg-card/80 p-2 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
-            <GlobalSearch onViewProfile={setProfileUser} />
+            <GlobalSearch onViewProfile={() => {}} />
           </div>
           <div className="flex items-center gap-2">
             <LiveClock />
@@ -334,13 +291,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
         </div>
       </SidebarInset>
-       <UserProfileDialog
-            user={profileUser}
-            assignedTasks={assignedTasksForProfileUser}
-            projects={projectsForProfileUser}
-            open={!!profileUser}
-            onOpenChange={(open) => !open && setProfileUser(null)}
-        />
     </SidebarProvider>
   );
 }
