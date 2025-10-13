@@ -86,15 +86,15 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative">
+        <div className="relative group">
             <Button
                 variant="outline"
-                className="h-9 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
+                className="h-9 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64 transition-transform duration-200 group-hover:scale-105"
             >
                 <Search className="mr-2 h-4 w-4" />
                 <span className="hidden lg:inline-flex">Search...</span>
                 <span className="inline-flex lg:hidden">Search...</span>
-                 <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                 <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex group-hover:bg-background group-hover:text-muted-foreground">
                     <span className="text-xs">{modifierKey}</span>K
                 </kbd>
             </Button>
