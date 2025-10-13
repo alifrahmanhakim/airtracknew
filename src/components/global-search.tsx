@@ -89,7 +89,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
         <div className="relative group">
             <Button
                 variant="outline"
-                className="h-9 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64 transition-transform duration-200 group-hover:scale-105"
+                className="h-9 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64 transition-transform duration-200"
             >
                  <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000"></div>
                 <div className="relative flex items-center w-full">
