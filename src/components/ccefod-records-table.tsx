@@ -33,8 +33,6 @@ import { cn } from '@/lib/utils';
 import { EditCcefodRecordDialog } from './edit-ccefod-record-dialog';
 import { CcefodRecordDetailDialog } from './ccefod-record-detail-dialog';
 import { Highlight } from './ui/highlight';
-import { useVirtualizer } from '@tanstack/react-virtual';
-
 
 type SortDescriptor = {
     column: keyof CcefodRecord;
@@ -104,11 +102,11 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
   };
   
-  const columnDefs: { key: keyof CcefodRecord; header: string; width?: string; minWidth?: string, className?: string }[] = [
+  const columnDefs: { key: keyof CcefodRecord; header: string; width?: string }[] = [
     { key: 'annex', header: 'Annex', width: '150px' },
     { key: 'annexReference', header: 'Annex Ref.', width: '150px' },
-    { key: 'standardPractice', header: 'Standard/Practice', minWidth: '400px', className: 'flex-1' },
-    { key: 'legislationReference', header: 'Legislation', width: '200px' },
+    { key: 'standardPractice', header: 'Standard/Practice', width: '400px' },
+    { key: 'legislationReference', header: 'Legislation', width: '250px' },
     { key: 'implementationLevel', header: 'Implementation Level', width: '200px'},
     { key: 'status', header: 'Status', width: '100px' },
     { key: 'adaPerubahan', header: 'Ada Perubahan?', width: '150px'},
@@ -120,14 +118,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
   ];
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key]);
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  const rowVirtualizer = useVirtualizer({
-    count: sortedRecords.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 65, // Estimate row height
-    overscan: 5,
-  });
 
   if (records.length === 0) {
     return (
@@ -140,6 +130,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
   }
 
   return (
+    <>
     <TooltipProvider>
       <div className="space-y-4">
         <div className="flex justify-end">
@@ -169,36 +160,29 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div ref={tableContainerRef} className="border rounded-md w-full overflow-auto relative h-[600px]">
-          <Table className="min-w-full grid">
-            <TableHeader className="sticky top-0 bg-background/95 z-10 grid">
-              <TableRow className="flex w-full">
+        <div className="border rounded-md w-full overflow-x-auto relative">
+          <Table className="min-w-full">
+            <TableHeader className="sticky top-0 bg-background/95 z-10">
+              <TableRow>
                 {visibleColumns.map((col) => (
                     <TableHead 
                         key={col.key} 
-                        className={cn("cursor-pointer flex items-center", col.className)}
-                        style={{ width: col.width, minWidth: col.minWidth }}
+                        className="cursor-pointer"
+                        style={{ width: col.width }}
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
-                        {col.header} {renderSortIcon(col.key as keyof CcefodRecord)}
+                        <div className="flex items-center">
+                          {col.header} {renderSortIcon(col.key as keyof CcefodRecord)}
+                        </div>
                     </TableHead>
                 ))}
-                <TableHead className="text-right sticky right-0 bg-background/95 z-10 flex items-center justify-end" style={{ width: '100px' }}>Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-background/95 z-10 w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody
-              className="relative grid"
-              style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const record = sortedRecords[virtualRow.index];
-                return (
+            <TableBody>
+              {sortedRecords.map((record) => (
                     <TableRow 
                         key={record.id} 
-                        className="flex w-full absolute"
-                        style={{
-                            height: `${virtualRow.size}px`,
-                            transform: `translateY(${virtualRow.start}px)`,
-                        }}
+                        className="cursor-pointer"
                         onClick={() => setRecordToView(record)}
                     >
                         {visibleColumns.map((col) => {
@@ -207,8 +191,8 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
                             return (
                                 <TableCell 
                                   key={col.key} 
-                                  className={cn("flex items-center p-2", col.className)}
-                                  style={{ width: col.width, minWidth: col.minWidth }}
+                                  className="align-top"
+                                  style={{ width: col.width }}
                                 >
                                     <div className="truncate">
                                     {(() => {
@@ -221,6 +205,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
                                                 'bg-green-100 text-green-800 hover:bg-green-200': value === 'Final',
                                                 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': value === 'Draft',
                                                 'bg-secondary text-secondary-foreground hover:bg-secondary/80': value === 'Existing',
+                                                'bg-red-100 text-red-800 hover:bg-red-200': value === 'Usulan',
                                             })}>
                                                 <Highlight text={value} query={searchTerm} />
                                             </Badge>);
@@ -238,8 +223,7 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
                             )
                         })}
                         <TableCell 
-                          className="text-right sticky right-0 bg-background/95 flex items-center justify-end"
-                          style={{ width: '100px' }}
+                          className="text-right sticky right-0 bg-background/95 align-top"
                         >
                             <div className="flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
                                 <EditCcefodRecordDialog record={record} onRecordUpdate={onUpdate} />
@@ -255,11 +239,12 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
                         </TableCell>
                     </TableRow>
                 )
-              })}
+              )}
             </TableBody>
           </Table>
         </div>
       </div>
+    </TooltipProvider>
       {recordToView && (
         <CcefodRecordDetailDialog 
             record={recordToView}
@@ -267,6 +252,6 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
             onOpenChange={(open) => { if(!open) setRecordToView(null) }}
         />
       )}
-    </TooltipProvider>
+    </>
   );
 }
