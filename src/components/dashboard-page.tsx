@@ -549,9 +549,9 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                     <TableHeader>
                         <TableRow>
                             <TableHead>Member</TableHead>
-                            <TableHead>Open Tasks</TableHead>
-                            <TableHead>Done</TableHead>
-                            <TableHead>Workload Status</TableHead>
+                            <TableHead className="text-center">Open Tasks</TableHead>
+                            <TableHead className="text-center">Done</TableHead>
+                            <TableHead className="text-center">Workload Status</TableHead>
                             <TableHead className="w-[120px]">Workload Score</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -574,9 +574,9 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-bold">{openTasks}</TableCell>
-                                    <TableCell className="font-bold text-green-600">{doneTasks}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="font-bold text-center">{openTasks}</TableCell>
+                                    <TableCell className="font-bold text-green-600 text-center">{doneTasks}</TableCell>
+                                    <TableCell className="text-center">
                                          <Badge variant="outline" className={cn({
                                             'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
                                             'border-blue-500/50 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/60': workloadStatus === 'Underload',
