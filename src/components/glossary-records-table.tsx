@@ -71,33 +71,33 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
   return (
     <TooltipProvider>
         <div className="border rounded-md w-full overflow-x-auto">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('tsu')}>
+                <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('tsu')}>
                     <div className="flex items-center">TSU {renderSortIcon('tsu')}</div>
                 </TableHead>
-                <TableHead>TSA</TableHead>
-                <TableHead>Editing</TableHead>
-                <TableHead>Makna</TableHead>
-                <TableHead>Keterangan</TableHead>
-                <TableHead>Referensi</TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
+                <TableHead className="w-[15%] text-left">TSA</TableHead>
+                <TableHead className="w-[15%] text-left">Editing</TableHead>
+                <TableHead className="w-[15%] text-left">Makna</TableHead>
+                <TableHead className="w-[15%] text-left">Keterangan</TableHead>
+                <TableHead className="w-[15%] text-left">Referensi</TableHead>
+                <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('status')}>
                      <div className="flex items-center">Status {renderSortIcon('status')}</div>
                 </TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[10%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {records.map((record) => (
                 <TableRow key={record.id} className="cursor-pointer align-top" onClick={() => setRecordToView(record)}>
-                    <TableCell className="font-semibold whitespace-normal"><Highlight text={record.tsu} query={searchTerm} /></TableCell>
-                    <TableCell className="whitespace-normal"><Highlight text={record.tsa} query={searchTerm} /></TableCell>
-                    <TableCell className="whitespace-normal"><Highlight text={record.editing} query={searchTerm} /></TableCell>
-                    <TableCell className="whitespace-normal"><Highlight text={record.makna} query={searchTerm} /></TableCell>
-                    <TableCell className="whitespace-normal"><Highlight text={record.keterangan} query={searchTerm} /></TableCell>
-                    <TableCell className="whitespace-normal"><Highlight text={record.referensi} query={searchTerm} /></TableCell>
-                    <TableCell>
+                    <TableCell className="font-semibold whitespace-normal break-words text-left"><Highlight text={record.tsu} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.tsa} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.editing} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.makna} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.keterangan} query={searchTerm} /></TableCell>
+                    <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.referensi} query={searchTerm} /></TableCell>
+                    <TableCell className="text-left">
                         <Badge
                             variant={record.status === 'Final' ? 'default' : 'secondary'}
                             className={cn(record.status === 'Final' ? 'bg-green-100 text-green-800' : '')}
