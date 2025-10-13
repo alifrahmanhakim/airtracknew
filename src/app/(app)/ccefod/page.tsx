@@ -113,7 +113,7 @@ export default function CcefodPage() {
     }
 
     return () => unsubscribe();
-  }, [toast]);
+  }, []);
 
   const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'Sub-Directorate Head';
 
@@ -558,7 +558,3 @@ export default function CcefodPage() {
     </div>
   );
 }
-
-    
-
-    
