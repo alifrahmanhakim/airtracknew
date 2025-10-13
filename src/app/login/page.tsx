@@ -255,7 +255,7 @@ export default function LoginPage() {
                                     <span className="w-full border-t border-white/20" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
+                                    <span className="bg-card px-2 text-white/60">Or continue with</span>
                                 </div>
                             </div>
                             <div className="relative group">
@@ -327,7 +327,7 @@ export default function LoginPage() {
                                     <span className="w-full border-t border-white/20" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
+                                    <span className="bg-card px-2 text-white/60">Or continue with</span>
                                 </div>
                             </div>
                             <div className="relative group">
