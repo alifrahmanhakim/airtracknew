@@ -23,7 +23,6 @@ import {
 } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { EditGlossaryRecordDialog } from './edit-glossary-record-dialog';
-import { GlossaryRecordDetailDialog } from './glossary-record-detail-dialog';
 import { Highlight } from './ui/highlight';
 
 
@@ -42,7 +41,7 @@ type SortDescriptor = {
 } | null;
 
 export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSort, searchTerm }: GlossaryRecordsTableProps) {
-  const [recordToView, setRecordToView] = useState<GlossaryRecord | null>(null);
+  const [recordToEdit, setRecordToEdit] = useState<GlossaryRecord | null>(null);
 
   const handleSort = (column: keyof GlossaryRecord) => {
     setSort(prevSort => {
@@ -90,7 +89,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
             </TableHeader>
             <TableBody>
               {records.map((record) => (
-                <TableRow key={record.id} className="cursor-pointer align-top" onClick={() => setRecordToView(record)}>
+                <TableRow key={record.id} className="cursor-pointer align-top" onClick={() => setRecordToEdit(record)}>
                     <TableCell className="font-semibold whitespace-normal break-words text-left"><Highlight text={record.tsu} query={searchTerm} /></TableCell>
                     <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.tsa} query={searchTerm} /></TableCell>
                     <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.editing} query={searchTerm} /></TableCell>
@@ -99,15 +98,20 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                     <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.referensi} query={searchTerm} /></TableCell>
                     <TableCell className="text-left">
                         <Badge
-                            variant={record.status === 'Final' ? 'default' : 'secondary'}
-                            className={cn(record.status === 'Final' ? 'bg-green-100 text-green-800' : '')}
+                            className={cn({
+                                'bg-green-100 text-green-800': record.status === 'Final',
+                                'bg-yellow-100 text-yellow-800': record.status === 'Draft',
+                                'bg-red-100 text-red-800': record.status === 'Usulan',
+                            })}
                         >
                             <Highlight text={record.status} query={searchTerm} />
                         </Badge>
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-2">
-                            <EditGlossaryRecordDialog record={record} onRecordUpdate={onUpdate} />
+                            <Button variant="ghost" size="icon" onClick={() => setRecordToEdit(record)}>
+                                <Pencil className="h-4 w-4" />
+                            </Button>
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(record)}>
@@ -123,12 +127,16 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
             </TableBody>
           </Table>
         </div>
-        {recordToView && (
-            <GlossaryRecordDetailDialog
-                record={recordToView}
-                open={!!recordToView}
+        {recordToEdit && (
+            <EditGlossaryRecordDialog
+                record={recordToEdit}
+                onRecordUpdate={(updatedRecord) => {
+                    onUpdate(updatedRecord);
+                    setRecordToEdit(null);
+                }}
+                open={!!recordToEdit}
                 onOpenChange={(open) => {
-                if (!open) setRecordToView(null);
+                  if (!open) setRecordToEdit(null);
                 }}
             />
         )}

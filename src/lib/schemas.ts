@@ -125,7 +125,7 @@ export const glossaryFormSchema = z.object({
   makna: z.string().min(1, 'Makna is required'),
   keterangan: z.string().min(1, 'Keterangan / Pengaplikasian is required'),
   referensi: z.string().optional(),
-  status: z.enum(['Draft', 'Final']),
+  status: z.enum(['Draft', 'Final', 'Usulan']),
 });
 
 export const accidentIncidentFormSchema = z.object({

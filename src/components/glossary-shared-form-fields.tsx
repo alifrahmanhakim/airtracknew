@@ -21,7 +21,7 @@ export const formSchema = z.object({
   makna: z.string().min(1, 'Makna is required'),
   keterangan: z.string().min(1, 'Keterangan / Pengaplikasian is required'),
   referensi: z.string().optional(),
-  status: z.enum(['Draft', 'Final']),
+  status: z.enum(['Draft', 'Final', 'Usulan']),
 });
 
 export type GlossaryFormValues = z.infer<typeof formSchema>;
@@ -148,6 +148,7 @@ export function GlossarySharedFormFields({ form }: GlossarySharedFormFieldsProps
                 <SelectContent>
                   <SelectItem value="Draft">Draft</SelectItem>
                   <SelectItem value="Final">Final</SelectItem>
+                  <SelectItem value="Usulan">Usulan</SelectItem>
                 </SelectContent>
               </Select>
             <FormMessage />
