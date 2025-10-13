@@ -83,38 +83,41 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
             <Table className="table-fixed">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[10%] cursor-pointer" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
-                        <TableHead className="w-[15%]">Nomor Laporan</TableHead>
-                        <TableHead className="w-[12%]">Status</TableHead>
-                        <TableHead className="w-[15%]">Operator</TableHead>
-                        <TableHead className="w-[10%]">Registrasi</TableHead>
-                        <TableHead className="w-[13%]">Tipe Pesawat</TableHead>
-                        <TableHead className="w-[15%]">Lokasi</TableHead>
-                        <TableHead className="w-[20%]">Keterangan</TableHead>
-                        <TableHead className="w-[5%]">File</TableHead>
+                        <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
+                        <TableHead className="w-[15%] text-left">Nomor Laporan</TableHead>
+                        <TableHead className="w-[12%] text-left">Status</TableHead>
+                        <TableHead className="w-[13%] text-left">Operator</TableHead>
+                        <TableHead className="w-[10%] text-left">Registrasi</TableHead>
+                        <TableHead className="w-[10%] text-left">Tipe Pesawat</TableHead>
+                        <TableHead className="w-[10%] text-left">Lokasi</TableHead>
+                        <TableHead className="w-[20%] text-left">Keterangan</TableHead>
+                        <TableHead className="w-[5%] text-left">File</TableHead>
                         <TableHead className="text-right w-[100px]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {sortedRecords.length > 0 ? sortedRecords.map((record) => (
                         <TableRow key={record.id}>
-                            <TableCell className="align-top break-words"><Highlight text={format(parseISO(record.tanggal_diterbitkan), 'dd-MMM-yy')} query={searchTerm}/></TableCell>
-                            <TableCell className="align-top break-words"><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
-                            <TableCell className="align-top break-words">
-                                <Badge variant={getStatusVariant(record.status)} className={cn(
-                                    getStatusVariant(record.status) === 'default' && 'bg-blue-100 text-blue-800'
-                                )}>
-                                    <Highlight text={record.status} query={searchTerm}/>
-                                </Badge>
+                            <TableCell className="align-top text-left break-words"><Highlight text={format(parseISO(record.tanggal_diterbitkan), 'dd-MMM-yy')} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top text-left break-words"><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top text-left break-words">
+                                <div className="flex justify-center">
+                                    <Badge variant={getStatusVariant(record.status)} className={cn(
+                                        'text-xs',
+                                        getStatusVariant(record.status) === 'default' && 'bg-blue-100 text-blue-800'
+                                    )}>
+                                        <Highlight text={record.status} query={searchTerm}/>
+                                    </Badge>
+                                </div>
                             </TableCell>
-                            <TableCell className="align-top break-words"><Highlight text={record.operator} query={searchTerm}/></TableCell>
-                            <TableCell className="align-top break-words"><Highlight text={record.registrasi} query={searchTerm}/></TableCell>
-                            <TableCell className="align-top break-words"><Highlight text={record.tipe_pesawat} query={searchTerm}/></TableCell>
-                            <TableCell className="align-top break-words"><Highlight text={record.lokasi} query={searchTerm}/></TableCell>
-                            <TableCell className="align-top break-words">
+                            <TableCell className="align-top text-left break-words"><Highlight text={record.operator} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top text-left break-words"><Highlight text={record.registrasi} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top text-left break-words"><Highlight text={record.tipe_pesawat} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top text-left break-words"><Highlight text={record.lokasi} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top text-left break-words">
                                <Highlight text={record.keterangan || '-'} query={searchTerm} />
                             </TableCell>
-                            <TableCell className="align-top">
+                            <TableCell className="align-top text-left">
                                 {record.fileUrl ? (
                                     <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                                         <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
