@@ -82,16 +82,16 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
             <Table className="table-fixed">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[120px] cursor-pointer" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
-                        <TableHead className="w-[150px]">Nomor Laporan</TableHead>
-                        <TableHead className="w-[140px]">Status</TableHead>
-                        <TableHead className="w-[150px]">Operator</TableHead>
-                        <TableHead className="w-[100px]">Registrasi</TableHead>
-                        <TableHead className="w-[150px]">Tipe Pesawat</TableHead>
-                        <TableHead className="w-[150px]">Lokasi</TableHead>
-                        <TableHead className="w-[300px]">Keterangan</TableHead>
-                        <TableHead className="w-[70px]">File</TableHead>
-                        <TableHead className="text-right w-[120px]">Actions</TableHead>
+                        <TableHead className="w-[10%] cursor-pointer" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
+                        <TableHead className="w-[15%]">Nomor Laporan</TableHead>
+                        <TableHead className="w-[12%]">Status</TableHead>
+                        <TableHead className="w-[15%]">Operator</TableHead>
+                        <TableHead className="w-[10%]">Registrasi</TableHead>
+                        <TableHead className="w-[13%]">Tipe Pesawat</TableHead>
+                        <TableHead className="w-[15%]">Lokasi</TableHead>
+                        <TableHead className="w-[20%]">Keterangan</TableHead>
+                        <TableHead className="w-[5%]">File</TableHead>
+                        <TableHead className="text-right w-[10%]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
