@@ -4,7 +4,7 @@
 import type { Project, User, Task } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock, LayoutGrid, ListFilter, HelpCircle } from 'lucide-react';
+import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock, LayoutGrid, ListFilter, HelpCircle, History } from 'lucide-react';
 import { useMemo, useState, useRef } from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -36,6 +36,14 @@ type SortDescriptor = {
     column: keyof Project | 'progress';
     direction: 'asc' | 'desc';
 } | null;
+
+type AssignedTask = Task & {
+  projectName: string;
+  projectId: string;
+  projectType: Project['projectType'];
+  createdAt?: string; // Add createdAt to the task type
+};
+
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
@@ -213,6 +221,33 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
         });
         return Array.from(tags);
     }, [projects]);
+    
+    const recentlyAddedTasks = useMemo(() => {
+        const allTasks: AssignedTask[] = [];
+         projects.forEach(project => {
+          const tasks = project.tasks || [];
+          (function collectTasks(tasks: Task[]) {
+              tasks.forEach(task => {
+                   allTasks.push({
+                      ...task,
+                      projectName: project.name,
+                      projectId: project.id,
+                      projectType: project.projectType,
+                      createdAt: project.createdAt
+                   });
+                   if(task.subTasks) {
+                       collectTasks(task.subTasks);
+                   }
+              });
+          })(tasks);
+      });
+      
+      return allTasks.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+        });
+    }, [projects]);
 
     const filteredProjects = useMemo(() => {
         let filtered = [...projects];
@@ -335,6 +370,50 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                     </div>
                 </CardContent>
             </Card>
+
+            {recentlyAddedTasks.length > 0 && (
+                <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                            <History /> Recently Added Tasks
+                        </CardTitle>
+                        <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
+                            The most recently created tasks across all projects.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {recentlyAddedTasks.slice(0, 5).map((task, index) => {
+                            const createdAtDate = task.createdAt ? new Date(task.createdAt) : null;
+                            return (
+                                <div key={task.id}>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-start gap-4">
+                                            <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
+                                            <div>
+                                                <p className="font-semibold text-sm">{task.title}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    In project: {task.projectName}
+                                                    {createdAtDate && (
+                                                        <span className="ml-2">
+                                                            - Created {format(createdAtDate, 'dd MMM yyyy')}
+                                                        </span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button asChild size="sm" variant="outline">
+                                            <Link href={`/projects/${task.projectId}?type=rulemaking`}>
+                                                View Project <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                    {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
+                                </div>
+                            )
+                        })}
+                    </CardContent>
+                </Card>
+            )}
 
             <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mt-8 mb-4 gap-4'>
                  <h2 className="text-2xl font-bold tracking-tight">All Regulations</h2>
