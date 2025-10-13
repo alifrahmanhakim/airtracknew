@@ -192,170 +192,170 @@ export default function LoginPage() {
   }
 
   return (
-    <main 
-        className="relative flex items-center justify-center min-h-screen p-4"
-        style={{
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundImage: "url('https://i.postimg.cc/Fzhs9BwV/green-plane-sustainable-energy-concept.webp')"
-        }}
-    >
-      <div className="absolute top-4 right-4 z-10">
-        <ThemeToggle />
-      </div>
+    <main className="relative flex items-center justify-center min-h-screen p-4">
+        <Image 
+            src="https://i.postimg.cc/Fzhs9BwV/green-plane-sustainable-energy-concept.webp"
+            alt="Background image of an airplane"
+            fill
+            quality={100}
+            className="object-cover -z-10"
+        />
+        <div className="absolute top-4 right-4 z-10">
+            <ThemeToggle />
+        </div>
       
-      <div className="absolute inset-0 bg-black/30"></div>
+        <div className="absolute inset-0 bg-black/30"></div>
 
-      <div className="relative z-10 flex flex-col items-center gap-4">
-          <Card className="w-full max-w-sm bg-black/20 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden transition-all hover:border-primary/50 hover:bg-gradient-to-t hover:from-primary/10">
-              <div className="grid [grid-template-areas:'card-content']">
-                  {/* Login Form */}
-                  <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
-                      <CardHeader className="text-center pt-8">
-                           <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
-                              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
-                          </div>
-                      </CardHeader>
-                      <CardContent>
-                          {signupSuccess && (
-                              <Alert variant="default" className="mb-4 bg-green-500/20 border-green-500/50 text-green-300">
-                                  <CheckCircle className="h-4 w-4 !text-green-400" />
-                                  <AlertTitle className="text-green-300 font-bold">Registration Successful!</AlertTitle>
-                                  <AlertDescription className="text-green-400">
-                                      Your account has been created. Please wait for an administrator to approve it.
-                                  </AlertDescription>
-                              </Alert>
-                          )}
-                          {error && (
-                              <Alert variant="destructive" className="mb-4">
-                                  <AlertTitle>Login Failed</AlertTitle>
-                                  <AlertDescription>{error}</AlertDescription>
-                              </Alert>
-                          )}
-                          <form onSubmit={handleLogin} className="space-y-3">
-                              <div className="space-y-2">
-                                  <Label htmlFor="login-email">Email</Label>
-                                  <div className="relative group">
-                                      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
-                                      <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
-                                  </div>
-                              </div>
-                              <div className="space-y-2">
-                                  <Label htmlFor="login-password">Password</Label>
-                                  <div className="relative group">
-                                      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
-                                      <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60" />
-                                  </div>
-                              </div>
-                               <div className="relative group pt-2">
-                                  <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
-                                  <Button type="submit" className="w-full relative" disabled={isLoading}>
-                                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
-                                  </Button>
-                              </div>
-                          </form>
-                          <div className="relative my-3">
-                              <div className="absolute inset-0 flex items-center">
-                                  <span className="w-full border-t border-white/20" />
-                              </div>
-                              <div className="relative flex justify-center text-xs uppercase">
-                                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                              </div>
-                          </div>
-                          <div className="relative group">
-                              <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
-                              <Button variant="outline" className="w-full relative text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                                  {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                  Sign in with Google
-                              </Button>
-                          </div>
-                      </CardContent>
-                      <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
-                          <p className="mb-2 text-white/80">Don't have an account?{" "}
-                              <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
-                          </p>
-                          <p className="text-center text-xs text-white/60">
-                              Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
-                              TnC AI can make mistakes, so double-check it
-                          </p>
-                      </CardFooter>
-                  </div>
+        <div className="relative z-10 flex flex-col items-center gap-4">
+            <Card className="w-full max-w-sm bg-black/20 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden transition-all hover:border-primary/50 hover:bg-gradient-to-t hover:from-primary/10">
+                <div className="grid [grid-template-areas:'card-content']">
+                    {/* Login Form */}
+                    <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
+                        <CardHeader className="text-center pt-8">
+                            <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
+                                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {signupSuccess && (
+                                <Alert variant="default" className="mb-4 bg-green-500/20 border-green-500/50 text-green-300">
+                                    <CheckCircle className="h-4 w-4 !text-green-400" />
+                                    <AlertTitle className="text-green-300 font-bold">Registration Successful!</AlertTitle>
+                                    <AlertDescription className="text-green-400">
+                                        Your account has been created. Please wait for an administrator to approve it.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                            {error && (
+                                <Alert variant="destructive" className="mb-4">
+                                    <AlertTitle>Login Failed</AlertTitle>
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
+                            )}
+                            <form onSubmit={handleLogin} className="space-y-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="login-email">Email</Label>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="login-password">Password</Label>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60" />
+                                    </div>
+                                </div>
+                                <div className="relative group pt-2">
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                    <Button type="submit" className="w-full relative" disabled={isLoading}>
+                                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
+                                    </Button>
+                                </div>
+                            </form>
+                            <div className="relative my-3">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-white/20" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                                </div>
+                            </div>
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                <Button variant="outline" className="w-full relative text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                    {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                    Sign in with Google
+                                </Button>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
+                            <p className="mb-2 text-white/80">Don't have an account?{" "}
+                                <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
+                            </p>
+                            <p className="text-center text-xs text-white/60">
+                                Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
+                                TnC AI can make mistakes, so double-check it
+                            </p>
+                        </CardFooter>
+                    </div>
 
-                  {/* Signup Form */}
-                  <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
-                      <CardHeader className="text-center pt-8">
-                         <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
-                              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
-                          </div>
-                          <CardTitle className="text-2xl mt-8">Create an Account</CardTitle>
-                          <CardDescription className="text-white/80">Register to request access.</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                          {error && (
-                              <Alert variant="destructive" className="mb-4">
-                                  <AlertTitle>Signup Failed</AlertTitle>
-                                  <AlertDescription>{error}</AlertDescription>
-                              </Alert>
-                          )}
-                          <form onSubmit={handleSignup} className="space-y-3">
-                              <div className="space-y-2">
-                                  <Label htmlFor="signup-name">Name</Label>
-                                  <div className="relative group">
-                                      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
-                                      <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
-                                  </div>
-                              </div>
-                              <div className="space-y-2">
-                                  <Label htmlFor="signup-email">Email</Label>
-                                   <div className="relative group">
-                                      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
-                                      <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
-                                  </div>
-                              </div>
-                              <div className="space-y-2">
-                                  <Label htmlFor="signup-password">Password</Label>
-                                  <div className="relative group">
-                                      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
-                                      <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
-                                  </div>
-                              </div>
-                              <div className="relative group pt-2">
-                                  <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
-                                  <Button type="submit" className="w-full relative" disabled={isLoading}>
-                                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
-                                  </Button>
-                              </div>
-                          </form>
-                          <div className="relative my-3">
-                              <div className="absolute inset-0 flex items-center">
-                                  <span className="w-full border-t border-white/20" />
-                              </div>
-                              <div className="relative flex justify-center text-xs uppercase">
-                                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                              </div>
-                          </div>
-                          <div className="relative group">
-                              <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
-                              <Button variant="outline" className="w-full relative text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                                  {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                  Sign up with Google
-                              </Button>
-                          </div>
-                      </CardContent>
-                      <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
-                          <p className="mb-2 text-white/80">Already have an account?{" "}
-                              <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
-                          </p>
-                          <p className="text-center text-xs text-white/60">
-                              Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
-                              TnC AI can make mistakes, so double-check it
-                          </p>
-                      </CardFooter>
-                  </div>
-              </div>
-          </Card>
-          <StatusIndicator className="w-full max-w-sm" />
-      </div>
+                    {/* Signup Form */}
+                    <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
+                        <CardHeader className="text-center pt-8">
+                            <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
+                                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
+                            </div>
+                            <CardTitle className="text-2xl mt-8">Create an Account</CardTitle>
+                            <CardDescription className="text-white/80">Register to request access.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {error && (
+                                <Alert variant="destructive" className="mb-4">
+                                    <AlertTitle>Signup Failed</AlertTitle>
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
+                            )}
+                            <form onSubmit={handleSignup} className="space-y-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="signup-name">Name</Label>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="signup-email">Email</Label>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="signup-password">Password</Label>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    </div>
+                                </div>
+                                <div className="relative group pt-2">
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                    <Button type="submit" className="w-full relative" disabled={isLoading}>
+                                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
+                                    </Button>
+                                </div>
+                            </form>
+                            <div className="relative my-3">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-white/20" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                                </div>
+                            </div>
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                <Button variant="outline" className="w-full relative text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                    {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                    Sign up with Google
+                                </Button>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
+                            <p className="mb-2 text-white/80">Already have an account?{" "}
+                                <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
+                            </p>
+                            <p className="text-center text-xs text-white/60">
+                                Deep Learning Agentic AI developed by STD.DATABASE.Ai<br />
+                                TnC AI can make mistakes, so double-check it
+                            </p>
+                        </CardFooter>
+                    </div>
+                </div>
+            </Card>
+            <StatusIndicator className="w-full max-w-sm" />
+        </div>
     </main>
   );
 }
