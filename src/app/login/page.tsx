@@ -193,7 +193,7 @@ export default function LoginPage() {
 
   return (
     <main className="relative flex items-center justify-center min-h-screen p-4" style={{ 
-      backgroundImage: 'url(https://i.postimg.cc/SQdvTPQR/airplane-flying-through-fantasy-world-with-mythical-landscape-2.webp)',
+      backgroundImage: 'url(https://i.postimg.cc/Fzhs9BwV/green-plane-sustainable-energy-concept.webp)',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }}>
@@ -256,7 +256,7 @@ export default function LoginPage() {
                                   <span className="w-full border-t border-white/20" />
                               </div>
                               <div className="relative flex justify-center text-xs uppercase">
-                                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                                  <span className="bg-card/10 px-2 text-muted-foreground">Or continue with</span>
                               </div>
                           </div>
                           <div className="relative group">
@@ -328,7 +328,7 @@ export default function LoginPage() {
                                   <span className="w-full border-t border-white/20" />
                               </div>
                               <div className="relative flex justify-center text-xs uppercase">
-                                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                                  <span className="bg-card/10 px-2 text-muted-foreground">Or continue with</span>
                               </div>
                           </div>
                           <div className="relative group">
