@@ -236,14 +236,14 @@ export default function LoginPage() {
                                 <div className="space-y-2">
                                     <Label htmlFor="login-email">Email</Label>
                                     <div className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000"></div>
                                         <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="login-password">Password</Label>
                                     <div className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000"></div>
                                         <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60" />
                                     </div>
                                 </div>
@@ -301,21 +301,21 @@ export default function LoginPage() {
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-name">Name</Label>
                                     <div className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000"></div>
                                         <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-email">Email</Label>
                                     <div className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000"></div>
                                         <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-password">Password</Label>
                                     <div className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000"></div>
                                         <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
                                     </div>
                                 </div>
