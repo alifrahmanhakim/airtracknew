@@ -255,40 +255,43 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <StatusIndicator />
                 <NotificationBell userId={userId} />
                 <ThemeToggle />
-                <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-9 w-9 aspect-square" online={isCurrentUserOnline}>
-                        <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                        <AvatarFallback>
-                        <UserIcon className="h-5 w-5" />
-                        </AvatarFallback>
-                    </Avatar>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{currentUser.name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
-                    </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                    <DropdownMenuItem asChild>
-                        <Link href="/profile">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-                </DropdownMenu>
+                 <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                            <Avatar className="h-9 w-9 aspect-square" online={isCurrentUserOnline}>
+                                <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                                <AvatarFallback>
+                                <UserIcon className="h-5 w-5" />
+                                </AvatarFallback>
+                            </Avatar>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="end" forceMount>
+                            <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+                                <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
+                            </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                            <DropdownMenuItem asChild>
+                                <Link href="/profile">
+                                <Settings className="mr-2 h-4 w-4" />
+                                <span>Profile</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Logout</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
         </header>
         <main className="flex-1 overflow-auto">
