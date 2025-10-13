@@ -192,7 +192,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex items-center justify-center min-h-screen p-4" style={{ background: 'linear-gradient(135deg, midnightblue, #111)' }}>
+    <main className="relative flex items-center justify-center min-h-screen p-4" style={{ 
+      backgroundImage: 'url(https://i.postimg.cc/bzrF6g4G/Pngtree-amazing-blue-and-purple-galaxy-16445598.webp)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}>
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
