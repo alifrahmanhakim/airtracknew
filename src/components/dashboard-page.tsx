@@ -106,6 +106,7 @@ type AssignedTask = Task & {
   projectName: string;
   projectId: string;
   projectType: Project['projectType'];
+  createdAt?: string; // Add createdAt to the task type
 };
 
 type WorkloadStatus = 'Overload' | 'Underload' | 'Normal';
@@ -166,7 +167,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
     };
 
     // This destructuring is important. We only want to pass properties that exist on the base Task type.
-    const { projectId, projectName, projectType, ...baseTask } = updatedTask;
+    const { projectId, projectName, projectType, createdAt, ...baseTask } = updatedTask;
 
     const result = await updateTask(projectId, baseTask, projectType, userId || '');
     
@@ -201,11 +202,13 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
     return allProjects.filter(p => getYear(parseISO(p.startDate)) === parseInt(selectedYear, 10));
   }, [allProjects, selectedYear]);
 
-  const { projectStatusData, teamWorkloadData, stats, offTrackTasks, recentlyAddedProjects } = useMemo(() => {
+  const { projectStatusData, teamWorkloadData, stats, offTrackTasks, recentlyAddedTasks } = useMemo(() => {
       const today = startOfToday();
       const statusCounts: Record<Project['status'], number> = {
           'On Track': 0, 'At Risk': 0, 'Off Track': 0, 'Completed': 0,
       };
+      
+      const allTasks: AssignedTask[] = [];
       
       const taskStatusCounts = { 
           'To Do': 0, 'In Progress': 0, 'Done': 0, 'Blocked': 0, 'Off Track': 0,
@@ -241,6 +244,15 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                           taskStatusCounts.todoOnTrack++;
                       }
                   }
+                  
+                  // For recently added tasks
+                   allTasks.push({
+                      ...task,
+                      projectName: project.name,
+                      projectId: project.id,
+                      projectType: project.projectType,
+                      createdAt: project.createdAt
+                   });
               });
           })(tasks);
       });
@@ -301,7 +313,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           { name: 'Completed', projects: statusCounts['Completed'], tasks: taskStatusCounts['Done'], 'To Do': undefined, fill: 'hsl(var(--chart-4))' },
       ];
       
-       const recentProjects = [...allProjects]
+       const recentTasks = allTasks
         .sort((a, b) => {
             const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -314,7 +326,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
         teamWorkloadData: finalWorkloadData,
         stats: projectStats,
         offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
-        recentlyAddedProjects: recentProjects,
+        recentlyAddedTasks: recentTasks,
       };
     }, [filteredProjects, allUsers, allProjects]);
   
@@ -522,38 +534,38 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
             </Collapsible>
         )}
 
-        {recentlyAddedProjects.length > 0 && (
+        {recentlyAddedTasks.length > 0 && (
             <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
-                        <History /> Recently Added Projects
+                        <History /> Recently Added Tasks
                     </CardTitle>
                     <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
-                        The most recently created projects.
+                        The most recently created tasks across all projects.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {recentlyAddedProjects.slice(0, 5).map((project, index) => {
-                        const createdAtDate = project.createdAt ? new Date(project.createdAt) : null;
+                    {recentlyAddedTasks.slice(0, 5).map((task, index) => {
+                        const createdAtDate = task.createdAt ? new Date(task.createdAt) : null;
                         return (
-                        <div key={project.id}>
+                        <div key={task.id}>
                             <div className="flex items-center justify-between gap-4">
                                 <div className="flex items-start gap-4">
                                     <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
                                     <div>
-                                        <p className="font-semibold text-sm">{project.name}</p>
+                                        <p className="font-semibold text-sm">{task.title}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {createdAtDate && isValid(createdAtDate) ? `Created ${format(createdAtDate, 'dd MMM yyyy')}`: 'Creation date unavailable'}
+                                           In project: {task.projectName}
                                         </p>
                                     </div>
                                 </div>
                                 <Button asChild size="sm" variant="outline">
-                                    <Link href={`/projects/${project.id}?type=timkerja`}>
+                                    <Link href={`/projects/${task.projectId}?type=timkerja`}>
                                         View Project <ArrowRight className="ml-2 h-4 w-4" />
                                     </Link>
                                 </Button>
                             </div>
-                            {index < recentlyAddedProjects.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
+                            {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
                         </div>
                     )})}
                 </CardContent>
@@ -710,3 +722,5 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
     </>
   );
 }
+
+    
