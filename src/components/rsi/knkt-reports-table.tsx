@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -85,14 +84,14 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                     <TableRow>
                         <TableHead className="cursor-pointer w-[10%]" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
                         <TableHead className="w-[15%]">Nomor Laporan</TableHead>
-                        <TableHead className="w-[10%]">Status</TableHead>
-                        <TableHead className="w-[15%]">Operator</TableHead>
-                        <TableHead className="w-[10%]">Registrasi</TableHead>
+                        <TableHead className="w-[12%]">Status</TableHead>
+                        <TableHead className="w-[13%]">Operator</TableHead>
+                        <TableHead className="w-[8%]">Registrasi</TableHead>
                         <TableHead className="w-[10%]">Tipe Pesawat</TableHead>
-                        <TableHead className="w-[15%]">Lokasi</TableHead>
+                        <TableHead className="w-[12%]">Lokasi</TableHead>
                         <TableHead className="w-[20%]">Keterangan</TableHead>
                         <TableHead className="w-[5%]">File</TableHead>
-                        <TableHead className="text-right w-[10%]">Actions</TableHead>
+                        <TableHead className="text-right w-[120px]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -102,6 +101,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             <TableCell className="align-top break-words"><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
                             <TableCell className="align-top break-words">
                                 <Badge variant={getStatusVariant(record.status)} className={cn(
+                                    'whitespace-nowrap',
                                     getStatusVariant(record.status) === 'default' && 'bg-blue-100 text-blue-800'
                                 )}>
                                     <Highlight text={record.status} query={searchTerm}/>
@@ -124,10 +124,12 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                                 )}
                             </TableCell>
                             <TableCell className="text-right align-top">
-                                <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
-                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <div className="flex justify-end gap-0">
+                                    <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
+                                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </TableCell>
                         </TableRow>
                     )) : (
