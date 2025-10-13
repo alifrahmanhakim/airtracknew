@@ -103,18 +103,18 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
   };
   
   const columnDefs: { key: keyof CcefodRecord; header: string; width?: string }[] = [
-    { key: 'annex', header: 'Annex', width: '150px' },
-    { key: 'annexReference', header: 'Annex Ref.', width: '150px' },
-    { key: 'standardPractice', header: 'Standard/Practice', width: '400px' },
-    { key: 'legislationReference', header: 'Legislation', width: '250px' },
-    { key: 'implementationLevel', header: 'Implementation Level', width: '200px'},
-    { key: 'status', header: 'Status', width: '100px' },
-    { key: 'adaPerubahan', header: 'Ada Perubahan?', width: '150px'},
-    { key: 'usulanPerubahan', header: 'Usulan Perubahan', width: '200px'},
-    { key: 'isiUsulan', header: 'Isi Usulan', width: '300px'},
-    { key: 'differenceText', header: 'Text of Difference', width: '300px'},
-    { key: 'differenceReason', header: 'Reason for Difference', width: '300px'},
-    { key: 'remarks', header: 'Remarks', width: '300px'},
+    { key: 'annex', header: 'Annex', width: '15%' },
+    { key: 'annexReference', header: 'Annex Ref.', width: '10%' },
+    { key: 'standardPractice', header: 'Standard/Practice', width: '25%' },
+    { key: 'legislationReference', header: 'Legislation', width: '15%' },
+    { key: 'implementationLevel', header: 'Implementation Level', width: '15%'},
+    { key: 'status', header: 'Status', width: '10%' },
+    { key: 'adaPerubahan', header: 'Ada Perubahan?', width: '10%'},
+    { key: 'usulanPerubahan', header: 'Usulan Perubahan', width: '20%'},
+    { key: 'isiUsulan', header: 'Isi Usulan', width: '30%'},
+    { key: 'differenceText', header: 'Text of Difference', width: '30%'},
+    { key: 'differenceReason', header: 'Reason for Difference', width: '30%'},
+    { key: 'remarks', header: 'Remarks', width: '30%'},
   ];
 
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key]);
@@ -161,13 +161,13 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
           </DropdownMenu>
         </div>
         <div className="border rounded-md w-full overflow-x-auto relative">
-          <Table className="min-w-full">
+          <Table className="min-w-full table-fixed">
             <TableHeader className="sticky top-0 bg-background/95 z-10">
               <TableRow>
                 {visibleColumns.map((col) => (
                     <TableHead 
                         key={col.key} 
-                        className="cursor-pointer"
+                        className="cursor-pointer text-left"
                         style={{ width: col.width }}
                         onClick={() => handleSort(col.key as keyof CcefodRecord)}>
                         <div className="flex items-center">
@@ -191,10 +191,10 @@ export function CcefodRecordsTable({ records, onDelete, onUpdate, searchTerm }: 
                             return (
                                 <TableCell 
                                   key={col.key} 
-                                  className="align-top"
+                                  className="align-top text-left"
                                   style={{ width: col.width }}
                                 >
-                                    <div className="truncate">
+                                    <div className="whitespace-normal break-words">
                                     {(() => {
                                         if (value === null || value === undefined || value === '') {
                                             return <span className='text-muted-foreground'>—</span>;
