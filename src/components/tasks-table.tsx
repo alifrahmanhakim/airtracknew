@@ -474,7 +474,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[80px]">No.</TableHead>
+                                <TableHead className="w-[50px]">No.</TableHead>
                                 <TableHead className="w-[30%] text-left" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
