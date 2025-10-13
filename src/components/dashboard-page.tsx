@@ -26,6 +26,7 @@ import {
   CalendarClock,
   CalendarX,
   ChevronDown,
+  History,
 } from 'lucide-react';
 import type { Project, User, Task } from '@/lib/types';
 import { ProjectCard } from './project-card';
@@ -199,7 +200,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
     return allProjects.filter(p => getYear(parseISO(p.startDate)) === parseInt(selectedYear, 10));
   }, [allProjects, selectedYear]);
 
-  const { projectStatusData, teamWorkloadData, stats, offTrackTasks } = useMemo(() => {
+  const { projectStatusData, teamWorkloadData, stats, offTrackTasks, recentlyAddedProjects } = useMemo(() => {
       const today = startOfToday();
       const statusCounts: Record<Project['status'], number> = {
           'On Track': 0, 'At Risk': 0, 'Off Track': 0, 'Completed': 0,
@@ -298,14 +299,19 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           { name: 'Off Track', projects: statusCounts['Off Track'], tasks: taskStatusCounts['Off Track'], 'To Do': taskStatusCounts.todoOffTrack, fill: 'hsl(var(--chart-3))' },
           { name: 'Completed', projects: statusCounts['Completed'], tasks: taskStatusCounts['Done'], 'To Do': undefined, fill: 'hsl(var(--chart-4))' },
       ];
+      
+       const recentProjects = [...allProjects]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
 
       return {
         projectStatusData: chartData,
         teamWorkloadData: finalWorkloadData,
         stats: projectStats,
         offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
+        recentlyAddedProjects: recentProjects,
       };
-    }, [filteredProjects, allUsers]);
+    }, [filteredProjects, allUsers, allProjects]);
   
   const chartConfig = {
     projects: { label: 'Projects', color: 'hsl(var(--chart-1))' },
@@ -510,6 +516,43 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                 </Card>
             </Collapsible>
         )}
+
+        {recentlyAddedProjects.length > 0 && (
+            <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                        <History /> Recently Added Projects
+                    </CardTitle>
+                    <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
+                        The most recently created projects.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {recentlyAddedProjects.slice(0, 5).map((project, index) => (
+                        <div key={project.id}>
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-start gap-4">
+                                    <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
+                                    <div>
+                                        <p className="font-semibold text-sm">{project.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Created {format(new Date(project.createdAt), 'dd MMM yyyy')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <Button asChild size="sm" variant="outline">
+                                    <Link href={`/projects/${project.id}?type=timkerja`}>
+                                        View Project <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </div>
+                            {index < recentlyAddedProjects.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+        )}
+
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
           <Card className={cn(cardHoverClasses)}>
