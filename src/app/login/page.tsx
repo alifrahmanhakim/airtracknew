@@ -193,7 +193,7 @@ export default function LoginPage() {
 
   return (
     <main 
-        className="relative flex items-center justify-center min-h-screen p-4 login-background"
+        className="relative flex items-center justify-center min-h-screen p-4"
         style={{
             backgroundSize: 'cover',
             backgroundPosition: 'center',
