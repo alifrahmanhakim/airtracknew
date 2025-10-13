@@ -120,9 +120,9 @@ export function PemeriksaanTable({ records, onUpdate, searchTerm }: PemeriksaanT
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[50px] text-left">No</TableHead>
-                            <TableHead className="w-[300px] text-left">Kejadian</TableHead>
-                            <TableHead className="w-[300px] text-left">Status Penanganan</TableHead>
-                            <TableHead className="w-[300px] text-left">Tindak Lanjut</TableHead>
+                            <TableHead className="w-[25%] text-left">Kejadian</TableHead>
+                            <TableHead className="w-[25%] text-left">Status Penanganan</TableHead>
+                            <TableHead className="w-[25%] text-left">Tindak Lanjut</TableHead>
                             <TableHead className="w-[150px] text-left">File Pemeriksaan</TableHead>
                             <TableHead className="text-right w-[100px]">Actions</TableHead>
                         </TableRow>
@@ -131,7 +131,7 @@ export function PemeriksaanTable({ records, onUpdate, searchTerm }: PemeriksaanT
                         {sortedRecords.length > 0 ? sortedRecords.map((record, index) => (
                             <TableRow key={record.id}>
                                 <TableCell className="align-top text-left">{index + 1}</TableCell>
-                                <TableCell className="align-top text-left">
+                                <TableCell className="align-top text-left break-words">
                                     <div className="font-medium space-y-2">
                                         <p><strong className='font-semibold'>Kategori:</strong> <Highlight text={record.kategori} query={searchTerm} /></p>
                                         <p><strong className='font-semibold'>Jenis Pesawat:</strong> <Highlight text={record.jenisPesawat} query={searchTerm} /></p>
@@ -144,9 +144,9 @@ export function PemeriksaanTable({ records, onUpdate, searchTerm }: PemeriksaanT
                                         <p className="whitespace-pre-wrap"><strong className='font-semibold'>Ringkasan:</strong> <Highlight text={record.ringkasanKejadian} query={searchTerm} /></p>
                                     </div>
                                 </TableCell>
-                                <TableCell className="align-top text-left"><BulletList text={record.statusPenanganan} searchTerm={searchTerm} /></TableCell>
-                                <TableCell className="align-top text-left"><BulletList text={record.tindakLanjut} searchTerm={searchTerm} /></TableCell>
-                                <TableCell className="align-top text-left">
+                                <TableCell className="align-top text-left break-words"><BulletList text={record.statusPenanganan} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top text-left break-words"><BulletList text={record.tindakLanjut} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top text-left break-words">
                                     {record.filePemeriksaanUrl ? (
                                         <Button asChild variant="outline" size="sm">
                                             <a href={record.filePemeriksaanUrl} target="_blank" rel="noopener noreferrer">
