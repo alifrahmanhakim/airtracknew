@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -91,7 +92,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                         <TableHead className="w-[15%]">Lokasi</TableHead>
                         <TableHead className="w-[20%]">Keterangan</TableHead>
                         <TableHead className="w-[5%]">File</TableHead>
-                        <TableHead className="text-right w-[10%]">Actions</TableHead>
+                        <TableHead className="text-right w-[100px]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -101,7 +102,6 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             <TableCell className="align-top break-words"><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
                             <TableCell className="align-top break-words">
                                 <Badge variant={getStatusVariant(record.status)} className={cn(
-                                    'whitespace-nowrap',
                                     getStatusVariant(record.status) === 'default' && 'bg-blue-100 text-blue-800'
                                 )}>
                                     <Highlight text={record.status} query={searchTerm}/>
@@ -114,9 +114,9 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             <TableCell className="align-top break-words">
                                <Highlight text={record.keterangan || '-'} query={searchTerm} />
                             </TableCell>
-                            <TableCell className="align-top break-words">
+                            <TableCell className="align-top">
                                 {record.fileUrl ? (
-                                    <Button asChild variant="ghost" size="icon">
+                                    <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                                         <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
                                             <LinkIcon className="h-4 w-4" />
                                         </a>
@@ -128,7 +128,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             <TableCell className="text-right align-top">
                                 <div className="flex justify-end gap-0">
                                     <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
-                                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
+                                    <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => onDelete(record)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
