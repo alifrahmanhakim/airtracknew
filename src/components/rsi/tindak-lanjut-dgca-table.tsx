@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -34,7 +33,18 @@ type TindakLanjutDgcaTableProps = {
 
 const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) => {
     if (!text) return null;
-    return <p className="whitespace-pre-wrap"><Highlight text={text} query={searchTerm} /></p>;
+    const items = text.split(/\s*(?=[a-z0-9]\.)\s*/).filter(item => item.trim() !== '');
+    if (items.length <= 1 && !/^[a-z0-9]\./i.test(text.trim())) {
+        return <p className="whitespace-pre-wrap"><Highlight text={text} query={searchTerm} /></p>;
+    }
+    
+    return (
+      <ul className="list-disc list-inside space-y-1">
+        {items.map((item, index) => (
+          <li key={index}><Highlight text={item.trim()} query={searchTerm} /></li>
+        ))}
+      </ul>
+    );
 };
 
 export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm, sort, setSort }: TindakLanjutDgcaTableProps) {
@@ -64,28 +74,28 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm,
 
     return (
         <div className="border rounded-md w-full overflow-x-auto">
-            <Table>
+            <Table className="table-fixed">
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[50px]">No</TableHead>
-                        <TableHead className="min-w-[250px] cursor-pointer" onClick={() => handleSort('tanggalKejadian')}>
+                        <TableHead className="w-[25%] cursor-pointer" onClick={() => handleSort('tanggalKejadian')}>
                             <div className="flex items-center">
                                 Laporan Investigasi KNKT
                                 {renderSortIcon('tanggalKejadian')}
                             </div>
                         </TableHead>
-                        <TableHead className="min-w-[200px]">Rekomendasi Keselamatan Ke DGCA</TableHead>
-                        <TableHead className="min-w-[200px]">Nomor Rekomendasi Keselamatan</TableHead>
-                        <TableHead className="min-w-[300px]">Tindak lanjut DKPPU</TableHead>
-                        <TableHead>File</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="w-[20%]">Rekomendasi Keselamatan Ke DGCA</TableHead>
+                        <TableHead className="w-[20%]">Nomor Rekomendasi Keselamatan</TableHead>
+                        <TableHead className="w-[25%]">Tindak lanjut DKPPU</TableHead>
+                        <TableHead className="w-[5%]">File</TableHead>
+                        <TableHead className="w-[100px] text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {records.map((record, index) => (
                         <TableRow key={record.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell className="align-top">
+                            <TableCell className="align-top break-words">{index + 1}</TableCell>
+                            <TableCell className="align-top break-words">
                                 <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
                                 <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Operator: <Highlight text={record.operator} query={searchTerm} /></p>
@@ -95,10 +105,10 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm,
                                 <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Terbit: <Highlight text={record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'dd MMM yyyy') : 'N/A'} query={searchTerm} /></p>
                             </TableCell>
-                            <TableCell className="align-top"><BulletList text={record.rekomendasiKeDgca} searchTerm={searchTerm} /></TableCell>
-                            <TableCell className="align-top"><BulletList text={record.nomorRekomendasi} searchTerm={searchTerm} /></TableCell>
-                            <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
-                            <TableCell className="align-top">
+                            <TableCell className="align-top break-words"><BulletList text={record.rekomendasiKeDgca} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top break-words"><BulletList text={record.nomorRekomendasi} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top break-words"><BulletList text={record.tindakLanjutDkppu} searchTerm={searchTerm} /></TableCell>
+                            <TableCell className="align-top break-words text-center">
                                 {record.fileUrl ? (
                                     <Button asChild variant="ghost" size="icon">
                                         <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
