@@ -118,9 +118,9 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     {(task.attachments || []).length > 0 ? (
                         <div className="flex flex-col gap-1 items-start">
                             {(task.attachments || []).map(att => (
-                                <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline truncate" onClick={(e) => e.stopPropagation()}>
+                                <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
                                     <LinkIcon className="h-3 w-3" />
-                                    <span className="truncate">{att.name}</span>
+                                    <span>{att.name}</span>
                                 </a>
                             ))}
                         </div>
@@ -474,7 +474,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[50px]">No.</TableHead>
+                                <TableHead className="w-[80px]">No.</TableHead>
                                 <TableHead className="w-[30%] text-left" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
