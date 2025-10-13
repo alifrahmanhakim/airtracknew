@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -112,10 +111,8 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             <TableCell className="align-top break-words"><Highlight text={record.registrasi} query={searchTerm}/></TableCell>
                             <TableCell className="align-top break-words"><Highlight text={record.tipe_pesawat} query={searchTerm}/></TableCell>
                             <TableCell className="align-top break-words"><Highlight text={record.lokasi} query={searchTerm}/></TableCell>
-                            <TableCell className="align-top">
-                                <div className="whitespace-normal break-words">
-                                    <Highlight text={record.keterangan || '-'} query={searchTerm} />
-                                </div>
+                            <TableCell className="align-top break-words">
+                               <Highlight text={record.keterangan || '-'} query={searchTerm} />
                             </TableCell>
                             <TableCell className="align-top break-words">
                                 {record.fileUrl ? (
