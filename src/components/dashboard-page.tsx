@@ -329,7 +329,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
         offTrackTasks: overdueTasks.sort((a,b) => parseISO(b.dueDate).getTime() - parseISO(a.dueDate).getTime()),
         recentlyAddedTasks: recentTasks,
       };
-    }, [filteredProjects, allUsers, allProjects]);
+    }, [filteredProjects, allUsers]);
   
   const chartConfig = {
     projects: { label: 'Projects', color: 'hsl(var(--chart-1))' },
@@ -620,9 +620,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                     <TableHeader>
                         <TableRow>
                             <TableHead>Member</TableHead>
-                            <TableHead className="text-center">Tasks (Done/Open)</TableHead>
-                            <TableHead className="text-center">Workload Status</TableHead>
-                            <TableHead className="w-[120px]">Workload Score</TableHead>
+                            <TableHead className="text-center w-36">Tasks (Done/Open)</TableHead>
+                            <TableHead className="text-center w-40">Workload</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -649,15 +648,15 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                         <span className="text-muted-foreground">/</span>
                                         <span>{openTasks}</span>
                                     </TableCell>
-                                    <TableCell className="text-center">
-                                         <Badge variant="outline" className={cn({
-                                            'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
-                                            'border-blue-500/50 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/60': workloadStatus === 'Underload',
-                                            'border-green-500/50 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/60': workloadStatus === 'Normal',
-                                        })}>{workloadStatus}</Badge>
-                                    </TableCell>
                                     <TableCell>
-                                        <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2" />
+                                      <div className='flex flex-col items-center gap-1'>
+                                          <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2 w-full" />
+                                          <Badge variant="outline" className={cn("text-xs", {
+                                              'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
+                                              'border-blue-500/50 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/60': workloadStatus === 'Underload',
+                                              'border-green-500/50 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/60': workloadStatus === 'Normal',
+                                          })}>{workloadStatus}</Badge>
+                                      </div>
                                     </TableCell>
                                 </TableRow>
                             )
