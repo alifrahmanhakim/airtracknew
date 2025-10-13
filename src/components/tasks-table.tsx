@@ -121,7 +121,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                 {visibleColumns.attachments && (
                     <TableCell>
                         {(task.attachments || []).length > 0 ? (
-                            <div className="flex flex-wrap gap-1 items-start">
+                            <div className="flex flex-col gap-2 items-start">
                                 {(task.attachments || []).map(att => (
                                     <a 
                                         key={att.id}
@@ -129,10 +129,10 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                                         target="_blank" 
                                         rel="noopener noreferrer" 
                                         onClick={(e) => e.stopPropagation()}
-                                        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "h-auto bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200")}
+                                        className="inline-flex items-center gap-1.5 p-1.5 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-200"
                                     >
-                                        <FileText className="h-3 w-3 mr-1.5" />
-                                        <span className="whitespace-normal break-all text-xs">{att.name}</span>
+                                        <FileText className="h-4 w-4 flex-shrink-0" />
+                                        <span className="text-xs font-medium">{att.name}</span>
                                     </a>
                                 ))}
                             </div>
