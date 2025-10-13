@@ -208,10 +208,9 @@ export default function LoginPage() {
                     {/* Login Form */}
                     <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
                         <CardHeader className="text-center">
-                             <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
+                             <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center mb-8">
                                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
                             </div>
-                            <CardDescription className="text-white/80 mt-8">Enter your credentials to access your dashboard.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {signupSuccess && (
