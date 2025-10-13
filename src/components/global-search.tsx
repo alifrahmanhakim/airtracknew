@@ -91,12 +91,15 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                 variant="outline"
                 className="h-9 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64 transition-transform duration-200 group-hover:scale-105"
             >
-                <Search className="mr-2 h-4 w-4" />
-                <span className="hidden lg:inline-flex">Search...</span>
-                <span className="inline-flex lg:hidden">Search...</span>
-                 <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex group-hover:bg-background group-hover:text-muted-foreground">
-                    <span className="text-xs">{modifierKey}</span>K
-                </kbd>
+                 <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000"></div>
+                <div className="relative flex items-center w-full">
+                    <Search className="mr-2 h-4 w-4" />
+                    <span className="hidden lg:inline-flex">Search...</span>
+                    <span className="inline-flex lg:hidden">Search...</span>
+                    <kbd className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex transition-colors group-hover:bg-background/80 group-hover:text-muted-foreground">
+                        <span className="text-xs">{modifierKey}</span>K
+                    </kbd>
+                </div>
             </Button>
         </div>
       </PopoverTrigger>
