@@ -96,7 +96,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                         <span>{taskNumber}</span>
                     </div>
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium text-left">
                 <div className="flex items-center gap-2">
                     <span>{task.title}</span>
                     {task.criticalIssue && (
@@ -475,7 +475,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                             <TableHeader>
                                 <TableRow>
                                 <TableHead className="w-[80px]">No.</TableHead>
-                                <TableHead className="w-[30%]" onClick={() => handleSort('title')}>
+                                <TableHead className="w-[30%] text-left" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
                                 {columnVisibility.namaSurat && <TableHead onClick={() => handleSort('namaSurat')}><div className="flex items-center cursor-pointer">Nama Surat {renderSortIcon('namaSurat')}</div></TableHead>}
