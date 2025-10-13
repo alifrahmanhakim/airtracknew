@@ -194,7 +194,7 @@ export default function LoginPage() {
   return (
     <main className="relative flex items-center justify-center min-h-screen p-4">
         <Image 
-            src="https://i.postimg.cc/Fzhs9BwV/green-plane-sustainable-energy-concept.webp"
+            src="https://i.imgur.com/IG4RiHm.jpeg"
             alt="Background image of an airplane"
             fill
             quality={100}
