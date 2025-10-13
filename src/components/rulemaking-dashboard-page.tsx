@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Project, User, Task } from '@/lib/types';
@@ -12,7 +13,7 @@ import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
-import { format, parseISO, differenceInDays, isAfter, startOfToday } from 'date-fns';
+import { format, parseISO, differenceInDays, isAfter, startOfToday, isValid } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { AddRulemakingProjectDialog } from '@/components/add-rulemaking-project-dialog';
@@ -243,8 +244,8 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
       });
       
       return allTasks.sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            const dateA = a.createdAt && isValid(new Date(a.createdAt)) ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt && isValid(new Date(b.createdAt)) ? new Date(b.createdAt).getTime() : 0;
             return dateB - dateA;
         });
     }, [projects]);
@@ -378,12 +379,14 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                             <History /> Recently Added Tasks
                         </CardTitle>
                         <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
-                            The most recently created tasks across all projects.
+                            The most recently created tasks across all rulemaking projects.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {recentlyAddedTasks.slice(0, 5).map((task, index) => {
-                            const createdAtDate = task.createdAt ? new Date(task.createdAt) : null;
+                            const createdAtDate = task.createdAt && isValid(new Date(task.createdAt)) ? new Date(task.createdAt) : null;
+                             const project = projects.find(p => p.id === task.projectId);
+                             const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
                             return (
                                 <div key={task.id}>
                                     <div className="flex items-center justify-between gap-4">
@@ -392,12 +395,12 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                             <div>
                                                 <p className="font-semibold text-sm">{task.title}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    In project: {task.projectName}
-                                                    {createdAtDate && (
-                                                        <span className="ml-2">
-                                                            - Created {format(createdAtDate, 'dd MMM yyyy')}
-                                                        </span>
-                                                    )}
+                                                   In project: {task.projectName}
+                                                   {createdAtDate && (
+                                                       <span className="ml-2">
+                                                            - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
+                                                       </span>
+                                                   )}
                                                 </p>
                                             </div>
                                         </div>
@@ -477,3 +480,4 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
         </TooltipProvider>
     );
 }
+

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -315,8 +316,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
       
        const recentTasks = allTasks
         .sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            const dateA = a.createdAt && isValid(new Date(a.createdAt)) ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt && isValid(new Date(b.createdAt)) ? new Date(b.createdAt).getTime() : 0;
             return dateB - dateA;
         });
 
@@ -546,28 +547,36 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {recentlyAddedTasks.slice(0, 5).map((task, index) => {
-                        const createdAtDate = task.createdAt ? new Date(task.createdAt) : null;
+                        const createdAtDate = task.createdAt && isValid(new Date(task.createdAt)) ? new Date(task.createdAt) : null;
+                        const project = allProjects.find(p => p.id === task.projectId);
+                        const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
                         return (
-                        <div key={task.id}>
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-start gap-4">
-                                    <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
-                                    <div>
-                                        <p className="font-semibold text-sm">{task.title}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                           In project: {task.projectName}
-                                        </p>
+                            <div key={task.id}>
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-start gap-4">
+                                        <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
+                                        <div>
+                                            <p className="font-semibold text-sm">{task.title}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                               In project: {task.projectName}
+                                               {createdAtDate && (
+                                                   <span className="ml-2">
+                                                       - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
+                                                   </span>
+                                               )}
+                                            </p>
+                                        </div>
                                     </div>
+                                    <Button asChild size="sm" variant="outline">
+                                        <Link href={`/projects/${task.projectId}?type=timkerja`}>
+                                            View Project <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
                                 </div>
-                                <Button asChild size="sm" variant="outline">
-                                    <Link href={`/projects/${task.projectId}?type=timkerja`}>
-                                        View Project <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </Button>
+                                {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
                             </div>
-                            {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
-                        </div>
-                    )})}
+                        )
+                    })}
                 </CardContent>
             </Card>
         )}
