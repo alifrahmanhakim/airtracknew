@@ -207,8 +207,8 @@ export default function LoginPage() {
                 <div className="grid [grid-template-areas:'card-content']">
                     {/* Login Form */}
                     <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
-                        <CardHeader className="text-center">
-                             <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center mb-8">
+                        <CardHeader className="text-center pt-8">
+                             <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
                                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
                             </div>
                         </CardHeader>
@@ -267,7 +267,7 @@ export default function LoginPage() {
 
                     {/* Signup Form */}
                     <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
-                        <CardHeader className="text-center">
+                        <CardHeader className="text-center pt-8">
                            <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
                                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
                             </div>
@@ -329,3 +329,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
+    
