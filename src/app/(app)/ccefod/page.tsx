@@ -5,10 +5,10 @@ import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'rea
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { CcefodRecord } from '@/lib/types';
+import type { CcefodRecord, User } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -57,6 +57,7 @@ const RECORDS_PER_PAGE = 10;
 export default function CcefodPage() {
   const [allRecords, setAllRecords] = useState<CcefodRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Analytics Filters
   const [analyticsAnnexFilter, setAnalyticsAnnexFilter] = useState<string[]>([]);
@@ -101,9 +102,20 @@ export default function CcefodPage() {
       });
       setIsLoading(false);
     });
+    
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (loggedInUserId) {
+        getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+            if (userSnap.exists()) {
+                setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+            }
+        });
+    }
 
     return () => unsubscribe();
   }, [toast]);
+
+  const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'Sub-Directorate Head';
 
   const filteredRecords = useMemo(() => {
     let filtered = [...allRecords];
@@ -316,11 +328,13 @@ export default function CcefodPage() {
                                 </TabsList>
                             </div>
                         </div>
-                        <div className='flex items-center gap-2'>
-                            <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                                <ImportCcefodCsvDialog />
-                            </Suspense>
-                        </div>
+                         {isAdmin && (
+                            <div className='flex items-center gap-2'>
+                                <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                                    <ImportCcefodCsvDialog />
+                                </Suspense>
+                            </div>
+                        )}
                     </div>
                 </CardHeader>
             </Card>
@@ -404,16 +418,18 @@ export default function CcefodPage() {
                                     Berikut adalah daftar data yang telah dimasukkan dari database.
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2 print:hidden">
-                                <Button variant="outline" size="icon" onClick={confirmExport}>
-                                    <FileSpreadsheet className="h-4 w-4" />
-                                    <span className="sr-only">Export as Excel</span>
-                                 </Button>
-                                 <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Delete All Records</span>
-                                </Button>
-                            </div>
+                             {isAdmin && (
+                                <div className="flex items-center gap-2 print:hidden">
+                                    <Button variant="outline" size="icon" onClick={confirmExport}>
+                                        <FileSpreadsheet className="h-4 w-4" />
+                                        <span className="sr-only">Export as Excel</span>
+                                     </Button>
+                                     <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Delete All Records</span>
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </CardHeader>
                     <CardContent>

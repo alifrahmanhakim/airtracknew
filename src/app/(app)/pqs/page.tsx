@@ -6,8 +6,8 @@ import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'rea
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { PqRecord } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc, Timestamp } from 'firebase/firestore';
+import type { PqRecord, User } from '@/lib/types';
+import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc, Timestamp, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -54,6 +54,7 @@ export default function PqsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('form');
   const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const [recordToDelete, setRecordToDelete] = useState<PqRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -115,10 +116,21 @@ export default function PqsPage() {
       console.error("Error fetching all PQs records for analytics: ", error);
        setIsLoading(false);
     });
+    
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (loggedInUserId) {
+        getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+            if (userSnap.exists()) {
+                setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+            }
+        });
+    }
 
     return () => unsubscribe();
   }, []);
   
+  const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'Sub-Directorate Head';
+
   const fetchPaginatedData = useCallback(async (page: number, direction: 'next' | 'prev' | 'first') => {
     if(page < 1) return;
     setIsFetchingPage(true);
@@ -337,11 +349,13 @@ export default function PqsPage() {
                                 </TabsList>
                             </div>
                         </div>
-                        <div className='flex items-center gap-2'>
-                          <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                            <ImportPqsCsvDialog onImportSuccess={() => fetchPaginatedData(1, 'first')} />
-                          </Suspense>
-                        </div>
+                        {isAdmin && (
+                            <div className='flex items-center gap-2'>
+                              <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                                <ImportPqsCsvDialog onImportSuccess={() => fetchPaginatedData(1, 'first')} />
+                              </Suspense>
+                            </div>
+                        )}
                     </div>
                 </CardHeader>
             </Card>
@@ -368,16 +382,18 @@ export default function PqsPage() {
                                     A list of all Protocol Questions records from the database.
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2 print:hidden">
-                                <Button variant="outline" size="icon" onClick={confirmExport}>
-                                    <FileSpreadsheet className="h-4 w-4" />
-                                    <span className="sr-only">Export as CSV</span>
-                                </Button>
-                                <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Delete All Records</span>
-                                </Button>
-                            </div>
+                            {isAdmin && (
+                                <div className="flex items-center gap-2 print:hidden">
+                                    <Button variant="outline" size="icon" onClick={confirmExport}>
+                                        <FileSpreadsheet className="h-4 w-4" />
+                                        <span className="sr-only">Export as CSV</span>
+                                    </Button>
+                                    <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Delete All Records</span>
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </CardHeader>
                     <CardContent>

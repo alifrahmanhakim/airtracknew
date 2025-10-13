@@ -6,8 +6,8 @@ import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'rea
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { GlossaryRecord } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc } from 'firebase/firestore';
+import type { GlossaryRecord, User } from '@/lib/types';
+import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -64,6 +64,7 @@ export default function GlossaryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('records');
   const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const [recordToDelete, setRecordToDelete] = useState<GlossaryRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -94,8 +95,19 @@ export default function GlossaryPage() {
       setIsLoading(false);
     });
 
+     const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (loggedInUserId) {
+        getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+            if (userSnap.exists()) {
+                setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+            }
+        });
+    }
+
     return () => unsubscribe();
   }, []);
+  
+  const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'Sub-Directorate Head';
 
   const filteredAndSortedRecords = useMemo(() => {
     let filtered = [...allRecords];
@@ -248,11 +260,13 @@ export default function GlossaryPage() {
                                 </TabsList>
                             </div>
                         </div>
-                        <div className='flex items-center gap-2'>
-                          <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                            <ImportGlossaryCsvDialog />
-                          </Suspense>
-                        </div>
+                        {isAdmin && (
+                            <div className='flex items-center gap-2'>
+                              <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                                <ImportGlossaryCsvDialog />
+                              </Suspense>
+                            </div>
+                        )}
                     </div>
                 </CardHeader>
             </Card>
@@ -299,10 +313,12 @@ export default function GlossaryPage() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                           <Button variant="destructive" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete All
-                          </Button>
+                          {isAdmin && (
+                               <Button variant="destructive" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete All
+                              </Button>
+                          )}
                         </div>
                       </div>
                     </CardHeader>
@@ -429,4 +445,3 @@ export default function GlossaryPage() {
     </div>
   );
 }
-
