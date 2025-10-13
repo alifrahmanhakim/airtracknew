@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Wifi, Cloud, Server, WifiOff, CloudOff } from 'lucide-react';
+import { Wifi, Cloud, CloudOff, WifiOff } from 'lucide-react';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
@@ -56,7 +56,7 @@ export function StatusIndicator({ className }: { className?: string }) {
     return () => unsubscribe();
   }, [onlineStatus]);
 
-  const getStatusInfo = (status: Status | boolean, type: 'internet' | 'firebase' | 'server') => {
+  const getStatusInfo = (status: Status | boolean, type: 'internet' | 'database') => {
     const isConnected = status === true || status === 'connected';
     const isConnecting = status === 'connecting';
     
@@ -64,7 +64,7 @@ export function StatusIndicator({ className }: { className?: string }) {
         return {
             Icon: Cloud,
             color: 'text-yellow-500 animate-pulse',
-            text: 'Connecting to stdatabase...',
+            text: 'Connecting to AirTrack database...',
         };
     }
 
@@ -72,8 +72,7 @@ export function StatusIndicator({ className }: { className?: string }) {
         let Icon, text;
         switch(type) {
             case 'internet': Icon = Wifi; text = 'Internet Connected'; break;
-            case 'firebase': Icon = Cloud; text = 'stdatabase Connected'; break;
-            case 'server': Icon = Server; text = 'Server Responsive'; break;
+            case 'database': Icon = Cloud; text = 'AirTrack Database Connected'; break;
         }
         return { Icon, color: 'text-green-500', text };
     }
@@ -81,15 +80,13 @@ export function StatusIndicator({ className }: { className?: string }) {
     let Icon, text;
     switch(type) {
         case 'internet': Icon = WifiOff; text = 'Internet Disconnected'; break;
-        case 'firebase': Icon = CloudOff; text = 'stdatabase Disconnected'; break;
-        case 'server': Icon = Server; text = 'Server Unresponsive'; break;
+        case 'database': Icon = CloudOff; text = 'AirTrack Database Disconnected'; break;
     }
     return { Icon, color: 'text-red-500', text };
   }
 
   const internet = getStatusInfo(onlineStatus, 'internet');
-  const firebase = getStatusInfo(firebaseStatus, 'firebase');
-  const server = getStatusInfo(firebaseStatus, 'server'); 
+  const database = getStatusInfo(firebaseStatus, 'database');
 
   return (
     <TooltipProvider>
@@ -108,15 +105,9 @@ export function StatusIndicator({ className }: { className?: string }) {
           </Tooltip>
            <Tooltip>
             <TooltipTrigger>
-              <firebase.Icon className={cn("h-4 w-4", firebase.color)} />
+              <database.Icon className={cn("h-4 w-4", database.color)} />
             </TooltipTrigger>
-            <TooltipContent>{firebase.text}</TooltipContent>
-          </Tooltip>
-           <Tooltip>
-            <TooltipTrigger>
-              <server.Icon className={cn("h-4 w-4", server.color)} />
-            </TooltipTrigger>
-            <TooltipContent>{server.text}</TooltipContent>
+            <TooltipContent>{database.text}</TooltipContent>
           </Tooltip>
       </div>
     </TooltipProvider>
