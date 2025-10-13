@@ -574,8 +574,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-center font-bold">{openTasks}</TableCell>
-                                    <TableCell className="text-center font-bold text-green-600">{doneTasks}</TableCell>
+                                    <TableCell className="font-bold">{openTasks}</TableCell>
+                                    <TableCell className="font-bold text-green-600">{doneTasks}</TableCell>
                                     <TableCell>
                                          <Badge variant="outline" className={cn({
                                             'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
