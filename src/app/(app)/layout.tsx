@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   Mail,
   User as UserIcon,
+  Globe,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -68,6 +69,7 @@ const navItems = {
       { href: '/state-letter', label: 'State Letter', icon: Mail },
       { href: '/glossary', label: 'Glossary', icon: BookText },
       { href: '/rsi', label: 'RSI', icon: ShieldAlert },
+      { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Globe, isExternal: true },
     ]
 }
 
@@ -211,17 +213,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
              <SidebarGroup>
                 <SidebarGroupLabel>Workspace</SidebarGroupLabel>
                 <SidebarMenu>
-                    {navItems.workspace.map((item) => {
+                    {navItems.workspace.map((item: any) => {
                       if (item.requiredRole && !isAdmin) {
                         return null;
                       }
+                      
+                      const linkProps = item.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
+                      
                       return (
                         <SidebarMenuItem key={item.href}>
                              <SidebarMenuButton
                                 asChild
-                                isActive={pathname.startsWith(item.href)}
+                                isActive={!item.isExternal && pathname.startsWith(item.href)}
                             >
-                                <Link href={item.href}>
+                                <Link href={item.href} {...linkProps}>
                                     <item.icon />
                                     <span>{item.label}</span>
                                 </Link>
