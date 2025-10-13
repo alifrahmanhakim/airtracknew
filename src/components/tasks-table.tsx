@@ -39,6 +39,10 @@ import {
   ChevronDown,
   FileSpreadsheet,
   Pencil,
+  File,
+  FileText,
+  FileImage,
+  FileQuestion,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -53,6 +57,16 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import * as XLSX from 'xlsx';
+
+const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    if (extension === 'pdf') return <FileText className="h-3 w-3 mr-1.5" />;
+    if (['doc', 'docx'].includes(extension)) return <File className="h-3 w-3 mr-1.5" />;
+    if (['xls', 'xlsx'].includes(extension)) return <FileSpreadsheet className="h-3 w-3 mr-1.5" />;
+    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) return <FileImage className="h-3 w-3 mr-1.5" />;
+    return <FileQuestion className="h-3 w-3 mr-1.5" />;
+};
+
 
 type TaskRowProps = {
   task: Task;
@@ -114,20 +128,29 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                 </TableCell>
                 {visibleColumns.namaSurat && <TableCell>{task.namaSurat || 'N/A'}</TableCell>}
                 {visibleColumns.tanggalPelaksanaan && <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : 'N/A'}</TableCell>}
-                {visibleColumns.attachments && <TableCell>
-                    {(task.attachments || []).length > 0 ? (
-                        <div className="flex flex-col gap-1 items-start">
-                            {(task.attachments || []).map(att => (
-                                <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
-                                    <LinkIcon className="h-3 w-3" />
-                                    <span>{att.name}</span>
-                                </a>
-                            ))}
-                        </div>
-                    ) : (
-                        <span className="text-xs text-muted-foreground">None</span>
-                    )}
-                </TableCell>}
+                {visibleColumns.attachments && (
+                    <TableCell>
+                        {(task.attachments || []).length > 0 ? (
+                            <div className="flex flex-wrap gap-1 items-start">
+                                {(task.attachments || []).map(att => (
+                                    <Tooltip key={att.id}>
+                                        <TooltipTrigger asChild>
+                                             <a href={att.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                                                <Badge variant="outline" className="flex items-center gap-1 cursor-pointer hover:bg-muted">
+                                                    {getFileIcon(att.name)}
+                                                    <span className="truncate max-w-[100px]">{att.name}</span>
+                                                </Badge>
+                                            </a>
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>{att.name}</p></TooltipContent>
+                                    </Tooltip>
+                                ))}
+                            </div>
+                        ) : (
+                            <span className="text-xs text-muted-foreground">None</span>
+                        )}
+                    </TableCell>
+                )}
                 {visibleColumns.dueDate && <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>}
                 <TableCell>
                     <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
@@ -474,7 +497,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                <TableHead className="w-[80px]">No.</TableHead>
+                                <TableHead className="w-[50px]">No.</TableHead>
                                 <TableHead className="w-[30%] text-left" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
