@@ -24,6 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 import { EditGlossaryRecordDialog } from './edit-glossary-record-dialog';
 import { Highlight } from './ui/highlight';
+import { GlossaryRecordDetailDialog } from './glossary-record-detail-dialog';
 
 
 type GlossaryRecordsTableProps = {
@@ -42,6 +43,7 @@ type SortDescriptor = {
 
 export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSort, searchTerm }: GlossaryRecordsTableProps) {
   const [recordToEdit, setRecordToEdit] = useState<GlossaryRecord | null>(null);
+  const [recordToView, setRecordToView] = useState<GlossaryRecord | null>(null);
 
   const handleSort = (column: keyof GlossaryRecord) => {
     setSort(prevSort => {
@@ -99,9 +101,9 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                     <TableCell className="text-left">
                         <Badge
                             className={cn({
-                                'bg-green-100 text-green-800': record.status === 'Final',
-                                'bg-yellow-100 text-yellow-800': record.status === 'Draft',
-                                'bg-red-100 text-red-800': record.status === 'Usulan',
+                                'bg-green-100 text-green-800 hover:bg-green-200': record.status === 'Final',
+                                'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': record.status === 'Draft',
+                                'bg-red-100 text-red-800 hover:bg-red-200': record.status === 'Usulan',
                             })}
                         >
                             <Highlight text={record.status} query={searchTerm} />
@@ -109,7 +111,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => setRecordToEdit(record)}>
+                             <Button variant="ghost" size="icon" onClick={() => setRecordToEdit(record)}>
                                 <Pencil className="h-4 w-4" />
                             </Button>
                             <Tooltip>
@@ -138,6 +140,13 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                 onOpenChange={(open) => {
                   if (!open) setRecordToEdit(null);
                 }}
+            />
+        )}
+         {recordToView && (
+            <GlossaryRecordDetailDialog
+                record={recordToView}
+                open={!!recordToView}
+                onOpenChange={(open) => !open && setRecordToView(null)}
             />
         )}
     </TooltipProvider>
