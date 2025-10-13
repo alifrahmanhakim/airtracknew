@@ -30,7 +30,6 @@ import { Separator } from './ui/separator';
 type RulemakingDashboardPageProps = {
     projects: Project[];
     allUsers: User[];
-    onProjectAdd: () => void;
 };
 
 type SortDescriptor = {
@@ -165,7 +164,7 @@ const StatusCard = ({
 );
 
 
-export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: RulemakingDashboardPageProps) {
+export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashboardPageProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -348,7 +347,7 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
                             <ListFilter className="h-4 w-4" />
                         </ToggleGroupItem>
                     </ToggleGroup>
-                    <AddRulemakingProjectDialog allUsers={allUsers} onProjectAdd={onProjectAdd} />
+                    <AddRulemakingProjectDialog allUsers={allUsers} />
                  </div>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-6">
@@ -399,5 +398,3 @@ export function RulemakingDashboardPage({ projects, allUsers, onProjectAdd }: Ru
         </TooltipProvider>
     );
 }
-
-    

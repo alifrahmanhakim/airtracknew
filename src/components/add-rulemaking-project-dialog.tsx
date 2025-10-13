@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { addRulemakingProject } from '@/lib/actions/project';
 import { Checkbox } from './ui/checkbox';
+import { useRouter } from 'next/navigation';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -53,13 +54,13 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 
 type AddRulemakingProjectDialogProps = {
   allUsers: User[];
-  onProjectAdd: () => void;
 };
 
-export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulemakingProjectDialogProps) {
+export function AddRulemakingProjectDialog({ allUsers }: AddRulemakingProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const userOptions: MultiSelectOption[] = allUsers.map(user => ({
     value: user.id,
@@ -125,7 +126,7 @@ export function AddRulemakingProjectDialog({ allUsers, onProjectAdd }: AddRulema
       });
       setOpen(false);
       form.reset();
-      onProjectAdd();
+      router.refresh();
     } else {
       toast({
         variant: 'destructive',

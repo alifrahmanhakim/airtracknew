@@ -37,8 +37,7 @@ async function getRulemakingData() {
 export default async function RulemakingDashboard() {
   const { allProjects, allUsers } = await getRulemakingData();
   
-  // The onProjectAdd callback for client components might need adjustment.
-  // For now, we rely on server-rendering for fresh data.
-  // A full solution might involve router.refresh() or revalidatePath.
-  return <RulemakingDashboardPage projects={allProjects} allUsers={allUsers} onProjectAdd={() => {}} />;
+  // The onProjectAdd prop is removed to fix the client/server prop passing error.
+  // Data refresh is now handled inside the dialog component via router.refresh().
+  return <RulemakingDashboardPage projects={allProjects} allUsers={allUsers} />;
 }
