@@ -211,7 +211,7 @@ export default function LoginPage() {
                              <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
                                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
                             </div>
-                            <CardDescription className="text-white/80">Enter your credentials to access your dashboard.</CardDescription>
+                            <CardDescription className="text-white/80 mt-4">Enter your credentials to access your dashboard.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {signupSuccess && (
@@ -272,7 +272,7 @@ export default function LoginPage() {
                            <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
                                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
                             </div>
-                            <CardTitle className="text-2xl">Create an Account</CardTitle>
+                            <CardTitle className="text-2xl mt-4">Create an Account</CardTitle>
                             <CardDescription className="text-white/80">Register to request access.</CardDescription>
                         </CardHeader>
                         <CardContent>
