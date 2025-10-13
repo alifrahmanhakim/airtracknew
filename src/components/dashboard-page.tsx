@@ -620,8 +620,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                     <TableHeader>
                         <TableRow>
                             <TableHead className="border-r">Member</TableHead>
-                            <TableHead className="text-center w-36 border-r">Tasks (Done/Open)</TableHead>
-                            <TableHead className="text-left w-40">Workload</TableHead>
+                            <TableHead className="text-center w-36 border-r">Tugas (Selesai/Terbuka)</TableHead>
+                            <TableHead className="text-center w-40">Workload</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -645,11 +645,11 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                     </TableCell>
                                     <TableCell className="text-center font-bold border-r">
                                         <span className="text-green-600">{doneTasks}</span>
-                                        <span className="text-muted-foreground">/</span>
+                                        <span className="text-muted-foreground mx-1">/</span>
                                         <span>{openTasks}</span>
                                     </TableCell>
                                     <TableCell>
-                                      <div className='flex flex-col items-start gap-1'>
+                                      <div className='flex flex-col items-center gap-1'>
                                           <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2 w-full" />
                                           <Badge variant="outline" className={cn("text-xs", {
                                               'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
