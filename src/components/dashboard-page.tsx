@@ -58,7 +58,7 @@ import { db } from '@/lib/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Progress } from './ui/progress';
-import { parseISO, getYear, isAfter, differenceInDays, startOfToday, format, max as maxDate, min as minDate } from 'date-fns';
+import { parseISO, getYear, isAfter, differenceInDays, startOfToday, format, max as maxDate, min as minDate, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { cn } from '@/lib/utils';
 import { countAllTasks } from '@/lib/data-utils';
@@ -302,7 +302,11 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
       ];
       
        const recentProjects = [...allProjects]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        .sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+        });
 
 
       return {
@@ -529,7 +533,9 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {recentlyAddedProjects.slice(0, 5).map((project, index) => (
+                    {recentlyAddedProjects.slice(0, 5).map((project, index) => {
+                        const createdAtDate = project.createdAt ? new Date(project.createdAt) : null;
+                        return (
                         <div key={project.id}>
                             <div className="flex items-center justify-between gap-4">
                                 <div className="flex items-start gap-4">
@@ -537,7 +543,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                     <div>
                                         <p className="font-semibold text-sm">{project.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Created {format(new Date(project.createdAt), 'dd MMM yyyy')}
+                                            {createdAtDate && isValid(createdAtDate) ? `Created ${format(createdAtDate, 'dd MMM yyyy')}`: 'Creation date unavailable'}
                                         </p>
                                     </div>
                                 </div>
@@ -549,7 +555,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                             </div>
                             {index < recentlyAddedProjects.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
                         </div>
-                    ))}
+                    )})}
                 </CardContent>
             </Card>
         )}
