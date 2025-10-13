@@ -58,16 +58,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import * as XLSX from 'xlsx';
 
-const getFileIcon = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase() || '';
-    if (extension === 'pdf') return <FileText className="h-3 w-3 mr-1.5" />;
-    if (['doc', 'docx'].includes(extension)) return <File className="h-3 w-3 mr-1.5" />;
-    if (['xls', 'xlsx'].includes(extension)) return <FileSpreadsheet className="h-3 w-3 mr-1.5" />;
-    if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) return <FileImage className="h-3 w-3 mr-1.5" />;
-    return <FileQuestion className="h-3 w-3 mr-1.5" />;
-};
-
-
 type TaskRowProps = {
   task: Task;
   level: number;
@@ -133,17 +123,17 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                         {(task.attachments || []).length > 0 ? (
                             <div className="flex flex-wrap gap-1 items-start">
                                 {(task.attachments || []).map(att => (
-                                    <Tooltip key={att.id}>
-                                        <TooltipTrigger asChild>
-                                             <a href={att.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                                                <Badge variant="outline" className="flex items-center gap-1 cursor-pointer hover:bg-muted">
-                                                    {getFileIcon(att.name)}
-                                                    <span className="truncate max-w-[100px]">{att.name}</span>
-                                                </Badge>
-                                            </a>
-                                        </TooltipTrigger>
-                                        <TooltipContent><p>{att.name}</p></TooltipContent>
-                                    </Tooltip>
+                                    <a 
+                                        key={att.id}
+                                        href={att.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        onClick={(e) => e.stopPropagation()}
+                                        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "h-auto bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200")}
+                                    >
+                                        <LinkIcon className="h-3 w-3 mr-1.5" />
+                                        <span className="whitespace-normal break-all">{att.name}</span>
+                                    </a>
                                 ))}
                             </div>
                         ) : (
@@ -562,3 +552,5 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         </TooltipProvider>
     )
 }
+
+    
