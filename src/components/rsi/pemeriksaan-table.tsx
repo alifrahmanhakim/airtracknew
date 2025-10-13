@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -117,22 +116,22 @@ export function PemeriksaanTable({ records, onUpdate, searchTerm }: PemeriksaanT
     return (
         <>
             <div className="border rounded-md w-full overflow-x-auto">
-                <Table>
+                <Table className="table-fixed">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[50px]">No</TableHead>
-                            <TableHead className="min-w-[300px]">Kejadian</TableHead>
-                            <TableHead className="min-w-[300px]">Status Penanganan</TableHead>
-                            <TableHead className="min-w-[300px]">Tindak Lanjut</TableHead>
-                            <TableHead>File Pemeriksaan</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="w-[50px] text-left">No</TableHead>
+                            <TableHead className="w-[300px] text-left">Kejadian</TableHead>
+                            <TableHead className="w-[300px] text-left">Status Penanganan</TableHead>
+                            <TableHead className="w-[300px] text-left">Tindak Lanjut</TableHead>
+                            <TableHead className="w-[150px] text-left">File Pemeriksaan</TableHead>
+                            <TableHead className="text-right w-[100px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sortedRecords.length > 0 ? sortedRecords.map((record, index) => (
                             <TableRow key={record.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>
+                                <TableCell className="align-top text-left">{index + 1}</TableCell>
+                                <TableCell className="align-top text-left">
                                     <div className="font-medium space-y-2">
                                         <p><strong className='font-semibold'>Kategori:</strong> <Highlight text={record.kategori} query={searchTerm} /></p>
                                         <p><strong className='font-semibold'>Jenis Pesawat:</strong> <Highlight text={record.jenisPesawat} query={searchTerm} /></p>
@@ -142,12 +141,12 @@ export function PemeriksaanTable({ records, onUpdate, searchTerm }: PemeriksaanT
                                         <p><strong className='font-semibold'>Tanggal:</strong> <Highlight text={format(parseISO(record.tanggal), 'dd MMMM yyyy')} query={searchTerm} /></p>
                                         <p><strong className='font-semibold'>Lokasi:</strong> <Highlight text={record.lokasi} query={searchTerm} /></p>
                                         <p><strong className='font-semibold'>Korban:</strong> <Highlight text={record.korban} query={searchTerm} /></p>
-                                        <p><strong className='font-semibold'>Ringkasan:</strong> <Highlight text={record.ringkasanKejadian} query={searchTerm} /></p>
+                                        <p className="whitespace-pre-wrap"><strong className='font-semibold'>Ringkasan:</strong> <Highlight text={record.ringkasanKejadian} query={searchTerm} /></p>
                                     </div>
                                 </TableCell>
-                                <TableCell className="align-top"><BulletList text={record.statusPenanganan} searchTerm={searchTerm} /></TableCell>
-                                <TableCell className="align-top"><BulletList text={record.tindakLanjut} searchTerm={searchTerm} /></TableCell>
-                                <TableCell>
+                                <TableCell className="align-top text-left"><BulletList text={record.statusPenanganan} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top text-left"><BulletList text={record.tindakLanjut} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top text-left">
                                     {record.filePemeriksaanUrl ? (
                                         <Button asChild variant="outline" size="sm">
                                             <a href={record.filePemeriksaanUrl} target="_blank" rel="noopener noreferrer">
