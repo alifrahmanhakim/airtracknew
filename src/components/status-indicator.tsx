@@ -15,7 +15,12 @@ import {
 
 type Status = 'connected' | 'disconnected' | 'connecting';
 
-export function StatusIndicator({ className }: { className?: string }) {
+interface StatusIndicatorProps {
+    className?: string;
+    variant?: 'default' | 'icon';
+}
+
+export function StatusIndicator({ className, variant = 'default' }: StatusIndicatorProps) {
   const [onlineStatus, setOnlineStatus] = React.useState<boolean>(true);
   const [firebaseStatus, setFirebaseStatus] = React.useState<Status>('connecting');
   const [isLoginPage, setIsLoginPage] = React.useState(false);
@@ -57,8 +62,8 @@ export function StatusIndicator({ className }: { className?: string }) {
   }, [onlineStatus]);
 
   const getStatusInfo = (status: Status | boolean, type: 'internet' | 'database') => {
-    const isConnected = status === true || status === 'connected';
     const isConnecting = status === 'connecting';
+    const isConnected = status === true || status === 'connected';
     
     if (isConnecting) {
         return {
@@ -92,24 +97,27 @@ export function StatusIndicator({ className }: { className?: string }) {
   return (
     <TooltipProvider>
       <div className={cn(
-        "flex items-center justify-between rounded-lg text-xs gap-4 p-2",
-        isLoginPage 
+        "flex items-center justify-between text-xs gap-2",
+        variant === 'default' && "rounded-lg p-2 gap-4",
+        isLoginPage && variant === 'default'
           ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80" 
           : "text-foreground/80",
         className
       )}>
           <Tooltip>
             <TooltipTrigger className="flex items-center gap-2">
-              <internet.Icon className={cn("h-4 w-4", internet.color)} />
-              <span className={cn(isLoginPage && internet.color)}>Internet: {internet.text}</span>
+              <internet.Icon className={cn("h-4 w-4", internet.color, internet.text === 'Connecting...' && 'animate-spin')} />
+              {variant === 'default' && <span className={cn(isLoginPage && internet.color)}>Internet: {internet.text}</span>}
             </TooltipTrigger>
             <TooltipContent>{internet.tooltipText}</TooltipContent>
           </Tooltip>
-          <div className={cn("h-4 w-px", isLoginPage ? "bg-white/20" : "bg-border")}></div>
+          
+          {variant === 'default' && <div className={cn("h-4 w-px", isLoginPage ? "bg-white/20" : "bg-border")}></div>}
+          
            <Tooltip>
             <TooltipTrigger className="flex items-center gap-2">
-              <database.Icon className={cn("h-4 w-4", database.color)} />
-               <span className={cn(isLoginPage && database.color)}>Database: {database.text}</span>
+              <database.Icon className={cn("h-4 w-4", database.color, database.text === 'Connecting...' && 'animate-spin')} />
+               {variant === 'default' && <span className={cn(isLoginPage && database.color)}>Database: {database.text}</span>}
             </TooltipTrigger>
             <TooltipContent>{database.tooltipText}</TooltipContent>
           </Tooltip>
