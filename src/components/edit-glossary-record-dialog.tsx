@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -13,11 +12,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Pencil } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { GlossaryRecord } from '@/lib/types';
 import { GlossarySharedFormFields, formSchema, type GlossaryFormValues } from './glossary-shared-form-fields';
 import { updateGlossaryRecord } from '@/lib/actions/glossary';
@@ -26,10 +24,11 @@ import { ScrollArea } from './ui/scroll-area';
 type EditGlossaryRecordDialogProps = {
   record: GlossaryRecord;
   onRecordUpdate: (updatedRecord: GlossaryRecord) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
-export function EditGlossaryRecordDialog({ record, onRecordUpdate }: EditGlossaryRecordDialogProps) {
-  const [open, setOpen] = useState(false);
+export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenChange }: EditGlossaryRecordDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -59,7 +58,7 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate }: EditGlossar
             title: 'Record Updated!',
             description: 'Your glossary record has been successfully updated.',
         });
-        setOpen(false);
+        onOpenChange(false);
     } else {
         toast({
             variant: 'destructive',
@@ -70,12 +69,7 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate }: EditGlossar
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-            <Pencil className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col max-h-[90vh]">
@@ -93,7 +87,7 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate }: EditGlossar
             </ScrollArea>
 
             <DialogFooter className="pt-4 border-t flex-shrink-0">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
                     Cancel
                 </Button>
                 <Button type="submit" disabled={isLoading}>
