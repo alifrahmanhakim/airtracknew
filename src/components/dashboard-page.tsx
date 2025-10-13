@@ -551,7 +551,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                             <TableHead>Member</TableHead>
                             <TableHead>Open Tasks</TableHead>
                             <TableHead>Done</TableHead>
-                            <TableHead className="w-[120px]">Workload</TableHead>
+                            <TableHead>Workload Status</TableHead>
+                            <TableHead className="w-[120px]">Workload Score</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -571,15 +572,17 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                                 <p className="font-medium text-sm">{user.name}</p>
                                                 <p className="text-xs text-muted-foreground">{user.role}</p>
                                             </div>
-                                            <Badge variant="outline" className={cn({
-                                                'border-red-500/50 bg-red-50 text-red-700': workloadStatus === 'Overload',
-                                                'border-blue-500/50 bg-blue-50 text-blue-700': workloadStatus === 'Underload',
-                                                'border-green-500/50 bg-green-50 text-green-700': workloadStatus === 'Normal',
-                                            })}>{workloadStatus}</Badge>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-center font-bold">{openTasks}</TableCell>
                                     <TableCell className="text-center font-bold text-green-600">{doneTasks}</TableCell>
+                                    <TableCell>
+                                         <Badge variant="outline" className={cn({
+                                            'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
+                                            'border-blue-500/50 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/60': workloadStatus === 'Underload',
+                                            'border-green-500/50 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/60': workloadStatus === 'Normal',
+                                        })}>{workloadStatus}</Badge>
+                                    </TableCell>
                                     <TableCell>
                                         <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2" />
                                     </TableCell>
