@@ -54,18 +54,18 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
 
     return (
         <div className="border rounded-md w-full overflow-x-auto">
-            <Table>
+            <Table className="table-fixed">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[50px]">No</TableHead>
-                        <TableHead className="min-w-[250px]">Laporan KNKT & Info Pesawat</TableHead>
-                        <TableHead className="min-w-[200px]">Penerima Rekomendasi</TableHead>
-                        <TableHead className="min-w-[300px]">Rekomendasi Keselamatan</TableHead>
-                        <TableHead className="min-w-[300px]">Tindak Lanjut/Respon DKPPU</TableHead>
-                        <TableHead className="min-w-[300px]">Tindak Lanjut Operator/Pihak Terkait</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>File</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="w-[5%]">No</TableHead>
+                        <TableHead className="w-[20%]">Laporan KNKT & Info Pesawat</TableHead>
+                        <TableHead className="w-[15%]">Penerima Rekomendasi</TableHead>
+                        <TableHead className="w-[20%]">Rekomendasi Keselamatan</TableHead>
+                        <TableHead className="w-[15%]">Tindak Lanjut/Respon DKPPU</TableHead>
+                        <TableHead className="w-[15%]">Tindak Lanjut Operator/Pihak Terkait</TableHead>
+                        <TableHead className="w-[10%]">Status</TableHead>
+                        <TableHead className="w-[5%]">File</TableHead>
+                        <TableHead className="text-right w-[100px]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -76,8 +76,8 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
 
                         return (
                             <TableRow key={record.id}>
-                                <TableCell className="align-top">{index + 1}</TableCell>
-                                <TableCell className="align-top">
+                                <TableCell className="align-top break-words">{index + 1}</TableCell>
+                                <TableCell className="align-top break-words">
                                     <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
                                     <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
                                     <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'dd MMM yyyy') : 'N/A'} query={searchTerm} /></p>
@@ -86,7 +86,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                     {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
                                     {record.lokasiKejadian && <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasiKejadian} query={searchTerm} /></p>}
                                 </TableCell>
-                                <TableCell className="align-top">
+                                <TableCell className="align-top break-words">
                                     <div className="flex flex-wrap gap-1">
                                         {penerimaList.map((penerima, i) => (
                                             <Badge key={i} variant="secondary">
@@ -95,7 +95,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                         ))}
                                     </div>
                                 </TableCell>
-                                <TableCell className="align-top">
+                                <TableCell className="align-top break-words">
                                     {record.rekomendasi.map(rec => (
                                         <div key={rec.id} className="mb-2 last:mb-0">
                                             <p className="font-semibold"><Highlight text={rec.nomor} query={searchTerm} /></p>
@@ -103,9 +103,9 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                         </div>
                                     ))}
                                 </TableCell>
-                                <TableCell className="align-top"><BulletList text={record.tindakLanjutDkppu || ''} searchTerm={searchTerm} /></TableCell>
-                                <TableCell className="align-top"><BulletList text={record.tindakLanjutOperator || ''} searchTerm={searchTerm} /></TableCell>
-                                <TableCell className="align-top">
+                                <TableCell className="align-top break-words"><BulletList text={record.tindakLanjutDkppu || ''} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top break-words"><BulletList text={record.tindakLanjutOperator || ''} searchTerm={searchTerm} /></TableCell>
+                                <TableCell className="align-top break-words">
                                     <Badge
                                         className={cn({
                                             'bg-green-100 text-green-800 hover:bg-green-200': record.status === 'Final',
@@ -117,7 +117,7 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                         {record.status || 'N/A'}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="align-top">
+                                <TableCell className="align-top break-words">
                                   {record.fileUrl ? (
                                       <Button asChild variant="ghost" size="icon">
                                           <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
