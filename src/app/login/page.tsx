@@ -193,7 +193,7 @@ export default function LoginPage() {
 
   return (
     <main className="relative flex items-center justify-center min-h-screen p-4" style={{ 
-      backgroundImage: 'url(https://i.postimg.cc/Fzhs9BwV/green-plane-sustainable-energy-concept.webp)',
+      backgroundImage: 'url(https://i.postimg.cc/SQdvTPQR/airplane-flying-through-fantasy-world-with-mythical-landscape-2.webp)',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }}>
@@ -201,7 +201,7 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
       
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-black/30"></div>
 
       <div className="relative z-10 flex flex-col items-center gap-4">
           <Card className="w-full max-w-sm bg-black/20 backdrop-blur-lg border-white/20 text-white animate-in fade-in-0 zoom-in-95 duration-500 overflow-hidden transition-all hover:border-primary/50 hover:bg-gradient-to-t hover:from-primary/10">
@@ -256,7 +256,7 @@ export default function LoginPage() {
                                   <span className="w-full border-t border-white/20" />
                               </div>
                               <div className="relative flex justify-center text-xs uppercase">
-                                  <span className="bg-card/10 px-2 text-muted-foreground">Or continue with</span>
+                                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
                               </div>
                           </div>
                           <div className="relative group">
@@ -328,7 +328,7 @@ export default function LoginPage() {
                                   <span className="w-full border-t border-white/20" />
                               </div>
                               <div className="relative flex justify-center text-xs uppercase">
-                                  <span className="bg-card/10 px-2 text-muted-foreground">Or continue with</span>
+                                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
                               </div>
                           </div>
                           <div className="relative group">
