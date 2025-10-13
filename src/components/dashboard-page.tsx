@@ -27,6 +27,7 @@ import {
   CalendarX,
   ChevronDown,
   History,
+  ArrowRight,
 } from 'lucide-react';
 import type { Project, User, Task } from '@/lib/types';
 import { ProjectCard } from './project-card';
