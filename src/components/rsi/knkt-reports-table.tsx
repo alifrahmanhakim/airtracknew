@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -119,7 +118,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             </TableCell>
                             <TableCell className="align-top text-left">
                                 {record.fileUrl ? (
-                                    <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                                    <Button asChild variant="ghost" size="icon" className="h-7 w-7">
                                         <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
                                             <LinkIcon className="h-4 w-4" />
                                         </a>
