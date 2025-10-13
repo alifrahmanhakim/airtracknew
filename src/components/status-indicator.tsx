@@ -63,7 +63,7 @@ export function StatusIndicator({ className }: { className?: string }) {
     if (isConnecting) {
         return {
             Icon: Loader2,
-            color: 'text-yellow-500 animate-spin',
+            color: 'text-yellow-500',
             text: 'Connecting...',
             tooltipText: `Connecting to ${type}...`
         };
@@ -92,9 +92,9 @@ export function StatusIndicator({ className }: { className?: string }) {
   return (
     <TooltipProvider>
       <div className={cn(
-        "flex items-center justify-between rounded-lg text-xs gap-4",
+        "flex items-center justify-between rounded-lg text-xs gap-4 p-2",
         isLoginPage 
-          ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80 p-2" 
+          ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80" 
           : "text-foreground/80",
         className
       )}>
