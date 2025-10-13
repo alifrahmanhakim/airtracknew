@@ -20,6 +20,7 @@ import {
   Mail,
   User as UserIcon,
   Leaf,
+  Plane,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -68,7 +69,7 @@ const navItems = {
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
       { href: '/state-letter', label: 'State Letter', icon: Mail },
       { href: '/glossary', label: 'Glossary', icon: BookText },
-      { href: '/rsi', label: 'RSI', icon: ShieldAlert },
+      { href: '/rsi', label: 'RSI', icon: Plane },
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
     ]
 }
