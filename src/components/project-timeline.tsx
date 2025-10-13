@@ -242,7 +242,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
         <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
             {/* Header */}
             <div className="sticky top-0 z-30 flex bg-card border-b">
-                <div className="sticky left-0 z-10 bg-card border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
+                <div className="sticky left-0 z-20 bg-card border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
                     Tasks
                 </div>
                 <div className="flex-shrink-0" style={{ width: `${totalGridWidth}px` }}>
@@ -304,14 +304,14 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
 
                     return (
                         <div key={task.id} className="flex border-b">
-                            <div className="sticky left-0 z-10 bg-card border-r flex items-center px-2 py-2" style={{ width: `${TASK_LIST_WIDTH}px` }}>
+                            <div className="sticky left-0 z-20 bg-card border-r flex items-center px-2 py-2" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                                 <p className="text-xs font-semibold leading-tight">{task.title}</p>
                             </div>
                             <div className="relative flex-grow h-[50px]">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div 
-                                            className="absolute group top-1/2 -translate-y-1/2 z-20"
+                                            className="absolute group top-1/2 -translate-y-1/2"
                                             style={{ left: `${left}px`, width: `${width}px`, height: '28px' }}
                                         >
                                             <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
