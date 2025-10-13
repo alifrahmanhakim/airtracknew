@@ -548,8 +548,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                 <CardContent className="space-y-4">
                     {recentlyAddedTasks.slice(0, 5).map((task, index) => {
                         const createdAtDate = task.createdAt && isValid(new Date(task.createdAt)) ? new Date(task.createdAt) : null;
-                        const project = allProjects.find(p => p.id === task.projectId);
-                        const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
+                         const project = allProjects.find(p => p.id === task.projectId);
+                         const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
                         return (
                             <div key={task.id}>
                                 <div className="flex items-center justify-between gap-4">
@@ -559,11 +559,11 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                             <p className="font-semibold text-sm">{task.title}</p>
                                             <p className="text-xs text-muted-foreground">
                                                In project: {task.projectName}
-                                               {createdAtDate && (
-                                                   <span className="ml-2">
-                                                        - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
-                                                   </span>
-                                               )}
+                                                {createdAtDate && (
+                                                    <span className="ml-2">
+                                                         - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
+                                                    </span>
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -619,9 +619,9 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Member</TableHead>
-                            <TableHead className="text-center w-36">Tasks (Done/Open)</TableHead>
-                            <TableHead className="text-center w-40">Workload</TableHead>
+                            <TableHead className="border-r">Member</TableHead>
+                            <TableHead className="text-center w-36 border-r">Tasks (Done/Open)</TableHead>
+                            <TableHead className="text-left w-40">Workload</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -629,7 +629,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                              const isOnline = user.lastOnline ? (new Date().getTime() - new Date(user.lastOnline).getTime()) / (1000 * 60) < 5 : false;
                             return (
                                 <TableRow key={user.id}>
-                                    <TableCell>
+                                    <TableCell className="border-r">
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-8 w-8" online={isOnline}>
                                                 <AvatarImage src={user.avatarUrl} alt={user.name} />
@@ -643,13 +643,13 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-center font-bold">
+                                    <TableCell className="text-center font-bold border-r">
                                         <span className="text-green-600">{doneTasks}</span>
                                         <span className="text-muted-foreground">/</span>
                                         <span>{openTasks}</span>
                                     </TableCell>
                                     <TableCell>
-                                      <div className='flex flex-col items-center gap-1'>
+                                      <div className='flex flex-col items-start gap-1'>
                                           <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2 w-full" />
                                           <Badge variant="outline" className={cn("text-xs", {
                                               'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
