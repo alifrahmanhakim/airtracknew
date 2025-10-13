@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/command';
 import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Search, Home, Landmark, Users } from 'lucide-react';
+import { Search, Home, Landmark, Users, HelpCircle } from 'lucide-react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User } from '@/lib/types';
@@ -23,11 +23,73 @@ interface GlobalSearchProps {
   onViewProfile: (user: User) => void;
 }
 
+// Jaro-Winkler similarity function for "Did you mean?" feature
+const jaroWinkler = (s1: string, s2: string): number => {
+    let m = 0;
+    
+    if (s1.length === 0 || s2.length === 0) {
+        return 0;
+    }
+
+    if (s1 === s2) {
+        return 1;
+    }
+    
+    const range = Math.floor(Math.max(s1.length, s2.length) / 2) - 1;
+    const s1Matches = new Array(s1.length).fill(false);
+    const s2Matches = new Array(s2.length).fill(false);
+
+    for (let i = 0; i < s1.length; i++) {
+        const start = Math.max(0, i - range);
+        const end = Math.min(i + range + 1, s2.length);
+        for (let j = start; j < end; j++) {
+            if (!s2Matches[j] && s1[i] === s2[j]) {
+                s1Matches[i] = true;
+                s2Matches[j] = true;
+                m++;
+                break;
+            }
+        }
+    }
+
+    if (m === 0) {
+        return 0;
+    }
+
+    let t = 0;
+    let k = 0;
+    for (let i = 0; i < s1.length; i++) {
+        if (s1Matches[i]) {
+            while (!s2Matches[k]) {
+                k++;
+            }
+            if (s1[i] !== s2[k]) {
+                t++;
+            }
+            k++;
+        }
+    }
+
+    const jaro = (m / s1.length + m / s2.length + (m - t / 2) / m) / 3;
+    
+    let l = 0;
+    const p = 0.1;
+    if (jaro > 0.7) {
+        while (s1[l] === s2[l] && l < 4) {
+            l++;
+        }
+    }
+    
+    return jaro + l * p * (1 - jaro);
+};
+
+
 export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   const [open, setOpen] = React.useState(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
   const [modifierKey, setModifierKey] = React.useState('⌘');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const router = useRouter();
 
   React.useEffect(() => {
@@ -82,6 +144,26 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
     router.push('/chats');
     setOpen(false);
   }
+  
+  const suggestion = React.useMemo(() => {
+    if (!searchQuery) return null;
+    
+    let bestMatch: { item: Project | User; score: number } | null = null;
+    
+    const allSearchableItems = [
+        ...projects.map(p => ({ ...p, type: 'project' })),
+        ...users.map(u => ({ ...u, type: 'user' }))
+    ];
+
+    for (const item of allSearchableItems) {
+        const score = jaroWinkler(searchQuery.toLowerCase(), item.name.toLowerCase());
+        if (score > 0.8 && (!bestMatch || score > bestMatch.score)) {
+            bestMatch = { item, score };
+        }
+    }
+    
+    return bestMatch;
+  }, [searchQuery, projects, users]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -105,9 +187,28 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
-            <CommandInput placeholder="Type a command or search..." />
+            <CommandInput 
+              placeholder="Type a command or search..."
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+            />
             <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandEmpty>
+                    {suggestion ? (
+                         <div className="p-4 text-center text-sm">
+                            No results found. Did you mean:{" "}
+                            <Button
+                                variant="link"
+                                className="p-0 h-auto"
+                                onClick={() => {
+                                    setSearchQuery(suggestion.item.name);
+                                }}
+                            >
+                                {suggestion.item.name}?
+                            </Button>
+                        </div>
+                    ) : 'No results found.'}
+                </CommandEmpty>
                 <CommandGroup heading="Projects">
                     {projects.map((project) => (
                     <CommandItem
