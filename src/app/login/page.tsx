@@ -255,7 +255,7 @@ export default function LoginPage() {
                                     <span className="w-full border-t border-white/20" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-card px-2 text-white/60">Or continue with</span>
+                                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                                 </div>
                             </div>
                             <div className="relative group">
@@ -267,7 +267,7 @@ export default function LoginPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
-                            <p className="mb-2">Don't have an account?{" "}
+                            <p className="mb-2 text-white/80">Don't have an account?{" "}
                                 <button onClick={toggleView} className="underline hover:text-primary">Sign up</button>
                             </p>
                             <p className="text-center text-xs text-white/60">
@@ -327,7 +327,7 @@ export default function LoginPage() {
                                     <span className="w-full border-t border-white/20" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-card px-2 text-white/60">Or continue with</span>
+                                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                                 </div>
                             </div>
                             <div className="relative group">
@@ -339,7 +339,7 @@ export default function LoginPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
-                            <p className="mb-2">Already have an account?{" "}
+                            <p className="mb-2 text-white/80">Already have an account?{" "}
                                 <button onClick={toggleView} className="underline hover:text-primary">Log in</button>
                             </p>
                             <p className="text-center text-xs text-white/60">
@@ -356,5 +356,3 @@ export default function LoginPage() {
     </main>
   );
 }
-
-    
