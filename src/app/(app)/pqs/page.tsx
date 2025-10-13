@@ -220,8 +220,7 @@ export default function PqsPage() {
   }, [sort, debouncedSearchTerm, tableCriticalElementFilter, tableIcaoStatusFilter, pageDocs, toast]);
 
   useEffect(() => {
-      fetchPaginatedData(1, 'first');
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchPaginatedData(1, 'first');
   }, [sort, debouncedSearchTerm, tableCriticalElementFilter, tableIcaoStatusFilter]);
 
   const handlePageChange = (newPage: number) => {
