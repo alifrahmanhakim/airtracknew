@@ -8,6 +8,13 @@ type HighlightProps = {
   query: string;
 };
 
+// Function to escape special characters for use in a regular expression
+function escapeRegExp(string: string): string {
+  // $& means the whole matched string
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+
 export const Highlight: React.FC<HighlightProps> = ({ text, query }) => {
   if (!text) {
     return null; // Return null if text is not valid
@@ -17,7 +24,8 @@ export const Highlight: React.FC<HighlightProps> = ({ text, query }) => {
     return <span>{text}</span>;
   }
 
-  const regex = new RegExp(`(${query})`, 'gi');
+  const escapedQuery = escapeRegExp(query);
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
   const parts = text.split(regex);
 
   return (
