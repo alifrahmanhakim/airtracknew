@@ -561,7 +561,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                                In project: {task.projectName}
                                                {createdAtDate && (
                                                    <span className="ml-2">
-                                                       - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
+                                                        - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
                                                    </span>
                                                )}
                                             </p>
@@ -620,8 +620,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                     <TableHeader>
                         <TableRow>
                             <TableHead>Member</TableHead>
-                            <TableHead className="text-center">Open Tasks</TableHead>
-                            <TableHead className="text-center">Done</TableHead>
+                            <TableHead className="text-center">Tasks (Done/Open)</TableHead>
                             <TableHead className="text-center">Workload Status</TableHead>
                             <TableHead className="w-[120px]">Workload Score</TableHead>
                         </TableRow>
@@ -645,8 +644,11 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-bold text-center">{openTasks}</TableCell>
-                                    <TableCell className="font-bold text-green-600 text-center">{doneTasks}</TableCell>
+                                    <TableCell className="text-center font-bold">
+                                        <span className="text-green-600">{doneTasks}</span>
+                                        <span className="text-muted-foreground">/</span>
+                                        <span>{openTasks}</span>
+                                    </TableCell>
                                     <TableCell className="text-center">
                                          <Badge variant="outline" className={cn({
                                             'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
