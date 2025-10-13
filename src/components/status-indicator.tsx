@@ -91,9 +91,9 @@ export function StatusIndicator({ className }: { className?: string }) {
   return (
     <TooltipProvider>
       <div className={cn(
-        "flex items-center justify-end p-2 rounded-lg text-xs gap-3",
+        "flex items-center justify-end rounded-lg text-xs gap-2",
         isLoginPage 
-          ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80" 
+          ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80 p-2" 
           : "text-foreground/80",
         className
       )}>
