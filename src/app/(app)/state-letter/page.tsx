@@ -12,7 +12,14 @@ async function getGapAnalysisData() {
         
         const [projectsSnapshot, recordsSnapshot] = await Promise.all([projectsPromise, recordsPromise]);
 
-        const projectsFromDb: Project[] = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+        const projectsFromDb: Project[] = projectsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return { 
+                id: doc.id, 
+                ...data,
+                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+            } as Project
+        });
         
         const recordsFromDb: GapAnalysisRecord[] = recordsSnapshot.docs.map(doc => {
             const data = doc.data();
