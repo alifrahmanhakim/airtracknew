@@ -131,8 +131,8 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                                         onClick={(e) => e.stopPropagation()}
                                         className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "h-auto bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200")}
                                     >
-                                        <LinkIcon className="h-3 w-3 mr-1.5" />
-                                        <span className="whitespace-normal break-all">{att.name}</span>
+                                        <FileText className="h-3 w-3 mr-1.5" />
+                                        <span className="whitespace-normal break-all text-xs">{att.name}</span>
                                     </a>
                                 ))}
                             </div>
