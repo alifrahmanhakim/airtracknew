@@ -1,5 +1,5 @@
 
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User } from '@/lib/types';
 import { RulemakingDashboardPage } from '@/components/rulemaking-dashboard-page';
@@ -22,6 +22,7 @@ async function getRulemakingData() {
                 subProjects: data.subProjects || [],
                 documents: data.documents || [],
                 tasks: data.tasks || [],
+                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
             } as Project;
         });
         

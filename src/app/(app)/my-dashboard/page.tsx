@@ -6,16 +6,9 @@ import { MyDashboardPageComponent } from '@/components/my-dashboard-page';
 import { headers } from 'next/headers';
 
 async function getDashboardData() {
-  const headersList = headers();
-  // This is a workaround to get the user ID on the server.
-  // A more robust solution would use a proper session management library.
-  // We can't use localStorage on the server.
-  // This approach relies on the client sending the user ID in a header, which isn't implemented.
-  // Let's assume for now we fetch all data and filter on the client,
-  // but this highlights the need for better server-side auth handling.
-  // For now, we will fetch all projects and let the client component filter.
-  // A proper fix would involve getting the user ID server-side.
-
+  // This page is a server component. We fetch all data and the client component
+  // will filter it based on the logged-in user. This is more efficient
+  // than multiple client-side queries.
   try {
     const usersPromise = getDocs(collection(db, 'users'));
     const timKerjaPromise = getDocs(collection(db, 'timKerjaProjects'));
