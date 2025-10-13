@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Wifi, Cloud, CloudOff, WifiOff } from 'lucide-react';
+import { Wifi, Cloud, CloudOff, WifiOff, Loader2 } from 'lucide-react';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
@@ -62,27 +62,28 @@ export function StatusIndicator({ className }: { className?: string }) {
     
     if (isConnecting) {
         return {
-            Icon: Cloud,
-            color: 'text-yellow-500 animate-pulse',
-            text: 'Connecting to AirTrack database...',
+            Icon: Loader2,
+            color: 'text-yellow-500 animate-spin',
+            text: 'Connecting...',
+            tooltipText: `Connecting to ${type}...`
         };
     }
 
     if (isConnected) {
         let Icon, text;
         switch(type) {
-            case 'internet': Icon = Wifi; text = 'Internet Connected'; break;
-            case 'database': Icon = Cloud; text = 'AirTrack Database Connected'; break;
+            case 'internet': Icon = Wifi; text = 'Connected'; break;
+            case 'database': Icon = Cloud; text = 'Connected'; break;
         }
-        return { Icon, color: 'text-green-500', text };
+        return { Icon, color: 'text-green-500', text, tooltipText: `${type.charAt(0).toUpperCase() + type.slice(1)} Connected` };
     }
     
     let Icon, text;
     switch(type) {
-        case 'internet': Icon = WifiOff; text = 'Internet Disconnected'; break;
-        case 'database': Icon = CloudOff; text = 'AirTrack Database Disconnected'; break;
+        case 'internet': Icon = WifiOff; text = 'Offline'; break;
+        case 'database': Icon = CloudOff; text = 'Disconnected'; break;
     }
-    return { Icon, color: 'text-red-500', text };
+    return { Icon, color: 'text-red-500', text, tooltipText: `${type.charAt(0).toUpperCase() + type.slice(1)} Disconnected` };
   }
 
   const internet = getStatusInfo(onlineStatus, 'internet');
@@ -91,23 +92,26 @@ export function StatusIndicator({ className }: { className?: string }) {
   return (
     <TooltipProvider>
       <div className={cn(
-        "flex items-center justify-end rounded-lg text-xs gap-2",
+        "flex items-center justify-between rounded-lg text-xs gap-4",
         isLoginPage 
           ? "bg-black/20 backdrop-blur-sm border border-white/20 text-white/80 p-2" 
           : "text-foreground/80",
         className
       )}>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger className="flex items-center gap-2">
               <internet.Icon className={cn("h-4 w-4", internet.color)} />
+              <span className={cn(isLoginPage && internet.color)}>Internet: {internet.text}</span>
             </TooltipTrigger>
-            <TooltipContent>{internet.text}</TooltipContent>
+            <TooltipContent>{internet.tooltipText}</TooltipContent>
           </Tooltip>
+          <div className={cn("h-4 w-px", isLoginPage ? "bg-white/20" : "bg-border")}></div>
            <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger className="flex items-center gap-2">
               <database.Icon className={cn("h-4 w-4", database.color)} />
+               <span className={cn(isLoginPage && database.color)}>Database: {database.text}</span>
             </TooltipTrigger>
-            <TooltipContent>{database.text}</TooltipContent>
+            <TooltipContent>{database.tooltipText}</TooltipContent>
           </Tooltip>
       </div>
     </TooltipProvider>
