@@ -124,14 +124,14 @@ export function GapAnalysisRecordsTable({
   }
   
   const columnDefs: { key: keyof GapAnalysisRecord; header: string; width?: string }[] = [
-    { key: 'slReferenceNumber', header: 'SL Ref. Number' },
-    { key: 'letterName', header: 'Nama Surat' },
-    { key: 'subject', header: 'Subject' },
-    { key: 'typeOfStateLetter', header: 'Type' },
-    { key: 'statusItem', header: 'Status' },
-    { key: 'dateOfEvaluation', header: 'Evaluation Date' },
-    { key: 'implementationDate', header: 'Tanggal Pelaksanaan' },
-    { key: 'annex', header: 'Annex' },
+    { key: 'slReferenceNumber', header: 'SL Ref. Number', width: '15%' },
+    { key: 'letterName', header: 'Nama Surat', width: '20%' },
+    { key: 'subject', header: 'Subject', width: '30%' },
+    { key: 'typeOfStateLetter', header: 'Type', width: '10%' },
+    { key: 'statusItem', header: 'Status', width: '10%' },
+    { key: 'dateOfEvaluation', header: 'Evaluation Date', width: '15%' },
+    { key: 'implementationDate', header: 'Tanggal Pelaksanaan', width: '15%' },
+    { key: 'annex', header: 'Annex', width: '10%' },
   ];
   
   const visibleColumns = columnDefs.filter(c => columnVisibility[c.key as keyof GapAnalysisRecord]);
@@ -224,13 +224,14 @@ export function GapAnalysisRecordsTable({
             </DropdownMenu>
         </div>
         <div className="border rounded-md w-full overflow-x-auto">
-          <Table className="min-w-full">
+          <Table className="min-w-full table-fixed">
             <TableHeader>
               <TableRow>
                 {visibleColumns.map((col) => (
                     <TableHead 
                         key={col.key} 
                         className="cursor-pointer whitespace-nowrap"
+                        style={{ width: col.width }}
                         onClick={() => handleSort(col.key as keyof GapAnalysisRecord)}>
                         <div className="flex items-center">{col.header} {renderSortIcon(col.key as keyof GapAnalysisRecord)}</div>
                     </TableHead>
@@ -242,7 +243,7 @@ export function GapAnalysisRecordsTable({
               {processedRecords.map((record) => (
                 <TableRow key={record.id} className="border-b cursor-pointer" onClick={() => setRecordToView(record)}>
                     {visibleColumns.map((col) => (
-                        <TableCell key={col.key} className="align-top whitespace-normal">
+                        <TableCell key={col.key} className="align-top whitespace-normal break-words">
                             {(() => {
                                 const value = record[col.key as keyof GapAnalysisRecord] as string | undefined;
 
@@ -264,7 +265,7 @@ export function GapAnalysisRecordsTable({
                                     }
                                     return 'N/A';
                                 }
-                                return <div className='max-w-xs truncate'>{value || 'N/A'}</div>;
+                                return value || 'N/A';
                             })()}
                         </TableCell>
                     ))}
