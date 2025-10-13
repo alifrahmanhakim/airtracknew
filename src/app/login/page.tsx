@@ -231,15 +231,24 @@ export default function LoginPage() {
                             <form onSubmit={handleLogin} className="space-y-3">
                                 <div className="space-y-2">
                                     <Label htmlFor="login-email">Email</Label>
-                                    <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="login-password">Password</Label>
-                                    <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60" />
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60" />
+                                    </div>
                                 </div>
-                                <Button type="submit" className="w-full transition-all hover:scale-105 active:bg-gradient-to-r active:from-pink-500 active:via-purple-500 active:to-blue-500" disabled={isLoading}>
-                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
-                                </Button>
+                                 <div className="relative group pt-2">
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                    <Button type="submit" className="w-full relative" disabled={isLoading}>
+                                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
+                                    </Button>
+                                </div>
                             </form>
                             <div className="relative my-3">
                                 <div className="absolute inset-0 flex items-center">
@@ -249,10 +258,13 @@ export default function LoginPage() {
                                     <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
                                 </div>
                             </div>
-                            <Button variant="outline" className="w-full text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                                {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                Sign in with Google
-                            </Button>
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                <Button variant="outline" className="w-full relative text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                    {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                    Sign in with Google
+                                </Button>
+                            </div>
                         </CardContent>
                         <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
                             <p className="mb-2">Don't have an account?{" "}
@@ -284,19 +296,31 @@ export default function LoginPage() {
                             <form onSubmit={handleSignup} className="space-y-3">
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-name">Name</Label>
-                                    <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="signup-name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60" suppressHydrationWarning />
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-email">Email</Label>
-                                    <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                     <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-password">Password</Label>
-                                    <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-focus-within:opacity-75 transition duration-200"></div>
+                                        <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="relative bg-white/10 border-white/20 placeholder:text-white/60"/>
+                                    </div>
                                 </div>
-                                <Button type="submit" className="w-full transition-all hover:scale-105 active:bg-gradient-to-r active:from-pink-500 active:via-purple-500 active:to-blue-500" disabled={isLoading}>
-                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
-                                </Button>
+                                <div className="relative group pt-2">
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                    <Button type="submit" className="w-full relative" disabled={isLoading}>
+                                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign Up
+                                    </Button>
+                                </div>
                             </form>
                             <div className="relative my-3">
                                 <div className="absolute inset-0 flex items-center">
@@ -306,10 +330,13 @@ export default function LoginPage() {
                                     <span className="bg-card/10 px-2 text-white/60">Or continue with</span>
                                 </div>
                             </div>
-                            <Button variant="outline" className="w-full text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                                {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                Sign up with Google
-                            </Button>
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                                <Button variant="outline" className="w-full relative text-white bg-white/10 border-white/20 hover:bg-white/20" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                    {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                    Sign up with Google
+                                </Button>
+                            </div>
                         </CardContent>
                         <CardFooter className="flex-col items-center justify-center text-center text-sm pt-3 pb-4">
                             <p className="mb-2">Already have an account?{" "}
