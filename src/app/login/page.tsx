@@ -192,11 +192,17 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex items-center justify-center min-h-screen p-4" style={{ 
-      backgroundImage: 'url(https://i.postimg.cc/Fzhs9BwV/green-plane-sustainable-energy-concept.webp)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-    }}>
+    <main className="relative flex items-center justify-center min-h-screen p-4">
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src="https://i.postimg.cc/Fzhs9BwV/green-plane-sustainable-energy-concept.webp"
+          alt="Background with a futuristic green plane"
+          fill
+          style={{ objectFit: 'cover' }}
+          quality={100}
+          priority
+        />
+      </div>
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
