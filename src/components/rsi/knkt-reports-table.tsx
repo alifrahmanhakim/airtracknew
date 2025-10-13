@@ -80,39 +80,39 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
 
     return (
         <div className="border rounded-md w-full overflow-x-auto">
-            <Table>
+            <Table className="table-fixed">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="cursor-pointer" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
-                        <TableHead>Nomor Laporan</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Operator</TableHead>
-                        <TableHead>Registrasi</TableHead>
-                        <TableHead>Tipe Pesawat</TableHead>
-                        <TableHead>Lokasi</TableHead>
-                        <TableHead>Keterangan</TableHead>
-                        <TableHead>File</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="cursor-pointer w-[10%]" onClick={() => handleSort('tanggal_diterbitkan')}><div className="flex items-center">Tgl Diterbitkan {renderSortIcon('tanggal_diterbitkan')}</div></TableHead>
+                        <TableHead className="w-[15%]">Nomor Laporan</TableHead>
+                        <TableHead className="w-[10%]">Status</TableHead>
+                        <TableHead className="w-[15%]">Operator</TableHead>
+                        <TableHead className="w-[10%]">Registrasi</TableHead>
+                        <TableHead className="w-[10%]">Tipe Pesawat</TableHead>
+                        <TableHead className="w-[15%]">Lokasi</TableHead>
+                        <TableHead className="w-[20%]">Keterangan</TableHead>
+                        <TableHead className="w-[5%]">File</TableHead>
+                        <TableHead className="text-right w-[10%]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {sortedRecords.length > 0 ? sortedRecords.map((record) => (
                         <TableRow key={record.id}>
-                            <TableCell><Highlight text={format(parseISO(record.tanggal_diterbitkan), 'dd-MMM-yy')} query={searchTerm}/></TableCell>
-                            <TableCell><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
-                            <TableCell>
+                            <TableCell className="align-top break-words"><Highlight text={format(parseISO(record.tanggal_diterbitkan), 'dd-MMM-yy')} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top break-words"><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top break-words">
                                 <Badge variant={getStatusVariant(record.status)} className={cn(
                                     getStatusVariant(record.status) === 'default' && 'bg-blue-100 text-blue-800'
                                 )}>
                                     <Highlight text={record.status} query={searchTerm}/>
                                 </Badge>
                             </TableCell>
-                            <TableCell><Highlight text={record.operator} query={searchTerm}/></TableCell>
-                            <TableCell><Highlight text={record.registrasi} query={searchTerm}/></TableCell>
-                            <TableCell><Highlight text={record.tipe_pesawat} query={searchTerm}/></TableCell>
-                            <TableCell><Highlight text={record.lokasi} query={searchTerm}/></TableCell>
-                            <TableCell className="whitespace-normal"><Highlight text={record.keterangan || '-'} query={searchTerm} /></TableCell>
-                            <TableCell>
+                            <TableCell className="align-top break-words"><Highlight text={record.operator} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top break-words"><Highlight text={record.registrasi} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top break-words"><Highlight text={record.tipe_pesawat} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top break-words"><Highlight text={record.lokasi} query={searchTerm}/></TableCell>
+                            <TableCell className="align-top break-words"><Highlight text={record.keterangan || '-'} query={searchTerm} /></TableCell>
+                            <TableCell className="align-top break-words">
                                 {record.fileUrl ? (
                                     <Button asChild variant="ghost" size="icon">
                                         <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">
@@ -123,7 +123,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                                     <span className="text-muted-foreground text-xs">No file</span>
                                 )}
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right align-top">
                                 <EditKnktReportDialog record={record} onRecordUpdate={onUpdate} />
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
                                     <Trash2 className="h-4 w-4" />
