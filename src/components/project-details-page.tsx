@@ -439,19 +439,10 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     if (project.status === 'Completed') return 'Completed';
 
     const today = new Date();
-    const startDate = parseISO(project.startDate);
     const endDate = parseISO(project.endDate);
 
     if (isAfter(today, endDate)) {
         return 'Off Track';
-    }
-
-    const totalDuration = differenceInDays(endDate, startDate);
-    const elapsedDuration = differenceInDays(today, startDate);
-    const timeProgress = totalDuration > 0 ? (elapsedDuration / totalDuration) * 100 : 0;
-    
-    if (progress < timeProgress - 20) {
-      return 'At Risk';
     }
     
     return 'On Track';
@@ -464,7 +455,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{project.name}</h1>
-          <div className="text-muted-foreground whitespace-pre-wrap">{project.description}</div>
+          <p className="text-muted-foreground">{project.description}</p>
         </div>
         <Card className="w-full md:w-auto">
             <CardHeader className="p-3">
@@ -587,7 +578,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
             
             {project.projectType === 'Rulemaking' && (
               <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
@@ -712,42 +703,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                </CardContent>
             </Card>
         </div>
-        <div className="lg:col-span-1 space-y-6">
-           <Card>
-                <CardHeader>
-                    <CardTitle>Project Details</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <dl className="space-y-2">
-                        {project.projectType === 'Rulemaking' && (
-                            <>
-                                <DetailRow label="Annex" value={project.annex} />
-                                <DetailRow label="CASR" value={project.casr} />
-                                {project.casrRevision && <DetailRow label="CASR Revision" value={project.casrRevision} />}
-                            </>
-                        )}
-                        <DetailRow label="Project Manager" value={projectManager?.name} />
-                        <DetailRow label="Start Date" value={format(parseISO(project.startDate), 'PPP')} />
-                        <DetailRow label="Due Date" value={format(parseISO(project.endDate), 'PPP')} />
-                        <DetailRow label="Tags" value={
-                            <div className="flex flex-wrap gap-1 justify-end">
-                                {project.tags?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                            </div>
-                        } />
-                    </dl>
-                </CardContent>
-            </Card>
-             {project.notes && (
-                <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-                    <CardHeader>
-                        <CardTitle className="text-base text-amber-900 dark:text-amber-200">Notes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-amber-800 dark:text-amber-300 whitespace-pre-wrap">{project.notes}</p>
-                    </CardContent>
-                </Card>
-            )}
-        </div>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
@@ -823,3 +778,5 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
     
 
+
+}
