@@ -461,11 +461,29 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   return (
     <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <div className="text-muted-foreground whitespace-pre-wrap">{project.description}</div>
         </div>
+        <Card className="w-full md:w-auto">
+            <CardHeader className="p-3">
+              <CardTitle className="text-base">Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-row md:flex-col gap-2 p-3 pt-0">
+              <Button variant="outline" onClick={handlePrint} className="w-full justify-start text-xs sm:text-sm">
+                <Printer className="mr-2 h-4 w-4" />
+                Export as PDF
+              </Button>
+              <EditProjectDialog project={project} allUsers={users} />
+              {canDeleteProject && (
+                <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject} className="w-full justify-start">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Project
+                </Button>
+              )}
+            </CardContent>
+          </Card>
       </div>
       
       <div className="relative group overflow-hidden rounded-xl">
@@ -696,24 +714,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </div>
         <div className="lg:col-span-1 space-y-6">
            <Card>
-              <CardHeader>
-                  <CardTitle>Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                  <Button variant="outline" onClick={handlePrint} className="w-full justify-start">
-                    <Printer className="mr-2 h-4 w-4" />
-                    Export as PDF
-                  </Button>
-                  <EditProjectDialog project={project} allUsers={users} />
-                  {canDeleteProject && (
-                    <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject} className="w-full justify-start">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Project
-                    </Button>
-                  )}
-              </CardContent>
-          </Card>
-           <Card>
                 <CardHeader>
                     <CardTitle>Project Details</CardTitle>
                 </CardHeader>
@@ -822,3 +822,4 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   );
 
     
+
