@@ -159,7 +159,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                      <EditTaskDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} projectId={projectId} projectType={projectType} task={task} teamMembers={teamMembers} onTaskUpdate={onTaskUpdate} trigger={
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setIsEditDialogOpen(true); }}>
                                     <Pencil className="h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>
