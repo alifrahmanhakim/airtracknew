@@ -462,22 +462,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex-1 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+        <div className="flex-1">
           <h1 className="text-3xl font-bold">{project.name}</h1>
           <div className="text-muted-foreground whitespace-pre-wrap">{project.description}</div>
-        </div>
-        <div className="flex gap-2 print:hidden w-full md:w-auto">
-            <Button variant="outline" onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" />
-              Export as PDF
-            </Button>
-            <EditProjectDialog project={project} allUsers={users} />
-            {canDeleteProject && (
-              <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Project
-              </Button>
-            )}
         </div>
       </div>
       
@@ -581,131 +568,186 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 gap-6">
-        
-        {project.projectType === 'Rulemaking' && (
-          <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
-        )}
-        
-        {(offTrackTasks.length > 0 || tasksWithoutAttachments.length > 0) && (
-             <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+            
+            {project.projectType === 'Rulemaking' && (
+              <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
+            )}
+            
+            {(offTrackTasks.length > 0 || tasksWithoutAttachments.length > 0) && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive" /> Project Alerts</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {offTrackTasks.length > 0 && (
+                                <div className="border border-red-300 bg-red-50 dark:bg-red-950 dark:border-red-800/80 p-4 rounded-lg">
+                                    <h3 className="font-semibold text-red-800 dark:text-red-300">
+                                        {offTrackTasks.length} Off Track Task{offTrackTasks.length > 1 ? 's' : ''}
+                                    </h3>
+                                    <p className="text-xs text-red-700/80 dark:text-red-400/80 mb-2">These tasks have passed their due date.</p>
+                                    <ScrollArea className="h-32">
+                                        <ul className="list-disc pl-5 space-y-1 text-sm text-red-800 dark:text-red-300">
+                                            {offTrackTasks.map(task => <li key={task.id}>{task.title}</li>)}
+                                        </ul>
+                                    </ScrollArea>
+                                </div>
+                            )}
+                            {tasksWithoutAttachments.length > 0 && (
+                                <div className="border border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800/80 p-4 rounded-lg">
+                                    <h3 className="font-semibold text-yellow-900 dark:text-yellow-200">
+                                        Attachment Alert
+                                    </h3>
+                                    <div className="flex justify-between items-baseline text-sm text-yellow-800/80 dark:text-yellow-400/80">
+                                      <p>{tasksWithoutAttachments.length} task{tasksWithoutAttachments.length > 1 ? 's' : ''} missing attachments.</p>
+                                      <p className="font-bold"><AnimatedCounter endValue={animatedAttachmentCompletion} decimals={0} />% Complete</p>
+                                    </div>
+                                    <Progress value={animatedAttachmentCompletion} indicatorClassName="bg-yellow-500" className="h-2 mt-2 bg-yellow-200 dark:bg-yellow-800/50" />
+                                    <ScrollArea className="h-24 mt-2">
+                                        <ul className="list-disc pl-5 space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
+                                            {tasksWithoutAttachments.map(task => <li key={task.id}>{task.title}</li>)}
+                                        </ul>
+                                    </ScrollArea>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                      <GanttChartSquare /> Project Timeline
+                  </CardTitle>
+                  <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
+              </CardHeader>
+              <CardContent className="pl-0 pr-0 pb-0">
+                  <ProjectTimeline 
+                    tasks={tasks}
+                    teamMembers={project.team}
+                  />
+              </CardContent>
+            </Card>
+            
+            <TasksTable 
+              projectId={project.id}
+              projectType={project.projectType}
+              tasks={tasks}
+              teamMembers={project.team}
+              onTasksChange={handleTaskDataChange}
+            />
+            
+            <Card>
+               <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <CardTitle className="flex items-center gap-2">
+                        <Paperclip /> {documentsCardTitle}
+                    </CardTitle>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                    <div className="relative w-full sm:w-auto">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search documents..."
+                        value={documentSearch}
+                        onChange={(e) => setDocumentSearch(e.target.value)}
+                        className="pl-9 w-full sm:w-[200px]"
+                      />
+                    </div>
+                    <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
+                  </div>
+               </CardHeader>
+               <CardContent>
+                <ScrollArea className="h-72">
+                  <div className="space-y-4 pr-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                          {filteredDocuments.map((doc) => (
+                            <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                              {getDocumentIcon(doc.name)}
+                              <div className="flex-1 overflow-hidden">
+                                  <p className="font-medium truncate">{doc.name}</p>
+                                  {'taskTitle' in doc && doc.taskTitle ? (
+                                    <p className="text-xs text-muted-foreground">From task: {doc.taskTitle}</p>
+                                  ) : ('uploadDate' in doc && doc.uploadDate) && (
+                                    <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>
+                                  )}
+                              </div>
+                              <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                                  <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
+                                      <LinkIcon className="h-4 w-4" />
+                                  </a>
+                              </Button>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => 'uploadDate' in doc && setDocToDelete(doc)} disabled={isDeletingDoc === doc.id || !('uploadDate' in doc)}>
+                                  {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                               </Button>
+                            </div>
+                          ))}
+                      </div>
+                       {filteredDocuments.length === 0 && (
+                          <p className="text-muted-foreground text-center py-4">No documents {documentSearch ? 'match your search' : 'linked yet'}.</p>
+                      )}
+                  </div>
+                </ScrollArea>
+               </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-1 space-y-6">
+           <Card>
+              <CardHeader>
+                  <CardTitle>Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                  <Button variant="outline" onClick={handlePrint} className="w-full justify-start">
+                    <Printer className="mr-2 h-4 w-4" />
+                    Export as PDF
+                  </Button>
+                  <EditProjectDialog project={project} allUsers={users} />
+                  {canDeleteProject && (
+                    <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject} className="w-full justify-start">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Project
+                    </Button>
+                  )}
+              </CardContent>
+          </Card>
+           <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive" /> Project Alerts</CardTitle>
+                    <CardTitle>Project Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {offTrackTasks.length > 0 && (
-                            <div className="border border-red-300 bg-red-50 dark:bg-red-950 dark:border-red-800/80 p-4 rounded-lg">
-                                <h3 className="font-semibold text-red-800 dark:text-red-300">
-                                    {offTrackTasks.length} Off Track Task{offTrackTasks.length > 1 ? 's' : ''}
-                                </h3>
-                                <p className="text-xs text-red-700/80 dark:text-red-400/80 mb-2">These tasks have passed their due date.</p>
-                                <ScrollArea className="h-32">
-                                    <ul className="list-disc pl-5 space-y-1 text-sm text-red-800 dark:text-red-300">
-                                        {offTrackTasks.map(task => <li key={task.id}>{task.title}</li>)}
-                                    </ul>
-                                </ScrollArea>
-                            </div>
+                    <dl className="space-y-2">
+                        {project.projectType === 'Rulemaking' && (
+                            <>
+                                <DetailRow label="Annex" value={project.annex} />
+                                <DetailRow label="CASR" value={project.casr} />
+                                {project.casrRevision && <DetailRow label="CASR Revision" value={project.casrRevision} />}
+                            </>
                         )}
-                        {tasksWithoutAttachments.length > 0 && (
-                            <div className="border border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800/80 p-4 rounded-lg">
-                                <h3 className="font-semibold text-yellow-900 dark:text-yellow-200">
-                                    Attachment Alert
-                                </h3>
-                                <div className="flex justify-between items-baseline text-sm text-yellow-800/80 dark:text-yellow-400/80">
-                                  <p>{tasksWithoutAttachments.length} task{tasksWithoutAttachments.length > 1 ? 's' : ''} missing attachments.</p>
-                                  <p className="font-bold"><AnimatedCounter endValue={animatedAttachmentCompletion} decimals={0} />% Complete</p>
-                                </div>
-                                <Progress value={animatedAttachmentCompletion} indicatorClassName="bg-yellow-500" className="h-2 mt-2 bg-yellow-200 dark:bg-yellow-800/50" />
-                                <ScrollArea className="h-24 mt-2">
-                                    <ul className="list-disc pl-5 space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
-                                        {tasksWithoutAttachments.map(task => <li key={task.id}>{task.title}</li>)}
-                                    </ul>
-                                </ScrollArea>
+                        <DetailRow label="Project Manager" value={projectManager?.name} />
+                        <DetailRow label="Start Date" value={format(parseISO(project.startDate), 'PPP')} />
+                        <DetailRow label="Due Date" value={format(parseISO(project.endDate), 'PPP')} />
+                        <DetailRow label="Tags" value={
+                            <div className="flex flex-wrap gap-1 justify-end">
+                                {project.tags?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                             </div>
-                        )}
-                    </div>
+                        } />
+                    </dl>
                 </CardContent>
             </Card>
-        )}
-
-        <Card>
-          <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                  <GanttChartSquare /> Project Timeline
-              </CardTitle>
-              <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
-          </CardHeader>
-          <CardContent className="pl-0 pr-0 pb-0">
-              <ProjectTimeline 
-                tasks={tasks}
-                teamMembers={project.team}
-              />
-          </CardContent>
-        </Card>
-        
-        <TasksTable 
-          projectId={project.id}
-          projectType={project.projectType}
-          tasks={tasks}
-          teamMembers={project.team}
-          onTasksChange={handleTaskDataChange}
-        />
-        
-        <Card>
-           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex-1">
-                <CardTitle className="flex items-center gap-2">
-                    <Paperclip /> {documentsCardTitle}
-                </CardTitle>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-                <div className="relative w-full sm:w-auto">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search documents..."
-                    value={documentSearch}
-                    onChange={(e) => setDocumentSearch(e.target.value)}
-                    className="pl-9 w-full sm:w-[200px]"
-                  />
-                </div>
-                <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
-              </div>
-           </CardHeader>
-           <CardContent>
-            <ScrollArea className="h-72">
-              <div className="space-y-4 pr-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {filteredDocuments.map((doc) => (
-                        <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
-                          {getDocumentIcon(doc.name)}
-                          <div className="flex-1 overflow-hidden">
-                              <p className="font-medium truncate">{doc.name}</p>
-                              {'taskTitle' in doc && doc.taskTitle ? (
-                                <p className="text-xs text-muted-foreground">From task: {doc.taskTitle}</p>
-                              ) : ('uploadDate' in doc && doc.uploadDate) && (
-                                <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>
-                              )}
-                          </div>
-                          <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                              <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
-                                  <LinkIcon className="h-4 w-4" />
-                              </a>
-                          </Button>
-                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => 'uploadDate' in doc && setDocToDelete(doc)} disabled={isDeletingDoc === doc.id || !('uploadDate' in doc)}>
-                              {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                           </Button>
-                        </div>
-                      ))}
-                  </div>
-                   {filteredDocuments.length === 0 && (
-                      <p className="text-muted-foreground text-center py-4">No documents {documentSearch ? 'match your search' : 'linked yet'}.</p>
-                  )}
-              </div>
-            </ScrollArea>
-           </CardContent>
-        </Card>
-        
+             {project.notes && (
+                <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                    <CardHeader>
+                        <CardTitle className="text-base text-amber-900 dark:text-amber-200">Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-amber-800 dark:text-amber-300 whitespace-pre-wrap">{project.notes}</p>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
       </div>
 
        <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
