@@ -26,15 +26,12 @@
     --ring: 204 70% 53%;
     --radius: 0.5rem;
 
-    /* New Pastel Chart Colors */
-    --chart-1: 142 60% 70%; /* On Track - Green */
-    --chart-2: 48 96% 70%; /* At Risk - Yellow */
-    --chart-3: 0 84% 70%; /* Off Track - Red */
-    --chart-4: 204 70% 70%; /* Completed - Blue */
-    --chart-5: 298.1 52.5% 50.2%;
-    --chart-6: 350 91.2% 59.8%;
-    --chart-7: 170 91.2% 59.8%;
-    --chart-8: 20 91.2% 59.8%;
+    /* Chart Colors */
+    --chart-1: 120 60% 50%; /* Green */
+    --chart-2: 48 96% 60%;  /* Yellow */
+    --chart-3: 0 84% 60%;   /* Red */
+    --chart-4: 204 70% 53%; /* Blue */
+    --chart-5: 298.1 52.5% 50.2%; /* Purple */
     
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 210 40% 98%;
@@ -76,15 +73,12 @@
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-ring: 204 70% 63%;
     
-    /* New Pastel Chart Colors - Dark Mode */
-    --chart-1: 142 50% 50%; /* On Track - Green */
-    --chart-2: 48 86% 55%; /* At Risk - Yellow */
-    --chart-3: 0 74% 55%; /* Off Track - Red */
-    --chart-4: 204 60% 55%; /* Completed - Blue */
-    --chart-5: 298.1 52.5% 50.2%;
-    --chart-6: 350 91.2% 59.8%;
-    --chart-7: 170 91.2% 59.8%;
-    --chart-8: 20 91.2% 59.8%;
+    /* Chart Colors - Dark Mode */
+    --chart-1: 120 60% 50%; /* Green */
+    --chart-2: 48 86% 55%;  /* Yellow */
+    --chart-3: 0 74% 55%;   /* Red */
+    --chart-4: 204 60% 55%; /* Blue */
+    --chart-5: 298.1 52.5% 50.2%; /* Purple */
   }
 }
 
@@ -190,6 +184,7 @@
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
 }
+
 
 
 

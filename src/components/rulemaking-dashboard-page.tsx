@@ -196,10 +196,10 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
         const highPriority = projects.filter(p => p.tags?.includes('High Priority'));
 
         const distribution = [
-            { name: 'Completed', value: statusGroups['Completed'].length, color: 'hsl(var(--chart-2))' },
-            { name: 'On Track', value: statusGroups['On Track'].length, color: 'hsl(var(--chart-1))' },
-            { name: 'At Risk', value: statusGroups['At Risk'].length, color: 'hsl(var(--chart-3))' },
-            { name: 'Off Track', value: statusGroups['Off Track'].length, color: 'hsl(var(--chart-4))' }
+            { name: 'Completed', value: statusGroups['Completed'].length, color: 'hsl(var(--chart-1))' }, // Green
+            { name: 'On Track', value: statusGroups['On Track'].length, color: 'hsl(var(--chart-4))' }, // Blue
+            { name: 'At Risk', value: statusGroups['At Risk'].length, color: 'hsl(var(--chart-2))' }, // Yellow
+            { name: 'Off Track', value: statusGroups['Off Track'].length, color: 'hsl(var(--chart-3))' } // Red
         ];
 
         return { 
@@ -480,4 +480,3 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
         </TooltipProvider>
     );
 }
-
