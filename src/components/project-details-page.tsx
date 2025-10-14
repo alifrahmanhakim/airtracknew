@@ -360,6 +360,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
     return [...projDocs, ...taskAttachments];
   }, [project.documents, project.tasks]);
+
+  const filteredDocuments = React.useMemo(() => {
+    if (!documentSearch) return allDocuments;
+    const lowercasedSearch = documentSearch.toLowerCase();
+    return allDocuments.filter(doc =>
+      doc.name.toLowerCase().includes(lowercasedSearch) ||
+      ('taskTitle' in doc && doc.taskTitle?.toLowerCase().includes(lowercasedSearch))
+    );
+  }, [allDocuments, documentSearch]);
   
   const { tasksWithoutAttachments, attachmentCompletion } = React.useMemo(() => {
       const allFlattenedTasks = (function flatten(tasks: Task[]): Task[] {
@@ -400,15 +409,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     return () => cancelAnimationFrame(animation);
   }, [attachmentCompletion]);
 
-  const filteredDocuments = React.useMemo(() => {
-    if (!documentSearch) return allDocuments;
-    const lowercasedSearch = documentSearch.toLowerCase();
-    return allDocuments.filter(doc =>
-      doc.name.toLowerCase().includes(lowercasedSearch) ||
-      ('taskTitle' in doc && doc.taskTitle?.toLowerCase().includes(lowercasedSearch))
-    );
-  }, [allDocuments, documentSearch]);
-  
   const taskStatusCounts = React.useMemo(() => {
     const counts = {
       'To Do': 0,
@@ -454,9 +454,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex-1">
-            <h1 className="text-3xl font-bold">{project.name}</h1>
-            <Badge variant={project.projectType === 'Rulemaking' ? 'destructive' : 'secondary'}>{project.projectType}</Badge>
-            <div className="text-muted-foreground whitespace-pre-wrap mt-2">{project.description}</div>
+          <h1 className="text-3xl font-bold">{project.name}</h1>
+          <Badge variant={project.projectType === 'Rulemaking' ? 'destructive' : 'secondary'}>{project.projectType}</Badge>
         </div>
         <Card>
             <CardHeader className="p-3">
@@ -577,6 +576,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             </CardContent>
         </Card>
       </div>
+
+       <Card>
+        <CardHeader>
+          <CardTitle>Project Description</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-muted-foreground whitespace-pre-wrap">{project.description}</div>
+        </CardContent>
+      </Card>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-3 space-y-6">
