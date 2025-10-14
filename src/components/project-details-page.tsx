@@ -461,12 +461,12 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   return (
     <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="flex items-center justify-between">
-        <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex-1 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
           <h1 className="text-3xl font-bold">{project.name}</h1>
-          <p className="text-muted-foreground">{project.description}</p>
+          <div className="text-muted-foreground whitespace-pre-wrap">{project.description}</div>
         </div>
-        <div className="flex gap-2 print:hidden">
+        <div className="flex gap-2 print:hidden w-full md:w-auto">
             <Button variant="outline" onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />
               Export as PDF
@@ -638,11 +638,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
           </CardHeader>
           <CardContent className="pl-0 pr-0 pb-0">
               <ProjectTimeline 
-                projectId={project.id}
-                projectType={project.projectType}
                 tasks={tasks}
                 teamMembers={project.team}
-                onTaskUpdate={() => {}} // Placeholder, timeline updates are visual only
               />
           </CardContent>
         </Card>
@@ -781,4 +778,5 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     </main>
     </TooltipProvider>
   );
-}
+
+    
