@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import type { Project, User, Task } from '@/lib/types';
@@ -27,6 +26,7 @@ import { countAllTasks } from '@/lib/data-utils';
 import { ProjectCard } from './project-card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Separator } from './ui/separator';
+import { AnimatedCounter } from './ui/animated-counter';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -149,7 +149,7 @@ const StatusCard = ({
              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted">
                 <Icon className={cn("h-6 w-6 text-muted-foreground", className)} />
                 <div>
-                    <p className="text-2xl font-bold">{count}</p>
+                    <p className="text-2xl font-bold"><AnimatedCounter endValue={count} /></p>
                     <p className="text-sm font-medium text-muted-foreground">{title}</p>
                 </div>
             </div>

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Info } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '../ui/chart';
+import { AnimatedCounter } from '../ui/animated-counter';
 
 type AnalyticsProps = {
   allRecords: TindakLanjutRecord[];
@@ -80,7 +81,7 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                     <CardTitle>Total Records</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-4xl font-bold">{analyticsData.totalRecords}</p>
+                    <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalRecords} /></p>
                 </CardContent>
             </Card>
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

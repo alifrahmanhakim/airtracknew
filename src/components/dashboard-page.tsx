@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -67,6 +66,7 @@ import { Separator } from './ui/separator';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { AnimatedCounter } from './ui/animated-counter';
 
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
@@ -402,7 +402,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
               <FolderKanban className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalProjects}</div>
+              <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.totalProjects} /></div>
               <p className="text-xs text-muted-foreground">All active and completed projects</p>
             </CardContent>
           </Card>
@@ -438,7 +438,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
               <AlarmClockOff className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-500">{stats.atRiskProjects}</div>
+              <div className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={stats.atRiskProjects} /></div>
               <p className="text-xs text-muted-foreground">Projects needing attention</p>
             </CardContent>
           </Card>
@@ -448,7 +448,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
               <Frown className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-500">{stats.offTrackProjects}</div>
+              <div className="text-2xl font-bold text-red-500"><AnimatedCounter endValue={stats.offTrackProjects} /></div>
               <p className="text-xs text-muted-foreground">Projects with critical issues</p>
             </CardContent>
           </Card>
