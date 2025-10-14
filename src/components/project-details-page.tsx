@@ -452,41 +452,41 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
   return (
     <TooltipProvider>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold">
-              {project.projectType === 'Rulemaking' ? `CASR ${project.casr}` : project.name}
-            </h1>
-            <Badge variant={project.projectType === 'Rulemaking' ? 'destructive' : 'secondary'}>{project.projectType}</Badge>
-          </div>
-          {project.projectType === 'Rulemaking' && <p className="text-lg text-muted-foreground font-semibold">Annex {project.annex} - {project.name}</p>}
-          <div className="text-muted-foreground whitespace-pre-wrap mt-2">{project.description}</div>
-        </div>
-        <Card>
-            <CardHeader className="p-3">
-              <CardTitle className="text-base">Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-row md:flex-col gap-2 p-3 pt-0">
-              <Button variant="outline" onClick={handlePrint} className="w-full justify-start text-xs sm:text-sm">
-                <Printer className="mr-2 h-4 w-4" />
-                Export as PDF
-              </Button>
-              <EditProjectDialog project={project} allUsers={users} />
-              {canDeleteProject && (
-                <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject} className="w-full justify-start">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Project
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-      </div>
-      
-      <div className="relative group overflow-hidden rounded-xl">
+       <div className="relative group overflow-hidden rounded-xl">
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
-        <Card className="relative">
-            <CardHeader><CardTitle>Project Dashboard</CardTitle></CardHeader>
+        <Card className="relative bg-gradient-to-br from-primary/10 via-background to-background">
+            <CardHeader>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-4">
+                        <h1 className="text-3xl font-bold">
+                            {project.projectType === 'Rulemaking' ? `CASR ${project.casr}` : project.name}
+                        </h1>
+                        <Badge variant={project.projectType === 'Rulemaking' ? 'destructive' : 'secondary'}>{project.projectType}</Badge>
+                        </div>
+                        {project.projectType === 'Rulemaking' && <p className="text-lg text-muted-foreground font-semibold">Annex {project.annex} - {project.name}</p>}
+                        <div className="text-muted-foreground whitespace-pre-wrap mt-2">{project.description}</div>
+                    </div>
+                     <Card>
+                        <CardHeader className="p-3">
+                        <CardTitle className="text-base">Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-row md:flex-col gap-2 p-3 pt-0">
+                        <Button variant="outline" onClick={handlePrint} className="w-full justify-start text-xs sm:text-sm">
+                            <Printer className="mr-2 h-4 w-4" />
+                            Export as PDF
+                        </Button>
+                        <EditProjectDialog project={project} allUsers={users} />
+                        {canDeleteProject && (
+                            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={isDeletingProject} className="w-full justify-start">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Project
+                            </Button>
+                        )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="flex items-center justify-center">
@@ -582,7 +582,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             </CardContent>
         </Card>
       </div>
-
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-3 space-y-6">
             
