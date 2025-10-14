@@ -94,6 +94,13 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   
   const daysLeft = differenceInDays(parseISO(endDate), new Date());
 
+  const progressColorClass =
+    progress < 30
+      ? 'text-red-500'
+      : progress <= 75
+      ? 'text-yellow-500'
+      : 'text-green-500';
+
   return (
     <TooltipProvider>
       <Link href={projectLink} className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full group">
@@ -129,15 +136,18 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
                                 d="M18 2.0845
                                 a 15.9155 15.9155 0 0 1 0 31.831
                                 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                className="text-primary"
+                                className={cn("transition-colors duration-500", progressColorClass)}
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="3"
                                 strokeDasharray={`${progress}, 100`}
+                                strokeLinecap="round"
                             />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-2xl font-bold"><AnimatedCounter endValue={progress} decimals={0}/>%</span>
+                            <span className={cn("text-2xl font-bold transition-colors duration-500", progressColorClass)}>
+                              <AnimatedCounter endValue={progress} decimals={0}/>%
+                            </span>
                         </div>
                     </div>
                 </div>
