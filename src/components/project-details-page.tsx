@@ -455,9 +455,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{project.name}</h1>
-          <p className="text-muted-foreground">{project.description}</p>
+          <div className="text-muted-foreground whitespace-pre-wrap">{project.description}</div>
         </div>
-        <Card className="w-full md:w-auto">
+        <Card>
             <CardHeader className="p-3">
               <CardTitle className="text-base">Actions</CardTitle>
             </CardHeader>
