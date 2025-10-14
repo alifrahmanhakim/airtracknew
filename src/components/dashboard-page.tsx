@@ -396,62 +396,74 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
               </div>
           </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className={cn(cardHoverClasses)}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-              <FolderKanban className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.totalProjects} /></div>
-              <p className="text-xs text-muted-foreground">All active and completed projects</p>
-            </CardContent>
-          </Card>
-          <Card className={cn(cardHoverClasses, "flex flex-col")}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Task Overview</CardTitle>
-                <ListTodo className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="flex-grow flex flex-col justify-center">
-                <div className="text-2xl font-bold">{stats.totalTasks} Total</div>
-                 <div className="mt-2 space-y-1">
-                    <p className="text-xs text-green-500">
-                      {stats.taskStatusCounts['Done']} Completed ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Done'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
-                    </p>
-                    <p className="text-xs text-blue-500">
-                      {stats.taskStatusCounts['In Progress']} In Progress ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['In Progress'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {stats.taskStatusCounts['To Do']} To Do ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['To Do'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
-                    </p>
-                     <p className="text-xs text-yellow-500">
-                      {stats.taskStatusCounts['Off Track']} Off Track ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Off Track'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
-                    </p>
-                    <p className="text-xs text-destructive">
-                      {stats.taskStatusCounts['Blocked']} Blocked ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Blocked'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
-          <Card className={cn(cardHoverClasses)}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">At Risk</CardTitle>
-              <AlarmClockOff className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={stats.atRiskProjects} /></div>
-              <p className="text-xs text-muted-foreground">Projects needing attention</p>
-            </CardContent>
-          </Card>
-          <Card className={cn(cardHoverClasses)}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Off Track</CardTitle>
-              <Frown className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-500"><AnimatedCounter endValue={stats.offTrackProjects} /></div>
-              <p className="text-xs text-muted-foreground">Projects with critical issues</p>
-            </CardContent>
-          </Card>
+          <div className="relative group overflow-hidden rounded-lg">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <Card className="relative h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+                <FolderKanban className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.totalProjects} /></div>
+                <p className="text-xs text-muted-foreground">All active and completed projects</p>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="relative group overflow-hidden rounded-lg">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <Card className="relative h-full flex flex-col">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Task Overview</CardTitle>
+                  <ListTodo className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="flex-grow flex flex-col justify-center">
+                  <div className="text-2xl font-bold">{stats.totalTasks} Total</div>
+                   <div className="mt-2 space-y-1">
+                      <p className="text-xs text-green-500">
+                        {stats.taskStatusCounts['Done']} Completed ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Done'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                      </p>
+                      <p className="text-xs text-blue-500">
+                        {stats.taskStatusCounts['In Progress']} In Progress ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['In Progress'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {stats.taskStatusCounts['To Do']} To Do ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['To Do'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                      </p>
+                       <p className="text-xs text-yellow-500">
+                        {stats.taskStatusCounts['Off Track']} Off Track ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Off Track'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                      </p>
+                      <p className="text-xs text-destructive">
+                        {stats.taskStatusCounts['Blocked']} Blocked ({stats.totalTasks > 0 ? ((stats.taskStatusCounts['Blocked'] / stats.totalTasks) * 100).toFixed(0) : 0}%)
+                      </p>
+                  </div>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="relative group overflow-hidden rounded-lg">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <Card className="relative h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">At Risk</CardTitle>
+                <AlarmClockOff className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={stats.atRiskProjects} /></div>
+                <p className="text-xs text-muted-foreground">Projects needing attention</p>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="relative group overflow-hidden rounded-lg">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <Card className="relative h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Off Track</CardTitle>
+                <Frown className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-500"><AnimatedCounter endValue={stats.offTrackProjects} /></div>
+                <p className="text-xs text-muted-foreground">Projects with critical issues</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
         
         {offTrackTasks.length > 0 && (
