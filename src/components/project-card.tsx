@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ListTodo, Users, Calendar, CheckCircle, Clock, AlertTriangle, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { countAllTasks } from '@/lib/data-utils';
+import { AnimatedCounter } from './ui/animated-counter';
 
 
 type ProjectCardProps = {
@@ -119,7 +120,7 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
                                 d="M18 2.0845
                                 a 15.9155 15.9155 0 0 1 0 31.831
                                 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                className="text-muted/50"
+                                className="text-muted/20"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="3"
@@ -136,7 +137,7 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
                             />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-2xl font-bold">{Math.round(progress)}%</span>
+                            <span className="text-2xl font-bold"><AnimatedCounter endValue={progress} decimals={0}/>%</span>
                         </div>
                     </div>
                 </div>
