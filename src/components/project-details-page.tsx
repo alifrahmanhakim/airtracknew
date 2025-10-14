@@ -454,8 +454,16 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{project.name}</h1>
-          <div className="text-muted-foreground whitespace-pre-wrap">{project.description}</div>
+            <div className="flex items-center gap-4">
+                <h1 className="text-3xl font-bold">{project.name}</h1>
+                <Badge variant={project.projectType === 'Rulemaking' ? 'destructive' : 'secondary'}>{project.projectType}</Badge>
+            </div>
+            {project.projectType === 'Rulemaking' && (
+                <p className="text-lg text-muted-foreground font-semibold">
+                    CASR {project.casr} - Annex {project.annex}
+                </p>
+            )}
+            <div className="text-muted-foreground whitespace-pre-wrap mt-2">{project.description}</div>
         </div>
         <Card>
             <CardHeader className="p-3">
