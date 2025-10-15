@@ -26,7 +26,7 @@ export async function translateText(input: TranslateTextInput): Promise<Translat
 
 const translatePrompt = ai.definePrompt({
   name: 'translatePrompt',
-  model: 'gemini-pro',
+  model: 'googleai/gemini-pro',
   input: { schema: TranslateTextInputSchema },
   output: { schema: TranslateTextOutputSchema },
   prompt: `Translate the following English text to Indonesian. Provide only the translated text.
