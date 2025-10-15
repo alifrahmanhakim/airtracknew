@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
@@ -409,13 +408,6 @@ export default function GlossaryPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <Alert className="mb-4">
-                            <Info className="h-4 w-4" />
-                            <AlertTitle>Embedding Notice</AlertTitle>
-                            <AlertDescription>
-                            Please note that some Hugging Face Spaces may have security settings that may prevent them from being embedded on other websites. If you see an "Unauthorized Embedding" error, please use the "Open in New Tab" button.
-                            </AlertDescription>
-                        </Alert>
                         <div className="aspect-video w-full rounded-lg border bg-muted overflow-hidden">
                             <iframe
                             src={huggingFaceSpaceUrl}
