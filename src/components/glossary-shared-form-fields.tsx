@@ -1,3 +1,4 @@
+
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
@@ -28,11 +29,9 @@ export type GlossaryFormValues = z.infer<typeof formSchema>;
 
 type GlossarySharedFormFieldsProps = {
   form: UseFormReturn<GlossaryFormValues>;
-  onTranslate: () => void;
-  isTranslating: boolean;
 };
 
-export function GlossarySharedFormFields({ form, onTranslate, isTranslating }: GlossarySharedFormFieldsProps) {
+export function GlossarySharedFormFields({ form }: GlossarySharedFormFieldsProps) {
   return (
     <>
       <FormField
@@ -71,21 +70,6 @@ export function GlossarySharedFormFields({ form, onTranslate, isTranslating }: G
               </FormItem>
             )}
           />
-           <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="absolute top-0 right-0"
-              onClick={onTranslate}
-              disabled={isTranslating}
-            >
-              {isTranslating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Languages className="mr-2 h-4 w-4" />
-              )}
-              Translate with AI
-            </Button>
        </div>
 
       <FormField
