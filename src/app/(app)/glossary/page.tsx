@@ -401,9 +401,6 @@ export default function GlossaryPage() {
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div>
                                 <CardTitle>AI Translator</CardTitle>
-                                <CardDescription>
-                                This page embeds an external AI translation service from Hugging Face.
-                                </CardDescription>
                             </div>
                         </div>
                     </CardHeader>
