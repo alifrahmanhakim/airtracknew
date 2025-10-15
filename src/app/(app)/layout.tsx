@@ -70,7 +70,6 @@ const navItems = {
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
       { href: '/state-letter', label: 'State Letter', icon: Mail },
       { href: '/glossary', label: 'Glossary', icon: BookText },
-      { href: '/ai-translator', label: 'AI Translator', icon: Languages }, // Added new item
       { href: '/rsi', label: 'RSI', icon: Plane },
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
     ]

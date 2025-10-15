@@ -12,7 +12,7 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllGlossaryRecords, deleteGlossaryRecord } from '@/lib/actions/glossary';
-import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, Printer, ChevronDown } from 'lucide-react';
+import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, Printer, ChevronDown, ExternalLink, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,6 +80,7 @@ export default function GlossaryPage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const huggingFaceSpaceUrl = "https://unesco-nllb.hf.space";
 
   // Fetch all records once for analytics
   useEffect(() => {
@@ -257,6 +259,7 @@ export default function GlossaryPage() {
                                     <TabsTrigger value="form">Input Form</TabsTrigger>
                                     <TabsTrigger value="records">Records</TabsTrigger>
                                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                                    <TabsTrigger value="ai-translator">AI Translator</TabsTrigger>
                                 </TabsList>
                             </div>
                         </div>
@@ -389,6 +392,44 @@ export default function GlossaryPage() {
                     </CardHeader>
                     <CardContent>
                        <GlossaryAnalyticsDashboard records={allRecords} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+             <TabsContent value="ai-translator" forceMount className={cn(activeTab !== 'ai-translator' && 'hidden', 'print:hidden')}>
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div>
+                                <CardTitle>AI Translator (Embedded)</CardTitle>
+                                <CardDescription>
+                                This page embeds an external AI translation service from Hugging Face.
+                                </CardDescription>
+                            </div>
+                            <Button asChild>
+                                <a href={huggingFaceSpaceUrl} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="mr-2 h-4 w-4" />
+                                    Open in New Tab
+                                </a>
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Alert className="mb-4">
+                            <Info className="h-4 w-4" />
+                            <AlertTitle>Embedding Notice</AlertTitle>
+                            <AlertDescription>
+                            Please note that some Hugging Face Spaces have security settings that may prevent them from being embedded on other websites. If you see an "Unauthorized Embedding" error, please use the "Open in New Tab" button.
+                            </AlertDescription>
+                        </Alert>
+                        <div className="aspect-video w-full rounded-lg border bg-muted overflow-hidden">
+                            <iframe
+                            src={huggingFaceSpaceUrl}
+                            className="h-full w-full"
+                            title="AI Translator"
+                            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                            ></iframe>
+                        </div>
                     </CardContent>
                 </Card>
             </TabsContent>
