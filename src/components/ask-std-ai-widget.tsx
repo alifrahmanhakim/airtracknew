@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,26 +9,26 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { FlaskConical } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 export function AskStdAiWidget() {
+  const [open, setOpen] = React.useState(false);
+
   return (
     <TooltipProvider>
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button
-                className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 flex items-center justify-center"
-                size="icon"
-              >
-                <FlaskConical className="h-7 w-7" />
-                <span className="sr-only">Ask STD.Ai</span>
-              </Button>
-            </DialogTrigger>
+            <Button
+              className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 flex items-center justify-center"
+              size="icon"
+              onClick={() => setOpen(true)}
+            >
+              <FlaskConical className="h-7 w-7" />
+              <span className="sr-only">Ask STD.Ai</span>
+            </Button>
           </TooltipTrigger>
           <TooltipContent side="left">
             <p>Ask STD.Ai</p>
