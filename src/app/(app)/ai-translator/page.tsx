@@ -7,7 +7,7 @@ import { ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AiTranslatorPage() {
-  const huggingFaceSpaceUrl = "https://agentflow-agentflow.hf.space";
+  const huggingFaceSpaceUrl = "https://unesco-nllb.hf.space";
 
   return (
     <div className="p-4 md:p-8">
