@@ -13,30 +13,45 @@ import {
 import { BotMessageSquare, Loader2, X } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
+import { Progress } from './ui/progress';
 
 export function AskStdAiWidget() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isIframeLoaded, setIsIframeLoaded] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
+  const [loadingProgress, setLoadingProgress] = React.useState(0);
 
   const handleToggle = () => {
-    // We only mount the iframe when the user clicks for the first time
     if (!isMounted) {
       setIsMounted(true);
     }
     setIsOpen(!isOpen);
   };
-
-  // Preload the iframe URL to potentially speed up loading
+  
   React.useEffect(() => {
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = 'https://qwen-qwen3-vl-30b-a3b-demo.hf.space';
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
+    if (isMounted && !isIframeLoaded) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 95) {
+            clearInterval(interval);
+            return 95;
+          }
+          return prev + Math.floor(Math.random() * 5) + 1;
+        });
+      }, 400);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isMounted, isIframeLoaded]);
+
+
+  const handleIframeLoad = () => {
+    setLoadingProgress(100);
+    setTimeout(() => {
+      setIsIframeLoaded(true);
+    }, 500); // short delay to show 100%
+  };
+
 
   return (
     <TooltipProvider>
@@ -58,21 +73,20 @@ export function AskStdAiWidget() {
         </TooltipContent>
       </Tooltip>
 
-      {/* The pop-up window, controlled by CSS classes */}
       <div
         className={cn(
           "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
-        onClick={() => setIsOpen(false)} // Close on overlay click
+        onClick={() => setIsOpen(false)}
         aria-hidden={!isOpen}
       >
         <Card
-          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the card
+          onClick={(e) => e.stopPropagation()}
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 w-full max-w-4xl h-[80vh] flex flex-col p-0 -translate-x-1/2 -translate-y-1/2",
+            "fixed left-1/2 top-1/2 z-50 w-full max-w-4xl h-[80vh] flex flex-col p-0 -translate-x-1/2 -translate-y-1/2 border-2 border-primary/20",
             "transition-all duration-300",
-            isOpen ? "opacity-100 translate-y-[-50%]" : "opacity-0 translate-y-[-48%]"
+            isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
           )}
         >
           <CardHeader className="flex flex-row items-center justify-between p-6 pb-4 border-b">
@@ -88,19 +102,26 @@ export function AskStdAiWidget() {
             </Button>
           </CardHeader>
           <CardContent className="relative flex-1 w-full rounded-b-lg overflow-hidden p-0">
-             {isLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-10">
+             {!isIframeLoaded && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm z-10 p-8 text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-                    <p className="text-muted-foreground">Loading assistant...</p>
+                    <p className="text-lg font-semibold mb-2">Initial loading, we're getting things ready for you.</p>
+                    <div className="w-full max-w-sm">
+                      <Progress value={loadingProgress} className="h-2 w-full" />
+                      <p className="text-sm text-muted-foreground mt-2">{Math.round(loadingProgress)}%</p>
+                    </div>
                 </div>
              )}
              {isMounted && (
                <iframe
                   src="https://qwen-qwen3-vl-30b-a3b-demo.hf.space"
-                  className={cn("h-full w-full border-0 transition-opacity duration-300", isLoading ? "opacity-0" : "opacity-100")}
+                  className={cn(
+                      "h-full w-full border-0 transition-opacity duration-500", 
+                      isIframeLoaded ? "opacity-100" : "opacity-0"
+                  )}
                   title="Ask STD.Ai Assistant"
                   sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                  onLoad={() => setIsLoading(false)}
+                  onLoad={handleIframeLoad}
                 ></iframe>
              )}
           </CardContent>
