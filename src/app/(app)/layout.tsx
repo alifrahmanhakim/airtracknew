@@ -22,6 +22,7 @@ import {
   Leaf,
   Plane,
   Languages, // Import Languages icon
+  FlaskConical,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -72,6 +73,9 @@ const navItems = {
       { href: '/glossary', label: 'Glossary', icon: BookText },
       { href: '/rsi', label: 'RSI', icon: Plane },
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
+    ],
+    tools: [
+      { href: '/tools/ask-std-ai', label: 'Ask STD.Ai', icon: FlaskConical },
     ]
 }
 
@@ -236,6 +240,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </SidebarMenuItem>
                       )
                     })}
+                </SidebarMenu>
+            </SidebarGroup>
+             <SidebarGroup>
+                <SidebarGroupLabel>Tools</SidebarGroupLabel>
+                <SidebarMenu>
+                    {navItems.tools.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                         <SidebarMenuButton
+                            asChild
+                            isActive={pathname.startsWith(item.href)}
+                        >
+                            <Link href={item.href}>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    ))}
                 </SidebarMenu>
             </SidebarGroup>
         </SidebarContent>
