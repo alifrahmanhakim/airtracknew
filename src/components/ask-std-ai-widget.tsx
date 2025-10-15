@@ -17,44 +17,47 @@ import { Progress } from './ui/progress';
 
 export function AskStdAiWidget() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [isIframeLoaded, setIsIframeLoaded] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
+  const [isIframeLoaded, setIsIframeLoaded] = React.useState(false);
   const [loadingProgress, setLoadingProgress] = React.useState(0);
   const [showLoadingOverlay, setShowLoadingOverlay] = React.useState(true);
-
+  
   const handleToggle = () => {
     if (!isMounted) {
       setIsMounted(true);
     }
     setIsOpen(!isOpen);
   };
-  
+
   React.useEffect(() => {
     if (isMounted && !isIframeLoaded) {
+      setShowLoadingOverlay(true); // Ensure overlay is shown when loading
+      setLoadingProgress(0); // Reset progress
+
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
+          // Slow down progress as it gets closer to 95%
           if (prev >= 95) {
             clearInterval(interval);
             return 95;
           }
-          return prev + Math.floor(Math.random() * 3) + 1; // Slower progress
+          const increment = prev < 70 ? Math.random() * 5 : Math.random() * 2;
+          return Math.min(prev + increment, 95);
         });
-      }, 500); // Slower interval
-      
+      }, 500); // Slower, more realistic interval
+
       return () => clearInterval(interval);
     }
   }, [isMounted, isIframeLoaded]);
 
-
   const handleIframeLoad = () => {
-    setLoadingProgress(100);
+    setLoadingProgress(100); // Jump to 100% on load event
     setIsIframeLoaded(true);
-    // Add a delay before hiding the overlay to cover the internal loading of the iframe app
+    // Add a longer delay to let the inner app render
     setTimeout(() => {
         setShowLoadingOverlay(false);
-    }, 2000); // 2-second delay
+    }, 2000); // Wait 2 seconds before hiding
   };
-
 
   return (
     <TooltipProvider>
@@ -106,8 +109,10 @@ export function AskStdAiWidget() {
           </Button>
         </CardHeader>
         <CardContent className="relative flex-1 w-full rounded-b-lg overflow-hidden p-0">
-            {showLoadingOverlay && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm z-10 p-8 text-center transition-opacity duration-500">
+             <div className={cn(
+                "absolute inset-0 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm z-10 p-8 text-center transition-opacity duration-500",
+                !showLoadingOverlay && "opacity-0 pointer-events-none"
+             )}>
                   <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                   <p className="text-lg font-semibold mb-2">Initial loading, we're getting things ready for you.</p>
                   <div className="w-full max-w-sm">
@@ -115,13 +120,12 @@ export function AskStdAiWidget() {
                     <p className="text-sm text-muted-foreground mt-2">{Math.round(loadingProgress)}%</p>
                   </div>
               </div>
-            )}
             {isMounted && (
               <iframe
                 src="https://qwen-qwen3-vl-30b-a3b-demo.hf.space"
                 className={cn(
                     "h-full w-full border-0 transition-opacity duration-500",
-                    isIframeLoaded ? "opacity-100" : "opacity-0"
+                    isIframeLoaded && !showLoadingOverlay ? "opacity-100" : "opacity-0"
                 )}
                 title="Ask STD.Ai Assistant"
                 sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
@@ -133,3 +137,4 @@ export function AskStdAiWidget() {
     </TooltipProvider>
   );
 }
+
