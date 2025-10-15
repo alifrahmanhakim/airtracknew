@@ -56,6 +56,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/global-search';
 import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
+import { AskStdAiWidget } from '@/components/ask-std-ai-widget';
 
 const navItems = {
     dashboards: [
@@ -322,6 +323,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {children}
             </div>
         </main>
+        <AskStdAiWidget />
       </SidebarInset>
     </SidebarProvider>
   );
