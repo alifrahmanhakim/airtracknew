@@ -80,6 +80,7 @@ export default function GlossaryPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const huggingFaceSpaceUrl = "https://unesco-nllb.hf.space";
+  const kbbiUrl = "https://kbbi.web.id/";
 
   // Fetch all records once for analytics
   useEffect(() => {
@@ -259,6 +260,7 @@ export default function GlossaryPage() {
                                     <TabsTrigger value="records">Records</TabsTrigger>
                                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
                                     <TabsTrigger value="ai-translator">AI Translator</TabsTrigger>
+                                    <TabsTrigger value="kbbi">KBBI</TabsTrigger>
                                 </TabsList>
                             </div>
                         </div>
@@ -410,6 +412,29 @@ export default function GlossaryPage() {
                             src={huggingFaceSpaceUrl}
                             className="h-full w-full"
                             title="AI Translator"
+                            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                            ></iframe>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="kbbi" forceMount className={cn(activeTab !== 'kbbi' && 'hidden', 'print:hidden')}>
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div>
+                                <CardTitle>KBBI</CardTitle>
+                                <CardDescription>Kamus Besar Bahasa Indonesia</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="w-full rounded-lg border bg-muted overflow-hidden" style={{ height: '1700px' }}>
+                            <iframe
+                            src={kbbiUrl}
+                            className="h-full w-full"
+                            title="KBBI"
                             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                             ></iframe>
                         </div>
