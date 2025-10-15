@@ -429,7 +429,7 @@ export default function GlossaryPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="w-full rounded-lg border bg-muted overflow-hidden" style={{ height: '2000px' }}>
+                        <div className="w-full rounded-lg border bg-muted overflow-hidden" style={{ height: '4000px' }}>
                             <iframe
                             src={kbbiUrl}
                             className="h-full w-full"
