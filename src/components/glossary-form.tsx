@@ -5,11 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Languages } from 'lucide-react';
 import { useState } from 'react';
 import { addGlossaryRecord } from '@/lib/actions/glossary';
 import type { GlossaryRecord } from '@/lib/types';
 import { GlossarySharedFormFields, formSchema, type GlossaryFormValues } from './glossary-shared-form-fields';
+import { translateText } from '@/ai/flows/translate-flow';
 
 type GlossaryFormProps = {
   onFormSubmit: (data: GlossaryRecord) => void;
@@ -17,6 +18,7 @@ type GlossaryFormProps = {
 
 export function GlossaryForm({ onFormSubmit }: GlossaryFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
   const { toast } = useToast();
 
   const defaultFormValues: GlossaryFormValues = {
@@ -33,6 +35,41 @@ export function GlossaryForm({ onFormSubmit }: GlossaryFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
   });
+
+  const handleTranslate = async () => {
+    const tsuValue = form.getValues('tsu');
+    if (!tsuValue) {
+      toast({
+        variant: 'destructive',
+        title: 'Teks Sumber Kosong',
+        description: 'Silakan isi kolom TSU sebelum menerjemahkan.',
+      });
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const result = await translateText({ text: tsuValue });
+      if (result) {
+        form.setValue('tsa', result.translatedText, { shouldValidate: true });
+        form.setValue('editing', result.translatedText, { shouldValidate: true });
+        toast({
+          title: 'Translasi Berhasil',
+          description: 'Teks telah berhasil diterjemahkan oleh AI.',
+        });
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Translasi Gagal',
+        description: 'Terjadi kesalahan saat menghubungi layanan AI.',
+      });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
 
   const onSubmit = async (data: GlossaryFormValues) => {
     setIsLoading(true);
@@ -60,7 +97,7 @@ export function GlossaryForm({ onFormSubmit }: GlossaryFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <GlossarySharedFormFields form={form} />
+        <GlossarySharedFormFields form={form} onTranslate={handleTranslate} isTranslating={isTranslating} />
         <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={() => form.reset(defaultFormValues)} disabled={isLoading}>
                 Reset

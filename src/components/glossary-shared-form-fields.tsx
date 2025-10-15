@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
@@ -13,6 +11,8 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Button } from './ui/button';
+import { Languages, Loader2 } from 'lucide-react';
 
 export const formSchema = z.object({
   tsu: z.string().min(1, 'TSU is required'),
@@ -28,9 +28,11 @@ export type GlossaryFormValues = z.infer<typeof formSchema>;
 
 type GlossarySharedFormFieldsProps = {
   form: UseFormReturn<GlossaryFormValues>;
+  onTranslate: () => void;
+  isTranslating: boolean;
 };
 
-export function GlossarySharedFormFields({ form }: GlossarySharedFormFieldsProps) {
+export function GlossarySharedFormFields({ form, onTranslate, isTranslating }: GlossarySharedFormFieldsProps) {
   return (
     <>
       <FormField
@@ -50,23 +52,42 @@ export function GlossarySharedFormFields({ form }: GlossarySharedFormFieldsProps
           </FormItem>
         )}
       />
-      <FormField
-        control={form.control}
-        name="tsa"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>TSA (Teks Sasaran)</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Masukkan teks sasaran (TSA) di sini..."
-                rows={4}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+
+       <div className="relative">
+          <FormField
+            control={form.control}
+            name="tsa"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>TSA (Teks Sasaran)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Hasil terjemahan akan muncul di sini..."
+                    rows={4}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="absolute top-0 right-0"
+              onClick={onTranslate}
+              disabled={isTranslating}
+            >
+              {isTranslating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Languages className="mr-2 h-4 w-4" />
+              )}
+              Translate with AI
+            </Button>
+       </div>
+
       <FormField
         control={form.control}
         name="editing"
