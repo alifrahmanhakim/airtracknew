@@ -6,8 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
 export default function AiTranslatorPage() {
-  // IMPORTANT: Replace this with the actual URL of your Hugging Face Space
-  const huggingFaceSpaceUrl = "https://huggingface.co/spaces/YOUR_SPACE_HERE";
+  const huggingFaceSpaceUrl = "https://enzostvs-deepsite.hf.space";
 
   return (
     <div className="p-4 md:p-8">
@@ -15,24 +14,16 @@ export default function AiTranslatorPage() {
         <CardHeader>
           <CardTitle>AI Translator (Embedded)</CardTitle>
           <CardDescription>
-            This page embeds an external AI translation service.
+            This page embeds an external AI translation service from Hugging Face.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="mb-6">
-            <Info className="h-4 w-4" />
-            <AlertTitle>Developer Note</AlertTitle>
-            <AlertDescription>
-              Please replace the placeholder URL in the code with the actual URL of your Hugging Face Space to enable this feature. The current URL is a placeholder and will not work.
-            </AlertDescription>
-          </Alert>
-
-          <div className="aspect-video w-full rounded-lg border bg-muted">
+          <div className="aspect-video w-full rounded-lg border bg-muted overflow-hidden">
             <iframe
               src={huggingFaceSpaceUrl}
               className="h-full w-full"
               title="AI Translator"
-              sandbox="allow-scripts allow-same-origin"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             ></iframe>
           </div>
         </CardContent>
