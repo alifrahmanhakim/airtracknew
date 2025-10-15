@@ -10,11 +10,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { FlaskConical } from 'lucide-react';
+import { FlaskConical, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { cn } from '@/lib/utils';
 
 export function AskStdAiWidget() {
   const [open, setOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  // Reset loading state when the dialog is opened
+  React.useEffect(() => {
+    if (open) {
+      setIsLoading(true);
+    }
+  }, [open]);
 
   return (
     <TooltipProvider>
@@ -41,12 +50,19 @@ export function AskStdAiWidget() {
                 Your intelligent assistant for aviation regulation and safety standards.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 w-full rounded-b-lg border-t bg-muted overflow-hidden">
+          <div className="relative flex-1 w-full rounded-b-lg border-t bg-muted overflow-hidden">
+             {isLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                    <p className="text-muted-foreground">Loading assistant...</p>
+                </div>
+             )}
              <iframe
                 src="https://qwen-qwen3-vl-30b-a3b-demo.hf.space"
-                className="h-full w-full"
+                className={cn("h-full w-full transition-opacity duration-300", isLoading ? "opacity-0" : "opacity-100")}
                 title="Ask STD.Ai Assistant"
                 sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                onLoad={() => setIsLoading(false)}
               ></iframe>
           </div>
         </DialogContent>
