@@ -15,9 +15,6 @@ import { googleAI } from '@genkit-ai/google-genai';
 // parts of the Next.js application.
 export const ai = genkit({
   plugins: [
-    googleAI({
-      // You can specify the API version.
-      // version: 'v1beta',
-    }),
+    googleAI(),
   ],
 });
