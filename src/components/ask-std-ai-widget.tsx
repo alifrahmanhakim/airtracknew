@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { FlaskConical, Loader2, X } from 'lucide-react';
+import { BotMessageSquare, Loader2, X } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -49,7 +49,7 @@ export function AskStdAiWidget() {
             aria-haspopup="dialog"
             aria-expanded={isOpen}
           >
-            <FlaskConical className="h-7 w-7" />
+            <BotMessageSquare className="h-7 w-7" />
             <span className="sr-only">Ask STD.Ai</span>
           </Button>
         </TooltipTrigger>

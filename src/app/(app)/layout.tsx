@@ -22,7 +22,7 @@ import {
   Leaf,
   Plane,
   Languages, // Import Languages icon
-  FlaskConical,
+  BotMessageSquare,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -76,7 +76,7 @@ const navItems = {
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
     ],
     tools: [
-      { href: '/tools/ask-std-ai', label: 'Ask STD.Ai', icon: FlaskConical },
+      { href: '/tools/ask-std-ai', label: 'Ask STD.Ai', icon: BotMessageSquare },
     ]
 }
 
