@@ -406,12 +406,6 @@ export default function GlossaryPage() {
                                 This page embeds an external AI translation service from Hugging Face.
                                 </CardDescription>
                             </div>
-                            <Button asChild>
-                                <a href={huggingFaceSpaceUrl} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                    Open in New Tab
-                                </a>
-                            </Button>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -419,7 +413,7 @@ export default function GlossaryPage() {
                             <Info className="h-4 w-4" />
                             <AlertTitle>Embedding Notice</AlertTitle>
                             <AlertDescription>
-                            Please note that some Hugging Face Spaces have security settings that may prevent them from being embedded on other websites. If you see an "Unauthorized Embedding" error, please use the "Open in New Tab" button.
+                            Please note that some Hugging Face Spaces may have security settings that may prevent them from being embedded on other websites. If you see an "Unauthorized Embedding" error, please use the "Open in New Tab" button.
                             </AlertDescription>
                         </Alert>
                         <div className="aspect-video w-full rounded-lg border bg-muted overflow-hidden">
