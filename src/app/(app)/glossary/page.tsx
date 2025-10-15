@@ -405,7 +405,7 @@ export default function GlossaryPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="w-full rounded-lg border bg-muted overflow-hidden" style={{ height: 'calc(100vh - 300px)' }}>
+                        <div className="w-full rounded-lg border bg-muted overflow-hidden" style={{ height: '2000px' }}>
                             <iframe
                             src={huggingFaceSpaceUrl}
                             className="h-full w-full"
