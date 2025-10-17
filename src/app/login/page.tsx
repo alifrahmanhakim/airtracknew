@@ -118,7 +118,7 @@ export default function LoginPage() {
             setSignupSuccess(true);
             setError('');
         }
-    } catch (err) {
+    } catch (err: any) {
         console.error("Google Sign-In Error:", err);
         setError("An error occurred with Google Sign-In. Please try again.");
     } finally {
@@ -304,7 +304,7 @@ export default function LoginPage() {
                               </Button>
                           </form>
                       </div>
-                      <div className="pt-6">
+                      <div className="mt-auto pt-6">
                             <div className="relative my-6">
                                 <div className="absolute inset-0 flex items-center">
                                     <span className="w-full border-t border-white/20" />
@@ -375,7 +375,7 @@ export default function LoginPage() {
                               </Button>
                           </form>
                        </div>
-                        <div className="pt-6">
+                        <div className="mt-auto pt-6">
                             <div className="relative my-6">
                                 <div className="absolute inset-0 flex items-center">
                                     <span className="w-full border-t border-white/20" />
@@ -394,7 +394,7 @@ export default function LoginPage() {
                   </div>
               )}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                <StatusIndicator />
+                <StatusIndicator variant="icon" />
             </div>
           </div>
         </div>
