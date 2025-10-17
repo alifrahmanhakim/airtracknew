@@ -26,7 +26,7 @@ type NotificationBellProps = {
 
 let notificationAudio: HTMLAudioElement | null = null;
 if (typeof window !== 'undefined') {
-    notificationAudio = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.firebasestorage.app/o/icon%2Fnew-notification-09-352705.mp3?alt=media&token=39a21338-150c-428a-893c-72bc2a6f8b80');
+    notificationAudio = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.wav?alt=media&token=875375e1-8314-4161-b44c-24755ea1e73a');
     notificationAudio.preload = 'auto';
 }
 
