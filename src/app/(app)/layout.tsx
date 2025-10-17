@@ -225,7 +225,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 <Link href={item.href}>
                                     <item.icon />
                                     <span>{item.label}</span>
-                                    {count > 0 && <SidebarMenuBadge>{count}</SidebarMenuBadge>}
+                                    {count > 0 && <SidebarMenuBadge className="bg-primary text-primary-foreground">{count}</SidebarMenuBadge>}
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
