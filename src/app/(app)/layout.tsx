@@ -125,8 +125,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [userId, setUserId] = React.useState<string | null>(null);
+  
+  const [allProjects, setAllProjects] = React.useState<Project[]>([]);
   const [projectCounts, setProjectCounts] = React.useState({ timKerja: 0, rulemaking: 0 });
   const [overdueTasksCount, setOverdueTasksCount] = React.useState(0);
+  const [criticalProjectsCount, setCriticalProjectsCount] = React.useState(0);
   const [unreadChatsCount, setUnreadChatsCount] = React.useState(0);
   
   React.useEffect(() => {
@@ -172,71 +175,78 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const timKerjaQuery = query(collection(db, 'timKerjaProjects'));
     const rulemakingQuery = query(collection(db, 'rulemakingProjects'));
 
-    const updateAllProjects = async () => {
-      const [timKerjaSnapshot, rulemakingSnapshot] = await Promise.all([
-        getDocs(timKerjaQuery),
-        getDocs(rulemakingQuery),
-      ]);
-      
-      const allProjects: Project[] = [
-        ...timKerjaSnapshot.docs.map(doc => ({ ...doc.data(), projectType: 'Tim Kerja' } as Project)),
-        ...rulemakingSnapshot.docs.map(doc => ({ ...doc.data(), projectType: 'Rulemaking' } as Project)),
-      ];
-      
-      recalculateOverdueTasks(allProjects);
+    const updateAllProjects = () => {
+        Promise.all([getDocs(timKerjaQuery), getDocs(rulemakingQuery)]).then(([timKerjaSnapshot, rulemakingSnapshot]) => {
+            const projects: Project[] = [
+                ...timKerjaSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, projectType: 'Tim Kerja' } as Project)),
+                ...rulemakingSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, projectType: 'Rulemaking' } as Project)),
+            ];
+            setAllProjects(projects);
+            recalculateCounts(projects);
+        });
     };
 
     const unsubTimKerja = onSnapshot(timKerjaQuery, (snapshot) => {
-      setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
-      updateAllProjects();
+        setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
+        updateAllProjects();
     });
     unsubs.push(unsubTimKerja);
 
     const unsubRulemaking = onSnapshot(rulemakingQuery, (snapshot) => {
-      setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
-      updateAllProjects();
+        setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
+        updateAllProjects();
     });
     unsubs.push(unsubRulemaking);
 
-    const recalculateOverdueTasks = (projects: Project[]) => {
+    const recalculateCounts = (projects: Project[]) => {
       if (!userId) return;
-      let count = 0;
+      let overdueCount = 0;
+      let criticalCount = 0;
       const today = new Date();
 
-      const checkTasks = (tasks: Task[] = []) => {
+      const checkTasks = (tasks: Task[] = []): boolean => {
+        let hasCriticalSubtask = false;
         for (const task of tasks) {
           if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
             try {
               if (isAfter(today, parseISO(task.dueDate))) {
-                count++;
+                overdueCount++;
               }
             } catch (e) {
               // Ignore invalid date formats
             }
           }
-          if (task.subTasks) {
-            checkTasks(task.subTasks);
+          if (task.criticalIssue) {
+            hasCriticalSubtask = true;
+          }
+          if (task.subTasks && checkTasks(task.subTasks)) {
+            hasCriticalSubtask = true;
           }
         }
+        return hasCriticalSubtask;
       };
 
-      projects.forEach(project => checkTasks(project.tasks));
-      setOverdueTasksCount(count);
+      projects.forEach(project => {
+        if(project.team.some(member => member.id === userId)) {
+          const hasCritical = checkTasks(project.tasks);
+          if (hasCritical) {
+            criticalCount++;
+          }
+        }
+      });
+      setOverdueTasksCount(overdueCount);
+      setCriticalProjectsCount(criticalCount);
     };
     
-    // Listen for unread chat notifications
     const notifsQuery = query(
       collection(db, 'users', userId, 'notifications'),
       where('isRead', '==', false)
     );
     const notifsUnsub = onSnapshot(notifsQuery, (snapshot) => {
-      let chatCount = 0;
-      snapshot.forEach(doc => {
-        const data = doc.data() as Notification;
-        if (data.title && data.title.toLowerCase().startsWith('new message from')) {
-          chatCount++;
-        }
-      });
+      const chatCount = snapshot.docs.filter(doc => {
+          const data = doc.data() as Notification;
+          return data.title && data.title.toLowerCase().startsWith('new message from');
+      }).length;
       setUnreadChatsCount(chatCount);
     });
     unsubs.push(notifsUnsub);
@@ -269,6 +279,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const dynamicCounts = {
       ...projectCounts,
       overdueTasks: overdueTasksCount,
+      criticalProjects: criticalProjectsCount,
       unreadChats: unreadChatsCount,
   }
 
@@ -295,16 +306,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 <Link href={item.href}>
                                     <item.icon />
                                     <span>{item.label}</span>
-                                    {count > 0 && (
-                                        <SidebarMenuBadge className={cn(
-                                            item.countId === 'overdueTasks' 
-                                                ? 'bg-yellow-400 text-yellow-900' 
-                                                : 'bg-primary text-primary-foreground'
-                                        )}>
-                                            {item.countId === 'overdueTasks' && <AlertTriangle className="h-3 w-3 mr-1" />}
+                                    {item.href === '/my-dashboard' ? (
+                                        <>
+                                            {dynamicCounts.criticalProjects > 0 && (
+                                                <SidebarMenuBadge className="bg-red-500 text-white">
+                                                    <AlertTriangle className="h-3 w-3 mr-1" />
+                                                    {dynamicCounts.criticalProjects}
+                                                </SidebarMenuBadge>
+                                            )}
+                                            {dynamicCounts.overdueTasks > 0 && (
+                                                <SidebarMenuBadge className="bg-yellow-400 text-yellow-900">
+                                                    <AlertTriangle className="h-3 w-3 mr-1" />
+                                                    {dynamicCounts.overdueTasks}
+                                                </SidebarMenuBadge>
+                                            )}
+                                        </>
+                                    ) : count > 0 ? (
+                                        <SidebarMenuBadge className="bg-primary text-primary-foreground">
                                             {count}
                                         </SidebarMenuBadge>
-                                    )}
+                                    ) : null}
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
