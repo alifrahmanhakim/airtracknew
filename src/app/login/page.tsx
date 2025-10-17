@@ -202,7 +202,7 @@ export default function LoginPage() {
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
       <div className="login-grid">
         {/* Left Side */}
-        <div 
+        <div
             className="hidden md:flex flex-col justify-between p-8 relative rounded-l-3xl bg-cover bg-center"
             style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
         >
@@ -217,11 +217,14 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side */}
-        <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-top-12 duration-1000">
+        <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-left-12 duration-1000">
             {isLoginView ? (
                 // Login View
                 <div>
-                    <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="mb-4 object-contain" />
+                    <div className="flex justify-between items-center mb-4">
+                        <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="object-contain" />
+                        <ThemeToggle />
+                    </div>
                     <h1 className="text-3xl font-bold text-white">Login</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Don't have an account?{' '}
@@ -261,7 +264,10 @@ export default function LoginPage() {
             ) : (
                 // Signup View
                 <div>
-                     <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="mb-4 object-contain" />
+                     <div className="flex justify-between items-center mb-4">
+                        <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="object-contain" />
+                        <ThemeToggle />
+                    </div>
                     <h1 className="text-3xl font-bold text-white">Create an account</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Already have an account?{' '}
