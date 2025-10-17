@@ -384,30 +384,35 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
                 )}
             </CardContent>
         </Card>
-        <Card>
+        <Card className="h-full border-red-500/50 bg-red-50 dark:bg-red-900/20 flex flex-col">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-destructive"><CalendarX className="h-5 w-5"/> Upcoming Deadlines</CardTitle>
-                <CardDescription>All projects sorted by the nearest deadline.</CardDescription>
+                <CardTitle className='flex items-center gap-2 text-base text-red-800 dark:text-red-300'>
+                    <CalendarX />
+                    Off Track Projects ({offTrackProjectsCount})
+                </CardTitle>
+                <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-                {projectsNearDeadline.length > 0 ? (
-                    projectsNearDeadline.map(project => {
-                        const daysLeft = differenceInDays(parseISO(project.endDate), new Date());
+            <CardContent className="flex-grow">
+            {offTrackProjectsCount > 0 ? (
+                <div className="space-y-3">
+                    {myProjects.filter(p => (isAfter(new Date(), parseISO(p.endDate)) && p.status !== 'Completed') || p.status === 'Off Track').map(project => {
+                        const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                         return (
-                            <Link key={project.id} href={`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`} className="block hover:bg-muted/50 p-2 rounded-md">
-                                <div className="flex items-center justify-between gap-4">
-                                    <p className="font-semibold truncate flex-1">{project.name}</p>
-                                    <Badge variant="destructive" className="whitespace-nowrap">{daysLeft} days left</Badge>
+                            <Link key={project.id} href={`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
+                                    {daysOverdue > 0 && <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>}
                                 </div>
                             </Link>
                         )
-                    })
-                ) : (
-                      <div className="text-center text-sm text-muted-foreground py-4">
-                        <CalendarClock className="mx-auto h-8 w-8 mb-2" />
-                        No projects nearing their deadline.
+                    })}
+                </div>
+            ) : (
+                    <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4 h-full flex flex-col justify-center items-center">
+                        <CheckCircle className="mx-auto h-8 w-8 mb-2" />
+                        No projects are off track. Great job!
                     </div>
-                )}
+            )}
             </CardContent>
         </Card>
       </div>
