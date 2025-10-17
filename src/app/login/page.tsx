@@ -194,7 +194,7 @@ export default function LoginPage() {
   return (
     <main className="relative flex items-center justify-center min-h-screen p-4">
         <Image 
-            src="https://i.imgur.com/IG4RiHm.jpeg"
+            src="https://i.imgur.com/IbwjcHk.jpeg"
             alt="Background image of an airplane"
             fill
             quality={100}
