@@ -198,6 +198,7 @@ export default function LoginPage() {
             alt="Background image of an airplane"
             fill
             quality={100}
+            priority
             className="object-cover -z-10"
         />
         <div className="absolute top-4 right-4 z-10">
@@ -213,7 +214,7 @@ export default function LoginPage() {
                     <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", !isLoginView && "opacity-0 pointer-events-none")}>
                         <CardHeader className="text-center pt-8">
                             <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
-                                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
+                                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" priority />
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -285,7 +286,7 @@ export default function LoginPage() {
                     <div style={{gridArea: 'card-content'}} className={cn("w-full flex-shrink-0 transition-opacity duration-300", isLoginView && "opacity-0 pointer-events-none")}>
                         <CardHeader className="text-center pt-8">
                             <div className="h-[60px] w-[240px] mx-auto flex items-center justify-center">
-                                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" />
+                                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={240} height={60} className="object-contain" priority />
                             </div>
                             <CardTitle className="text-2xl mt-8">Create an Account</CardTitle>
                             <CardDescription className="text-white/80">Register to request access.</CardDescription>
