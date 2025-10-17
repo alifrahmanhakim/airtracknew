@@ -169,66 +169,61 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
     unsubs.push(usersUnsub);
 
-    const setupProjectListeners = () => {
-        const collectionsToWatch = ['timKerjaProjects', 'rulemakingProjects'];
-        let allProjects: Project[] = [];
+    const timKerjaQuery = query(collection(db, 'timKerjaProjects'));
+    const rulemakingQuery = query(collection(db, 'rulemakingProjects'));
 
-        const updateOverdueCount = () => {
-            if (!userId) return;
-            
-            let overdueCount = 0;
-            const today = new Date();
+    const unsubTimKerja = onSnapshot(timKerjaQuery, (snapshot) => {
+      setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
+      updateAllProjects();
+    });
+    unsubs.push(unsubTimKerja);
 
-            allProjects.forEach(project => {
-                const tasks = project.tasks || [];
-                const checkTasks = (tasksToCheck: Task[]) => {
-                    tasksToCheck.forEach(task => {
-                        if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
-                            try {
-                                if (isAfter(today, parseISO(task.dueDate))) {
-                                    overdueCount++;
-                                }
-                            } catch (e) {
-                                // Ignore invalid date formats for now
-                            }
-                        }
-                        if (task.subTasks) {
-                            checkTasks(task.subTasks);
-                        }
-                    });
-                };
-                if (tasks && tasks.length > 0) {
-                    checkTasks(tasks);
-                }
-            });
-            setOverdueTasksCount(overdueCount);
-        };
-        
-        collectionsToWatch.forEach(collectionName => {
-            const unsub = onSnapshot(collection(db, collectionName), (snapshot) => {
-                 const projectType = collectionName === 'timKerjaProjects' ? 'Tim Kerja' : 'Rulemaking';
-                 const projectsFromDb = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType } as Project));
-                 
-                 // Update project counts
-                 if (projectType === 'Tim Kerja') {
-                     setProjectCounts(prev => ({...prev, rulemaking: prev.rulemaking, timKerja: snapshot.size}));
-                 } else {
-                     setProjectCounts(prev => ({...prev, timKerja: prev.timKerja, rulemaking: snapshot.size}));
-                 }
-                 
-                 // Update allProjects list
-                 const otherProjects = allProjects.filter(p => p.projectType !== projectType);
-                 allProjects = [...otherProjects, ...projectsFromDb];
-                 
-                 // Recalculate overdue tasks
-                 updateOverdueCount();
-            });
-            unsubs.push(unsub);
-        });
+    const unsubRulemaking = onSnapshot(rulemakingQuery, (snapshot) => {
+      setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
+      updateAllProjects();
+    });
+    unsubs.push(unsubRulemaking);
+
+    const updateAllProjects = async () => {
+      const [timKerjaSnapshot, rulemakingSnapshot] = await Promise.all([
+        getDocs(timKerjaQuery),
+        getDocs(rulemakingQuery),
+      ]);
+      
+      const allProjects: Project[] = [
+        ...timKerjaSnapshot.docs.map(doc => ({ ...doc.data(), projectType: 'Tim Kerja' } as Project)),
+        ...rulemakingSnapshot.docs.map(doc => ({ ...doc.data(), projectType: 'Rulemaking' } as Project)),
+      ];
+      
+      recalculateOverdueTasks(allProjects);
+    };
+
+    const recalculateOverdueTasks = (projects: Project[]) => {
+      if (!userId) return;
+      let count = 0;
+      const today = new Date();
+
+      const checkTasks = (tasks: Task[] = []) => {
+        for (const task of tasks) {
+          if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
+            try {
+              if (isAfter(today, parseISO(task.dueDate))) {
+                count++;
+              }
+            } catch (e) {
+              // Ignore invalid date formats
+            }
+          }
+          if (task.subTasks) {
+            checkTasks(task.subTasks);
+          }
+        }
+      };
+
+      projects.forEach(project => checkTasks(project.tasks));
+      setOverdueTasksCount(count);
     };
     
-    setupProjectListeners();
-
     // Listen for unread chat notifications
     const notifsQuery = query(
       collection(db, 'users', userId, 'notifications'),
