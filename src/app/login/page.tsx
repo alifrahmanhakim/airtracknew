@@ -199,11 +199,11 @@ export default function LoginPage() {
         {/* Left Side */}
         <div
             className="hidden md:flex flex-col justify-between p-8 relative rounded-l-3xl bg-cover bg-center"
-            style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
+            style={{ backgroundImage: "url('https://i.postimg.cc/YkBB9cJ6/airplane-flying-through-fantasy-world-with-mythical-landscape-2.webp')" }}
         >
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="object-contain" />
+              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={120} height={32} className="object-contain" />
           </div>
           <div className="text-white z-20">
             <h2 className="text-4xl font-bold">Aviation Safety</h2>
@@ -297,9 +297,12 @@ export default function LoginPage() {
                         </div>
                         <div className="flex items-center space-x-2 pt-2">
                             <Checkbox id="terms" required />
-                            <label htmlFor="terms" className="text-sm text-white/70 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                I agree to the <TermsAndConditionsDialog />
-                            </label>
+                            <div className="text-sm leading-none">
+                                <label htmlFor="terms" className="text-white/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    I agree to the{' '}
+                                </label>
+                                <TermsAndConditionsDialog />
+                            </div>
                         </div>
                         <Button type="submit" className="w-full !mt-6" disabled={isLoading}>
                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
