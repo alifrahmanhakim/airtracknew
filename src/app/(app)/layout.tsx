@@ -175,69 +175,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const timKerjaQuery = query(collection(db, 'timKerjaProjects'));
     const rulemakingQuery = query(collection(db, 'rulemakingProjects'));
 
+    const projectsFromTimKerja: Project[] = [];
+    const projectsFromRulemaking: Project[] = [];
+
     const updateAllProjects = () => {
-        Promise.all([getDocs(timKerjaQuery), getDocs(rulemakingQuery)]).then(([timKerjaSnapshot, rulemakingSnapshot]) => {
-            const projects: Project[] = [
-                ...timKerjaSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, projectType: 'Tim Kerja' } as Project)),
-                ...rulemakingSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, projectType: 'Rulemaking' } as Project)),
-            ];
-            setAllProjects(projects);
-            recalculateCounts(projects);
-        });
+        const combined = [...projectsFromTimKerja, ...projectsFromRulemaking];
+        setAllProjects(combined);
     };
 
     const unsubTimKerja = onSnapshot(timKerjaQuery, (snapshot) => {
+        projectsFromTimKerja.length = 0; // Clear the array
+        snapshot.forEach(doc => {
+            projectsFromTimKerja.push({ ...doc.data(), id: doc.id, projectType: 'Tim Kerja' } as Project);
+        });
         setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
         updateAllProjects();
     });
     unsubs.push(unsubTimKerja);
 
     const unsubRulemaking = onSnapshot(rulemakingQuery, (snapshot) => {
+        projectsFromRulemaking.length = 0; // Clear the array
+        snapshot.forEach(doc => {
+            projectsFromRulemaking.push({ ...doc.data(), id: doc.id, projectType: 'Rulemaking' } as Project);
+        });
         setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
         updateAllProjects();
     });
     unsubs.push(unsubRulemaking);
 
-    const recalculateCounts = (projects: Project[]) => {
-      if (!userId) return;
-      let overdueCount = 0;
-      let criticalCount = 0;
-      const today = new Date();
-
-      const checkTasks = (tasks: Task[] = []): boolean => {
-        let hasCriticalSubtask = false;
-        for (const task of tasks) {
-          if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
-            try {
-              if (isAfter(today, parseISO(task.dueDate))) {
-                overdueCount++;
-              }
-            } catch (e) {
-              // Ignore invalid date formats
-            }
-          }
-          if (task.criticalIssue) {
-            hasCriticalSubtask = true;
-          }
-          if (task.subTasks && checkTasks(task.subTasks)) {
-            hasCriticalSubtask = true;
-          }
-        }
-        return hasCriticalSubtask;
-      };
-
-      projects.forEach(project => {
-        if(project.team.some(member => member.id === userId)) {
-          const hasCritical = checkTasks(project.tasks);
-          if (hasCritical) {
-            criticalCount++;
-          }
-        }
-      });
-      setOverdueTasksCount(overdueCount);
-      setCriticalProjectsCount(criticalCount);
-    };
-    
     const notifsQuery = query(
       collection(db, 'users', userId, 'notifications'),
       where('isRead', '==', false)
@@ -262,6 +227,57 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         unsubs.forEach(unsub => unsub());
     };
   }, [userId, router, isCheckingAuth]);
+
+  React.useEffect(() => {
+    if (!userId || allProjects.length === 0) {
+        setOverdueTasksCount(0);
+        setCriticalProjectsCount(0);
+        return;
+    };
+    
+    let overdueCount = 0;
+    const criticalProjectIds = new Set<string>();
+    const today = new Date();
+  
+    const checkTasksRecursively = (tasks: Task[]): boolean => {
+      let hasCritical = false;
+      for (const task of tasks) {
+        // Count overdue tasks assigned to the current user
+        if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
+          try {
+            if (isAfter(today, parseISO(task.dueDate))) {
+              overdueCount++;
+            }
+          } catch (e) {
+            // Ignore invalid date formats
+          }
+        }
+        
+        // Check for any critical issue in the task
+        if (task.criticalIssue) {
+          hasCritical = true;
+        }
+  
+        // Recurse into subtasks
+        if (task.subTasks && checkTasksRecursively(task.subTasks)) {
+          hasCritical = true;
+        }
+      }
+      return hasCritical;
+    };
+  
+    allProjects.forEach(project => {
+      if (project.team.some(member => member.id === userId)) {
+        if (checkTasksRecursively(project.tasks || [])) {
+          criticalProjectIds.add(project.id);
+        }
+      }
+    });
+  
+    setOverdueTasksCount(overdueCount);
+    setCriticalProjectsCount(criticalProjectIds.size);
+  }, [allProjects, userId]);
+
 
   const handleLogout = () => {
     localStorage.removeItem('loggedInUserId');
