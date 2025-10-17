@@ -213,7 +213,7 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side */}
-        <div className="flex flex-col justify-center p-8 sm:p-12 bg-white/5 backdrop-blur-md">
+        <div className="flex flex-col justify-center p-8 sm:p-12 bg-white/10 backdrop-blur-lg">
             {isLoginView ? (
                 // Login View
                 <div>
@@ -323,3 +323,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
+    
