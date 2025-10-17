@@ -23,6 +23,7 @@ import {
   Plane,
   Languages, // Import Languages icon
   BotMessageSquare,
+  AlertTriangle,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -47,7 +48,7 @@ import type { Project, Task, User } from '@/lib/types';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { format } from 'date-fns';
+import { format, isAfter, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { StatusIndicator } from '@/components/status-indicator';
 import { updateUserOnlineStatus } from '@/lib/actions/user';
@@ -61,7 +62,7 @@ import { AskStdAiWidget } from '@/components/ask-std-ai-widget';
 
 const navItems = {
     dashboards: [
-      { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare },
+      { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare, countId: 'overdueTasks' },
       { href: '/dashboard', label: 'Tim Kerja', icon: Home, countId: 'timKerja' },
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark, countId: 'rulemaking' },
     ],
@@ -125,9 +126,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [userId, setUserId] = React.useState<string | null>(null);
   const [projectCounts, setProjectCounts] = React.useState({ timKerja: 0, rulemaking: 0 });
+  const [overdueTasksCount, setOverdueTasksCount] = React.useState(0);
   
   React.useEffect(() => {
-    // This effect runs only once on mount to check for the user ID.
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (!loggedInUserId) {
       router.push('/login');
@@ -138,7 +139,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   React.useEffect(() => {
-    // This effect runs when the userId is set.
     if (!userId) {
       if (!isCheckingAuth) {
         router.push('/login');
@@ -168,20 +168,64 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
     unsubs.push(usersUnsub);
 
-    const timKerjaUnsub = onSnapshot(collection(db, 'timKerjaProjects'), (snapshot) => {
-        setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
-    });
-    unsubs.push(timKerjaUnsub);
+    const setupProjectListeners = () => {
+        const collectionsToWatch = ['timKerjaProjects', 'rulemakingProjects'];
+        let allProjects: Project[] = [];
 
-    const rulemakingUnsub = onSnapshot(collection(db, 'rulemakingProjects'), (snapshot) => {
-        setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
-    });
-    unsubs.push(rulemakingUnsub);
+        const updateOverdueCount = () => {
+            if (!userId) return;
+            
+            let overdueCount = 0;
+            const today = new Date();
 
-    updateUserOnlineStatus(userId); // Update immediately
+            allProjects.forEach(project => {
+                const tasks = project.tasks || [];
+                const checkTasks = (tasksToCheck: Task[]) => {
+                    tasksToCheck.forEach(task => {
+                        if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
+                            if (isAfter(today, parseISO(task.dueDate))) {
+                                overdueCount++;
+                            }
+                        }
+                        if (task.subTasks) {
+                            checkTasks(task.subTasks);
+                        }
+                    });
+                };
+                checkTasks(tasks);
+            });
+            setOverdueTasksCount(overdueCount);
+        };
+        
+        collectionsToWatch.forEach(collectionName => {
+            const unsub = onSnapshot(collection(db, collectionName), (snapshot) => {
+                 const projectType = collectionName === 'timKerjaProjects' ? 'Tim Kerja' : 'Rulemaking';
+                 const projectsFromDb = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType } as Project));
+                 
+                 // Update project counts
+                 if (projectType === 'Tim Kerja') {
+                     setProjectCounts(prev => ({...prev, timKerja: snapshot.size}));
+                 } else {
+                     setProjectCounts(prev => ({...prev, rulemaking: snapshot.size}));
+                 }
+                 
+                 // Update allProjects list
+                 const otherProjects = allProjects.filter(p => p.projectType !== projectType);
+                 allProjects = [...otherProjects, ...projectsFromDb];
+                 
+                 // Recalculate overdue tasks
+                 updateOverdueCount();
+            });
+            unsubs.push(unsub);
+        });
+    };
+    
+    setupProjectListeners();
+
+    updateUserOnlineStatus(userId);
     const presenceInterval = setInterval(() => {
         updateUserOnlineStatus(userId);
-    }, 60 * 1000); // Every 1 minute
+    }, 60 * 1000); 
     unsubs.push(() => clearInterval(presenceInterval));
 
     return () => {
@@ -202,6 +246,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isCurrentUserOnline = currentUser.lastOnline ? (new Date().getTime() - new Date(currentUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
 
+  const dynamicCounts = {
+      ...projectCounts,
+      overdueTasks: overdueTasksCount,
+  }
+
   return (
     <SidebarProvider>
       <Sidebar variant="inset" collapsible="icon">
@@ -215,7 +264,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
                 <SidebarMenu>
                     {navItems.dashboards.map((item) => {
-                      const count = item.countId ? projectCounts[item.countId as keyof typeof projectCounts] : 0;
+                      const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
                       return (
                         <SidebarMenuItem key={item.href}>
                              <SidebarMenuButton
@@ -225,7 +274,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 <Link href={item.href}>
                                     <item.icon />
                                     <span>{item.label}</span>
-                                    {count > 0 && <SidebarMenuBadge className="bg-primary text-primary-foreground">{count}</SidebarMenuBadge>}
+                                    {count > 0 && (
+                                        <SidebarMenuBadge className={cn(
+                                            item.countId === 'overdueTasks' 
+                                                ? 'bg-yellow-400 text-yellow-900' 
+                                                : 'bg-primary text-primary-foreground'
+                                        )}>
+                                            {item.countId === 'overdueTasks' && <AlertTriangle className="h-3 w-3 mr-1" />}
+                                            {count}
+                                        </SidebarMenuBadge>
+                                    )}
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
