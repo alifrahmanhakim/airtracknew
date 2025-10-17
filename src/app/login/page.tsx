@@ -255,7 +255,7 @@ export default function LoginPage() {
             </div>
               {isLoginView ? (
                   // Login View
-                  <div className="flex flex-col h-full">
+                  <div>
                       <div>
                           <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
                           <h1 className="text-3xl font-bold text-white">Login</h1>
@@ -304,7 +304,7 @@ export default function LoginPage() {
                               </Button>
                           </form>
                       </div>
-                      <div className="mt-auto pt-6">
+                      <div className="pt-6">
                             <div className="relative my-6">
                                 <div className="absolute inset-0 flex items-center">
                                     <span className="w-full border-t border-white/20" />
@@ -323,7 +323,7 @@ export default function LoginPage() {
                   </div>
               ) : (
                   // Signup View
-                  <div className="flex flex-col h-full">
+                  <div>
                        <div>
                           <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
                           <h1 className="text-3xl font-bold text-white">Create an account</h1>
@@ -375,7 +375,7 @@ export default function LoginPage() {
                               </Button>
                           </form>
                        </div>
-                        <div className="mt-auto pt-6">
+                        <div className="pt-6">
                             <div className="relative my-6">
                                 <div className="absolute inset-0 flex items-center">
                                     <span className="w-full border-t border-white/20" />
