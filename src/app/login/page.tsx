@@ -200,7 +200,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
-      <div className="login-grid">
+      <div className="login-grid animate-in fade-in slide-in-from-left-24 duration-1000">
         {/* Left Side */}
         <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative overflow-hidden rounded-l-3xl">
             <Image
@@ -211,7 +211,7 @@ export default function LoginPage() {
             />
              <div className="absolute inset-0 bg-black/40 z-10"></div>
           <div className="z-20">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={25} priority />
+              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={25} />
           </div>
           <div className="text-white z-20">
             <h2 className="text-4xl font-bold">Aviation Safety</h2>
@@ -330,7 +330,5 @@ export default function LoginPage() {
     </main>
   );
 }
-
-    
 
     
