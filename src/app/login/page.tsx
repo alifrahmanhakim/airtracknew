@@ -118,7 +118,7 @@ export default function LoginPage() {
             setSignupSuccess(true);
             setError('');
         }
-    } catch (err: any) {
+    } catch (err) {
         console.error("Google Sign-In Error:", err);
         setError("An error occurred with Google Sign-In. Please try again.");
     } finally {
@@ -261,10 +261,20 @@ export default function LoginPage() {
                           <h1 className="text-3xl font-bold text-white">Login</h1>
                           <p className="text-sm text-white/70 mt-2">
                               Don't have an account?{' '}
-                              <button onClick={toggleView} className="font-semibold text-primary hover:underline">
+                              <button onClick={toggleView} className="font-semibold text-primary hover:underline" disabled={isCheckingAuth}>
                                   Create account
                               </button>
                           </p>
+                          {isCheckingAuth && (
+                                <Alert variant="default" className="mt-6 bg-yellow-500/10 border-yellow-500/30 text-yellow-200">
+                                    <AlertTriangle className="h-4 w-4 !text-yellow-400" />
+                                    <AlertTitle className="text-yellow-300 font-bold">Connecting</AlertTitle>
+                                    <AlertDescription className="text-yellow-400">
+                                        Please wait, we are checking your session. Do not enter credentials until this message disappears.
+                                        <Progress value={progress} className="mt-2 h-1" />
+                                    </AlertDescription>
+                                </Alert>
+                            )}
                           {signupSuccess && (
                               <Alert variant="default" className="mt-6 bg-green-500/20 border-green-500/50 text-green-300">
                                   <CheckCircle className="h-4 w-4 !text-green-400" />
@@ -278,36 +288,38 @@ export default function LoginPage() {
                           <form onSubmit={handleLogin} className="space-y-6 mt-8">
                               <div className="space-y-2">
                                   <Label htmlFor="login-email">Email</Label>
-                                  <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
+                                  <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting || isCheckingAuth} />
                               </div>
                               <div className="space-y-2">
                                   <Label htmlFor="login-password">Password</Label>
                                    <div className="relative">
-                                      <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting} />
+                                      <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting || isCheckingAuth} />
                                       <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
                                           {showPassword ? <EyeOff /> : <Eye />}
                                       </Button>
                                   </div>
                               </div>
-                              <Button type="submit" className="w-full !mt-8" disabled={isSubmitting}>
+                              <Button type="submit" className="w-full !mt-8" disabled={isSubmitting || isCheckingAuth}>
                                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
                               </Button>
                           </form>
-                           <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-white/20" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-background px-2 text-muted-foreground">Or register with</span>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 gap-4">
-                             <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                                {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                Google
-                            </Button>
-                        </div>
                       </div>
+                      <div className="mt-auto pt-6">
+                            <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-white/20" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-background px-2 text-muted-foreground">Or register with</span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                                <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isCheckingAuth}>
+                                    {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                    Google
+                                </Button>
+                            </div>
+                        </div>
                   </div>
               ) : (
                   // Signup View
@@ -362,21 +374,23 @@ export default function LoginPage() {
                                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
                               </Button>
                           </form>
-                           <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-white/20" />
+                       </div>
+                        <div className="mt-auto pt-6">
+                            <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-white/20" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-background px-2 text-muted-foreground">Or register with</span>
+                                </div>
                             </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-background px-2 text-muted-foreground">Or register with</span>
+                            <div className="grid grid-cols-1 gap-4">
+                                <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                    {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                    Google
+                                </Button>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 gap-4">
-                             <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                                {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                Google
-                            </Button>
-                        </div>
-                      </div>
                   </div>
               )}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
