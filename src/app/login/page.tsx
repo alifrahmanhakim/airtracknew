@@ -25,6 +25,7 @@ import { StatusIndicator } from '@/components/status-indicator';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TermsAndConditionsDialog } from '@/components/terms-and-conditions-dialog';
+import { Progress } from '@/components/ui/progress';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -44,13 +45,31 @@ export default function LoginPage() {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Form State
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+
+
+  useEffect(() => {
+    if (isCheckingAuth) {
+        setLoadingProgress(0);
+        const interval = setInterval(() => {
+            setLoadingProgress(prev => {
+                if (prev >= 95) {
+                    clearInterval(interval);
+                    return 95;
+                }
+                return prev + 10;
+            });
+        }, 200);
+        return () => clearInterval(interval);
+    }
+  }, [isCheckingAuth]);
+
    useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (loggedInUserId) {
@@ -252,6 +271,7 @@ export default function LoginPage() {
                             <AlertDescription className="text-yellow-400">
                                 Please wait while we check your session...
                             </AlertDescription>
+                            <Progress value={loadingProgress} className="h-1 w-full mt-2 bg-yellow-500/20 [&>div]:bg-yellow-500" />
                         </Alert>
                       )}
                       {signupSuccess && (
@@ -322,11 +342,14 @@ export default function LoginPage() {
                                   </Button>
                               </div>
                           </div>
-                          <div className="flex items-center space-x-2 pt-2">
+                          <div className="items-top flex space-x-2 pt-2">
                               <Checkbox id="terms" required disabled={isSubmitting} />
-                                <div className="text-sm leading-none">
-                                    <label htmlFor="terms" className="text-white/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                    I agree to the{' '}
+                                <div className="grid gap-1.5 leading-none">
+                                    <label
+                                        htmlFor="terms"
+                                        className="text-sm text-white/70 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                        I agree to the{' '}
                                     </label>
                                     <TermsAndConditionsDialog />
                                 </div>
