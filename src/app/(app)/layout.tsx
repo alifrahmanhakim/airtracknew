@@ -384,9 +384,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                     <item.icon />
                                     <span>{item.label}</span>
                                     {count > 0 && item.countId === 'openStateLetters' ? (
-                                        <div className="ml-auto flex h-5 w-5 items-center justify-center rounded bg-destructive text-destructive-foreground animate-pulse">
-                                            <AlertTriangle className="h-3 w-3" />
-                                        </div>
+                                        <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
+                                            <AlertTriangle className="h-3 w-3 mr-1" />
+                                            {count}
+                                        </SidebarMenuBadge>
                                     ) : count > 0 ? (
                                          <SidebarMenuBadge className={cn(
                                             'bg-destructive text-destructive-foreground'
