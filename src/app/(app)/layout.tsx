@@ -98,7 +98,7 @@ function LiveClock() {
 
     return (
         <div className="text-sm font-mono text-foreground bg-background/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border/50 shadow-sm">
-            {format(time, 'dd MMM yyyy, HH:mm:ss')}
+            {format(time, 'dd MMM, HH:mm')}
         </div>
     )
 }
