@@ -40,6 +40,7 @@ import {
   SidebarGroupLabel,
   SidebarSeparator,
   SidebarInset,
+  SidebarMenuBadge,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Project, Task, User } from '@/lib/types';
@@ -61,8 +62,8 @@ import { AskStdAiWidget } from '@/components/ask-std-ai-widget';
 const navItems = {
     dashboards: [
       { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare },
-      { href: '/dashboard', label: 'Tim Kerja', icon: Home },
-      { href: '/rulemaking', label: 'Rulemaking', icon: Landmark },
+      { href: '/dashboard', label: 'Tim Kerja', icon: Home, countId: 'timKerja' },
+      { href: '/rulemaking', label: 'Rulemaking', icon: Landmark, countId: 'rulemaking' },
     ],
     workspace: [
       { href: '/chats', label: 'Chats', icon: MessageSquare },
@@ -123,6 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
   const [userId, setUserId] = React.useState<string | null>(null);
+  const [projectCounts, setProjectCounts] = React.useState({ timKerja: 0, rulemaking: 0 });
   
   React.useEffect(() => {
     // This effect runs only once on mount to check for the user ID.
@@ -166,6 +168,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     });
     unsubs.push(usersUnsub);
 
+    const timKerjaUnsub = onSnapshot(collection(db, 'timKerjaProjects'), (snapshot) => {
+        setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
+    });
+    unsubs.push(timKerjaUnsub);
+
+    const rulemakingUnsub = onSnapshot(collection(db, 'rulemakingProjects'), (snapshot) => {
+        setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
+    });
+    unsubs.push(rulemakingUnsub);
+
     updateUserOnlineStatus(userId); // Update immediately
     const presenceInterval = setInterval(() => {
         updateUserOnlineStatus(userId);
@@ -202,19 +214,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarGroup>
                 <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
                 <SidebarMenu>
-                    {navItems.dashboards.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                         <SidebarMenuButton
-                            asChild
-                            isActive={pathname.startsWith(item.href)}
-                        >
-                            <Link href={item.href}>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    ))}
+                    {navItems.dashboards.map((item) => {
+                      const count = item.countId ? projectCounts[item.countId as keyof typeof projectCounts] : 0;
+                      return (
+                        <SidebarMenuItem key={item.href}>
+                             <SidebarMenuButton
+                                asChild
+                                isActive={pathname.startsWith(item.href)}
+                            >
+                                <Link href={item.href}>
+                                    <item.icon />
+                                    <span>{item.label}</span>
+                                    {count > 0 && <SidebarMenuBadge>{count}</SidebarMenuBadge>}
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )
+                    })}
                 </SidebarMenu>
             </SidebarGroup>
              <SidebarGroup>
