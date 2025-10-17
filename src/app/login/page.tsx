@@ -157,7 +157,7 @@ export default function LoginPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      const fullName = `${firstName} ${lastName}`.trim();
+      const fullName = `${'${firstName}'} ${'${lastName}'}`.trim();
       await updateProfile(firebaseUser, { displayName: fullName });
 
       const newUser: Omit<User, 'id'> = {
@@ -200,9 +200,9 @@ export default function LoginPage() {
 
   return (
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
-      <div className="login-grid animate-in fade-in slide-in-from-left-24 duration-1000">
+      <div className="login-grid">
         {/* Left Side */}
-        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative overflow-hidden rounded-l-3xl">
+        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative rounded-l-3xl">
             <Image
                 src="https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
                 alt="Aircraft engine"
@@ -220,10 +220,11 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side */}
-        <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl">
+        <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-left-24 duration-1000">
             {isLoginView ? (
                 // Login View
                 <div>
+                    <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={120} height={30} className="mb-4" />
                     <h1 className="text-3xl font-bold text-white">Login</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Don't have an account?{' '}
@@ -263,6 +264,7 @@ export default function LoginPage() {
             ) : (
                 // Signup View
                 <div>
+                     <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={120} height={30} className="mb-4" />
                     <h1 className="text-3xl font-bold text-white">Create an account</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Already have an account?{' '}
@@ -331,4 +333,3 @@ export default function LoginPage() {
   );
 }
 
-    
