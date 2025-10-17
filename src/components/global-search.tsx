@@ -156,9 +156,11 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
     ];
 
     for (const item of allSearchableItems) {
-        const score = jaroWinkler(searchQuery.toLowerCase(), item.name.toLowerCase());
-        if (score > 0.8 && (!bestMatch || score > bestMatch.score)) {
-            bestMatch = { item, score };
+        if (item.name && typeof item.name === 'string') {
+            const score = jaroWinkler(searchQuery.toLowerCase(), item.name.toLowerCase());
+            if (score > 0.8 && (!bestMatch || score > bestMatch.score)) {
+                bestMatch = { item, score };
+            }
         }
     }
     
@@ -201,7 +203,9 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                                 variant="link"
                                 className="p-0 h-auto"
                                 onClick={() => {
-                                    setSearchQuery(suggestion.item.name);
+                                    if(suggestion.item.name) {
+                                        setSearchQuery(suggestion.item.name);
+                                    }
                                 }}
                             >
                                 {suggestion.item.name}?
