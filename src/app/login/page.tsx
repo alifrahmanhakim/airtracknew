@@ -25,7 +25,6 @@ import { StatusIndicator } from '@/components/status-indicator';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TermsAndConditionsDialog } from '@/components/terms-and-conditions-dialog';
-import { Progress } from '@/components/ui/progress';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -44,38 +43,17 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-
+  
   // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
-
   useEffect(() => {
-    if (isCheckingAuth) {
-        setLoadingProgress(0);
-        const interval = setInterval(() => {
-            setLoadingProgress(prev => {
-                if (prev >= 95) {
-                    clearInterval(interval);
-                    return 95;
-                }
-                return prev + 10;
-            });
-        }, 200);
-        return () => clearInterval(interval);
-    }
-  }, [isCheckingAuth]);
-
-   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (loggedInUserId) {
         router.push('/my-dashboard');
-    } else {
-        setIsCheckingAuth(false);
     }
   }, [router]);
 
@@ -249,131 +227,143 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side */}
-          <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-left-12 duration-1000">
+          <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-left-12 duration-1000 relative">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle />
+            </div>
               {isLoginView ? (
                   // Login View
-                  <div>
-                      <div className="flex justify-between items-center mb-4">
-                          <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain" />
-                          <ThemeToggle />
-                      </div>
-                      <h1 className="text-3xl font-bold text-white">Login</h1>
-                      <p className="text-sm text-white/70 mt-2">
-                          Don't have an account?{' '}
-                          <button onClick={toggleView} className="font-semibold text-primary hover:underline">
-                              Create account
-                          </button>
-                      </p>
-                      {isCheckingAuth && (
-                        <Alert variant="default" className="mt-6 bg-yellow-500/10 border-yellow-500/30 text-yellow-300">
-                            <AlertTriangle className="h-4 w-4 !text-yellow-400" />
-                            <AlertTitle className="text-yellow-300 font-bold">Connecting</AlertTitle>
-                            <AlertDescription className="text-yellow-400">
-                                Please wait while we check your session...
-                            </AlertDescription>
-                            <Progress value={loadingProgress} className="h-1 w-full mt-2 bg-yellow-500/20 [&>div]:bg-yellow-500" />
-                        </Alert>
-                      )}
-                      {signupSuccess && (
-                          <Alert variant="default" className="mt-6 bg-green-500/20 border-green-500/50 text-green-300">
-                              <CheckCircle className="h-4 w-4 !text-green-400" />
-                              <AlertTitle className="text-green-300 font-bold">Registration Successful!</AlertTitle>
-                              <AlertDescription className="text-green-400">
-                                  Your account has been created. Please wait for an administrator to approve it.
-                              </AlertDescription>
-                          </Alert>
-                      )}
-                       {error && <Alert variant="destructive" className="mt-6"><AlertTitle>Login Failed</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
-                      <form onSubmit={handleLogin} className="space-y-6 mt-8">
-                          <div className="space-y-2">
-                              <Label htmlFor="login-email">Email</Label>
-                              <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isCheckingAuth || isSubmitting} />
-                          </div>
-                          <div className="space-y-2">
-                              <Label htmlFor="login-password">Password</Label>
-                               <div className="relative">
-                                  <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isCheckingAuth || isSubmitting} />
-                                  <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
-                                      {showPassword ? <EyeOff /> : <Eye />}
-                                  </Button>
+                  <div className="flex flex-col h-full">
+                      <div className="flex-grow">
+                          <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
+                          <h1 className="text-3xl font-bold text-white">Login</h1>
+                          <p className="text-sm text-white/70 mt-2">
+                              Don't have an account?{' '}
+                              <button onClick={toggleView} className="font-semibold text-primary hover:underline">
+                                  Create account
+                              </button>
+                          </p>
+                          {signupSuccess && (
+                              <Alert variant="default" className="mt-6 bg-green-500/20 border-green-500/50 text-green-300">
+                                  <CheckCircle className="h-4 w-4 !text-green-400" />
+                                  <AlertTitle className="text-green-300 font-bold">Registration Successful!</AlertTitle>
+                                  <AlertDescription className="text-green-400">
+                                      Your account has been created. Please wait for an administrator to approve it.
+                                  </AlertDescription>
+                              </Alert>
+                          )}
+                           {error && <Alert variant="destructive" className="mt-6"><AlertTitle>Login Failed</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+                          <form onSubmit={handleLogin} className="space-y-6 mt-8">
+                              <div className="space-y-2">
+                                  <Label htmlFor="login-email">Email</Label>
+                                  <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
                               </div>
-                          </div>
-                          <Button type="submit" className="w-full !mt-8" disabled={isCheckingAuth || isSubmitting}>
-                              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
-                          </Button>
-                      </form>
+                              <div className="space-y-2">
+                                  <Label htmlFor="login-password">Password</Label>
+                                   <div className="relative">
+                                      <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting} />
+                                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
+                                          {showPassword ? <EyeOff /> : <Eye />}
+                                      </Button>
+                                  </div>
+                              </div>
+                              <Button type="submit" className="w-full !mt-8" disabled={isSubmitting}>
+                                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
+                              </Button>
+                          </form>
+                      </div>
+                       <div className="mt-auto pt-6">
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-white/20" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">Or register with</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                             <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                Google
+                            </Button>
+                        </div>
+                      </div>
                   </div>
               ) : (
                   // Signup View
-                  <div>
-                       <div className="flex justify-between items-center mb-4">
-                          <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain" />
-                          <ThemeToggle />
+                  <div className="flex flex-col h-full">
+                       <div className="flex-grow">
+                          <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
+                          <h1 className="text-3xl font-bold text-white">Create an account</h1>
+                          <p className="text-sm text-white/70 mt-2">
+                              Already have an account?{' '}
+                              <button onClick={toggleView} className="font-semibold text-primary hover:underline">
+                                  Log in
+                              </button>
+                          </p>
+                           {error && <Alert variant="destructive" className="mt-6"><AlertTitle>Signup Failed</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+                          <form onSubmit={handleSignup} className="space-y-4 mt-6">
+                              <div className="grid grid-cols-2 gap-4">
+                                   <div className="space-y-2">
+                                      <Label htmlFor="signup-firstname">First Name</Label>
+                                      <Input id="signup-firstname" type="text" placeholder="Fletcher" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isSubmitting} />
+                                  </div>
+                                   <div className="space-y-2">
+                                      <Label htmlFor="signup-lastname">Last Name</Label>
+                                      <Input id="signup-lastname" type="text" placeholder="Donohue" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isSubmitting} />
+                                  </div>
+                              </div>
+                               <div className="space-y-2">
+                                  <Label htmlFor="signup-email">Email</Label>
+                                  <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
+                              </div>
+                               <div className="space-y-2">
+                                  <Label htmlFor="signup-password">Password</Label>
+                                  <div className="relative">
+                                      <Input id="signup-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting} />
+                                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
+                                          {showPassword ? <EyeOff /> : <Eye />}
+                                      </Button>
+                                  </div>
+                              </div>
+                              <div className="items-top flex space-x-2 pt-2">
+                                  <Checkbox id="terms" required disabled={isSubmitting} />
+                                    <div className="grid gap-1.5 leading-none">
+                                        <label
+                                            htmlFor="terms"
+                                            className="text-sm text-white/70 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            I agree to the{' '}
+                                        </label>
+                                        <TermsAndConditionsDialog />
+                                    </div>
+                              </div>
+                              <Button type="submit" className="w-full !mt-6" disabled={isSubmitting}>
+                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
+                              </Button>
+                          </form>
                       </div>
-                      <h1 className="text-3xl font-bold text-white">Create an account</h1>
-                      <p className="text-sm text-white/70 mt-2">
-                          Already have an account?{' '}
-                          <button onClick={toggleView} className="font-semibold text-primary hover:underline">
-                              Log in
-                          </button>
-                      </p>
-                       {error && <Alert variant="destructive" className="mt-6"><AlertTitle>Signup Failed</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
-                      <form onSubmit={handleSignup} className="space-y-4 mt-6">
-                          <div className="grid grid-cols-2 gap-4">
-                               <div className="space-y-2">
-                                  <Label htmlFor="signup-firstname">First Name</Label>
-                                  <Input id="signup-firstname" type="text" placeholder="Fletcher" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isSubmitting} />
-                              </div>
-                               <div className="space-y-2">
-                                  <Label htmlFor="signup-lastname">Last Name</Label>
-                                  <Input id="signup-lastname" type="text" placeholder="Donohue" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isSubmitting} />
-                              </div>
-                          </div>
-                           <div className="space-y-2">
-                              <Label htmlFor="signup-email">Email</Label>
-                              <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
-                          </div>
-                           <div className="space-y-2">
-                              <Label htmlFor="signup-password">Password</Label>
-                              <div className="relative">
-                                  <Input id="signup-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting} />
-                                  <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
-                                      {showPassword ? <EyeOff /> : <Eye />}
-                                  </Button>
-                              </div>
-                          </div>
-                          <div className="items-top flex space-x-2 pt-2">
-                              <Checkbox id="terms" required disabled={isSubmitting} />
-                                <div className="grid gap-1.5 leading-none">
-                                    <label
-                                        htmlFor="terms"
-                                        className="text-sm text-white/70 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                        I agree to the{' '}
-                                    </label>
-                                    <TermsAndConditionsDialog />
-                                </div>
-                          </div>
-                          <Button type="submit" className="w-full !mt-6" disabled={isSubmitting}>
-                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
-                          </Button>
-                      </form>
+                      <div className="mt-auto pt-6">
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-white/20" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">Or register with</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                             <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                Google
+                            </Button>
+                        </div>
+                      </div>
                   </div>
               )}
-               <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-white/20" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">Or register with</span>
-                  </div>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                   <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-                      {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                      Google
-                  </Button>
-              </div>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+                <StatusIndicator />
+            </div>
           </div>
         </div>
       </main>
