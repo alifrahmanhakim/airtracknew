@@ -44,7 +44,7 @@ import {
   SidebarMenuBadge,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Project, Task, User, Notification } from '@/lib/types';
+import type { Project, Task, User, Notification, GapAnalysisRecord } from '@/lib/types';
 import { doc, onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -72,7 +72,7 @@ const navItems = {
       { href: '/team', label: 'Team', icon: Users, requiredRole: 'Sub-Directorate Head' },
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
-      { href: '/state-letter', label: 'State Letter', icon: Mail },
+      { href: '/state-letter', label: 'State Letter', icon: Mail, countId: 'openStateLetters' },
       { href: '/glossary', label: 'Glossary', icon: BookText },
       { href: '/rsi', label: 'RSI', icon: Plane },
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
@@ -131,6 +131,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [overdueTasksCount, setOverdueTasksCount] = React.useState(0);
   const [criticalProjectsCount, setCriticalProjectsCount] = React.useState(0);
   const [unreadChatsCount, setUnreadChatsCount] = React.useState(0);
+  const [openStateLettersCount, setOpenStateLettersCount] = React.useState(0);
   
   React.useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -215,6 +216,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       setUnreadChatsCount(chatCount);
     });
     unsubs.push(notifsUnsub);
+    
+    const gapAnalysisQuery = query(collection(db, 'gapAnalysisRecords'), where('statusItem', '==', 'OPEN'));
+    const unsubGapAnalysis = onSnapshot(gapAnalysisQuery, (snapshot) => {
+        setOpenStateLettersCount(snapshot.size);
+    });
+    unsubs.push(unsubGapAnalysis);
 
 
     updateUserOnlineStatus(userId);
@@ -297,6 +304,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       overdueTasks: overdueTasksCount,
       criticalProjects: criticalProjectsCount,
       unreadChats: unreadChatsCount,
+      openStateLetters: openStateLettersCount,
   }
 
   return (
@@ -316,9 +324,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       const isActive = pathname.startsWith(item.href);
                       return (
                         <SidebarMenuItem key={item.href} isActive={isActive}>
+                             <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                              <SidebarMenuButton
                                 asChild
                                 isActive={isActive}
+                                className="transition-colors"
                             >
                                 <Link href={item.href}>
                                     <item.icon />
@@ -364,9 +374,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       
                       return (
                         <SidebarMenuItem key={item.href} isActive={isActive}>
+                            <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                              <SidebarMenuButton
                                 asChild
                                 isActive={isActive}
+                                className="transition-colors"
                             >
                                 <Link href={item.href} {...linkProps}>
                                     <item.icon />
@@ -392,9 +404,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       const isActive = pathname.startsWith(item.href);
                       return (
                       <SidebarMenuItem key={item.href} isActive={isActive}>
+                         <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                          <SidebarMenuButton
                             asChild
                             isActive={isActive}
+                            className="transition-colors"
                         >
                             <Link href={item.href}>
                                 <item.icon />
