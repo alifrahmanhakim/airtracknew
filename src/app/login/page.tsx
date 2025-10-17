@@ -53,7 +53,6 @@ export default function LoginPage() {
   
   useEffect(() => {
     // Check if user is already logged in and redirect if so.
-    // This runs in the background without blocking the UI.
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (loggedInUserId) {
       router.push('/my-dashboard');
@@ -208,7 +207,7 @@ export default function LoginPage() {
         {/* Left Side */}
         <div
             className="hidden md:flex flex-col justify-between p-8 relative rounded-l-3xl bg-cover bg-center"
-            style={{ backgroundImage: "url('https://i.postimg.cc/YkBB9cJ6/airplane-flying-through-fantasy-world-with-mythical-landscape-2.webp')" }}
+            style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
         >
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
@@ -338,3 +337,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
+    
