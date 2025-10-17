@@ -249,9 +249,6 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
                                             <p className="font-semibold text-sm">{task.title}</p>
                                             <p className="text-xs text-muted-foreground">{task.projectName}</p>
                                         </div>
-                                          <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                                            <Link href={`/projects/${task.projectId}?type=${task.projectType.toLowerCase().replace(' ', '')}`}><ExternalLink className="h-4 w-4" /></Link>
-                                        </Button>
                                     </div>
                                 ))}
                             </div>
@@ -285,9 +282,6 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
                                             </div>
                                             <div className="text-right">
                                                 <Badge variant="destructive" className="text-xs">{daysOverdue}d overdue</Badge>
-                                                  <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                                                    <Link href={`/projects/${task.projectId}?type=${task.projectType.toLowerCase().replace(' ', '')}`}><ExternalLink className="h-4 w-4" /></Link>
-                                                </Button>
                                             </div>
                                         </div>
                                     )
@@ -316,9 +310,6 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
                                 {todaysFocusStats.criticalProjects.map(project => (
                                     <div key={project.id} className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground flex justify-between items-center">
                                         <p className="font-semibold text-sm">{project.name}</p>
-                                          <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                                            <Link href={`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`}><ExternalLink className="h-4 w-4" /></Link>
-                                        </Button>
                                     </div>
                                 ))}
                             </div>
@@ -399,7 +390,7 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
                         const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                         return (
                             <Link key={project.id} href={`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center justify-between gap-4">
                                     <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
                                     {daysOverdue > 0 && <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>}
                                 </div>
