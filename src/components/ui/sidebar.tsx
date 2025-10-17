@@ -493,14 +493,24 @@ SidebarMenu.displayName = "SidebarMenu"
 
 const SidebarMenuItem = React.forwardRef<
   HTMLLIElement,
-  React.ComponentProps<"li">
->(({ className, ...props }, ref) => (
+  React.ComponentProps<"li"> & { isActive?: boolean }
+>(({ className, isActive, ...props }, ref) => (
   <li
     ref={ref}
     data-sidebar="menu-item"
-    className={cn("group/menu-item relative", className)}
+    className={cn("group/menu-item relative rounded-md", className, 
+      isActive && "bg-gradient-to-r from-pink-600/50 to-purple-600/50"
+    )}
     {...props}
-  />
+  >
+     <div
+      className={cn(
+        "absolute -inset-0.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 blur opacity-0 transition duration-1000 animate-gradient-move",
+        isActive ? "opacity-75" : "group-hover/menu-item:opacity-75"
+      )}
+    />
+    <div className="relative">{props.children}</div>
+  </li>
 ))
 SidebarMenuItem.displayName = "SidebarMenuItem"
 

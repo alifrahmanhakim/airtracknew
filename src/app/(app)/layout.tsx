@@ -313,11 +313,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenu>
                     {navItems.dashboards.map((item) => {
                       const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
+                      const isActive = pathname.startsWith(item.href);
                       return (
-                        <SidebarMenuItem key={item.href}>
+                        <SidebarMenuItem key={item.href} isActive={isActive}>
                              <SidebarMenuButton
                                 asChild
-                                isActive={pathname.startsWith(item.href)}
+                                isActive={isActive}
                             >
                                 <Link href={item.href}>
                                     <item.icon />
@@ -359,12 +360,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       
                       const linkProps = item.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
                       const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
+                      const isActive = !item.isExternal && pathname.startsWith(item.href);
                       
                       return (
-                        <SidebarMenuItem key={item.href}>
+                        <SidebarMenuItem key={item.href} isActive={isActive}>
                              <SidebarMenuButton
                                 asChild
-                                isActive={!item.isExternal && pathname.startsWith(item.href)}
+                                isActive={isActive}
                             >
                                 <Link href={item.href} {...linkProps}>
                                     <item.icon />
@@ -386,11 +388,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
              <SidebarGroup>
                 <SidebarGroupLabel>Tools</SidebarGroupLabel>
                 <SidebarMenu>
-                    {navItems.tools.map((item) => (
-                    <SidebarMenuItem key={item.href}>
+                    {navItems.tools.map((item) => {
+                      const isActive = pathname.startsWith(item.href);
+                      return (
+                      <SidebarMenuItem key={item.href} isActive={isActive}>
                          <SidebarMenuButton
                             asChild
-                            isActive={pathname.startsWith(item.href)}
+                            isActive={isActive}
                         >
                             <Link href={item.href}>
                                 <item.icon />
@@ -398,7 +402,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
-                    ))}
+                    )})}
                 </SidebarMenu>
             </SidebarGroup>
         </SidebarContent>
