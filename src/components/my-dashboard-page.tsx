@@ -20,7 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { format, parseISO, differenceInDays, isAfter, isToday, isBefore, startOfDay } from 'date-fns';
-import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX, CheckSquare, XSquare, Clock, ExternalLink } from 'lucide-react';
+import { Folder, AlertTriangle, ListTodo, FolderKanban, CalendarClock, Bell, ClipboardCheck, CircleHelp, GitCompareArrows, BookText, ArrowRight, Loader2, CalendarX, CheckSquare, XSquare, Clock, ExternalLink, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
