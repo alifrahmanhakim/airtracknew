@@ -184,8 +184,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 const checkTasks = (tasksToCheck: Task[]) => {
                     tasksToCheck.forEach(task => {
                         if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
-                            if (isAfter(today, parseISO(task.dueDate))) {
-                                overdueCount++;
+                            try {
+                                if (isAfter(today, parseISO(task.dueDate))) {
+                                    overdueCount++;
+                                }
+                            } catch (e) {
+                                // Ignore invalid date formats for now
                             }
                         }
                         if (task.subTasks) {
@@ -193,7 +197,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         }
                     });
                 };
-                checkTasks(tasks);
+                if (tasks && tasks.length > 0) {
+                    checkTasks(tasks);
+                }
             });
             setOverdueTasksCount(overdueCount);
         };
@@ -223,23 +229,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     
     setupProjectListeners();
 
-     // Listen for unread chat notifications
+    // Listen for unread chat notifications
     const notifsQuery = query(
       collection(db, 'users', userId, 'notifications'),
-      where('isRead', '==', false),
-      where('title', '==', 'New message from ') // A bit of a hack, but should work
+      where('isRead', '==', false)
     );
     const notifsUnsub = onSnapshot(notifsQuery, (snapshot) => {
       let chatCount = 0;
       snapshot.forEach(doc => {
         const data = doc.data() as Notification;
-        if (data.title.toLowerCase().startsWith('new message from')) {
+        if (data.title && data.title.toLowerCase().startsWith('new message from')) {
           chatCount++;
         }
       });
       setUnreadChatsCount(chatCount);
     });
     unsubs.push(notifsUnsub);
+
 
     updateUserOnlineStatus(userId);
     const presenceInterval = setInterval(() => {
