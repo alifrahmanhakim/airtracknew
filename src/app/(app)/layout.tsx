@@ -44,8 +44,8 @@ import {
   SidebarMenuBadge,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Project, Task, User } from '@/lib/types';
-import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
+import type { Project, Task, User, Notification } from '@/lib/types';
+import { doc, onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { format, isAfter, parseISO } from 'date-fns';
@@ -67,7 +67,7 @@ const navItems = {
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark, countId: 'rulemaking' },
     ],
     workspace: [
-      { href: '/chats', label: 'Chats', icon: MessageSquare },
+      { href: '/chats', label: 'Chats', icon: MessageSquare, countId: 'unreadChats' },
       { href: '/documents', label: 'Documents', icon: FileText },
       { href: '/team', label: 'Team', icon: Users, requiredRole: 'Sub-Directorate Head' },
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
@@ -127,6 +127,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = React.useState<string | null>(null);
   const [projectCounts, setProjectCounts] = React.useState({ timKerja: 0, rulemaking: 0 });
   const [overdueTasksCount, setOverdueTasksCount] = React.useState(0);
+  const [unreadChatsCount, setUnreadChatsCount] = React.useState(0);
   
   React.useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -204,9 +205,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                  
                  // Update project counts
                  if (projectType === 'Tim Kerja') {
-                     setProjectCounts(prev => ({...prev, timKerja: snapshot.size}));
+                     setProjectCounts(prev => ({...prev, rulemaking: prev.rulemaking, timKerja: snapshot.size}));
                  } else {
-                     setProjectCounts(prev => ({...prev, rulemaking: snapshot.size}));
+                     setProjectCounts(prev => ({...prev, timKerja: prev.timKerja, rulemaking: snapshot.size}));
                  }
                  
                  // Update allProjects list
@@ -221,6 +222,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     };
     
     setupProjectListeners();
+
+     // Listen for unread chat notifications
+    const notifsQuery = query(
+      collection(db, 'users', userId, 'notifications'),
+      where('isRead', '==', false),
+      where('title', '==', 'New message from ') // A bit of a hack, but should work
+    );
+    const notifsUnsub = onSnapshot(notifsQuery, (snapshot) => {
+      let chatCount = 0;
+      snapshot.forEach(doc => {
+        const data = doc.data() as Notification;
+        if (data.title.toLowerCase().startsWith('new message from')) {
+          chatCount++;
+        }
+      });
+      setUnreadChatsCount(chatCount);
+    });
+    unsubs.push(notifsUnsub);
 
     updateUserOnlineStatus(userId);
     const presenceInterval = setInterval(() => {
@@ -249,6 +268,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const dynamicCounts = {
       ...projectCounts,
       overdueTasks: overdueTasksCount,
+      unreadChats: unreadChatsCount,
   }
 
   return (
@@ -300,6 +320,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       }
                       
                       const linkProps = item.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
+                      const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
                       
                       return (
                         <SidebarMenuItem key={item.href}>
@@ -310,6 +331,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 <Link href={item.href} {...linkProps}>
                                     <item.icon />
                                     <span>{item.label}</span>
+                                    {count > 0 && (
+                                         <SidebarMenuBadge className={cn(
+                                            'bg-destructive text-destructive-foreground animate-pulse'
+                                        )}>
+                                            {count}
+                                        </SidebarMenuBadge>
+                                    )}
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
