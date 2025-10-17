@@ -36,7 +36,7 @@ const GoogleIcon = () => (
 
 const AppleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5">
-        <path d="M12.152,5.275c-1.357,0-2.648-0.803-3.46-2.015c-0.88-1.31-2.113-2.338-3.428-2.338 c-1.47,0-2.92,0.88-3.739,2.211c-1.223,2.02-1.93,4.537-1.93,6.969c0,2.304,0.695,4.789,1.93,6.84 c0.819,1.33,2.269,2.21,3.739,2.21c1.315,0,2.548-1.028,3.428-2.338c0.812-1.212,2.103-2.015,3.46-2.015 c1.357,0,2.648,0.803,3.46,2.015c0.88,1.31,2.113,2.338,3.428,2.338c1.47,0,2.92-0.88,3.739-2.211 c1.223-2.02,1.93-4.537,1.93-6.969c0-2.304-0.695-4.789-1.93-6.84c-0.819-1.33-2.269-2.21-3.739-2.21 c-1.315,0-2.548,1.028-3.428,2.338C14.799,4.472,13.509,5.275,12.152,5.275z M10.45,4.258 c-0.039,0.027-0.076,0.054-0.115,0.082C9.4,4.86,8.512,5.7,8.512,6.953c0,1.48,1.203,2.703,2.73,2.703 c0.043,0,0.086-0.002,0.129-0.005c-0.03-0.02-0.059-0.04-0.088-0.06C10.368,9.07,9.356,8.19,9.356,7.018 C9.356,5.556,10.531,4.35,12.03,4.35c0.016,0,0.03,0.002,0.045,0.003C11.516,4.024,10.975,4.032,10.45,4.258z" />
+        <path d="M12.152,5.275c-1.357,0-2.648-0.803-3.46-2.015c-0.88-1.31-2.113-2.338-3.428-2.338 c-1.47,0-2.92,0.88-3.739,2.211c-1.223,2.02-1.93,4.537-1.93,6.969c0,2.304,0.695,4.789,1.93,6.84 c0.819,1.33,2.269,2.21,3.739,2.21c1.315,0,2.548-1.028,3.428-2.338c0.812-1.212,2.103-2.015,3.46-2.015 c1.357,0,2.648,0.803,3.46,2.015c0.88,1.31,2.113,2.338,3.428,2.338c1.47,0,2.92-0.88,3.739-2.211 c1.223-2.02,1.93-4.537,1.93-6.969c0-2.304-0.695-4.789-1.93-6.84c-0.819-1.33-2.269-2.21-3.739-2.21 c-1.315,0-2.548-1.028-3.428,2.338C14.799,4.472,13.509,5.275,12.152,5.275z M10.45,4.258 c-0.039,0.027-0.076,0.054-0.115,0.082C9.4,4.86,8.512,5.7,8.512,6.953c0,1.48,1.203,2.703,2.73,2.703 c0.043,0,0.086-0.002,0.129-0.005c-0.03-0.02-0.059-0.04-0.088-0.06C10.368,9.07,9.356,8.19,9.356,7.018 C9.356,5.556,10.531,4.35,12.03,4.35c0.016,0,0.03,0.002,0.045,0.003C11.516,4.024,10.975,4.032,10.45,4.258z" />
     </svg>
 );
 
@@ -208,7 +208,7 @@ export default function LoginPage() {
         >
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={40} className="object-contain" />
+              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="object-contain" />
           </div>
           <div className="text-white z-20">
             <h2 className="text-4xl font-bold">Aviation Safety</h2>
@@ -222,7 +222,7 @@ export default function LoginPage() {
                 // Login View
                 <div>
                     <div className="flex justify-between items-center mb-4">
-                        <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="object-contain" />
+                        <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain" />
                         <ThemeToggle />
                     </div>
                     <h1 className="text-3xl font-bold text-white">Login</h1>
@@ -265,7 +265,7 @@ export default function LoginPage() {
                 // Signup View
                 <div>
                      <div className="flex justify-between items-center mb-4">
-                        <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="object-contain" />
+                        <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain" />
                         <ThemeToggle />
                     </div>
                     <h1 className="text-3xl font-bold text-white">Create an account</h1>
@@ -317,7 +317,7 @@ export default function LoginPage() {
                     <span className="w-full border-t border-white/20" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-white/60">Or register with</span>
+                    <span className="bg-background px-2 text-muted-foreground">Or register with</span>
                 </div>
             </div>
             <div className="grid grid-cols-1 gap-4">
