@@ -224,7 +224,7 @@ export default function LoginPage() {
             {isLoginView ? (
                 // Login View
                 <div>
-                    <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={120} height={30} className="mb-4" />
+                    <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={60} height={60} className="mb-4 object-contain" />
                     <h1 className="text-3xl font-bold text-white">Login</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Don't have an account?{' '}
@@ -264,7 +264,7 @@ export default function LoginPage() {
             ) : (
                 // Signup View
                 <div>
-                     <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={120} height={30} className="mb-4" />
+                     <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={60} height={60} className="mb-4 object-contain" />
                     <h1 className="text-3xl font-bold text-white">Create an account</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Already have an account?{' '}
@@ -332,4 +332,3 @@ export default function LoginPage() {
     </main>
   );
 }
-
