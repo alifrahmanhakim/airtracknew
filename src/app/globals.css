@@ -187,10 +187,10 @@
 .login-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    min-height: 90vh;
-    max-height: 90vh;
+    min-height: 80vh;
+    max-height: 80vh;
     width: 100%;
-    max-width: 1200px;
+    max-width: 900px;
     background: #312E38;
     border-radius: 1.5rem;
     overflow: hidden;
