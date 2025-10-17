@@ -181,7 +181,10 @@
 }
 
 .login-background {
-    background: #232227;
+    background-image: url('https://i.postimg.cc/YkBB9cJ6/airplane-flying-through-fantasy-world-with-mythical-landscape-2.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .login-grid {
