@@ -25,6 +25,7 @@ import { StatusIndicator } from '@/components/status-indicator';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TermsAndConditionsDialog } from '@/components/terms-and-conditions-dialog';
+import { Progress } from '@/components/ui/progress';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -50,10 +51,31 @@ export default function LoginPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (loggedInUserId) {
         router.push('/my-dashboard');
+    } else {
+        const timer = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 95) {
+                    clearInterval(timer);
+                    return 95;
+                }
+                return prev + 10;
+            })
+        }, 200);
+
+        setTimeout(() => {
+            clearInterval(timer);
+            setProgress(100);
+            setTimeout(() => setIsCheckingAuth(false), 300);
+        }, 2000);
+        
+        return () => clearInterval(timer);
     }
   }, [router]);
 
