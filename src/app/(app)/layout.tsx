@@ -172,18 +172,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const timKerjaQuery = query(collection(db, 'timKerjaProjects'));
     const rulemakingQuery = query(collection(db, 'rulemakingProjects'));
 
-    const unsubTimKerja = onSnapshot(timKerjaQuery, (snapshot) => {
-      setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
-      updateAllProjects();
-    });
-    unsubs.push(unsubTimKerja);
-
-    const unsubRulemaking = onSnapshot(rulemakingQuery, (snapshot) => {
-      setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
-      updateAllProjects();
-    });
-    unsubs.push(unsubRulemaking);
-
     const updateAllProjects = async () => {
       const [timKerjaSnapshot, rulemakingSnapshot] = await Promise.all([
         getDocs(timKerjaQuery),
@@ -197,6 +185,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       
       recalculateOverdueTasks(allProjects);
     };
+
+    const unsubTimKerja = onSnapshot(timKerjaQuery, (snapshot) => {
+      setProjectCounts(prev => ({ ...prev, timKerja: snapshot.size }));
+      updateAllProjects();
+    });
+    unsubs.push(unsubTimKerja);
+
+    const unsubRulemaking = onSnapshot(rulemakingQuery, (snapshot) => {
+      setProjectCounts(prev => ({ ...prev, rulemaking: snapshot.size }));
+      updateAllProjects();
+    });
+    unsubs.push(unsubRulemaking);
 
     const recalculateOverdueTasks = (projects: Project[]) => {
       if (!userId) return;
