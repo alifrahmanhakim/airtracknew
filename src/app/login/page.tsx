@@ -157,7 +157,7 @@ export default function LoginPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      const fullName = `${firstName} ${lastName}`.trim();
+      const fullName = `${'${firstName}'} ${'${lastName}'}`.trim();
       await updateProfile(firebaseUser, { displayName: fullName });
 
       const newUser: Omit<User, 'id'> = {
@@ -202,13 +202,20 @@ export default function LoginPage() {
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
       <div className="login-grid">
         {/* Left Side */}
-        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30">
-          <div>
+        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative overflow-hidden">
+            <Image
+                src="https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
+                alt="Aircraft engine"
+                fill
+                className="object-cover z-0"
+            />
+             <div className="absolute inset-0 bg-black/40 z-10"></div>
+          <div className="z-20">
               <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={25} priority />
           </div>
-          <div className="text-white">
-            <h2 className="text-4xl font-bold">Capturing Moments,</h2>
-            <h2 className="text-4xl font-bold">Creating Memories</h2>
+          <div className="text-white z-20">
+            <h2 className="text-4xl font-bold">Aviation Safety</h2>
+            <h2 className="text-4xl font-bold">Starts Here</h2>
           </div>
         </div>
 
@@ -323,5 +330,7 @@ export default function LoginPage() {
     </main>
   );
 }
+
+    
 
     
