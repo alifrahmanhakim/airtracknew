@@ -198,7 +198,6 @@ export default function LoginPage() {
             alt="Background image of an airplane"
             fill
             quality={100}
-            priority
             className="object-cover -z-10"
         />
         <div className="absolute top-4 right-4 z-10">
