@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Plane, Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
+import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 import { db, auth, googleProvider } from '@/lib/firebase';
@@ -35,19 +35,6 @@ const GoogleIcon = () => (
     </svg>
 );
 
-// This component handles checking auth status and redirecting without affecting the main login form state.
-function AuthRedirector() {
-    const router = useRouter();
-    useEffect(() => {
-        const loggedInUserId = localStorage.getItem('loggedInUserId');
-        if (loggedInUserId) {
-            router.push('/my-dashboard');
-        }
-    }, [router]);
-    return null; // This component does not render anything.
-}
-
-
 export default function LoginPage() {
   const router = useRouter();
   const [isLoginView, setIsLoginView] = useState(true);
@@ -56,6 +43,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Form State
   const [firstName, setFirstName] = useState('');
@@ -63,6 +51,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
+   useEffect(() => {
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (loggedInUserId) {
+        router.push('/my-dashboard');
+    } else {
+        setIsCheckingAuth(false);
+    }
+  }, [router]);
+
   const handleSuccessfullLogin = (userId: string) => {
     localStorage.setItem('loggedInUserId', userId);
     router.push('/my-dashboard');
@@ -113,6 +110,10 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+        setError("Please enter both email and password.");
+        return;
+    }
     setIsSubmitting(true);
     setError('');
     setSignupSuccess(false);
@@ -144,7 +145,7 @@ export default function LoginPage() {
 
     } catch (err: any) {
       console.error("Login Error:", err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-email') {
         setError("Invalid email or password. Please try again.");
       } else {
         setError("An error occurred during login. Please try again.");
@@ -156,6 +157,10 @@ export default function LoginPage() {
   
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+     if (!firstName || !lastName || !email || !password) {
+        setError("Please fill out all required fields.");
+        return;
+    }
     setIsSubmitting(true);
     setError('');
     setSignupSuccess(false);
@@ -207,7 +212,6 @@ export default function LoginPage() {
 
   return (
     <>
-      <AuthRedirector />
       <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
         <div className="login-grid">
           {/* Left Side */}
@@ -241,6 +245,15 @@ export default function LoginPage() {
                               Create account
                           </button>
                       </p>
+                      {isCheckingAuth && (
+                        <Alert variant="default" className="mt-6 bg-yellow-500/10 border-yellow-500/30 text-yellow-300">
+                            <AlertTriangle className="h-4 w-4 !text-yellow-400" />
+                            <AlertTitle className="text-yellow-300 font-bold">Connecting</AlertTitle>
+                            <AlertDescription className="text-yellow-400">
+                                Please wait while we check your session...
+                            </AlertDescription>
+                        </Alert>
+                      )}
                       {signupSuccess && (
                           <Alert variant="default" className="mt-6 bg-green-500/20 border-green-500/50 text-green-300">
                               <CheckCircle className="h-4 w-4 !text-green-400" />
@@ -254,18 +267,18 @@ export default function LoginPage() {
                       <form onSubmit={handleLogin} className="space-y-6 mt-8">
                           <div className="space-y-2">
                               <Label htmlFor="login-email">Email</Label>
-                              <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                              <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isCheckingAuth || isSubmitting} />
                           </div>
                           <div className="space-y-2">
                               <Label htmlFor="login-password">Password</Label>
                                <div className="relative">
-                                  <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+                                  <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isCheckingAuth || isSubmitting} />
                                   <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
                                       {showPassword ? <EyeOff /> : <Eye />}
                                   </Button>
                               </div>
                           </div>
-                          <Button type="submit" className="w-full !mt-8" disabled={isSubmitting}>
+                          <Button type="submit" className="w-full !mt-8" disabled={isCheckingAuth || isSubmitting}>
                               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
                           </Button>
                       </form>
@@ -289,34 +302,34 @@ export default function LoginPage() {
                           <div className="grid grid-cols-2 gap-4">
                                <div className="space-y-2">
                                   <Label htmlFor="signup-firstname">First Name</Label>
-                                  <Input id="signup-firstname" type="text" placeholder="Fletcher" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                                  <Input id="signup-firstname" type="text" placeholder="Fletcher" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isSubmitting} />
                               </div>
                                <div className="space-y-2">
                                   <Label htmlFor="signup-lastname">Last Name</Label>
-                                  <Input id="signup-lastname" type="text" placeholder="Donohue" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                                  <Input id="signup-lastname" type="text" placeholder="Donohue" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isSubmitting} />
                               </div>
                           </div>
                            <div className="space-y-2">
                               <Label htmlFor="signup-email">Email</Label>
-                              <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                              <Input id="signup-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
                           </div>
                            <div className="space-y-2">
                               <Label htmlFor="signup-password">Password</Label>
                               <div className="relative">
-                                  <Input id="signup-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+                                  <Input id="signup-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting} />
                                   <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
                                       {showPassword ? <EyeOff /> : <Eye />}
                                   </Button>
                               </div>
                           </div>
                           <div className="flex items-center space-x-2 pt-2">
-                              <Checkbox id="terms" required />
-                              <div className="text-sm leading-none">
-                                  <label htmlFor="terms" className="text-white/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                      I agree to the{' '}
-                                  </label>
-                                  <TermsAndConditionsDialog />
-                              </div>
+                              <Checkbox id="terms" required disabled={isSubmitting} />
+                                <div className="text-sm leading-none">
+                                    <label htmlFor="terms" className="text-white/70 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    I agree to the{' '}
+                                    </label>
+                                    <TermsAndConditionsDialog />
+                                </div>
                           </div>
                           <Button type="submit" className="w-full !mt-6" disabled={isSubmitting}>
                              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
