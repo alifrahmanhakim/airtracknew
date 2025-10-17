@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Plane, Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 import { db, auth, googleProvider } from '@/lib/firebase';
 import { 
@@ -39,7 +39,7 @@ const GoogleIcon = () => (
 export default function LoginPage() {
   const router = useRouter();
   const [isLoginView, setIsLoginView] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
@@ -50,6 +50,15 @@ export default function LoginPage() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  useEffect(() => {
+    // Check if user is already logged in and redirect if so.
+    // This runs in the background without blocking the UI.
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (loggedInUserId) {
+      router.push('/my-dashboard');
+    }
+  }, [router]);
   
   const handleSuccessfullLogin = (userId: string) => {
     localStorage.setItem('loggedInUserId', userId);
@@ -101,7 +110,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     setSignupSuccess(false);
 
@@ -115,7 +124,7 @@ export default function LoginPage() {
       if (!userSnap.exists()) {
           await signOut(auth);
           setError("User data not found in our records. Please contact support.");
-          setIsLoading(false);
+          setIsSubmitting(false);
           return;
       }
 
@@ -124,7 +133,7 @@ export default function LoginPage() {
       if (!userData.isApproved) {
           await signOut(auth);
           setError("Your account is pending approval by an administrator. Please check back later.");
-          setIsLoading(false);
+          setIsSubmitting(false);
           return;
       }
 
@@ -138,13 +147,13 @@ export default function LoginPage() {
         setError("An error occurred during login. Please try again.");
       }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
   
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     setSignupSuccess(false);
 
@@ -182,7 +191,7 @@ export default function LoginPage() {
         setError("An error occurred during sign up. Please try again.");
       }
     } finally {
-        setIsLoading(false);
+        setIsSubmitting(false);
     }
   };
 
@@ -203,7 +212,7 @@ export default function LoginPage() {
         >
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={120} height={32} className="object-contain" />
+              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={180} height={48} className="object-contain" />
           </div>
           <div className="text-white z-20">
             <h2 className="text-4xl font-bold">Aviation Safety</h2>
@@ -251,8 +260,8 @@ export default function LoginPage() {
                                 </Button>
                             </div>
                         </div>
-                        <Button type="submit" className="w-full !mt-8" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
+                        <Button type="submit" className="w-full !mt-8" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
                         </Button>
                     </form>
                 </div>
@@ -304,8 +313,8 @@ export default function LoginPage() {
                                 <TermsAndConditionsDialog />
                             </div>
                         </div>
-                        <Button type="submit" className="w-full !mt-6" disabled={isLoading}>
-                           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
+                        <Button type="submit" className="w-full !mt-6" disabled={isSubmitting}>
+                           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
                         </Button>
                     </form>
                 </div>
