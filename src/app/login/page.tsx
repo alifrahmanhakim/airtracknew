@@ -24,6 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { StatusIndicator } from '@/components/status-indicator';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
+import { TermsAndConditionsDialog } from '@/components/terms-and-conditions-dialog';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -31,12 +32,6 @@ const GoogleIcon = () => (
         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-    </svg>
-);
-
-const AppleIcon = () => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5">
-        <path d="M12.152,5.275c-1.357,0-2.648-0.803-3.46-2.015c-0.88-1.31-2.113-2.338-3.428-2.338 c-1.47,0-2.92,0.88-3.739,2.211c-1.223,2.02-1.93,4.537-1.93,6.969c0,2.304,0.695,4.789,1.93,6.84 c0.819,1.33,2.269,2.21,3.739,2.21c1.315,0,2.548-1.028,3.428-2.338c0.812-1.212,2.103-2.015,3.46-2.015 c1.357,0,2.648,0.803,3.46,2.015c0.88,1.31,2.113,2.338,3.428,2.338c1.47,0,2.92-0.88,3.739-2.211 c1.223-2.02,1.93-4.537,1.93-6.969c0-2.304-0.695-4.789-1.93-6.84c-0.819-1.33-2.269-2.21-3.739-2.21 c-1.315,0-2.548-1.028-3.428,2.338C14.799,4.472,13.509,5.275,12.152,5.275z M10.45,4.258 c-0.039,0.027-0.076,0.054-0.115,0.082C9.4,4.86,8.512,5.7,8.512,6.953c0,1.48,1.203,2.703,2.73,2.703 c0.043,0,0.086-0.002,0.129-0.005c-0.03-0.02-0.059-0.04-0.088-0.06C10.368,9.07,9.356,8.19,9.356,7.018 C9.356,5.556,10.531,4.35,12.03,4.35c0.016,0,0.03,0.002,0.045,0.003C11.516,4.024,10.975,4.032,10.45,4.258z" />
     </svg>
 );
 
@@ -303,7 +298,7 @@ export default function LoginPage() {
                         <div className="flex items-center space-x-2 pt-2">
                             <Checkbox id="terms" required />
                             <label htmlFor="terms" className="text-sm text-white/70 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                I agree to the <a href="#" className="underline text-white hover:text-primary">Terms & Conditions</a>
+                                I agree to the <TermsAndConditionsDialog />
                             </label>
                         </div>
                         <Button type="submit" className="w-full !mt-6" disabled={isLoading}>
