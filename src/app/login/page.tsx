@@ -200,14 +200,15 @@ export default function LoginPage() {
 
   return (
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
-      <div className="login-grid animate-in fade-in slide-in-from-left-24 duration-1000">
+      <div className="login-grid">
         {/* Left Side */}
         <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative rounded-l-3xl">
             <Image
                 src="https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
                 alt="Aircraft engine"
-                fill
-                className="object-cover z-0 rounded-l-3xl"
+                layout="fill"
+                objectFit="cover"
+                className="z-0 rounded-l-3xl"
             />
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
