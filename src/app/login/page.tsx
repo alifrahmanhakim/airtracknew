@@ -157,7 +157,7 @@ export default function LoginPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      const fullName = `${'${firstName}'} ${'${lastName}'}`.trim();
+      const fullName = `${firstName} ${lastName}`.trim();
       await updateProfile(firebaseUser, { displayName: fullName });
 
       const newUser: Omit<User, 'id'> = {
@@ -202,7 +202,7 @@ export default function LoginPage() {
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
       <div className="login-grid">
         {/* Left Side */}
-        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative overflow-hidden">
+        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative overflow-hidden rounded-l-3xl">
             <Image
                 src="https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
                 alt="Aircraft engine"
@@ -220,7 +220,7 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side */}
-        <div className="flex flex-col justify-center p-8 sm:p-12 bg-white/10 backdrop-blur-lg">
+        <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl">
             {isLoginView ? (
                 // Login View
                 <div>
@@ -312,7 +312,7 @@ export default function LoginPage() {
                     <span className="w-full border-t border-white/20" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-[#312E38] px-2 text-white/60">Or register with</span>
+                    <span className="bg-background px-2 text-white/60">Or register with</span>
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
