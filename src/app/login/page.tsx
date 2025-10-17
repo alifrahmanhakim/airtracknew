@@ -206,9 +206,8 @@ export default function LoginPage() {
             <Image
                 src="https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
                 alt="Aircraft engine"
-                layout="fill"
-                objectFit="cover"
-                className="z-0 rounded-l-3xl"
+                fill
+                className="z-0 rounded-l-3xl object-cover"
             />
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
