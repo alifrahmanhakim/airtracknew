@@ -45,7 +45,6 @@ export default function LoginPage() {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -59,6 +58,7 @@ export default function LoginPage() {
     if (loggedInUserId) {
         router.push('/my-dashboard');
     } else {
+        setIsCheckingAuth(true); // Start "loading"
         const timer = setInterval(() => {
             setProgress(prev => {
                 if (prev >= 95) {
@@ -72,7 +72,7 @@ export default function LoginPage() {
         setTimeout(() => {
             clearInterval(timer);
             setProgress(100);
-            setTimeout(() => setIsCheckingAuth(false), 300);
+            setTimeout(() => setIsCheckingAuth(false), 300); // End "loading"
         }, 2000);
         
         return () => clearInterval(timer);
@@ -293,9 +293,7 @@ export default function LoginPage() {
                                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Login
                               </Button>
                           </form>
-                      </div>
-                       <div className="mt-auto pt-6">
-                        <div className="relative my-6">
+                           <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t border-white/20" />
                             </div>
@@ -364,9 +362,7 @@ export default function LoginPage() {
                                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
                               </Button>
                           </form>
-                      </div>
-                      <div className="mt-auto pt-6">
-                        <div className="relative my-6">
+                           <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t border-white/20" />
                             </div>
