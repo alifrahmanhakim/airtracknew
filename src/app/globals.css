@@ -181,10 +181,27 @@
 }
 
 .login-background {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
+    background: #232227;
 }
 
+.login-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 90vh;
+    max-height: 90vh;
+    width: 100%;
+    max-width: 1200px;
+    background: #312E38;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
 
-
-
+@media (max-width: 768px) {
+    .login-grid {
+        grid-template-columns: 1fr;
+        max-height: none;
+        min-height: 95vh;
+        border-radius: 1rem;
+    }
+}
