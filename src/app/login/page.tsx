@@ -157,7 +157,7 @@ export default function LoginPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      const fullName = `${'${firstName}'} ${'${lastName}'}`.trim();
+      const fullName = `${firstName} ${lastName}`.trim();
       await updateProfile(firebaseUser, { displayName: fullName });
 
       const newUser: Omit<User, 'id'> = {
@@ -203,7 +203,7 @@ export default function LoginPage() {
       <div className="login-grid">
         {/* Left Side */}
         <div 
-            className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative rounded-l-3xl bg-cover bg-center"
+            className="hidden md:flex flex-col justify-between p-8 relative rounded-l-3xl bg-cover bg-center"
             style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
         >
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
@@ -221,7 +221,7 @@ export default function LoginPage() {
             {isLoginView ? (
                 // Login View
                 <div>
-                    <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={40} height={40} className="mb-4 object-contain" />
+                    <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="mb-4 object-contain" />
                     <h1 className="text-3xl font-bold text-white">Login</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Don't have an account?{' '}
@@ -261,7 +261,7 @@ export default function LoginPage() {
             ) : (
                 // Signup View
                 <div>
-                     <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={40} height={40} className="mb-4 object-contain" />
+                     <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={100} height={27} className="mb-4 object-contain" />
                     <h1 className="text-3xl font-bold text-white">Create an account</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Already have an account?{' '}
@@ -314,14 +314,10 @@ export default function LoginPage() {
                     <span className="bg-background px-2 text-white/60">Or register with</span>
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
                  <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
                     {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                     Google
-                </Button>
-                 <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" disabled>
-                    <AppleIcon />
-                    Apple
                 </Button>
             </div>
         </div>
