@@ -202,13 +202,10 @@ export default function LoginPage() {
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
       <div className="login-grid">
         {/* Left Side */}
-        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative rounded-l-3xl">
-            <Image
-                src="https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
-                alt="Aircraft engine"
-                fill
-                className="z-0 rounded-l-3xl object-cover"
-            />
+        <div 
+            className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative rounded-l-3xl bg-cover bg-center"
+            style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
+        >
              <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
               <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={40} className="object-contain" />
