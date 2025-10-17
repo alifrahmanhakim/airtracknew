@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Wifi, Cloud, CloudOff, WifiOff, Loader2 } from 'lucide-react';
+import { Wifi, Cloud, CloudOff, WifiOff, Loader2, Server } from 'lucide-react';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
@@ -17,7 +17,7 @@ type Status = 'connected' | 'disconnected' | 'connecting';
 
 interface StatusIndicatorProps {
     className?: string;
-    variant?: 'default' | 'icon';
+    variant?: 'default' | 'icon' | 'server-icon';
 }
 
 export function StatusIndicator({ className, variant = 'default' }: StatusIndicatorProps) {
@@ -89,6 +89,35 @@ export function StatusIndicator({ className, variant = 'default' }: StatusIndica
         case 'database': Icon = CloudOff; text = 'Disconnected'; break;
     }
     return { Icon, color: 'text-red-500', text, tooltipText: `${type.charAt(0).toUpperCase() + type.slice(1)} Disconnected` };
+  }
+  
+  const getServerStatusInfo = () => {
+      const isConnecting = onlineStatus && firebaseStatus === 'connecting';
+      const isConnected = onlineStatus && firebaseStatus === 'connected';
+
+      if (isConnecting) {
+        return { Icon: Loader2, color: 'text-yellow-500 animate-spin', tooltipText: 'Connecting to services...' };
+      }
+      if (isConnected) {
+        return { Icon: Server, color: 'text-green-500', tooltipText: 'All systems operational' };
+      }
+      return { Icon: Server, color: 'text-red-500', tooltipText: 'Connection failed' };
+  }
+
+  if (variant === 'server-icon') {
+      const serverStatus = getServerStatusInfo();
+      return (
+        <TooltipProvider>
+             <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className={cn("flex items-center", className)}>
+                        <serverStatus.Icon className={cn("h-5 w-5", serverStatus.color)} />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>{serverStatus.tooltipText}</TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+      )
   }
 
   const internet = getStatusInfo(onlineStatus, 'internet');

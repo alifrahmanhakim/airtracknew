@@ -416,7 +416,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex items-center gap-2">
                 <LiveClock />
-                <StatusIndicator variant="icon" />
+                <StatusIndicator variant="server-icon" />
                 <NotificationBell userId={userId} />
                 <ThemeToggle />
                  <div className="relative group">
