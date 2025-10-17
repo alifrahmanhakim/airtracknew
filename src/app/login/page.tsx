@@ -202,16 +202,16 @@ export default function LoginPage() {
     <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
       <div className="login-grid animate-in fade-in slide-in-from-left-24 duration-1000">
         {/* Left Side */}
-        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative rounded-l-3xl overflow-hidden">
+        <div className="hidden md:flex flex-col justify-between p-8 bg-black/30 relative rounded-l-3xl">
             <Image
                 src="https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
                 alt="Aircraft engine"
                 fill
-                className="object-cover z-0"
+                className="object-cover z-0 rounded-l-3xl"
             />
-             <div className="absolute inset-0 bg-black/40 z-10"></div>
+             <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
           <div className="z-20">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={200} height={50} />
+              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={40} className="object-contain" />
           </div>
           <div className="text-white z-20">
             <h2 className="text-4xl font-bold">Aviation Safety</h2>
@@ -220,11 +220,11 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side */}
-        <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl">
+        <div className="flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-top-12 duration-1000">
             {isLoginView ? (
                 // Login View
                 <div>
-                    <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={60} height={60} className="mb-4 object-contain" />
+                    <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={40} height={40} className="mb-4 object-contain" />
                     <h1 className="text-3xl font-bold text-white">Login</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Don't have an account?{' '}
@@ -264,7 +264,7 @@ export default function LoginPage() {
             ) : (
                 // Signup View
                 <div>
-                     <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={60} height={60} className="mb-4 object-contain" />
+                     <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={40} height={40} className="mb-4 object-contain" />
                     <h1 className="text-3xl font-bold text-white">Create an account</h1>
                     <p className="text-sm text-white/70 mt-2">
                         Already have an account?{' '}
