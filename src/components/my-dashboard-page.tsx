@@ -215,11 +215,21 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
   return (
     <TooltipProvider>
     <main className="p-4 md:p-8 space-y-8">
-      <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-        <h1 className="text-3xl font-bold">My Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {currentUser?.name || 'User'}. Here is your personal overview.
-        </p>
+      <div 
+        className="relative p-6 rounded-xl text-white overflow-hidden"
+        style={{
+            backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_4elp964elp964elp.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="relative z-10">
+            <h1 className="text-3xl font-bold">My Dashboard</h1>
+            <p className="text-white/80">
+            Welcome back, {currentUser?.name || 'User'}. Here is your personal overview.
+            </p>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
