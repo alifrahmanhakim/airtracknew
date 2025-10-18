@@ -23,6 +23,7 @@ interface TermsAndConditionsDialogProps {
 export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndConditionsDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [isButtonActive, setIsButtonActive] = React.useState(false);
+  const [countdown, setCountdown] = React.useState(2);
 
   const handleAccept = () => {
     onCheckedChange(true);
@@ -30,18 +31,28 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
   };
 
   const handleOpenChange = (isOpen: boolean) => {
-      setOpen(isOpen);
-      if (isOpen) {
-          // Reset button state when dialog opens
+    setOpen(isOpen);
+  };
+  
+  React.useEffect(() => {
+      if (open) {
           setIsButtonActive(false);
-          // Set a timer to enable the button after a delay
-          const timer = setTimeout(() => {
-              setIsButtonActive(true);
-          }, 2000); // 2-second delay
-          
-          return () => clearTimeout(timer);
+          setCountdown(2);
+
+          const countdownInterval = setInterval(() => {
+              setCountdown(prev => {
+                  if (prev <= 1) {
+                      clearInterval(countdownInterval);
+                      setIsButtonActive(true);
+                      return 0;
+                  }
+                  return prev - 1;
+              });
+          }, 1000);
+
+          return () => clearInterval(countdownInterval);
       }
-  }
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -49,12 +60,19 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
             <Checkbox
                 id="terms"
                 checked={checked}
+                onCheckedChange={(isChecked) => {
+                    if (isChecked) {
+                        onCheckedChange(true);
+                    } else if (!isChecked && checked) {
+                        onCheckedChange(false);
+                    } else {
+                        handleOpenChange(true);
+                    }
+                }}
                 onClick={(e) => {
-                    if(!checked) {
+                    if (!checked) {
                         e.preventDefault();
                         handleOpenChange(true);
-                    } else {
-                        onCheckedChange(false);
                     }
                 }}
                 aria-label="Agree to terms and conditions"
@@ -165,11 +183,11 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
         </ScrollArea>
         <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Decline</Button>
-            <Button onClick={handleAccept} disabled={!isButtonActive}>Accept</Button>
+            <Button onClick={handleAccept} disabled={!isButtonActive}>
+              {isButtonActive ? 'Accept' : `Accept (${countdown})`}
+            </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
