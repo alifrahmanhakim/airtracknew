@@ -258,8 +258,8 @@ export default function LoginPage() {
               <div key={isLoginView ? 'login' : 'signup'} className="animate-in fade-in duration-500">
                 {isLoginView ? (
                     // Login View
-                    <div>
-                        <div>
+                    <div className="h-full flex flex-col">
+                        <div className="flex-grow">
                             <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
                             <h1 className="text-3xl font-bold text-white">Login</h1>
                             <p className="text-sm text-white/80 mt-2">
@@ -307,7 +307,7 @@ export default function LoginPage() {
                                 </Button>
                             </form>
                         </div>
-                        <div className="pt-6">
+                        <div className="mt-auto pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
                                       <span className="w-full border-t border-white/20" />
@@ -326,8 +326,8 @@ export default function LoginPage() {
                     </div>
                 ) : (
                     // Signup View
-                    <div>
-                        <div>
+                    <div className="h-full flex flex-col">
+                        <div className="flex-grow">
                             <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
                             <h1 className="text-3xl font-bold text-white">Create an account</h1>
                             <p className="text-sm text-white/80 mt-2">
@@ -363,12 +363,13 @@ export default function LoginPage() {
                                 </div>
                                 <div className="items-top flex space-x-3 pt-2">
                                     <Checkbox id="terms" required disabled={isSubmitting} />
-                                      <div className="grid gap-1.5 leading-none">
+                                    <div className="grid gap-1.5 leading-none">
                                         <label
                                             htmlFor="terms"
                                             className="text-sm text-white/80 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
-                                           I agree to the <TermsAndConditionsDialog />
+                                            I agree to the{' '}
+                                            <TermsAndConditionsDialog />
                                         </label>
                                     </div>
                                 </div>
@@ -377,7 +378,7 @@ export default function LoginPage() {
                                 </Button>
                             </form>
                         </div>
-                          <div className="pt-6">
+                          <div className="mt-auto pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
                                       <span className="w-full border-t border-white/20" />
@@ -406,3 +407,5 @@ export default function LoginPage() {
     </>
   );
 }
+
+    
