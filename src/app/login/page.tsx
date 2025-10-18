@@ -250,7 +250,8 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side */}
-          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-left-12 duration-1000">
+          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-left-12 duration-1000 overflow-hidden">
+            <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-blue-600/50 to-transparent rounded-full blur-3xl opacity-50" />
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
@@ -307,7 +308,7 @@ export default function LoginPage() {
                                 </Button>
                             </form>
                         </div>
-                        <div className="mt-auto pt-6">
+                        <div className="mt-6 pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
                                       <span className="w-full border-t border-white/20" />
@@ -378,7 +379,7 @@ export default function LoginPage() {
                                 </Button>
                             </form>
                         </div>
-                          <div className="mt-auto pt-6">
+                          <div className="mt-6 pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
                                       <span className="w-full border-t border-white/20" />
@@ -407,5 +408,3 @@ export default function LoginPage() {
     </>
   );
 }
-
-    
