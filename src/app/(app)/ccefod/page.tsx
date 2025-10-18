@@ -131,12 +131,11 @@ export default function CcefodPage() {
     }
 
     if (searchTerm) {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        filtered = filtered.filter(record => 
-            Object.values(record).some(value => 
-                String(value).toLowerCase().includes(lowercasedTerm)
-            )
-        );
+        const searchWords = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
+        filtered = filtered.filter(record => {
+            const recordText = Object.values(record).join(' ').toLowerCase();
+            return searchWords.every(word => recordText.includes(word));
+        });
     }
     
     return filtered;
