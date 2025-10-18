@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
+import { cn } from '@/lib/utils';
 
 interface TermsAndConditionsDialogProps {
     checked: boolean;
@@ -22,6 +23,7 @@ interface TermsAndConditionsDialogProps {
 
 export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndConditionsDialogProps) {
   const [open, setOpen] = React.useState(false);
+  const [hasScrolledToEnd, setHasScrolledToEnd] = React.useState(false);
 
   const handleAccept = () => {
     onCheckedChange(true);
@@ -35,6 +37,15 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
       onCheckedChange(false);
     }
   };
+
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    // Add a small threshold (e.g., 5px) to account for fractional values
+    if (scrollTop + clientHeight >= scrollHeight - 5) {
+      setHasScrolledToEnd(true);
+    }
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -64,18 +75,17 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
             </div>
         </div>
 
-      <DialogContent className="sm:max-w-3xl max-h-[80vh]">
+      <DialogContent className={cn(
+          "sm:max-w-3xl max-h-[80vh] bg-background/80 backdrop-blur-sm",
+        )}>
         <DialogHeader>
           <DialogTitle>Syarat dan Ketentuan Penggunaan</DialogTitle>
           <DialogDescription>
             Aplikasi Internal AirTrack DKPPU
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[60vh] pr-6">
-            <div className="space-y-4 text-sm text-foreground/80">
-                <p><strong>Nomor Dokumen:</strong> [Nomor Dokumen Internal]</p>
-                <p><strong>Tanggal Penetapan:</strong> [Tanggal Penetapan]</p>
-
+        <ScrollArea className="h-[60vh] pr-6" onScroll={handleScroll}>
+            <div className="space-y-4 text-foreground/80">
                 <p>Syarat dan Ketentuan Penggunaan ("Ketentuan") ini merupakan aturan yang mengikat secara hukum antara Penyelenggara Sistem Elektronik, yaitu Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("Penyelenggara"), dengan Anda selaku pegawai di lingkungan Subdirektorat Standardisasi DKPPU ("Pengguna") dalam penggunaan Aplikasi AirTrack ("Layanan").</p>
                 <p>Dengan melakukan registrasi dan/atau menggunakan Layanan ini, Anda menyatakan telah membaca, memahami, menyetujui, dan akan mematuhi seluruh Ketentuan yang tertulis di bawah ini.</p>
 
@@ -149,7 +159,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
         </ScrollArea>
         <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Decline</Button>
-            <Button onClick={handleAccept}>Accept</Button>
+            <Button onClick={handleAccept} disabled={!hasScrolledToEnd}>Accept</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
