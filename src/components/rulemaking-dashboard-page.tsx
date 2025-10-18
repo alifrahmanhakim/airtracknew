@@ -325,26 +325,26 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                 <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-grow">
-                            {offTrackProjects.length > 0 ? (
-                                <div className="space-y-3">
-                                    {offTrackProjects.map(project => {
-                                        const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
-                                        return (
-                                            <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
-                                                    <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
-                                                </div>
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
-                            ) : (
+                                {offTrackProjects.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {offTrackProjects.map(project => {
+                                            const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
+                                            return (
+                                                <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
+                                                    <div className="flex items-center justify-between gap-4">
+                                                        <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
+                                                        <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
+                                                    </div>
+                                                </Link>
+                                            )
+                                        })}
+                                    </div>
+                                ) : (
                                     <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4 h-full flex flex-col justify-center items-center">
                                         <CheckCircle className="mx-auto h-8 w-8 mb-2" />
                                         No projects are off track.
                                     </div>
-                            )}
+                                )}
                             </CardContent>
                         </Card>
                     </div>
@@ -363,6 +363,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                     <Cell key={`cell-${entry.name}`} fill={entry.color} />
                                                 ))}
                                             </Pie>
+                                        </PieChart>
                                     </ResponsiveContainer>
                                 </ChartContainer>
                             </CardContent>
@@ -493,4 +494,3 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
         </TooltipProvider>
     );
 }
-
