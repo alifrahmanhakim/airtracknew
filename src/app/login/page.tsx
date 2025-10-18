@@ -236,7 +236,7 @@ export default function LoginPage() {
          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}
           <div
-              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center animate-in fade-in slide-in-from-left-12 duration-1000"
+              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center"
               style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
           >
                <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
@@ -250,8 +250,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side */}
-          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl animate-in fade-in slide-in-from-left-12 duration-1000 overflow-hidden">
-            <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-blue-600/50 to-transparent rounded-full blur-3xl opacity-50" />
+          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
@@ -308,7 +307,7 @@ export default function LoginPage() {
                                 </Button>
                             </form>
                         </div>
-                        <div className="mt-6 pt-6">
+                        <div className="mt-auto pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
                                       <span className="w-full border-t border-white/20" />
@@ -379,7 +378,7 @@ export default function LoginPage() {
                                 </Button>
                             </form>
                         </div>
-                          <div className="mt-6 pt-6">
+                          <div className="mt-auto pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
                                       <span className="w-full border-t border-white/20" />
