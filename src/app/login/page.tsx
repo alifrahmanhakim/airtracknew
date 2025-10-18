@@ -48,9 +48,7 @@ const quotes = [
 ];
 
 const backgroundImages = [
-    'https://ik.imagekit.io/avmxsiusm/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp',
-    'https://ik.imagekit.io/avmxsiusm/airplane-runway.webp',
-    'https://ik.imagekit.io/avmxsiusm/drones-futuristic-cityscape-sunset.webp'
+    'https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png?updatedAt=1760806887223'
 ];
 
 
@@ -79,11 +77,12 @@ export default function LoginPage() {
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
     setDailyQuote(quotes[dayOfYear % quotes.length]);
     
-    const imageInterval = setInterval(() => {
-        setCurrentImageIndex(prevIndex => (prevIndex + 1) % backgroundImages.length);
-    }, 5000); 
-
-    return () => clearInterval(imageInterval);
+    if (backgroundImages.length > 1) {
+        const imageInterval = setInterval(() => {
+            setCurrentImageIndex(prevIndex => (prevIndex + 1) % backgroundImages.length);
+        }, 5000); 
+        return () => clearInterval(imageInterval);
+    }
   }, []);
 
 
