@@ -79,9 +79,15 @@ export default function LoginPage() {
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
     setDailyQuote(quotes[dayOfYear % quotes.length]);
     
-    // Select a random background image on mount
-    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-    setBackgroundImage(backgroundImages[randomIndex]);
+    // Check sessionStorage for a stored image
+    let sessionImage = sessionStorage.getItem('loginBgImage');
+    if (!sessionImage) {
+        // If not found, select a new one and store it
+        const randomIndex = Math.floor(Math.random() * backgroundImages.length);
+        sessionImage = backgroundImages[randomIndex];
+        sessionStorage.setItem('loginBgImage', sessionImage);
+    }
+    setBackgroundImage(sessionImage);
   }, []);
 
   useEffect(() => {
