@@ -72,7 +72,7 @@ export function AskStdAiWidget() {
               aria-haspopup="dialog"
               aria-expanded={isOpen}
             >
-              <BotMessageSquare className="h-10 w-10" />
+              <BotMessageSquare className="h-10 w-10 text-primary" />
               <span className="sr-only">Ask STD.Ai</span>
             </Button>
           </TooltipTrigger>
