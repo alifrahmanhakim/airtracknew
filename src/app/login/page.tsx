@@ -47,6 +47,12 @@ const quotes = [
     { text: "The good thing about flying is that it's the only time you're truly free.", author: "Anonymous" },
 ];
 
+const backgroundImages = [
+    'https://ik.imagekit.io/avmxsiusm/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp',
+    'https://ik.imagekit.io/avmxsiusm/airplane-runway.webp',
+    'https://ik.imagekit.io/avmxsiusm/drones-futuristic-cityscape-sunset.webp'
+];
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -66,11 +72,16 @@ export default function LoginPage() {
   const [progress, setProgress] = useState(0);
   
   const [dailyQuote, setDailyQuote] = useState({ text: 'Aviation Safety', author: 'Starts Here' });
+  const [backgroundImage, setBackgroundImage] = useState('');
 
   useEffect(() => {
     const today = new Date();
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
     setDailyQuote(quotes[dayOfYear % quotes.length]);
+    
+    // Select a random background image on mount
+    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
+    setBackgroundImage(backgroundImages[randomIndex]);
   }, []);
 
   useEffect(() => {
@@ -259,7 +270,8 @@ export default function LoginPage() {
          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}
           <div
-              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center login-background-alt"
+              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center"
+              style={{ backgroundImage: `url(${backgroundImage})` }}
           >
                <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
