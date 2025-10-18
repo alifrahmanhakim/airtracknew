@@ -280,9 +280,19 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
     return (
         <TooltipProvider>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <div className='mb-4 p-4 rounded-lg bg-card/80 backdrop-blur-sm'>
+            <div 
+              className="relative mb-4 p-6 rounded-xl text-white overflow-hidden"
+              style={{
+                backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="absolute inset-0 bg-black/50 z-0"></div>
+              <div className="relative z-10">
                 <h1 className="text-3xl font-bold tracking-tight">Aviation Regulation Management Dashboard</h1>
-                <p className="text-muted-foreground">Central hub for tracking compliance and progress of all CASRs.</p>
+                <p className="text-white/80">Central hub for tracking compliance and progress of all CASRs.</p>
+              </div>
             </div>
             
             <Card>
