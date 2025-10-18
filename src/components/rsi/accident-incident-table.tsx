@@ -120,15 +120,15 @@ export function AccidentIncidentTable({ records, onEdit, searchTerm }: AccidentI
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="cursor-pointer" onClick={() => handleSort('tanggal')}><div className="flex items-center">Tanggal {renderSortIcon('tanggal')}</div></TableHead>
-                            <TableHead>Kategori</TableHead>
-                            <TableHead>AOC</TableHead>
-                            <TableHead>Registrasi</TableHead>
-                            <TableHead>Tipe Pesawat</TableHead>
-                            <TableHead>Lokasi</TableHead>
-                            <TableHead>Taxonomy</TableHead>
-                            <TableHead>File</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="cursor-pointer w-[120px]" onClick={() => handleSort('tanggal')}><div className="flex items-center">Tanggal {renderSortIcon('tanggal')}</div></TableHead>
+                            <TableHead className="w-[150px]">Kategori</TableHead>
+                            <TableHead className="w-[200px]">AOC</TableHead>
+                            <TableHead className="w-[120px]">Registrasi</TableHead>
+                            <TableHead className="w-[200px]">Tipe Pesawat</TableHead>
+                            <TableHead className="w-[200px]">Lokasi</TableHead>
+                            <TableHead className="w-[200px]">Taxonomy</TableHead>
+                            <TableHead className="w-[50px]">File</TableHead>
+                            <TableHead className="text-right w-[100px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
