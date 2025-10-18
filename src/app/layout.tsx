@@ -1,14 +1,13 @@
 import type {Metadata} from 'next';
 import './globals.css?v=2';
 import { Toaster } from "@/components/ui/toaster"
-import { Barlow } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 
-const fontSans = Barlow({
+const fontSans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ['400', '500', '600', '700']
 })
 
 export const metadata: Metadata = {
