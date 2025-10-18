@@ -368,15 +368,19 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-         <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-lg bg-card/80 backdrop-blur-sm w-full">
-            <div className="flex-1">
+         <div 
+          className="relative mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-xl w-full text-white bg-cover bg-center overflow-hidden"
+          style={{ backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_gghizjgghizjgghi.png')" }}
+         >
+            <div className="absolute inset-0 bg-black/50 z-0"></div>
+            <div className="flex-1 z-10">
                 <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
-                <p className="text-muted-foreground">An overview of all team-based projects.</p>
+                <p className="text-white/80">An overview of all team-based projects.</p>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end z-10">
                 <Select value={selectedYear} onValueChange={setSelectedYear}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select a year..." />
+                    <SelectTrigger className="w-full sm:w-[180px] bg-white/10 border-white/20">
+                      <SelectValue placeholder="Select a year..." />
                     </SelectTrigger>
                     <SelectContent>
                     {yearOptions.map(year => (
@@ -466,8 +470,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           </div>
         </div>
         
-        <div className="grid grid-cols-1 gap-4">
-            {offTrackTasks.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             {offTrackTasks.length > 0 && (
                 <Collapsible defaultOpen={offTrackTasks.length <= 3}>
                     <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60 h-full">
                         <CardHeader>
