@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getYear, parseISO, isToday } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Image from 'next/image';
 
 type RsiModule = {
   title: string;
@@ -244,43 +245,56 @@ export default function RsiPage() {
                 </div>
             </div>
 
-            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background">
-                <CardHeader>
-                    <CardTitle>Overall Summary</CardTitle>
-                    <CardDescription className="text-foreground">Key metrics from all records.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <AlertTriangle className="h-8 w-8 text-destructive" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
-                                <p className="text-sm text-muted-foreground">Total Incidents</p>
+            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background overflow-hidden">
+                <div className="flex flex-col lg:flex-row">
+                    <div className="flex-1 p-6">
+                        <CardHeader className="p-0 mb-6">
+                            <CardTitle>Overall Summary</CardTitle>
+                            <CardDescription className="text-foreground">Key metrics from all records.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <AlertTriangle className="h-8 w-8 text-destructive" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
+                                        <p className="text-sm text-muted-foreground">Total Incidents</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <FileSearch className="h-8 w-8 text-yellow-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
+                                        <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <Gavel className="h-8 w-8 text-gray-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
+                                        <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <Users className="h-8 w-8 text-red-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
+                                        <p className="text-sm text-muted-foreground">Total Casualties</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <FileSearch className="h-8 w-8 text-yellow-500" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
-                                <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <Gavel className="h-8 w-8 text-gray-500" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
-                                <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
-                            </div>
-                        </div>
-                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <Users className="h-8 w-8 text-red-500" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
-                                <p className="text-sm text-muted-foreground">Total Casualties</p>
-                            </div>
-                        </div>
+                        </CardContent>
                     </div>
-                </CardContent>
+                    <div className="relative w-full lg:w-1/3 min-h-[200px] lg:min-h-0">
+                        <Image
+                            src="https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_4unr7i4unr7i4unr.png"
+                            alt="RSI Summary Illustration"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 100vw, 33vw"
+                        />
+                    </div>
+                </div>
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
