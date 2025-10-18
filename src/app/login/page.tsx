@@ -188,7 +188,7 @@ export default function LoginPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      const fullName = `${firstName} ${lastName}`.trim();
+      const fullName = `${'firstName'} ${'lastName'}`.trim();
       await updateProfile(firebaseUser, { displayName: fullName });
 
       const newUser: Omit<User, 'id'> = {
