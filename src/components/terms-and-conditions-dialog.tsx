@@ -1,23 +1,69 @@
+
 'use client';
 
+import * as React from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from './ui/button';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
 
-export function TermsAndConditionsDialog() {
+interface TermsAndConditionsDialogProps {
+    checked: boolean;
+    onCheckedChange: (checked: boolean) => void;
+}
+
+export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndConditionsDialogProps) {
+  const [open, setOpen] = React.useState(false);
+
+  const handleAccept = () => {
+    onCheckedChange(true);
+    setOpen(false);
+  };
+
+  const handleCheckboxClick = () => {
+    if (!checked) {
+      setOpen(true);
+    } else {
+      onCheckedChange(false);
+    }
+  };
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <a href="#" className="underline hover:text-primary" onClick={(e) => e.preventDefault()}>
-          Terms & Conditions
-        </a>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+        <div className="items-top flex space-x-3 pt-2">
+            <Checkbox
+                id="terms"
+                checked={checked}
+                onCheckedChange={handleCheckboxClick}
+                aria-label="Agree to terms and conditions"
+            />
+            <div className="grid gap-1.5 leading-none">
+                <Label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                    I agree to the{' '}
+                    <span
+                        className="underline hover:text-primary cursor-pointer"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setOpen(true);
+                        }}
+                    >
+                        Terms & Conditions
+                    </span>
+                </Label>
+            </div>
+        </div>
+
       <DialogContent className="sm:max-w-3xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Syarat dan Ketentuan Penggunaan</DialogTitle>
@@ -101,6 +147,10 @@ export function TermsAndConditionsDialog() {
                 <p>Jika Pengguna memiliki pertanyaan mengenai Ketentuan ini atau ingin melaporkan dugaan pelanggaran, silakan hubungi administrator sistem melalui email: riskregisterdkppu@gmail.com.</p>
             </div>
         </ScrollArea>
+        <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Decline</Button>
+            <Button onClick={handleAccept}>Accept</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

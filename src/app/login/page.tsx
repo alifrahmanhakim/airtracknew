@@ -44,6 +44,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -179,6 +180,10 @@ export default function LoginPage() {
         setError("Please fill out all required fields.");
         return;
     }
+    if (!termsAccepted) {
+        setError("You must agree to the Terms & Conditions to create an account.");
+        return;
+    }
     setIsSubmitting(true);
     setError('');
     setSignupSuccess(false);
@@ -204,6 +209,7 @@ export default function LoginPage() {
       setFullName('');
       setEmail('');
       setPassword('');
+      setTermsAccepted(false);
 
     } catch (err: any) {
       console.error("Signup Error:", err);
@@ -265,8 +271,8 @@ export default function LoginPage() {
                                 </button>
                             </p>
                              {isCheckingAuth && (
-                                  <Alert variant="default" className="mt-6 bg-yellow-400/20 border-yellow-500/50 text-yellow-700 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
-                                      <AlertTriangle className="h-4 w-4 !text-yellow-500" />
+                                  <Alert variant="default" className="mt-6 bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
+                                      <AlertTriangle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
                                       <AlertTitle className="font-bold">Connecting</AlertTitle>
                                       <AlertDescription>
                                           Please wait, we are checking your session. Do not enter credentials until this message disappears.
@@ -351,19 +357,11 @@ export default function LoginPage() {
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="items-top flex space-x-3 pt-2">
-                                    <Checkbox id="terms" required disabled={isSubmitting} />
-                                    <div className="grid gap-1.5 leading-none">
-                                        <label
-                                            htmlFor="terms"
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                        >
-                                            I agree to the
-                                        </label>
-                                        <TermsAndConditionsDialog />
-                                    </div>
-                                </div>
-                                <Button type="submit" className="w-full !mt-6" disabled={isSubmitting}>
+                                <TermsAndConditionsDialog
+                                    checked={termsAccepted}
+                                    onCheckedChange={setTermsAccepted}
+                                />
+                                <Button type="submit" className="w-full !mt-6" disabled={isSubmitting || !termsAccepted}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
                                 </Button>
                             </form>
