@@ -324,7 +324,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       const isActive = pathname.startsWith(item.href);
                       return (
                         <SidebarMenuItem key={item.href} isActive={isActive}>
-                             <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                             <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                              <SidebarMenuButton
                                 asChild
                                 isActive={isActive}
@@ -374,7 +374,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       
                       return (
                         <SidebarMenuItem key={item.href} isActive={isActive}>
-                            <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                            <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                              <SidebarMenuButton
                                 asChild
                                 isActive={isActive}
@@ -409,7 +409,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       const isActive = pathname.startsWith(item.href);
                       return (
                       <SidebarMenuItem key={item.href} isActive={isActive}>
-                         <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                         <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                          <SidebarMenuButton
                             asChild
                             isActive={isActive}
@@ -443,7 +443,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <NotificationBell userId={userId} />
                 <ThemeToggle />
                  <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-10 w-10 rounded-full">

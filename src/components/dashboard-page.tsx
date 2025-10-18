@@ -397,7 +397,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="relative group overflow-hidden rounded-lg">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
             <Card className="relative h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
@@ -410,7 +410,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
             </Card>
           </div>
           <div className="relative group overflow-hidden rounded-lg">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
             <Card className="relative h-full flex flex-col">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Task Overview</CardTitle>
@@ -439,7 +439,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
             </Card>
           </div>
           <div className="relative group overflow-hidden rounded-lg">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
             <Card className="relative h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">At Risk</CardTitle>
@@ -452,7 +452,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
             </Card>
           </div>
           <div className="relative group overflow-hidden rounded-lg">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
             <Card className="relative h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Off Track</CardTitle>

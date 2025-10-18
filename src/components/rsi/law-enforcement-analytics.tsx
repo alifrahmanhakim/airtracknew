@@ -100,7 +100,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
         <div className="space-y-6">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card className="relative group overflow-hidden rounded-lg">
-                     <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-yellow-500 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
+                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
                      <div className="relative bg-card rounded-lg h-full">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Gavel /> Total Sanctions</CardTitle>
@@ -111,7 +111,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                     </div>
                 </Card>
                 <Card className="relative group overflow-hidden rounded-lg">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-yellow-500 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
                     <div className="relative bg-card rounded-lg h-full">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned AOCs</CardTitle>
@@ -122,7 +122,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                     </div>
                 </Card>
                 <Card className="relative group overflow-hidden rounded-lg">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-yellow-500 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
                     <div className="relative bg-card rounded-lg h-full">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><User /> Sanctioned Personnel</CardTitle>
@@ -133,7 +133,7 @@ export function LawEnforcementAnalytics({ allRecords }: AnalyticsProps) {
                     </div>
                 </Card>
                 <Card className="relative group overflow-hidden rounded-lg">
-                     <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-yellow-500 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
+                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500 animate-gradient-move"></div>
                      <div className="relative bg-card rounded-lg h-full">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground"><Building /> Sanctioned Orgs</CardTitle>

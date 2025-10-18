@@ -1,0 +1,384 @@
+
+'use client';
+
+import * as React from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane } from 'lucide-react';
+import Link from 'next/link';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AnimatedCounter } from '@/components/ui/animated-counter';
+import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord } from '@/lib/types';
+import { Badge, badgeVariants } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { getYear, parseISO, isToday } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+type RsiModule = {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  href: string;
+  collectionName: keyof RsiData;
+  statusField: string;
+  statusVariant: (status: string) => string;
+};
+
+const rsiModules: RsiModule[] = [
+  {
+    title: 'Data Accident & Serious Incident',
+    description: 'Review and analyze accident and serious incident data.',
+    icon: <FileWarning className="h-8 w-8 text-destructive" />,
+    href: '/rsi/data-accident-incident',
+    collectionName: 'accidentIncidentRecords',
+    statusField: 'kategori',
+    statusVariant: (status) => {
+        if (status === 'Accident (A)') return 'destructive';
+        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        return 'secondary';
+    },
+  },
+  {
+    title: 'Pemeriksaan',
+    description: 'Data Kecelakaan yang Dilaksanakan Pemeriksaan oleh DKPPU.',
+    icon: <Search className="h-8 w-8 text-blue-500" />,
+    href: '/rsi/pemeriksaan',
+    collectionName: 'pemeriksaanRecords',
+    statusField: 'kategori',
+     statusVariant: (status) => {
+        if (status === 'Accident (A)') return 'destructive';
+        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        return 'secondary';
+    },
+  },
+  {
+    title: 'Laporan Investigasi KNKT',
+    description: 'Access and manage NTSC investigation reports.',
+    icon: <FileSearch className="h-8 w-8 text-yellow-500" />,
+    href: '/rsi/laporan-investigasi-knkt',
+    collectionName: 'knktReports',
+    statusField: 'status',
+    statusVariant: (status) => {
+        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
+        if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300';
+        return 'secondary';
+    },
+  },
+  {
+    title: 'Monitoring Rekomendasi KNKT',
+    description: 'Track follow-ups on NTSC safety recommendations.',
+    icon: <BarChart className="h-8 w-8 text-green-500" />,
+    href: '/rsi/monitoring-rekomendasi',
+    collectionName: 'tindakLanjutRecords',
+    statusField: 'status',
+     statusVariant: (status) => {
+        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
+        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        return 'secondary';
+    },
+  },
+  {
+    title: 'Monitoring Rekomendasi ke DGCA',
+    description: 'Track NTSC recommendations to the DGCA.',
+    icon: <ShieldQuestion className="h-8 w-8 text-purple-500" />,
+    href: '/rsi/monitoring-rekomendasi-dgca',
+    collectionName: 'tindakLanjutDgcaRecords',
+    statusField: 'operator',
+    statusVariant: () => 'secondary',
+  },
+  {
+    title: 'List of Law Enforcement',
+    description: 'View and manage the list of law enforcement actions.',
+    icon: <Gavel className="h-8 w-8 text-gray-500" />,
+    href: '/rsi/law-enforcement',
+    collectionName: 'lawEnforcementRecords',
+    statusField: 'impositionType',
+    statusVariant: (status) => {
+        if (status === 'aoc') return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300';
+        if (status === 'personnel') return 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/50 dark:text-purple-300';
+        if (status === 'organization') return 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/50 dark:text-orange-300';
+        return 'secondary';
+    },
+  },
+];
+
+type RsiData = {
+  accidentIncidentRecords: AccidentIncidentRecord[];
+  pemeriksaanRecords: PemeriksaanRecord[];
+  knktReports: KnktReport[];
+  tindakLanjutRecords: TindakLanjutRecord[];
+  tindakLanjutDgcaRecords: TindakLanjutDgcaRecord[];
+  lawEnforcementRecords: LawEnforcementRecord[];
+};
+
+const parseCasualties = (casualtyString: string | undefined): number => {
+    if (!casualtyString || casualtyString.toLowerCase() === 'tidak ada') {
+      return 0;
+    }
+    const match = casualtyString.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+};
+
+const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
+    switch (collectionName) {
+        case 'knktReports': return 'tanggal_diterbitkan';
+        case 'tindakLanjutDgcaRecords': return 'tanggalKejadian';
+        case 'tindakLanjutRecords': return 'tanggalKejadian';
+        case 'lawEnforcementRecords': return 'createdAt';
+        default: return 'tanggal';
+    }
+};
+
+export default function RsiPage() {
+    const [data, setData] = React.useState<Partial<RsiData>>({});
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [yearFilter, setYearFilter] = React.useState<string>('all');
+
+    React.useEffect(() => {
+        setIsLoading(true);
+        const unsubscribes = rsiModules.map(module => {
+            const coll = collection(db, module.collectionName);
+            return onSnapshot(coll, (snapshot) => {
+                const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setData(prevData => ({
+                    ...prevData,
+                    [module.collectionName]: records,
+                }));
+            }, (error) => {
+                 console.error(`Error fetching ${module.collectionName}:`, error);
+            });
+        });
+        
+        setTimeout(() => setIsLoading(false), 2000);
+
+        return () => unsubscribes.forEach(unsub => unsub());
+    }, []);
+
+    const yearOptions = React.useMemo(() => {
+        const allYears = new Set<number>();
+        rsiModules.forEach(module => {
+            const records = data[module.collectionName] || [];
+            const dateField = getDateFieldForCollection(module.collectionName);
+            records.forEach((record: any) => {
+                const dateString = record[dateField];
+                if (dateString && typeof dateString === 'string') {
+                    try {
+                        allYears.add(getYear(parseISO(dateString)));
+                    } catch (e) {
+                        // ignore invalid date
+                    }
+                } else if (dateString && dateString.toDate) { // For Firestore Timestamps
+                    allYears.add(getYear(dateString.toDate()));
+                }
+            });
+        });
+        return ['all', ...Array.from(allYears).sort((a,b) => b-a)];
+    }, [data]);
+
+    const dashboardStats = React.useMemo(() => {
+        const filterByYear = (records: any[] | undefined, collectionName: keyof RsiData) => {
+            if (!records) return [];
+            if (yearFilter === 'all') return records;
+            
+            const dateField = getDateFieldForCollection(collectionName);
+            
+            return records.filter((record: any) => {
+                const dateString = record[dateField];
+                if (!dateString) return false;
+                
+                try {
+                    let recordYear;
+                    if (typeof dateString === 'string') {
+                        recordYear = getYear(parseISO(dateString));
+                    } else if (dateString.toDate) { // Firestore Timestamp
+                        recordYear = getYear(dateString.toDate());
+                    }
+                    return recordYear === parseInt(yearFilter);
+                } catch(e) {
+                    return false;
+                }
+            });
+        };
+
+        const filteredAccidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords') as AccidentIncidentRecord[];
+        const totalIncidents = filteredAccidents.length;
+        const totalReports = filterByYear(data.knktReports, 'knktReports').length;
+        const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
+        const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
+
+        return {
+            totalIncidents,
+            totalReports,
+            totalSanctions,
+            totalCasualties,
+        }
+    }, [data, yearFilter]);
+
+    return (
+        <TooltipProvider>
+            <main className="p-4 md:p-8">
+            <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
+                        <p className="text-muted-foreground">
+                        A centralized hub for managing and monitoring safety incidents and recommendations.
+                        </p>
+                    </div>
+                    <div className="w-full sm:w-auto">
+                        <Select value={yearFilter} onValueChange={setYearFilter}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="Filter by year..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {yearOptions.map(year => (
+                                    <SelectItem key={year} value={String(year)}>
+                                        {year === 'all' ? 'All Years' : year}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </div>
+
+            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background">
+                <CardHeader>
+                    <CardTitle>Overall Summary</CardTitle>
+                    <CardDescription className="text-foreground">Key metrics from all records.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                             <AlertTriangle className="h-8 w-8 text-destructive" />
+                            <div>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
+                                <p className="text-sm text-muted-foreground">Total Incidents</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                             <FileSearch className="h-8 w-8 text-yellow-500" />
+                            <div>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
+                                <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                             <Gavel className="h-8 w-8 text-gray-500" />
+                            <div>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
+                                <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
+                            </div>
+                        </div>
+                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                             <Users className="h-8 w-8 text-red-500" />
+                            <div>
+                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
+                                <p className="text-sm text-muted-foreground">Total Casualties</p>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {rsiModules.map((module) => {
+                    const dateField = getDateFieldForCollection(module.collectionName);
+                    
+                    const filteredRecords = (data[module.collectionName] || []).filter((record: any) => {
+                        if (yearFilter === 'all') return true;
+                        const dateString = record[dateField];
+                        if (dateString && typeof dateString === 'string') {
+                             try {
+                                return getYear(parseISO(dateString)) === parseInt(yearFilter);
+                            } catch (e) {
+                                return false;
+                            }
+                        }
+                         if (dateString && dateString.toDate) { // For Firestore Timestamps
+                            return getYear(dateString.toDate()) === parseInt(yearFilter);
+                        }
+                        return false;
+                    });
+                    
+                    const totalCount = filteredRecords.length;
+                    
+                    const statusCounts = filteredRecords.reduce((acc, record) => {
+                        const status = (record as any)[module.statusField];
+                        if (status) {
+                            acc[status] = (acc[status] || 0) + 1;
+                        }
+                        return acc;
+                    }, {} as Record<string, number>);
+
+                    const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
+
+                    const totalCasualties = module.collectionName === 'accidentIncidentRecords'
+                        ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
+                        : null;
+
+                    return (
+                        <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+                            <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20">
+                                <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
+                                {module.icon}
+                                <CardTitle>{module.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex-grow flex flex-col space-y-4">
+                                <p className="text-sm text-muted-foreground h-10 line-clamp-2">
+                                    {module.description}
+                                </p>
+                                <div className="pt-4">
+                                    <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
+                                    {isLoading ? (
+                                        <Skeleton className="h-10 w-20 mt-1" />
+                                    ) : (
+                                        <p className="text-4xl font-bold">
+                                            <AnimatedCounter endValue={totalCount} />
+                                        </p>
+                                    )}
+                                </div>
+                                {(totalCount > 0 || totalCasualties !== null) && (
+                                    <div className="pt-2 space-y-3">
+                                        <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
+                                        <div className="space-y-1">
+                                            {totalCasualties !== null && (
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                                    <Badge variant="destructive">
+                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                            {statusArray.map(({ name, count }) => (
+                                                <div key={name} className="flex items-center gap-2">
+                                                    <div className={cn("h-2 w-2 rounded-full", module.statusVariant(name) === 'destructive' ? 'bg-destructive' : 'bg-secondary-foreground')}></div>
+                                                    <Badge variant={module.statusVariant(name) === 'destructive' ? 'destructive' : 'default'} className={cn(module.statusVariant(name))}>
+                                                        {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
+                                                    </Badge>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                </CardContent>
+                                <CardFooter className="bg-muted/50 p-4 mt-auto">
+                                    <div className="relative text-sm font-semibold w-full flex items-center">
+                                        <span className="bg-gradient-to-r from-blue-500 via-green-500 to-blue-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
+                                            Open Module
+                                        </span>
+                                        <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300 group-hover:w-full"></div>
+                                        <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                </CardFooter>
+                            </Card>
+                        </Link>
+                    )
+                })}
+            </div>
+            </main>
+        </TooltipProvider>
+    );
+}
