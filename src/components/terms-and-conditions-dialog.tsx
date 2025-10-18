@@ -22,8 +22,8 @@ interface TermsAndConditionsDialogProps {
 
 export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndConditionsDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const [isButtonActive, setIsButtonActive] = React.useState(false);
   const [countdown, setCountdown] = React.useState(2);
+  const [isButtonActive, setIsButtonActive] = React.useState(false);
 
   const handleAccept = () => {
     onCheckedChange(true);
@@ -33,25 +33,24 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
   };
-  
+
   React.useEffect(() => {
-      if (open) {
-          setIsButtonActive(false);
-          setCountdown(2);
-
-          const countdownInterval = setInterval(() => {
-              setCountdown(prev => {
-                  if (prev <= 1) {
-                      clearInterval(countdownInterval);
-                      setIsButtonActive(true);
-                      return 0;
-                  }
-                  return prev - 1;
-              });
-          }, 1000);
-
-          return () => clearInterval(countdownInterval);
-      }
+    let countdownInterval: NodeJS.Timeout;
+    if (open) {
+      setIsButtonActive(false);
+      setCountdown(2);
+      countdownInterval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            setIsButtonActive(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(countdownInterval);
   }, [open]);
 
   return (
@@ -62,11 +61,9 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                 checked={checked}
                 onCheckedChange={(isChecked) => {
                     if (isChecked) {
-                        // Allow unchecking directly
-                        onCheckedChange(false);
-                    } else {
-                        // If trying to check, open dialog
                         handleOpenChange(true);
+                    } else {
+                        onCheckedChange(false);
                     }
                 }}
                 aria-label="Agree to terms and conditions"
