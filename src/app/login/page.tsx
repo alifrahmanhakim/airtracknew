@@ -249,7 +249,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side */}
-          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/60 backdrop-blur-sm rounded-r-3xl">
+          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/80 backdrop-blur-sm rounded-r-3xl">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
@@ -268,10 +268,10 @@ export default function LoginPage() {
                                 </button>
                             </p>
                             {isCheckingAuth && (
-                                  <Alert variant="default" className="mt-6 bg-yellow-500/10 border-yellow-500/30 text-yellow-200">
-                                      <AlertTriangle className="h-4 w-4 !text-yellow-400" />
-                                      <AlertTitle className="text-yellow-300 font-bold">Connecting</AlertTitle>
-                                      <AlertDescription className="text-yellow-400">
+                                  <Alert variant="default" className="mt-6 bg-yellow-400/10 border-yellow-400/30 text-yellow-700 dark:text-yellow-300">
+                                      <AlertTriangle className="h-4 w-4 !text-yellow-500" />
+                                      <AlertTitle className="font-bold">Connecting</AlertTitle>
+                                      <AlertDescription>
                                           Please wait, we are checking your session. Do not enter credentials until this message disappears.
                                           <Progress value={progress} className="mt-2 h-1" />
                                       </AlertDescription>
