@@ -372,36 +372,37 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           className="relative mb-4 flex flex-col items-start justify-between gap-4 p-6 rounded-xl w-full text-white bg-cover bg-no-repeat bg-right-bottom overflow-hidden"
           style={{
             backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_gghizjgghizjgghi.png')",
-            backgroundSize: '90%',
+            backgroundSize: '70%',
           }}
         >
-            <div className="absolute inset-0 bg-black/50 z-0"></div>
-            <div className="z-10">
-                <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
-                <p className="text-white/80">An overview of all team-based projects.</p>
+          <div className="absolute inset-0 bg-black/50 z-0"></div>
+          <div className="flex justify-between items-start w-full z-10">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
+              <p className="text-white/80">An overview of all team-based projects.</p>
             </div>
-        </div>
-
-        <div className="flex items-center gap-2 w-full justify-end">
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Select a year..." />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map(year => (
-                <SelectItem key={year} value={String(year)}>
-                  {year === 'all' ? 'All Years' : year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {isAdmin && (
-            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={allProjects.length === 0}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete All
-            </Button>
-          )}
-          <AddTimKerjaProjectDialog allUsers={allUsers} />
+            <div className="flex items-center gap-2">
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-white/10 border-white/20 text-white">
+                  <SelectValue placeholder="Select a year..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map(year => (
+                    <SelectItem key={year} value={String(year)}>
+                      {year === 'all' ? 'All Years' : year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {isAdmin && (
+                <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={allProjects.length === 0}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete All
+                </Button>
+              )}
+              <AddTimKerjaProjectDialog allUsers={allUsers} />
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
