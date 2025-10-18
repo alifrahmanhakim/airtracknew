@@ -1,12 +1,13 @@
 import type {Metadata} from 'next';
 import './globals.css?v=2';
 import { Toaster } from "@/components/ui/toaster"
-import { Inter } from 'next/font/google';
+import { Roboto } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 
-const fontSans = Inter({
+const fontSans = Roboto({
   subsets: ["latin"],
+  weight: ['400', '700'],
   variable: "--font-sans",
 })
 
