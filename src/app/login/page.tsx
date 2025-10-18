@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -263,7 +264,7 @@ export default function LoginPage() {
                                     Create account
                                 </button>
                             </p>
-                            {isCheckingAuth && (
+                             {isCheckingAuth && (
                                   <Alert variant="default" className="mt-6 bg-yellow-400/20 border-yellow-500/50 text-yellow-700 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
                                       <AlertTriangle className="h-4 w-4 !text-yellow-500" />
                                       <AlertTitle className="font-bold">Connecting</AlertTitle>
@@ -357,9 +358,9 @@ export default function LoginPage() {
                                             htmlFor="terms"
                                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
-                                            I agree to the{' '}
-                                            <TermsAndConditionsDialog />
+                                            I agree to the
                                         </label>
+                                        <TermsAndConditionsDialog />
                                     </div>
                                 </div>
                                 <Button type="submit" className="w-full !mt-6" disabled={isSubmitting}>
