@@ -331,9 +331,9 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                 const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                                                 return (
                                                     <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                                        <div className="flex items-center justify-between gap-4">
-                                                            <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
-                                                            <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
+                                                        <div>
+                                                            <p className="font-semibold break-words text-sm">{project.name}</p>
+                                                            <Badge variant="destructive" className="whitespace-nowrap mt-1">{daysOverdue} days overdue</Badge>
                                                         </div>
                                                     </Link>
                                                 )
