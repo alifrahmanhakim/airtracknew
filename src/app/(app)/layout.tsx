@@ -432,7 +432,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 m-2 mt-4 flex items-center justify-between rounded-lg border bg-card/80 p-2 backdrop-blur-sm">
+        <header className="sticky top-0 z-30 m-2 mt-4 flex items-center justify-between rounded-lg border bg-card/80 p-2 backdrop-blur-sm">
             <div className="flex items-center gap-2">
                 <SidebarTrigger />
                 <GlobalSearch onViewProfile={() => {}} />
