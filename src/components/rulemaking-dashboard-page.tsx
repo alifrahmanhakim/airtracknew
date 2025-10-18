@@ -363,7 +363,6 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                     <Cell key={`cell-${entry.name}`} fill={entry.color} />
                                                 ))}
                                             </Pie>
-                                        </PieChart>
                                     </ResponsiveContainer>
                                 </ChartContainer>
                             </CardContent>
@@ -495,4 +494,3 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
     );
 }
 
-    
