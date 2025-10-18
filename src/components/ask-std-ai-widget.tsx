@@ -61,23 +61,26 @@ export function AskStdAiWidget() {
 
   return (
     <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 flex items-center justify-center"
-            size="icon"
-            onClick={handleToggle}
-            aria-haspopup="dialog"
-            aria-expanded={isOpen}
-          >
-            <BotMessageSquare className="h-10 w-10" />
-            <span className="sr-only">Ask STD.Ai</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">
-          <p>Ask STD.Ai</p>
-        </TooltipContent>
-      </Tooltip>
+      <div className="fixed bottom-6 right-6 z-50 group">
+        <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition duration-1000 animate-gradient-move"></div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="relative h-16 w-16 rounded-full shadow-lg flex items-center justify-center bg-background/60 backdrop-blur-sm border-2 border-white/20 hover:bg-background/80"
+              size="icon"
+              onClick={handleToggle}
+              aria-haspopup="dialog"
+              aria-expanded={isOpen}
+            >
+              <BotMessageSquare className="h-10 w-10" />
+              <span className="sr-only">Ask STD.Ai</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>Ask STD.Ai</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
 
       <div
         className={cn(
@@ -137,4 +140,3 @@ export function AskStdAiWidget() {
     </TooltipProvider>
   );
 }
-
