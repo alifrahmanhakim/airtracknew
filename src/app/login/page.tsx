@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle } from "lucide-react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { collection, query, where, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 import { db, auth, googleProvider } from '@/lib/firebase';
 import { 
@@ -74,20 +74,22 @@ export default function LoginPage() {
   const [dailyQuote, setDailyQuote] = useState({ text: 'Aviation Safety', author: 'Starts Here' });
   const [backgroundImage, setBackgroundImage] = useState('');
 
-  useEffect(() => {
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    setDailyQuote(quotes[dayOfYear % quotes.length]);
-    
-    // Check sessionStorage for a stored image
-    let sessionImage = sessionStorage.getItem('loginBgImage');
-    if (!sessionImage) {
-        // If not found, select a new one and store it
-        const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-        sessionImage = backgroundImages[randomIndex];
-        sessionStorage.setItem('loginBgImage', sessionImage);
+  useLayoutEffect(() => {
+    // This effect runs synchronously before the browser paints.
+    // It's ideal for logic that needs to run before the user sees the content.
+    if (typeof window !== 'undefined') {
+        const today = new Date();
+        const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+        setDailyQuote(quotes[dayOfYear % quotes.length]);
+
+        let sessionImage = sessionStorage.getItem('loginBgImage');
+        if (!sessionImage) {
+            const randomIndex = Math.floor(Math.random() * backgroundImages.length);
+            sessionImage = backgroundImages[randomIndex];
+            sessionStorage.setItem('loginBgImage', sessionImage);
+        }
+        setBackgroundImage(sessionImage);
     }
-    setBackgroundImage(sessionImage);
   }, []);
 
   useEffect(() => {
