@@ -188,7 +188,7 @@
 }
 
 .login-bg-slideshow {
-    transition: background-image 1s ease-in-out;
+    transition: opacity 1s ease-in-out;
 }
 
 .login-grid {

@@ -81,9 +81,9 @@ export default function LoginPage() {
     
     const imageInterval = setInterval(() => {
         setCurrentImageIndex(prevIndex => (prevIndex + 1) % backgroundImages.length);
-    }, 3000); // Change image every 3 seconds
+    }, 3000); 
 
-    return () => clearInterval(imageInterval); // Cleanup on component unmount
+    return () => clearInterval(imageInterval);
   }, []);
 
 
@@ -272,11 +272,20 @@ export default function LoginPage() {
         <div className="relative group login-grid">
          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}
-          <div
-              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center login-bg-slideshow"
-              style={{ backgroundImage: `url(${backgroundImages[currentImageIndex]})` }}
-          >
-               <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
+          <div className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl overflow-hidden">
+             <div className="absolute inset-0 z-0">
+                {backgroundImages.map((src, index) => (
+                    <div
+                        key={src}
+                        className="absolute inset-0 bg-cover bg-center login-bg-slideshow"
+                        style={{
+                            backgroundImage: `url(${src})`,
+                            opacity: index === currentImageIndex ? 1 : 0,
+                        }}
+                    />
+                ))}
+            </div>
+            <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={180} height={48} className="object-contain" />
             </div>
