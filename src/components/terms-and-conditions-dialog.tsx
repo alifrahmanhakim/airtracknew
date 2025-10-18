@@ -13,7 +13,6 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
-import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
 
 interface TermsAndConditionsDialogProps {
@@ -24,27 +23,11 @@ interface TermsAndConditionsDialogProps {
 export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndConditionsDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [hasScrolledToEnd, setHasScrolledToEnd] = React.useState(false);
+  const scrollEndRef = React.useRef<HTMLDivElement>(null);
 
   const handleAccept = () => {
     onCheckedChange(true);
     setOpen(false);
-  };
-
-  const handleCheckboxClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // Prevent default checkbox behavior
-    if (!checked) {
-      setOpen(true);
-    } else {
-      onCheckedChange(false);
-    }
-  };
-
-  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-    // Check if the user has scrolled to the bottom (with a small tolerance)
-    if (scrollHeight - scrollTop <= clientHeight + 1) {
-      setHasScrolledToEnd(true);
-    }
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -55,6 +38,32 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
       }
   }
 
+  React.useEffect(() => {
+    if (!open) return;
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            const entry = entries[0];
+            if (entry.isIntersecting) {
+                setHasScrolledToEnd(true);
+                observer.disconnect(); // Stop observing once it's visible
+            }
+        },
+        { threshold: 1.0 } // Trigger when 100% of the element is visible
+    );
+
+    const currentRef = scrollEndRef.current;
+    if (currentRef) {
+        observer.observe(currentRef);
+    }
+
+    return () => {
+        if (currentRef) {
+            observer.unobserve(currentRef);
+        }
+    };
+  }, [open]);
+
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -62,12 +71,18 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
             <Checkbox
                 id="terms"
                 checked={checked}
-                onCheckedChange={() => {
-                  if (checked) {
-                    onCheckedChange(false);
+                onCheckedChange={(isChecked) => {
+                  if (isChecked) {
+                    onCheckedChange(true);
                   } else {
                     setOpen(true);
                   }
+                }}
+                onClick={(e) => {
+                    if(!checked) {
+                        e.preventDefault();
+                        setOpen(true);
+                    }
                 }}
                 aria-label="Agree to terms and conditions"
             />
@@ -99,7 +114,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
             Aplikasi Internal AirTrack DKPPU
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[60vh] pr-6" onScroll={handleScroll}>
+        <ScrollArea className="h-[60vh] pr-6">
             <div className="space-y-4 text-foreground/80">
                 <p>Syarat dan Ketentuan Penggunaan ("Ketentuan") ini merupakan aturan yang mengikat secara hukum antara Penyelenggara Sistem Elektronik, yaitu Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("Penyelenggara"), dengan Anda selaku pegawai di lingkungan Subdirektorat Standardisasi DKPPU ("Pengguna") dalam penggunaan Aplikasi AirTrack ("Layanan").</p>
                 <p>Dengan melakukan registrasi dan/atau menggunakan Layanan ini, Anda menyatakan telah membaca, memahami, menyetujui, dan akan mematuhi seluruh Ketentuan yang tertulis di bawah ini.</p>
@@ -170,6 +185,8 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
 
                 <h3 className="font-bold pt-4">Pasal 11: Kontak dan Laporan</h3>
                 <p>Jika Pengguna memiliki pertanyaan mengenai Ketentuan ini atau ingin melaporkan dugaan pelanggaran, silakan hubungi administrator sistem melalui email: riskregisterdkppu@gmail.com.</p>
+                
+                <div ref={scrollEndRef} />
             </div>
         </ScrollArea>
         <DialogFooter>
