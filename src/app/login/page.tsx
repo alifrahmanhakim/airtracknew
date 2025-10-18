@@ -249,7 +249,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side */}
-          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/80 rounded-r-3xl">
+          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/60 backdrop-blur-sm rounded-r-3xl">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
@@ -312,7 +312,7 @@ export default function LoginPage() {
                                       <span className="w-full border-t border-border" />
                                   </div>
                                   <div className="relative flex justify-center text-xs uppercase">
-                                      <span className="bg-card px-2 text-muted-foreground">Or register with</span>
+                                      <span className="bg-card/60 px-2 text-muted-foreground">Or register with</span>
                                   </div>
                               </div>
                               <div className="grid grid-cols-1 gap-4">
@@ -383,7 +383,7 @@ export default function LoginPage() {
                                       <span className="w-full border-t border-border" />
                                   </div>
                                   <div className="relative flex justify-center text-xs uppercase">
-                                      <span className="bg-card px-2 text-muted-foreground">Or register with</span>
+                                      <span className="bg-card/60 px-2 text-muted-foreground">Or register with</span>
                                   </div>
                               </div>
                               <div className="grid grid-cols-1 gap-4">
