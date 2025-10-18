@@ -219,8 +219,9 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
         className="relative p-6 rounded-xl text-white overflow-hidden"
         style={{
             backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_4elp964elp964elp.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundSize: '50%',
+            backgroundPosition: 'right center',
+            backgroundRepeat: 'no-repeat',
         }}
       >
         <div className="absolute inset-0 bg-black/50"></div>
