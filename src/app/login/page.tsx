@@ -81,7 +81,7 @@ export default function LoginPage() {
     
     const imageInterval = setInterval(() => {
         setCurrentImageIndex(prevIndex => (prevIndex + 1) % backgroundImages.length);
-    }, 3000); 
+    }, 5000); 
 
     return () => clearInterval(imageInterval);
   }, []);
