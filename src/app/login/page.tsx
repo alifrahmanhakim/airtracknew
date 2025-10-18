@@ -265,9 +265,9 @@ export default function LoginPage() {
             <div className="z-20">
                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={180} height={48} className="object-contain" />
             </div>
-             <div className="text-white z-20">
-              <h2 className="text-3xl font-semibold italic">"{dailyQuote.text}"</h2>
-              <p className="text-right mt-2 font-medium">- {dailyQuote.author}</p>
+             <div className="z-20">
+              <h2 className="text-3xl font-semibold italic bg-gradient-to-r from-white via-sky-300 to-blue-400 bg-clip-text text-transparent">"{dailyQuote.text}"</h2>
+              <p className="text-right mt-2 font-medium text-white/80">- {dailyQuote.author}</p>
             </div>
           </div>
 
