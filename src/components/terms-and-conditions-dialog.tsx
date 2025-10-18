@@ -62,16 +62,10 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                 checked={checked}
                 onCheckedChange={(isChecked) => {
                     if (isChecked) {
-                        onCheckedChange(true);
-                    } else if (!isChecked && checked) {
+                        // Allow unchecking directly
                         onCheckedChange(false);
                     } else {
-                        handleOpenChange(true);
-                    }
-                }}
-                onClick={(e) => {
-                    if (!checked) {
-                        e.preventDefault();
+                        // If trying to check, open dialog
                         handleOpenChange(true);
                     }
                 }}
@@ -108,7 +102,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-6">
-            <div className="space-y-4 text-foreground/80">
+            <div className="space-y-4 text-justify text-foreground/80">
                 <p>Syarat dan Ketentuan Penggunaan ("Ketentuan") ini merupakan aturan yang mengikat secara hukum antara Penyelenggara Sistem Elektronik, yaitu Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("Penyelenggara"), dengan Anda selaku pegawai di lingkungan Subdirektorat Standardisasi DKPPU ("Pengguna") dalam penggunaan Aplikasi AirTrack ("Layanan").</p>
                 <p>Dengan melakukan registrasi dan/atau menggunakan Layanan ini, Anda menyatakan telah membaca, memahami, menyetujui, dan akan mematuhi seluruh Ketentuan yang tertulis di bawah ini.</p>
 
