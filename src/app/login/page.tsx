@@ -236,8 +236,7 @@ export default function LoginPage() {
          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}
           <div
-              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center"
-              style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
+              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center login-background-alt"
           >
                <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
