@@ -233,7 +233,7 @@ export default function LoginPage() {
     <>
       <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
         <div className="relative group login-grid">
-         <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+         <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}
           <div
               className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center login-background-alt"
