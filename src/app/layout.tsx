@@ -28,9 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-       <head>
-        <link rel="icon" href="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" sizes="any" />
-      </head>
+      <head />
       <body className={cn("min-h-screen font-sans antialiased", fontSans.variable)}>
         <ThemeProvider
           attribute="class"
