@@ -249,7 +249,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side */}
-          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-black/30 backdrop-blur-lg rounded-r-3xl">
+          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/80 rounded-r-3xl">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
@@ -260,8 +260,8 @@ export default function LoginPage() {
                     <div className="h-full flex flex-col">
                         <div className="flex-grow">
                             <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
-                            <h1 className="text-3xl font-bold text-white">Login</h1>
-                            <p className="text-sm text-white/80 mt-2">
+                            <h1 className="text-3xl font-bold">Login</h1>
+                            <p className="text-sm text-muted-foreground mt-2">
                                 Don't have an account?{' '}
                                 <button onClick={toggleView} className="font-semibold text-primary hover:underline" disabled={isCheckingAuth}>
                                     Create account
@@ -296,7 +296,7 @@ export default function LoginPage() {
                                     <Label htmlFor="login-password">Password</Label>
                                     <div className="relative">
                                         <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting || isCheckingAuth} />
-                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
                                             {showPassword ? <EyeOff /> : <Eye />}
                                         </Button>
                                     </div>
@@ -309,14 +309,14 @@ export default function LoginPage() {
                         <div className="mt-auto pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
-                                      <span className="w-full border-t border-white/20" />
+                                      <span className="w-full border-t border-border" />
                                   </div>
                                   <div className="relative flex justify-center text-xs uppercase">
-                                      <span className="bg-background px-2 text-muted-foreground">Or register with</span>
+                                      <span className="bg-card px-2 text-muted-foreground">Or register with</span>
                                   </div>
                               </div>
                               <div className="grid grid-cols-1 gap-4">
-                                  <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isCheckingAuth}>
+                                  <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isCheckingAuth}>
                                       {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                                       Google
                                   </Button>
@@ -328,8 +328,8 @@ export default function LoginPage() {
                     <div className="h-full flex flex-col">
                         <div className="flex-grow">
                             <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
-                            <h1 className="text-3xl font-bold text-white">Create an account</h1>
-                            <p className="text-sm text-white/80 mt-2">
+                            <h1 className="text-3xl font-bold">Create an account</h1>
+                            <p className="text-sm text-muted-foreground mt-2">
                                 Already have an account?{' '}
                                 <button onClick={toggleView} className="font-semibold text-primary hover:underline">
                                     Log in
@@ -355,7 +355,7 @@ export default function LoginPage() {
                                     <Label htmlFor="signup-password">Password</Label>
                                     <div className="relative">
                                         <Input id="signup-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting} />
-                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-white/70" onClick={() => setShowPassword(!showPassword)}>
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
                                             {showPassword ? <EyeOff /> : <Eye />}
                                         </Button>
                                     </div>
@@ -365,7 +365,7 @@ export default function LoginPage() {
                                     <div className="grid gap-1.5 leading-none">
                                         <label
                                             htmlFor="terms"
-                                            className="text-sm text-white/80 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
                                             I agree to the{' '}
                                             <TermsAndConditionsDialog />
@@ -380,14 +380,14 @@ export default function LoginPage() {
                           <div className="mt-auto pt-6">
                               <div className="relative my-6">
                                   <div className="absolute inset-0 flex items-center">
-                                      <span className="w-full border-t border-white/20" />
+                                      <span className="w-full border-t border-border" />
                                   </div>
                                   <div className="relative flex justify-center text-xs uppercase">
-                                      <span className="bg-background px-2 text-muted-foreground">Or register with</span>
+                                      <span className="bg-card px-2 text-muted-foreground">Or register with</span>
                                   </div>
                               </div>
                               <div className="grid grid-cols-1 gap-4">
-                                  <Button variant="outline" className="w-full bg-white/10 border-white/20 hover:bg-white/20 text-white" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                  <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
                                       {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                                       Google
                                   </Button>
