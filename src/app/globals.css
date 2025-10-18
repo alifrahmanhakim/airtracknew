@@ -181,14 +181,12 @@
 }
 
 .login-background {
-    background-image: url('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/assets%2Fairplane-flying-through-fantasy-world-with-mythical-landscape-2.webp?alt=media&token=8d27192f-a25e-4458-a833-a20c38b25590');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 }
 
 .login-background-alt {
-    background-image: url('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/assets%2Fshiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp?alt=media&token=1d6f5f3e-8c38-4f27-9617-4f27357e6274');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
