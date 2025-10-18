@@ -279,218 +279,218 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
 
     return (
         <TooltipProvider>
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <div 
-              className="relative mb-4 p-6 rounded-xl text-white overflow-hidden"
-              style={{
-                backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png')",
-                backgroundSize: '50%',
-                backgroundPosition: 'right center',
-                backgroundRepeat: 'no-repeat',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/50 z-0"></div>
-              <div className="relative z-10">
-                <h1 className="text-3xl font-bold tracking-tight">Aviation Regulation Management Dashboard</h1>
-                <p className="text-white/80">Central hub for tracking compliance and progress of all CASRs.</p>
-              </div>
-            </div>
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle>Projects Overview</CardTitle>
-                    <CardDescription>A summary of all rulemaking projects.</CardDescription>
-                </CardHeader>
-                 <CardContent className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <div className="lg:col-span-1">
-                       <Card className="h-full">
-                           <CardHeader>
-                               <CardTitle className="text-base">Project Snapshot</CardTitle>
-                           </CardHeader>
-                           <CardContent className="grid grid-cols-1 gap-3">
-                               <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
-                               <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
-                               <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
-                               <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
-                           </CardContent>
-                       </Card>
+            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+                <div
+                    className="relative mb-4 p-6 rounded-xl text-white overflow-hidden"
+                    style={{
+                        backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png')",
+                        backgroundSize: '50%',
+                        backgroundPosition: 'right center',
+                        backgroundRepeat: 'no-repeat',
+                    }}
+                >
+                    <div className="absolute inset-0 bg-black/50 z-0"></div>
+                    <div className="relative z-10">
+                        <h1 className="text-3xl font-bold tracking-tight">Aviation Regulation Management Dashboard</h1>
+                        <p className="text-white/80">Central hub for tracking compliance and progress of all CASRs.</p>
                     </div>
-                    <div className="lg:col-span-1">
-                        <Card className="h-full border-red-500/50 bg-red-50 dark:bg-red-900/20 flex flex-col">
-                             <CardHeader>
-                                <CardTitle className='flex items-center gap-2 text-base text-red-800 dark:text-red-300'>
-                                    <CalendarX /> 
-                                    Off Track Projects ({offTrackProjects.length})
-                                </CardTitle>
-                                <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex-grow">
-                                {offTrackProjects.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {offTrackProjects.map(project => {
-                                            const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
-                                            return (
-                                                <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                                    <div className="flex items-center justify-between gap-4">
-                                                        <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
-                                                        <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
-                                                    </div>
-                                                </Link>
-                                            )
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4 h-full flex flex-col justify-center items-center">
-                                        <CheckCircle className="mx-auto h-8 w-8 mb-2" />
-                                        No projects are off track.
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                     <div className="lg:col-span-1">
-                         <Card className="h-full">
-                            <CardHeader>
-                                <CardTitle className="text-base">Status Distribution</CardTitle>
-                            </CardHeader>
-                            <CardContent className="h-48 flex items-center justify-center">
-                                <ChartContainer config={{}} className="w-full h-full">
-                                    <ResponsiveContainer>
-                                        <PieChart>
-                                            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                            <Pie data={stats.distribution} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={2}>
-                                                {stats.distribution.map((entry) => (
-                                                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                                                ))}
-                                            </Pie>
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-                            </CardContent>
-                             <CardFooter className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
-                                {stats.distribution.filter(d => d.value > 0).map(item => {
-                                    const percentage = stats.total > 0 ? (item.value / stats.total) * 100 : 0;
-                                    return (
-                                        <div key={item.name} className="flex items-center gap-1.5">
-                                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-                                            <span>{item.name} ({percentage.toFixed(0)}%)</span>
-                                        </div>
-                                    )
-                                })}
-                            </CardFooter>
-                        </Card>
-                    </div>
-                   <div className="lg:col-span-1">
-                        <StatusLogicGuide />
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {recentlyAddedTasks.length > 0 && (
-                <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60">
+                <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
-                            <History /> Recently Added Tasks
-                        </CardTitle>
-                        <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
-                            The most recently created tasks across all rulemaking projects.
-                        </CardDescription>
+                        <CardTitle>Projects Overview</CardTitle>
+                        <CardDescription>A summary of all rulemaking projects.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        {recentlyAddedTasks.slice(0, 5).map((task, index) => {
-                            const createdAtDate = task.createdAt && isValid(new Date(task.createdAt)) ? new Date(task.createdAt) : null;
-                             const project = projects.find(p => p.id === task.projectId);
-                             const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
-                            return (
-                                <div key={task.id}>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex items-start gap-4">
-                                            <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
-                                            <div>
-                                                <p className="font-semibold text-sm">{task.title}</p>
-                                                <p className="text-xs text-muted-foreground">
-                                                   In project: {task.projectName}
-                                                   {createdAtDate && (
-                                                       <span className="ml-2">
-                                                            - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
-                                                       </span>
-                                                   )}
-                                                </p>
-                                            </div>
+                    <CardContent className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <div className="lg:col-span-1">
+                        <Card className="h-full">
+                            <CardHeader>
+                                <CardTitle className="text-base">Project Snapshot</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-1 gap-3">
+                                <StatusCard title="Total Regulations" count={stats.total} icon={List} projects={projects} />
+                                <StatusCard title="Completed" count={stats.statusGroups['Completed'].length} icon={CheckCircle} className="text-green-500" projects={stats.statusGroups['Completed']} />
+                                <StatusCard title="On Track" count={stats.statusGroups['On Track'].length} icon={Clock} className="text-blue-500" projects={stats.statusGroups['On Track']} />
+                                <StatusCard title="At Risk" count={stats.statusGroups['At Risk'].length} icon={AlertTriangle} className="text-yellow-500" projects={stats.statusGroups['At Risk']} />
+                            </CardContent>
+                        </Card>
+                        </div>
+                        <div className="lg:col-span-1">
+                            <Card className="h-full border-red-500/50 bg-red-50 dark:bg-red-900/20 flex flex-col">
+                                <CardHeader>
+                                    <CardTitle className='flex items-center gap-2 text-base text-red-800 dark:text-red-300'>
+                                        <CalendarX /> 
+                                        Off Track Projects ({offTrackProjects.length})
+                                    </CardTitle>
+                                    <CardDescription className='text-red-700/80 dark:text-red-400/80'>Projects that have passed their deadline.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    {offTrackProjects.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {offTrackProjects.map(project => {
+                                                const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
+                                                return (
+                                                    <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
+                                                            <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
+                                                        </div>
+                                                    </Link>
+                                                )
+                                            })}
                                         </div>
-                                        <Button asChild size="sm" variant="outline">
-                                            <Link href={`/projects/${task.projectId}?type=rulemaking`}>
-                                                View Project <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                    </div>
-                                    {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
-                                </div>
-                            )
-                        })}
+                                    ) : (
+                                        <div className="text-center text-sm text-red-700/80 dark:text-red-400/80 py-4 h-full flex flex-col justify-center items-center">
+                                            <CheckCircle className="mx-auto h-8 w-8 mb-2" />
+                                            No projects are off track.
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                        <div className="lg:col-span-1">
+                            <Card className="h-full">
+                                <CardHeader>
+                                    <CardTitle className="text-base">Status Distribution</CardTitle>
+                                </CardHeader>
+                                <CardContent className="h-48 flex items-center justify-center">
+                                    <ChartContainer config={{}} className="w-full h-full">
+                                        <ResponsiveContainer>
+                                            <PieChart>
+                                                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                                <Pie data={stats.distribution} dataKey="value" nameKey="name" innerRadius="60%" strokeWidth={2}>
+                                                    {stats.distribution.map((entry) => (
+                                                        <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </ChartContainer>
+                                </CardContent>
+                                <CardFooter className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
+                                    {stats.distribution.filter(d => d.value > 0).map(item => {
+                                        const percentage = stats.total > 0 ? (item.value / stats.total) * 100 : 0;
+                                        return (
+                                            <div key={item.name} className="flex items-center gap-1.5">
+                                                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                                <span>{item.name} ({percentage.toFixed(0)}%)</span>
+                                            </div>
+                                        )
+                                    })}
+                                </CardFooter>
+                            </Card>
+                        </div>
+                    <div className="lg:col-span-1">
+                            <StatusLogicGuide />
+                        </div>
                     </CardContent>
                 </Card>
-            )}
 
-            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mt-8 mb-4 gap-4'>
-                 <h2 className="text-2xl font-bold tracking-tight">All Regulations</h2>
-                 <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'card' | 'table')} aria-label="View mode">
-                        <ToggleGroupItem value="card" aria-label="Card view">
-                            <LayoutGrid className="h-4 w-4" />
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="table" aria-label="Table view">
-                            <ListFilter className="h-4 w-4" />
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                    <AddRulemakingProjectDialog allUsers={allUsers} />
-                 </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-6">
-                <div className="relative w-full sm:max-w-xs">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        placeholder="Search by CASR ID, title, etc..." 
-                        className="pl-9"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="On Track">On Track</SelectItem>
-                        <SelectItem value="At Risk">At Risk</SelectItem>
-                        <SelectItem value="Off Track">Off Track</SelectItem>
-                        <SelectItem value="Completed">Completed</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Select value={tagFilter} onValueChange={setTagFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by tag..." /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Tags</SelectItem>
-                        {allTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-            
-            <main>
-                 {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                       {filteredProjects.map(project => (
-                           <ProjectCard
-                               key={project.id}
-                               project={project}
-                               allUsers={allUsers}
-                           />
-                       ))}
-                    </div>
-                ) : (
-                    <RulemakingTable projects={filteredProjects} sort={sort} setSort={setSort} />
+                {recentlyAddedTasks.length > 0 && (
+                    <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                <History /> Recently Added Tasks
+                            </CardTitle>
+                            <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
+                                The most recently created tasks across all rulemaking projects.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {recentlyAddedTasks.slice(0, 5).map((task, index) => {
+                                const createdAtDate = task.createdAt && isValid(new Date(task.createdAt)) ? new Date(task.createdAt) : null;
+                                const project = projects.find(p => p.id === task.projectId);
+                                const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
+                                return (
+                                    <div key={task.id}>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex items-start gap-4">
+                                                <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
+                                                <div>
+                                                    <p className="font-semibold text-sm">{task.title}</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                    In project: {task.projectName}
+                                                    {createdAtDate && (
+                                                        <span className="ml-2">
+                                                                - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
+                                                        </span>
+                                                    )}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button asChild size="sm" variant="outline">
+                                                <Link href={`/projects/${task.projectId}?type=rulemaking`}>
+                                                    View Project <ArrowRight className="ml-2 h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                        </div>
+                                        {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
+                                    </div>
+                                )
+                            })}
+                        </CardContent>
+                    </Card>
                 )}
+
+                <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mt-8 mb-4 gap-4'>
+                    <h2 className="text-2xl font-bold tracking-tight">All Regulations</h2>
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'card' | 'table')} aria-label="View mode">
+                            <ToggleGroupItem value="card" aria-label="Card view">
+                                <LayoutGrid className="h-4 w-4" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="table" aria-label="Table view">
+                                <ListFilter className="h-4 w-4" />
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                        <AddRulemakingProjectDialog allUsers={allUsers} />
+                    </div>
+                </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-6">
+                    <div className="relative w-full sm:max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search by CASR ID, title, etc..." 
+                            className="pl-9"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Statuses</SelectItem>
+                            <SelectItem value="On Track">On Track</SelectItem>
+                            <SelectItem value="At Risk">At Risk</SelectItem>
+                            <SelectItem value="Off Track">Off Track</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={tagFilter} onValueChange={setTagFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Filter by tag..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Tags</SelectItem>
+                            {allTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+                
+                <main>
+                    {viewMode === 'card' ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filteredProjects.map(project => (
+                            <ProjectCard
+                                key={project.id}
+                                project={project}
+                                allUsers={allUsers}
+                            />
+                        ))}
+                        </div>
+                    ) : (
+                        <RulemakingTable projects={filteredProjects} sort={sort} setSort={setSort} />
+                    )}
+                </main>
             </main>
-        </main>
         </TooltipProvider>
     );
 }
