@@ -284,8 +284,9 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
               className="relative mb-4 p-6 rounded-xl text-white overflow-hidden"
               style={{
                 backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                backgroundSize: '50%',
+                backgroundPosition: 'right center',
+                backgroundRepeat: 'no-repeat',
               }}
             >
               <div className="absolute inset-0 bg-black/50 z-0"></div>
@@ -493,3 +494,5 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
         </TooltipProvider>
     );
 }
+
+    
