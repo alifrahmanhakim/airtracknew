@@ -40,8 +40,8 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-    // Add a small threshold (e.g., 5px) to account for fractional values
-    if (scrollTop + clientHeight >= scrollHeight - 5) {
+    // Increase threshold to make detection more reliable across browsers/devices
+    if (scrollTop + clientHeight >= scrollHeight - 20) {
       setHasScrolledToEnd(true);
     }
   };
