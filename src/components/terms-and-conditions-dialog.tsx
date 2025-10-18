@@ -22,8 +22,7 @@ interface TermsAndConditionsDialogProps {
 
 export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndConditionsDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const [hasScrolledToEnd, setHasScrolledToEnd] = React.useState(false);
-  const scrollEndRef = React.useRef<HTMLDivElement>(null);
+  const [isButtonActive, setIsButtonActive] = React.useState(false);
 
   const handleAccept = () => {
     onCheckedChange(true);
@@ -33,37 +32,16 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
   const handleOpenChange = (isOpen: boolean) => {
       setOpen(isOpen);
       if (isOpen) {
-          // Reset scroll state when dialog opens
-          setHasScrolledToEnd(false);
+          // Reset button state when dialog opens
+          setIsButtonActive(false);
+          // Set a timer to enable the button after a delay
+          const timer = setTimeout(() => {
+              setIsButtonActive(true);
+          }, 2000); // 2-second delay
+          
+          return () => clearTimeout(timer);
       }
   }
-
-  React.useEffect(() => {
-    if (!open) return;
-
-    const observer = new IntersectionObserver(
-        (entries) => {
-            const entry = entries[0];
-            if (entry.isIntersecting) {
-                setHasScrolledToEnd(true);
-                observer.disconnect(); // Stop observing once it's visible
-            }
-        },
-        { threshold: 1.0 } // Trigger when 100% of the element is visible
-    );
-
-    const currentRef = scrollEndRef.current;
-    if (currentRef) {
-        observer.observe(currentRef);
-    }
-
-    return () => {
-        if (currentRef) {
-            observer.unobserve(currentRef);
-        }
-    };
-  }, [open]);
-
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -71,36 +49,33 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
             <Checkbox
                 id="terms"
                 checked={checked}
-                onCheckedChange={(isChecked) => {
-                  if (isChecked) {
-                    onCheckedChange(true);
-                  } else {
-                    setOpen(true);
-                  }
-                }}
                 onClick={(e) => {
                     if(!checked) {
                         e.preventDefault();
-                        setOpen(true);
+                        handleOpenChange(true);
+                    } else {
+                        onCheckedChange(false);
                     }
                 }}
                 aria-label="Agree to terms and conditions"
             />
-            <div className="grid gap-1.5 leading-none">
-                 <label
+             <div className="grid gap-1.5 leading-none">
+                <label
                     htmlFor="terms"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                     I agree to the{' '}
-                    <span
-                        className="underline hover:text-primary cursor-pointer"
+                     <Button
+                        type="button"
+                        variant="link"
+                        className="p-0 h-auto text-sm"
                         onClick={(e) => {
-                            e.preventDefault();
-                            setOpen(true);
+                           e.preventDefault();
+                           handleOpenChange(true);
                         }}
                     >
                         Terms & Conditions
-                    </span>
+                    </Button>
                 </label>
             </div>
         </div>
@@ -186,14 +161,15 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                 <h3 className="font-bold pt-4">Pasal 11: Kontak dan Laporan</h3>
                 <p>Jika Pengguna memiliki pertanyaan mengenai Ketentuan ini atau ingin melaporkan dugaan pelanggaran, silakan hubungi administrator sistem melalui email: riskregisterdkppu@gmail.com.</p>
                 
-                <div ref={scrollEndRef} />
             </div>
         </ScrollArea>
         <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Decline</Button>
-            <Button onClick={handleAccept} disabled={!hasScrolledToEnd}>Accept</Button>
+            <Button onClick={handleAccept} disabled={!isButtonActive}>Accept</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+    
