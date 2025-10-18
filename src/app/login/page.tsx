@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle } from "lucide-react";
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 import { db, auth, googleProvider } from '@/lib/firebase';
 import { 
@@ -72,25 +72,20 @@ export default function LoginPage() {
   const [progress, setProgress] = useState(0);
   
   const [dailyQuote, setDailyQuote] = useState({ text: 'Aviation Safety', author: 'Starts Here' });
-  const [backgroundImage, setBackgroundImage] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+   useEffect(() => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    setDailyQuote(quotes[dayOfYear % quotes.length]);
+    
+    const imageInterval = setInterval(() => {
+        setCurrentImageIndex(prevIndex => (prevIndex + 1) % backgroundImages.length);
+    }, 3000); // Change image every 3 seconds
 
-  useLayoutEffect(() => {
-    // This effect runs synchronously before the browser paints.
-    // It's ideal for logic that needs to run before the user sees the content.
-    if (typeof window !== 'undefined') {
-        const today = new Date();
-        const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-        setDailyQuote(quotes[dayOfYear % quotes.length]);
-
-        let sessionImage = sessionStorage.getItem('loginBgImage');
-        if (!sessionImage) {
-            const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-            sessionImage = backgroundImages[randomIndex];
-            sessionStorage.setItem('loginBgImage', sessionImage);
-        }
-        setBackgroundImage(sessionImage);
-    }
+    return () => clearInterval(imageInterval); // Cleanup on component unmount
   }, []);
+
 
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -278,8 +273,8 @@ export default function LoginPage() {
          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}
           <div
-              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center"
-              style={{ backgroundImage: `url(${backgroundImage})` }}
+              className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl bg-cover bg-center login-bg-slideshow"
+              style={{ backgroundImage: `url(${backgroundImages[currentImageIndex]})` }}
           >
                <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
