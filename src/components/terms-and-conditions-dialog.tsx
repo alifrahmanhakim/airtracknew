@@ -14,7 +14,7 @@ export function TermsAndConditionsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <a href="#" className="underline text-white hover:text-primary" onClick={(e) => e.preventDefault()}>
+        <a href="#" className="underline hover:text-primary" onClick={(e) => e.preventDefault()}>
           Terms & Conditions
         </a>
       </DialogTrigger>
