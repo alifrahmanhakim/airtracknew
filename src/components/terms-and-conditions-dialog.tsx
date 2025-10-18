@@ -30,7 +30,8 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
     setOpen(false);
   };
 
-  const handleCheckboxClick = () => {
+  const handleCheckboxClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Prevent default checkbox behavior
     if (!checked) {
       setOpen(true);
     } else {
@@ -40,24 +41,38 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
-    // Increase threshold to make detection more reliable across browsers/devices
-    if (scrollTop + clientHeight >= scrollHeight - 20) {
+    // Check if the user has scrolled to the bottom (with a small tolerance)
+    if (scrollHeight - scrollTop <= clientHeight + 1) {
       setHasScrolledToEnd(true);
     }
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+      setOpen(isOpen);
+      if (isOpen) {
+          // Reset scroll state when dialog opens
+          setHasScrolledToEnd(false);
+      }
+  }
+
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
         <div className="items-top flex space-x-3 pt-2">
             <Checkbox
                 id="terms"
                 checked={checked}
-                onCheckedChange={handleCheckboxClick}
+                onCheckedChange={() => {
+                  if (checked) {
+                    onCheckedChange(false);
+                  } else {
+                    setOpen(true);
+                  }
+                }}
                 aria-label="Agree to terms and conditions"
             />
             <div className="grid gap-1.5 leading-none">
-                <Label
+                 <label
                     htmlFor="terms"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
@@ -71,7 +86,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                     >
                         Terms & Conditions
                     </span>
-                </Label>
+                </label>
             </div>
         </div>
 
