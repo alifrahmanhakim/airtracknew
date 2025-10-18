@@ -235,7 +235,7 @@ export default function LoginPage() {
         <div className="login-grid">
           {/* Left Side */}
           <div
-              className="hidden md:flex flex-col justify-between p-8 relative rounded-l-3xl bg-cover bg-center"
+              className="hidden md:flex flex-col justify-between p-8 relative rounded-l-3xl bg-cover bg-center animate-in fade-in slide-in-from-left-12 duration-1000"
               style={{ backgroundImage: "url('https://i.postimg.cc/Jr505JMg/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp')" }}
           >
                <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
@@ -253,13 +253,14 @@ export default function LoginPage() {
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
+            <div className='flex-grow flex flex-col justify-center'>
               {isLoginView ? (
                   // Login View
                   <div>
                       <div>
                           <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
                           <h1 className="text-3xl font-bold text-white">Login</h1>
-                          <p className="text-sm text-white/70 mt-2">
+                          <p className="text-sm text-white/80 mt-2">
                               Don't have an account?{' '}
                               <button onClick={toggleView} className="font-semibold text-primary hover:underline" disabled={isCheckingAuth}>
                                   Create account
@@ -327,7 +328,7 @@ export default function LoginPage() {
                        <div>
                           <Image src="https://i.postimg.cc/6qPgDcy2/faviconairtrack.png" alt="AirTrack Logo" width={50} height={50} className="object-contain mb-4" />
                           <h1 className="text-3xl font-bold text-white">Create an account</h1>
-                          <p className="text-sm text-white/70 mt-2">
+                          <p className="text-sm text-white/80 mt-2">
                               Already have an account?{' '}
                               <button onClick={toggleView} className="font-semibold text-primary hover:underline">
                                   Log in
@@ -361,13 +362,12 @@ export default function LoginPage() {
                               <div className="items-top flex space-x-2 pt-2">
                                   <Checkbox id="terms" required disabled={isSubmitting} />
                                     <div className="grid gap-1.5 leading-none">
-                                        <label
+                                        <Label
                                             htmlFor="terms"
                                             className="text-sm text-white/70 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
-                                            I agree to the{' '}
-                                        </label>
-                                        <TermsAndConditionsDialog />
+                                            I agree to the <TermsAndConditionsDialog />
+                                        </Label>
                                     </div>
                               </div>
                               <Button type="submit" className="w-full !mt-6" disabled={isSubmitting}>
@@ -393,6 +393,7 @@ export default function LoginPage() {
                         </div>
                   </div>
               )}
+            </div>
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
                 <StatusIndicator variant="icon" />
             </div>
@@ -403,4 +404,3 @@ export default function LoginPage() {
   );
 }
 
-    
