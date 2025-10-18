@@ -47,8 +47,7 @@ export default function LoginPage() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [fullName, setFullName] = useState('');
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -176,7 +175,7 @@ export default function LoginPage() {
   
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-     if (!firstName || !lastName || !email || !password) {
+     if (!fullName || !email || !password) {
         setError("Please fill out all required fields.");
         return;
     }
@@ -188,7 +187,6 @@ export default function LoginPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      const fullName = `${'firstName'} ${'lastName'}`.trim();
       await updateProfile(firebaseUser, { displayName: fullName });
 
       const newUser: Omit<User, 'id'> = {
@@ -203,8 +201,7 @@ export default function LoginPage() {
       
       setSignupSuccess(true);
       setIsLoginView(true);
-      setFirstName('');
-      setLastName('');
+      setFullName('');
       setEmail('');
       setPassword('');
 
@@ -268,7 +265,7 @@ export default function LoginPage() {
                                 </button>
                             </p>
                             {isCheckingAuth && (
-                                  <Alert variant="default" className="mt-6 bg-yellow-500/10 border-yellow-500/30 text-yellow-700 dark:text-yellow-300">
+                                  <Alert variant="default" className="mt-6 bg-yellow-100 border-yellow-300 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
                                       <AlertTriangle className="h-4 w-4 !text-yellow-500" />
                                       <AlertTitle className="font-bold">Connecting</AlertTitle>
                                       <AlertDescription>
@@ -337,15 +334,9 @@ export default function LoginPage() {
                             </p>
                             {error && <Alert variant="destructive" className="mt-6"><AlertTitle>Signup Failed</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
                             <form onSubmit={handleSignup} className="space-y-4 mt-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="signup-firstname">First Name</Label>
-                                        <Input id="signup-firstname" type="text" placeholder="Fletcher" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isSubmitting} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="signup-lastname">Last Name</Label>
-                                        <Input id="signup-lastname" type="text" placeholder="Donohue" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isSubmitting} />
-                                    </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="signup-fullname">Full Name</Label>
+                                    <Input id="signup-fullname" type="text" placeholder="Fletcher Donohue" value={fullName} onChange={(e) => setFullName(e.target.value)} required disabled={isSubmitting} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-email">Email</Label>
@@ -397,7 +388,7 @@ export default function LoginPage() {
                 )}
               </div>
             </div>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50">
+             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50">
                 <StatusIndicator variant="icon" />
             </div>
           </div>
