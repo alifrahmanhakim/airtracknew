@@ -368,32 +368,32 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-         <div className="mb-4">
-          <div className="p-4 rounded-lg bg-card/80 backdrop-blur-sm w-full">
-            <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
-            <p className="text-muted-foreground">An overview of all team-based projects.</p>
-          </div>
-          <div className="flex items-center gap-2 w-full justify-end mt-4">
-             <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Select a year..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map(year => (
-                    <SelectItem key={year} value={String(year)}>
-                      {year === 'all' ? 'All Years' : year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            {isAdmin && (
-              <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={allProjects.length === 0}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete All
-              </Button>
-            )}
-            <AddTimKerjaProjectDialog allUsers={allUsers} />
-          </div>
+         <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-lg bg-card/80 backdrop-blur-sm w-full">
+            <div className="flex-1">
+                <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
+                <p className="text-muted-foreground">An overview of all team-based projects.</p>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Select a year..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {yearOptions.map(year => (
+                        <SelectItem key={year} value={String(year)}>
+                        {year === 'all' ? 'All Years' : year}
+                        </SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                {isAdmin && (
+                <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={allProjects.length === 0}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete All
+                </Button>
+                )}
+                <AddTimKerjaProjectDialog allUsers={allUsers} />
+            </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="relative group overflow-hidden rounded-lg">
@@ -466,36 +466,64 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           </div>
         </div>
         
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 gap-4">
             {offTrackTasks.length > 0 && (
-                <div className="grid grid-cols-1">
-                    <Collapsible defaultOpen={offTrackTasks.length <= 3}>
-                        <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60 h-full">
-                            <CardHeader>
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                                            <CalendarX /> Off Track Tasks ({offTrackTasks.length})
-                                        </CardTitle>
-                                        <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
-                                            These tasks have passed their due date but are not completed.
-                                        </CardDescription>
-                                    </div>
-                                    <CollapsibleTrigger asChild>
-                                        <Button variant="ghost">
-                                            Show all <ChevronDown className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    </CollapsibleTrigger>
+                <Collapsible defaultOpen={offTrackTasks.length <= 3}>
+                    <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950/80 dark:border-yellow-700/60 h-full">
+                        <CardHeader>
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                                        <CalendarX /> Off Track Tasks ({offTrackTasks.length})
+                                    </CardTitle>
+                                    <CardDescription className="text-yellow-700/80 dark:text-yellow-400/80">
+                                        These tasks have passed their due date but are not completed.
+                                    </CardDescription>
                                 </div>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {offTrackTasks.slice(0, 3).map((task, index) => {
+                                <CollapsibleTrigger asChild>
+                                    <Button variant="ghost">
+                                        Show all <ChevronDown className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </CollapsibleTrigger>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {offTrackTasks.slice(0, 3).map((task, index) => {
+                                const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
+                                return (
+                                    <div key={task.id}>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex items-start gap-4">
+                                                <span className="font-bold text-yellow-700 dark:text-yellow-300 mt-1">{index + 1}.</span>
+                                                <div>
+                                                    <p className="font-semibold text-sm">{task.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Badge variant="destructive" className="whitespace-nowrap">
+                                                    {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
+                                                </Badge>
+                                                <Button size="sm" variant="outline" onClick={() => setTaskToComplete(task)}>
+                                                    Done
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        {index < offTrackTasks.slice(0, 3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
+                                    </div>
+                                )
+                            })}
+                        </CardContent>
+                        <CollapsibleContent>
+                            <CardContent className="space-y-4 pt-0">
+                                {offTrackTasks.length > 3 && <Separator className="mb-4 bg-yellow-200 dark:bg-yellow-800/50" />}
+                                {offTrackTasks.slice(3).map((task, index) => {
                                     const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
                                     return (
                                         <div key={task.id}>
                                             <div className="flex items-center justify-between gap-4">
                                                 <div className="flex items-start gap-4">
-                                                    <span className="font-bold text-yellow-700 dark:text-yellow-300 mt-1">{index + 1}.</span>
+                                                    <span className="font-bold text-yellow-700 dark:text-yellow-300 mt-1">{index + 4}.</span>
                                                     <div>
                                                         <p className="font-semibold text-sm">{task.title}</p>
                                                         <p className="text-xs text-muted-foreground">{task.projectName}</p>
@@ -510,90 +538,58 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                                     </Button>
                                                 </div>
                                             </div>
-                                            {index < offTrackTasks.slice(0, 3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
+                                            {index < offTrackTasks.slice(3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
                                         </div>
                                     )
                                 })}
                             </CardContent>
-                            <CollapsibleContent>
-                                <CardContent className="space-y-4 pt-0">
-                                    {offTrackTasks.length > 3 && <Separator className="mb-4 bg-yellow-200 dark:bg-yellow-800/50" />}
-                                    {offTrackTasks.slice(3).map((task, index) => {
-                                        const daysOverdue = differenceInDays(new Date(), parseISO(task.dueDate));
-                                        return (
-                                            <div key={task.id}>
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <div className="flex items-start gap-4">
-                                                        <span className="font-bold text-yellow-700 dark:text-yellow-300 mt-1">{index + 4}.</span>
-                                                        <div>
-                                                            <p className="font-semibold text-sm">{task.title}</p>
-                                                            <p className="text-xs text-muted-foreground">{task.projectName}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge variant="destructive" className="whitespace-nowrap">
-                                                            {daysOverdue} day{daysOverdue > 1 ? 's' : ''} overdue
-                                                        </Badge>
-                                                        <Button size="sm" variant="outline" onClick={() => setTaskToComplete(task)}>
-                                                            Done
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                                {index < offTrackTasks.slice(3).length - 1 && <Separator className="mt-4 bg-yellow-200 dark:bg-yellow-800/50" />}
-                                            </div>
-                                        )
-                                    })}
-                                </CardContent>
-                            </CollapsibleContent>
-                        </Card>
-                    </Collapsible>
-                </div>
+                        </CollapsibleContent>
+                    </Card>
+                </Collapsible>
             )}
-             <div className="grid grid-cols-1">
-                <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60 h-full">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
-                            <History /> Recently Added Tasks
-                        </CardTitle>
-                        <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
-                            The most recently created tasks across all projects.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {recentlyAddedTasks.slice(0, 5).map((task, index) => {
-                            const createdAtDate = task.createdAt && isValid(new Date(task.createdAt)) ? new Date(task.createdAt) : null;
-                            const project = allProjects.find(p => p.id === task.projectId);
-                            const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
-                            return (
-                                <div key={task.id}>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex items-start gap-4">
-                                            <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
-                                            <div>
-                                                <p className="font-semibold text-sm">{task.title}</p>
-                                                <p className="text-xs text-muted-foreground">
-                                                In project: {task.projectName}
-                                                    {createdAtDate && (
-                                                        <span className="ml-2">
-                                                            - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
-                                                        </span>
-                                                    )}
-                                                </p>
-                                            </div>
+             <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60 h-full">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                        <History /> Recently Added Tasks
+                    </CardTitle>
+                    <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
+                        The most recently created tasks across all projects.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {recentlyAddedTasks.slice(0, 5).map((task, index) => {
+                        const createdAtDate = task.createdAt && isValid(new Date(task.createdAt)) ? new Date(task.createdAt) : null;
+                        const project = allProjects.find(p => p.id === task.projectId);
+                        const creator = project ? allUsers.find(u => u.id === project.ownerId) : null;
+                        return (
+                            <div key={task.id}>
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-start gap-4">
+                                        <span className="font-bold text-blue-700 dark:text-blue-300 mt-1">{index + 1}.</span>
+                                        <div>
+                                            <p className="font-semibold text-sm">{task.title}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                            In project: {task.projectName}
+                                                {createdAtDate && (
+                                                    <span className="ml-2">
+                                                        - Created {format(createdAtDate, 'dd MMM yyyy')} by {creator?.name || 'Unknown'}
+                                                    </span>
+                                                )}
+                                            </p>
                                         </div>
-                                        <Button asChild size="sm" variant="outline">
-                                            <Link href={`/projects/${task.projectId}?type=timkerja`}>
-                                                View Project <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Link>
-                                        </Button>
                                     </div>
-                                    {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
+                                    <Button asChild size="sm" variant="outline">
+                                        <Link href={`/projects/${task.projectId}?type=timkerja`}>
+                                            View Project <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
                                 </div>
-                            )
-                        })}
-                    </CardContent>
-                </Card>
-            </div>
+                                {index < recentlyAddedTasks.slice(0, 5).length - 1 && <Separator className="mt-4 bg-blue-200 dark:bg-blue-800/50" />}
+                            </div>
+                        )
+                    })}
+                </CardContent>
+            </Card>
         </div>
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
@@ -746,5 +742,3 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
     </>
   );
 }
-
-    
