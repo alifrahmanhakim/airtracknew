@@ -181,12 +181,14 @@
 }
 
 .login-background {
+    background-image: url('/images/background-2.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 }
 
 .login-background-alt {
+    background-image: url('/images/background-1.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
