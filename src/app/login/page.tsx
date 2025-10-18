@@ -36,6 +36,18 @@ const GoogleIcon = () => (
     </svg>
 );
 
+const quotes = [
+    { text: "The engine is the heart of an airplane, but the pilot is its soul.", author: "Walter Raleigh" },
+    { text: "Once you have tasted flight, you will forever walk the earth with your eyes turned skyward.", author: "Leonardo da Vinci" },
+    { text: "Flying is more than a sport and more than a job; flying is pure passion and desire.", author: "Adolf Galland" },
+    { text: "To most people, the sky is the limit. To those who love aviation, the sky is home.", author: "Anonymous" },
+    { text: "Aviation is proof that, given the will, we have the capacity to achieve the impossible.", author: "Eddie Rickenbacker" },
+    { text: "The airplane has unveiled for us the true face of the earth.", author: "Antoine de Saint-Exupéry" },
+    { text: "In the sky, there is no distinction of east and west; there is only the rising and the setting of the sun.", author: "The Buddha" },
+    { text: "The good thing about flying is that it's the only time you're truly free.", author: "Anonymous" },
+];
+
+
 export default function LoginPage() {
   const router = useRouter();
   const [isLoginView, setIsLoginView] = useState(true);
@@ -52,6 +64,14 @@ export default function LoginPage() {
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [progress, setProgress] = useState(0);
+  
+  const [dailyQuote, setDailyQuote] = useState({ text: 'Aviation Safety', author: 'Starts Here' });
+
+  useEffect(() => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    setDailyQuote(quotes[dayOfYear % quotes.length]);
+  }, []);
 
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -245,9 +265,9 @@ export default function LoginPage() {
             <div className="z-20">
                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={180} height={48} className="object-contain" />
             </div>
-            <div className="text-white z-20">
-              <h2 className="text-4xl font-bold">Aviation Safety</h2>
-              <h2 className="text-4xl font-bold">Starts Here</h2>
+             <div className="text-white z-20">
+              <h2 className="text-3xl font-semibold italic">"{dailyQuote.text}"</h2>
+              <p className="text-right mt-2 font-medium">- {dailyQuote.author}</p>
             </div>
           </div>
 
