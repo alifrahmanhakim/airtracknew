@@ -381,7 +381,9 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
            <div className="flex flex-col sm:flex-row justify-between items-start w-full z-10 gap-4">
               <div className="flex-1 flex flex-col">
                 <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
-                <p className="text-white/80">An overview of all team-based projects.</p>
+                <p className="text-white/80">
+                  ini dibuat lurus agar tidak melebarkan card
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <Select value={selectedYear} onValueChange={setSelectedYear}>
