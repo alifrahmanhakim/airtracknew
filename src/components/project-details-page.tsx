@@ -72,6 +72,7 @@ import { Input } from './ui/input';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
 import { AnimatedCounter } from './ui/animated-counter';
+import { ProjectTimeline } from './project-timeline';
 
 const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
     if (!value && typeof value !== 'number') return null;
@@ -583,6 +584,9 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-3 space-y-6">
+             <Card>
+                <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
+             </Card>
             
             {project.projectType === 'Rulemaking' && (
               <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
