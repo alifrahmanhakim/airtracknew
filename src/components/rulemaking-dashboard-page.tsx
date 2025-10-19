@@ -283,7 +283,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                 <div
                     className="relative mb-4 p-6 rounded-xl text-white overflow-hidden"
                     style={{
-                        backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png')",
+                        backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Screenshot%202025-10-19%20at%2009.15.10.png')",
                         backgroundSize: '50%',
                         backgroundPosition: 'right center',
                         backgroundRepeat: 'no-repeat',
@@ -331,9 +331,9 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                                                 const daysOverdue = differenceInDays(new Date(), parseISO(project.endDate));
                                                 return (
                                                     <Link key={project.id} href={`/projects/${project.id}?type=rulemaking`} className="block hover:bg-red-100/50 dark:hover:bg-red-900/30 p-2 rounded-md">
-                                                        <div>
-                                                            <p className="font-semibold break-words text-sm">{project.name}</p>
-                                                            <Badge variant="destructive" className="whitespace-nowrap mt-1">{daysOverdue} days overdue</Badge>
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <p className="font-semibold break-words flex-1 text-sm">{project.name}</p>
+                                                            <Badge variant="destructive" className="whitespace-nowrap">{daysOverdue} days overdue</Badge>
                                                         </div>
                                                     </Link>
                                                 )
