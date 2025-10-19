@@ -130,7 +130,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     <Card>
       <CardHeader>
         <CardTitle>Project Timeline</CardTitle>
-        <CardDescription>A centralized timeline of all project tasks.</CardDescription>
+        <CardDescription>A chronological view of all project tasks.</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <TooltipProvider>
@@ -169,7 +169,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
               <div className="relative" style={{ width: 'min-content' }}>
                   {/* Headers */}
                   <div className="sticky top-0 z-30 flex bg-card">
-                      <div className="sticky left-0 z-20 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
+                      <div className="sticky left-0 z-40 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
                           Tasks / Project
                       </div>
                       <div className="flex-shrink-0 border-b" style={{ width: `${totalGridWidth}px` }}>
@@ -222,7 +222,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                       </div>
 
                       <div className="relative" style={{ width: `${totalGridWidth}px` }}>
-                          <div className="absolute inset-0 z-0">
+                          <div className="absolute inset-0 z-10">
                               {viewMode === 'day' ? (
                                   days.map((day, index) => (
                                       <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
@@ -250,7 +250,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                               }
                               return (
-                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
+                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-30" style={{ left: `${todayLeft}px` }} >
                                       <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                           Today
                                       </div>
@@ -258,7 +258,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                               );
                           })()}
 
-                          <div className="relative w-full h-full z-10">
+                          <div className="relative w-full h-full z-20">
                               {sortedTasks.map((task, index) => {
                                   const taskStart = parseISO(task.startDate);
                                   const taskEnd = parseISO(task.dueDate);
