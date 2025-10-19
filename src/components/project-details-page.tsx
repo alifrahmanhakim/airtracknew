@@ -402,7 +402,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
     return allFlattenedTasks.filter(task => isAfter(new Date(), parseISO(task.dueDate)) && task.status !== 'Done');
   }, [project.tasks]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const animation = requestAnimationFrame(() => {
       setAnimatedAttachmentCompletion(attachmentCompletion);
     });
@@ -582,15 +582,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </Card>
       </div>
       
-        <Card className="w-full">
-            <CardHeader>
-                <CardTitle>Project Timeline</CardTitle>
-                <CardDescription>A chronological view of all project tasks.</CardDescription>
-            </CardHeader>
-            <CardContent className="overflow-x-auto p-0">
-                <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
-            </CardContent>
-        </Card>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Project Timeline</CardTitle>
+          <CardDescription>A chronological view of all project tasks.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0 overflow-x-auto">
+          <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-3 space-y-6">
@@ -779,4 +779,3 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
 
 }
-
