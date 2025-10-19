@@ -37,6 +37,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from './ui/scroll-area';
 
 type ProjectTimelineProps = {
   tasks: Task[];
@@ -47,6 +48,7 @@ type ViewMode = 'week' | 'day';
 
 const HEADER_HEIGHT = 64;
 const TASK_LIST_WIDTH = 250;
+const ROW_HEIGHT = 50;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 
@@ -180,12 +182,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
 
   return (
     <TooltipProvider>
-        <CardHeader>
-            <CardTitle>Project Timeline</CardTitle>
-            <CardDescription>A chronological view of all project tasks.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-      <div className="p-4 border-y flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-4 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full sm:w-auto">
             <RadioGroup defaultValue={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="flex items-center gap-2">
               <div>
@@ -239,10 +236,11 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
           ))}
         </div>
       </div>
-      <div 
+      <ScrollArea 
         ref={timelineContainerRef} 
-        className="w-full overflow-auto relative" 
-        style={{ height: `${Math.min(10, sortedTasks.length) * 50 + HEADER_HEIGHT}px` }}
+        className="w-full relative" 
+        style={{ height: `${Math.min(10, sortedTasks.length) * ROW_HEIGHT + HEADER_HEIGHT + 10}px` }}
+        type="auto"
       >
         <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
             {/* Header */}
@@ -308,11 +306,11 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                     }
 
                     return (
-                        <div key={task.id} className="flex border-b">
-                            <div className="sticky left-0 z-20 bg-card border-r flex items-center px-2 py-2" style={{ width: `${TASK_LIST_WIDTH}px`, height: '50px' }}>
+                        <div key={task.id} className="flex border-b" style={{ height: `${ROW_HEIGHT}px` }}>
+                            <div className="sticky left-0 z-20 bg-card border-r flex items-center px-2 py-2" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                                 <p className="text-xs font-semibold leading-tight line-clamp-2">{task.title}</p>
                             </div>
-                            <div className="relative flex-grow h-[50px]">
+                            <div className="relative flex-grow h-full">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div 
@@ -320,6 +318,9 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                                             style={{ left: `${left}px`, width: `${width}px`, height: '28px' }}
                                         >
                                             <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
+                                                <p className="text-[10px] text-center font-bold text-white/90 leading-tight truncate">
+                                                    {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
+                                                </p>
                                             </div>
                                         </div>
                                     </TooltipTrigger>
@@ -367,8 +368,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                   })()}
             </div>
         </div>
-      </div>
-      </CardContent>
+      </ScrollArea>
     </TooltipProvider>
   );
 }
