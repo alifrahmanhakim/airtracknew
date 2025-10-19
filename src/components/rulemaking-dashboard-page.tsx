@@ -387,16 +387,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                     </CardContent>
                 </Card>
                 
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Rulemaking Gantt Chart</CardTitle>
-                        <CardDescription>Overall timeline for all Rulemaking projects.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[400px] w-full pl-0">
-                        <GanttChart projects={filteredProjects} />
-                    </CardContent>
-                </Card>
-
+                 
                 {recentlyAddedTasks.length > 0 && (
                     <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60">
                         <CardHeader>
