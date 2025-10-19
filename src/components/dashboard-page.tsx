@@ -369,16 +369,16 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div
-          className="relative mb-4 flex flex-col items-start justify-between gap-4 p-6 rounded-xl w-full text-white bg-no-repeat overflow-hidden"
+          className="relative mb-4 flex flex-col items-start justify-between gap-4 p-6 rounded-xl w-full text-white bg-no-repeat"
           style={{
-            backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_gghizjgghizjgghi.png')",
+            backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Screenshot%202025-10-19%20at%2008.40.28.png')",
             backgroundSize: '50%',
             backgroundPosition: 'center',
           }}
         >
           <div className="absolute inset-0 bg-black/50 z-0"></div>
            <div className="flex flex-col sm:flex-row justify-between items-start w-full z-10 gap-4">
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col">
                 <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
                 <p className="text-white/80">An overview of all team-based projects.</p>
               </div>
