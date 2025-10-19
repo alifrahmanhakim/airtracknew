@@ -42,11 +42,11 @@ type TimelineTask = Task & { projectName?: string };
 type InteractiveTimelineProps = { tasks: TimelineTask[] };
 type ViewMode = 'week' | 'day';
 
-const ROW_MIN_HEIGHT = 44; 
+const ROW_HEIGHT = 44; // Fixed row height
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
-const TASK_LIST_WIDTH = 200;
+const TASK_LIST_WIDTH = 250; // Increased width a bit
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 
@@ -105,7 +105,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
     let verticalScrollPosition = 0;
     if (firstActiveTaskIndex !== -1) {
-      const taskTop = firstActiveTaskIndex * ROW_MIN_HEIGHT;
+      const taskTop = firstActiveTaskIndex * ROW_HEIGHT;
       verticalScrollPosition = taskTop - container.offsetHeight / 4;
     }
   
@@ -130,7 +130,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     <Card>
       <CardContent className="p-0">
         <TooltipProvider>
-          <div className="p-4 border-y flex justify-between items-center">
+          <div className="p-4 border-b flex justify-between items-center">
             <RadioGroup defaultValue={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="flex items-center gap-4">
               <div>
                 <RadioGroupItem value="week" id="r-week-my" className="peer sr-only" />
@@ -164,11 +164,11 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
             >
               <div className="relative" style={{ width: 'min-content' }}>
                   {/* Headers */}
-                  <div className="sticky top-0 z-40 flex bg-card">
-                      <div className="sticky left-0 z-50 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
+                  <div className="sticky top-0 z-40 grid" style={{ gridTemplateColumns: `${TASK_LIST_WIDTH}px ${totalGridWidth}px`}}>
+                      <div className="sticky left-0 z-50 bg-card border-b border-r flex items-center px-4 font-semibold" style={{ height: `${HEADER_HEIGHT}px` }}>
                           Tasks / Project
                       </div>
-                      <div className="flex-shrink-0 border-b" style={{ width: `${totalGridWidth}px` }}>
+                      <div className="flex-shrink-0 border-b">
                           {viewMode === 'week' && (
                               <div className="flex border-b" style={{ height: `${MONTH_HEADER_HEIGHT}px` }}>
                                   {months.map((month) => {
@@ -206,28 +206,28 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                       </div>
                   </div>
 
-                  {/* Body */}
-                  <div className="relative flex">
-                      <div className="sticky left-0 z-30 flex flex-col bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
-                          {sortedTasks.map((task) => (
-                              <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ height: `${ROW_MIN_HEIGHT}px` }}>
+                  {/* Body Grid */}
+                  <div className="relative grid" style={{ gridTemplateColumns: `${TASK_LIST_WIDTH}px ${totalGridWidth}px`, gridAutoRows: `${ROW_HEIGHT}px` }}>
+                      
+                      {/* Task List Column */}
+                      <div className="relative col-start-1 col-end-2 row-start-1" style={{ gridRowEnd: sortedTasks.length + 1}}>
+                          {sortedTasks.map((task, index) => (
+                              <div key={task.id} className="sticky left-0 bg-card flex flex-col justify-center px-2 border-b border-r" style={{ height: `${ROW_HEIGHT}px`, top: `${HEADER_HEIGHT + index * ROW_HEIGHT}px` }}>
                                   <Tooltip>
-                                      <TooltipTrigger asChild>
-                                          <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
-                                      </TooltipTrigger>
+                                      <TooltipTrigger asChild><p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p></TooltipTrigger>
                                       <TooltipContent>{task.title}</TooltipContent>
                                   </Tooltip>
                                   <Tooltip>
-                                      <TooltipTrigger asChild>
-                                          <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p>
-                                      </TooltipTrigger>
+                                      <TooltipTrigger asChild><p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p></TooltipTrigger>
                                       <TooltipContent>{task.projectName}</TooltipContent>
                                   </Tooltip>
                               </div>
                           ))}
                       </div>
 
-                      <div className="relative" style={{ width: `${totalGridWidth}px` }}>
+                      {/* Timeline Column */}
+                      <div className="relative col-start-2 col-end-3 row-start-1" style={{ gridRowEnd: sortedTasks.length + 1, height: sortedTasks.length * ROW_HEIGHT }}>
+                          {/* Grid Lines */}
                           <div className="absolute inset-0 z-10">
                               {viewMode === 'day' ? (
                                   days.map((day, index) => (
@@ -239,10 +239,11 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   ))
                               )}
                               {sortedTasks.map((_, index) => (
-                                  <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ height: `${ROW_MIN_HEIGHT}px`, top: `${index * ROW_MIN_HEIGHT}px` }} />
+                                  <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ height: `${ROW_HEIGHT}px`, top: `${index * ROW_HEIGHT}px` }} />
                               ))}
                           </div>
                           
+                           {/* Today Marker */}
                           {(() => {
                               const today = startOfDay(new Date());
                               if (today < timelineStart || today > timelineEnd) return null;
@@ -263,7 +264,8 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   </div>
                               );
                           })()}
-
+                          
+                          {/* Task Bars */}
                           <div className="relative w-full h-full z-20">
                               {sortedTasks.map((task, index) => {
                                   const taskStart = parseISO(task.startDate);
@@ -285,9 +287,9 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   return (
                                       <Tooltip key={task.id}>
                                           <TooltipTrigger asChild>
-                                              <div className="absolute group" style={{ top: `${index * ROW_MIN_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_MIN_HEIGHT - 16}px` }}>
-                                                  <div className={cn("h-full w-full rounded-md text-white flex items-start justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                                                      <p className="text-[10px] text-center font-bold text-white/90 leading-tight">
+                                              <div className="absolute group" style={{ top: `${index * ROW_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_HEIGHT - 16}px` }}>
+                                                  <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
+                                                      <p className="text-[10px] text-center font-bold text-white/90 leading-tight whitespace-nowrap">
                                                           {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
                                                       </p>
                                                   </div>
@@ -312,3 +314,4 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     </Card>
   );
 }
+
