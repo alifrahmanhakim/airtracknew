@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -41,11 +42,11 @@ type TimelineTask = Task & { projectName?: string };
 type InteractiveTimelineProps = { tasks: TimelineTask[] };
 type ViewMode = 'week' | 'day';
 
-const ROW_MIN_HEIGHT = 44; 
+const ROW_HEIGHT = 52; 
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
-const TASK_LIST_WIDTH = 200;
+const TASK_LIST_WIDTH = 250;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 
@@ -104,7 +105,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
     let verticalScrollPosition = 0;
     if (firstActiveTaskIndex !== -1) {
-      const taskTop = firstActiveTaskIndex * ROW_MIN_HEIGHT;
+      const taskTop = firstActiveTaskIndex * ROW_HEIGHT;
       verticalScrollPosition = taskTop - container.offsetHeight / 4;
     }
   
@@ -163,7 +164,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
             >
               <div className="relative" style={{ width: 'min-content' }}>
                   {/* Headers */}
-                  <div className="sticky top-0 z-40 flex bg-card">
+                  <div className="sticky top-0 z-30 flex bg-card">
                       <div className="sticky left-0 z-40 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
                           Tasks / Project
                       </div>
@@ -209,9 +210,19 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                   <div className="relative flex">
                       <div className="sticky left-0 z-20 flex flex-col bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                           {sortedTasks.map((task) => (
-                              <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ minHeight: `${ROW_MIN_HEIGHT}px` }}>
-                                  <p className="text-xs font-semibold whitespace-normal leading-tight">{task.title}</p>
-                                  <p className="text-xs text-muted-foreground whitespace-normal">{task.projectName}</p>
+                              <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ height: `${ROW_HEIGHT}px` }}>
+                                  <Tooltip>
+                                      <TooltipTrigger asChild>
+                                          <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{task.title}</TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                      <TooltipTrigger asChild>
+                                          <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{task.projectName}</TooltipContent>
+                                  </Tooltip>
                               </div>
                           ))}
                       </div>
@@ -228,7 +239,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   ))
                               )}
                               {sortedTasks.map((_, index) => (
-                                  <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ height: `${ROW_MIN_HEIGHT}px`, top: `${index * ROW_MIN_HEIGHT}px` }} />
+                                  <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ height: `${ROW_HEIGHT}px`, top: `${index * ROW_HEIGHT}px` }} />
                               ))}
                           </div>
                           
@@ -245,7 +256,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                               }
                               return (
-                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-30" style={{ left: `${todayLeft}px` }} >
+                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
                                       <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                           Today
                                       </div>
@@ -274,7 +285,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   return (
                                       <Tooltip key={task.id}>
                                           <TooltipTrigger asChild>
-                                              <div className="absolute group" style={{ top: `${index * ROW_MIN_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_MIN_HEIGHT - 16}px` }}>
+                                              <div className="absolute group" style={{ top: `${index * ROW_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_HEIGHT - 16}px` }}>
                                                   <div className={cn("h-full w-full rounded-md text-white flex items-start justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
                                                       <p className="text-[10px] text-center font-bold text-white/90 leading-tight">
                                                           {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
