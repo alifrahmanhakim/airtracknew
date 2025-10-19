@@ -20,11 +20,10 @@ import {
   getISOWeek,
   differenceInCalendarISOWeeks,
   isWithinInterval,
-  getYear,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { Task, User } from '@/lib/types';
-import { ListTodo, Search, RotateCcw } from 'lucide-react';
+import type { Task } from '@/lib/types';
+import { ListTodo } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -33,10 +32,7 @@ import {
 } from './ui/tooltip';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 type TimelineTask = Task & { projectName?: string };
 type InteractiveTimelineProps = { tasks: TimelineTask[] };
@@ -44,8 +40,6 @@ type ViewMode = 'week' | 'day';
 
 const ROW_MIN_HEIGHT = 44; 
 const HEADER_HEIGHT = 64;
-const MONTH_HEADER_HEIGHT = 32;
-const DETAIL_HEADER_HEIGHT = 32;
 const TASK_LIST_WIDTH = 200;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
@@ -164,82 +158,67 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
             >
               <div className="relative" style={{ width: 'min-content' }}>
                   {/* Headers */}
-                  <div className="sticky top-0 z-10 flex bg-card">
-                      <div className="sticky left-0 z-20 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
+                  <div className="sticky top-0 z-20 flex bg-card">
+                      <div className="sticky left-0 z-30 bg-card border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
                           Tasks / Project
                       </div>
                       <div className="flex-shrink-0 border-b" style={{ width: `${totalGridWidth}px` }}>
-                          {viewMode === 'week' && (
-                              <div className="flex border-b" style={{ height: `${MONTH_HEADER_HEIGHT}px` }}>
-                                  {months.map((month) => {
-                                      const weeksInMonth = weeks.filter(w => isSameMonth(w, month));
-                                      const monthWidth = weeksInMonth.length * WEEK_WIDTH;
-                                      if (monthWidth === 0) return null;
-                                      return (
-                                          <div key={month.toString()} className="flex-shrink-0 text-center font-semibold text-sm flex items-center justify-center border-r" style={{ width: `${monthWidth}px` }}>
-                                              {format(month, 'MMMM yyyy')}
-                                          </div>
-                                      );
-                                  })}
-                              </div>
-                          )}
-                          <div className="flex" style={{ height: `${viewMode === 'week' ? DETAIL_HEADER_HEIGHT : HEADER_HEIGHT}px` }}>
-                              {viewMode === 'week' ? (
-                                  weeks.map((week) => (
-                                      <div key={week.toString()} className="flex-shrink-0 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0" style={{ width: `${WEEK_WIDTH}px`}}>
-                                          W{getISOWeek(week)}
-                                      </div>
-                                  ))
-                              ) : (
-                                  days.map((day) => {
-                                      const isMonthStart = day.getDate() === 1;
-                                      return (
-                                          <div key={day.toISOString()} className="flex-shrink-0 flex flex-col items-center justify-center border-r relative" style={{ width: `${DAY_WIDTH_DAY_VIEW}px` }}>
-                                              {isMonthStart && <span className="absolute -top-4 left-1 text-center font-semibold text-xs whitespace-nowrap">{format(day, 'MMMM yyyy')}</span>}
-                                              <span className={cn("text-xs", { 'font-bold text-primary': isToday(day) })}>{format(day, 'd')}</span>
-                                              <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
-                                          </div>
-                                      );
-                                  })
-                              )}
-                          </div>
+                           <div className="relative h-full">
+                                {viewMode === 'week' ? (
+                                    <div className="flex h-full">
+                                        {months.map((month) => {
+                                            const weeksInMonth = weeks.filter(w => isSameMonth(w, month));
+                                            const monthWidth = weeksInMonth.length * WEEK_WIDTH;
+                                            if (monthWidth === 0) return null;
+                                            return (
+                                                <div key={month.toString()} className="flex-shrink-0 border-r" style={{ width: `${monthWidth}px` }}>
+                                                    <div className='text-center font-semibold text-sm py-1 border-b h-1/2 flex items-center justify-center'>{format(month, 'MMMM yyyy')}</div>
+                                                    <div className='flex h-1/2'>
+                                                        {weeksInMonth.map(week => (
+                                                            <div key={week.toString()} className="flex-shrink-0 flex items-center justify-center text-xs font-normal text-muted-foreground border-r last:border-r-0" style={{ width: `${WEEK_WIDTH}px`}}>
+                                                                W{getISOWeek(week)}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="flex h-full">
+                                        {days.map((day) => {
+                                            const isMonthStart = day.getDate() === 1;
+                                            return (
+                                                <div key={day.toISOString()} className="flex-shrink-0 flex flex-col items-center justify-center border-r relative" style={{ width: `${DAY_WIDTH_DAY_VIEW}px` }}>
+                                                    {isMonthStart && <span className="absolute -top-4 left-1 text-center font-semibold text-xs whitespace-nowrap">{format(day, 'MMMM yyyy')}</span>}
+                                                    <span className={cn("text-xs", { 'font-bold text-primary': isToday(day) })}>{format(day, 'd')}</span>
+                                                    <span className="text-xs text-muted-foreground">{format(day, 'E')[0]}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                           </div>
                       </div>
                   </div>
 
-                  {/* Body */}
-                  <div className="relative flex">
-                      <div className="sticky left-0 z-20 flex flex-col bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
-                          {sortedTasks.map((task) => (
-                              <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ minHeight: `${ROW_MIN_HEIGHT}px` }}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild><p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p></TooltipTrigger>
-                                    <TooltipContent align="start"><p>{task.title}</p></TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild><p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p></TooltipTrigger>
-                                    <TooltipContent align="start"><p>{task.projectName}</p></TooltipContent>
-                                </Tooltip>
-                              </div>
-                          ))}
-                      </div>
+                  {/* Body Grid */}
+                  <div className="relative grid" style={{ gridTemplateColumns: `${TASK_LIST_WIDTH}px ${totalGridWidth}px`, gridTemplateRows: `repeat(${sortedTasks.length}, minmax(${ROW_MIN_HEIGHT}px, auto))` }}>
+                      {/* Vertical Grid Lines for Timeline */}
+                       <div className="col-start-2 row-start-1" style={{ gridRowEnd: sortedTasks.length + 1, position: 'relative' }}>
+                            {viewMode === 'day' ? (
+                                days.map((day, index) => (
+                                    <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l" style={{ left: `${index * DAY_WIDTH_DAY_VIEW}px` }} />
+                                ))
+                            ) : (
+                                weeks.map((week, index) => (
+                                    <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l" style={{ left: `${index * WEEK_WIDTH}px` }} />
+                                ))
+                            )}
+                       </div>
 
-                      <div className="relative" style={{ width: `${totalGridWidth}px` }}>
-                          <div className="absolute inset-0 z-0">
-                              {viewMode === 'day' ? (
-                                  days.map((day, index) => (
-                                      <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
-                                  ))
-                              ) : (
-                                  weeks.map((week, index) => (
-                                      <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} />
-                                  ))
-                              )}
-                              {sortedTasks.map((_, index) => (
-                                  <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ height: `${ROW_MIN_HEIGHT}px`, top: `${index * ROW_MIN_HEIGHT}px` }} />
-                              ))}
-                          </div>
-                          
-                          {(() => {
+                        {/* Today Marker */}
+                        {(() => {
                               const today = startOfDay(new Date());
                               if (today < timelineStart || today > timelineEnd) return null;
                               
@@ -252,53 +231,75 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                               }
                               return (
+                                <div className="col-start-2 row-start-1 pointer-events-none" style={{ gridRowEnd: sortedTasks.length + 1 }}>
                                   <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
                                       <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                           Today
                                       </div>
                                   </div>
+                                </div>
                               );
                           })()}
 
-                          <div className="relative w-full h-full z-10">
-                              {sortedTasks.map((task, index) => {
-                                  const taskStart = parseISO(task.startDate);
-                                  const taskEnd = parseISO(task.dueDate);
 
-                                  let left, width;
-                                  if (viewMode === 'day') {
-                                      const startOffset = differenceInDays(taskStart, timelineStart);
-                                      const duration = differenceInDays(taskEnd, taskStart) + 1;
-                                      left = startOffset * DAY_WIDTH_DAY_VIEW;
-                                      width = duration * DAY_WIDTH_DAY_VIEW - 2;
-                                  } else { 
-                                      const startOffset = differenceInCalendarISOWeeks(taskStart, timelineStart);
-                                      const duration = differenceInCalendarISOWeeks(taskEnd, taskStart) + 1;
-                                      left = startOffset * WEEK_WIDTH;
-                                      width = duration * WEEK_WIDTH - 4;
-                                  }
-                                  
-                                  return (
-                                      <Tooltip key={task.id}>
-                                          <TooltipTrigger asChild>
-                                              <div className="absolute group" style={{ top: `${index * ROW_MIN_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_MIN_HEIGHT - 16}px` }}>
-                                                  <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                                                      <p className="text-[10px] text-center font-bold text-white/90 leading-tight truncate">
+                      {sortedTasks.map((task, index) => {
+                        const taskStart = parseISO(task.startDate);
+                        const taskEnd = parseISO(task.dueDate);
+
+                        let left, width;
+                        if (viewMode === 'day') {
+                            const startOffset = differenceInDays(taskStart, timelineStart);
+                            const duration = differenceInDays(taskEnd, taskStart) + 1;
+                            left = startOffset * DAY_WIDTH_DAY_VIEW;
+                            width = duration * DAY_WIDTH_DAY_VIEW - 2;
+                        } else { 
+                            const startOffset = differenceInCalendarISOWeeks(taskStart, timelineStart);
+                            const duration = differenceInCalendarISOWeeks(taskEnd, taskStart) + 1;
+                            left = startOffset * WEEK_WIDTH;
+                            width = duration * WEEK_WIDTH - 4;
+                        }
+                          
+                        return (
+                            <React.Fragment key={task.id}>
+                                {/* Task List Item */}
+                                <div className="sticky left-0 bg-card border-b border-r flex flex-col justify-center px-2 py-1" style={{ gridRow: index + 1 }}>
+                                     <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
+                                        </TooltipTrigger>
+                                        <TooltipContent align="start"><p>{task.title}</p></TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p>
+                                        </TooltipTrigger>
+                                        <TooltipContent align="start"><p>{task.projectName}</p></TooltipContent>
+                                    </Tooltip>
+                                </div>
+
+                                {/* Timeline Bar Area */}
+                                <div className="relative border-b" style={{ gridRow: index + 1, gridColumn: 2 }}>
+                                    {/* Task Bar */}
+                                     <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="absolute group my-2" style={{ left: `${left}px`, width: `${width}px`, height: `${ROW_MIN_HEIGHT - 16}px` }}>
+                                                <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
+                                                    <p className="text-[10px] text-center font-bold text-white/90 leading-tight truncate">
                                                          {task.title}
-                                                      </p>
-                                                  </div>
-                                              </div>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                              <p className="font-bold">{task.title}</p>
-                                              <p className="text-sm"><span className="font-semibold">Project:</span> {task.projectName}</p>
-                                              <p className="text-sm"><span className="font-semibold">Duration:</span> {format(taskStart, 'PPP')} - {format(taskEnd, 'PPP')}</p>
-                                          </TooltipContent>
-                                      </Tooltip>
-                                  );
-                              })}
-                          </div>
-                      </div>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="font-bold">{task.title}</p>
+                                            <p className="text-sm"><span className="font-semibold">Project:</span> {task.projectName}</p>
+                                            <p className="text-sm"><span className="font-semibold">Duration:</span> {format(taskStart, 'PPP')} - {format(taskEnd, 'PPP')}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            </React.Fragment>
+                        );
+                      })}
                   </div>
               </div>
             </div>
@@ -308,5 +309,3 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     </Card>
   );
 }
-
-    
