@@ -21,6 +21,8 @@ import {
   differenceInCalendarISOWeeks,
   isWithinInterval,
   getYear,
+  startOfMonth,
+  endOfMonth,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
@@ -112,8 +114,9 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
         tStart = startOfISOWeek(new Date(year, 0, 1));
         tEnd = endOfISOWeek(new Date(year, 11, 31));
     } else {
-        tStart = startOfISOWeek(addMonths(now, -1));
-        tEnd = endOfISOWeek(addMonths(now, 2));
+        // Default to a 3-month view: current month, one month before, one month after
+        tStart = startOfMonth(addMonths(now, -1));
+        tEnd = endOfMonth(addMonths(now, 1));
     }
 
     if (filtered.length > 0) {
@@ -121,6 +124,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
       const earliestDate = min(allDates);
       const latestDate = max(allDates);
       
+      // If no year filter is active, expand the view to include all tasks
       if (yearFilter === 'all') {
         tStart = min([startOfISOWeek(addMonths(earliestDate, -1)), tStart]);
         tEnd = max([endOfISOWeek(addMonths(latestDate, 1)), tEnd]);
@@ -153,7 +157,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
       left: horizontalScrollPosition,
       behavior: 'auto',
     });
-  }, [viewMode]); 
+  }, [viewMode, timelineStart]); // Re-run when timelineStart changes
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
@@ -239,7 +243,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
       <ScrollArea 
         ref={timelineContainerRef} 
         className="w-full relative" 
-        style={{ height: `${Math.min(10, sortedTasks.length) * ROW_HEIGHT + HEADER_HEIGHT + 10}px` }}
+        style={{ height: `${Math.min(10, sortedTasks.length + 1) * ROW_HEIGHT + HEADER_HEIGHT}px` }}
         type="auto"
       >
         <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
