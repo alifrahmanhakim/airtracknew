@@ -164,7 +164,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
             >
               <div className="relative" style={{ width: 'min-content' }}>
                   {/* Headers */}
-                  <div className="sticky top-0 z-30 flex bg-card">
+                  <div className="sticky top-0 z-40 flex bg-card">
                       <div className="sticky left-0 z-40 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
                           Tasks / Project
                       </div>
@@ -246,7 +246,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                               }
                               return (
-                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
+                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-30" style={{ left: `${todayLeft}px` }} >
                                       <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                           Today
                                       </div>
