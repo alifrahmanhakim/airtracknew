@@ -32,7 +32,6 @@ import {
 } from './ui/tooltip';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 type TimelineTask = Task & { projectName?: string };
 type InteractiveTimelineProps = { tasks: TimelineTask[] };
@@ -122,7 +121,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
   return (
     <TooltipProvider>
-        <div className="p-4 border-b flex justify-between items-center">
+        <div className="p-4 border-y flex justify-between items-center">
         <RadioGroup defaultValue={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="flex items-center gap-4">
             <div>
             <RadioGroupItem value="week" id="r-week-my" className="peer sr-only" />
