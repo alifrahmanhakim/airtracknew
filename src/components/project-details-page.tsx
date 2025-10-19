@@ -581,8 +581,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             </CardContent>
         </Card>
       </div>
-
-       <Card>
+      
+        <Card className="w-full">
             <CardHeader>
                 <CardTitle>Project Timeline</CardTitle>
                 <CardDescription>A chronological view of all project tasks.</CardDescription>
@@ -590,8 +590,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             <CardContent className="overflow-x-auto p-0">
                 <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
             </CardContent>
-       </Card>
-      
+        </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-3 space-y-6">
             {project.projectType === 'Rulemaking' && (
@@ -779,3 +779,4 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
 
 }
+

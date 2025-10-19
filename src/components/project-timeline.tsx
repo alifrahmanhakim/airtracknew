@@ -376,3 +376,4 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
     </TooltipProvider>
   );
 }
+
