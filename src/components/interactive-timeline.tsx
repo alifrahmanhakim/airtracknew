@@ -42,11 +42,11 @@ type TimelineTask = Task & { projectName?: string };
 type InteractiveTimelineProps = { tasks: TimelineTask[] };
 type ViewMode = 'week' | 'day';
 
-const ROW_HEIGHT = 44; 
+const ROW_MIN_HEIGHT = 44; 
 const HEADER_HEIGHT = 64;
 const MONTH_HEADER_HEIGHT = 32;
 const DETAIL_HEADER_HEIGHT = 32;
-const TASK_LIST_WIDTH = 250;
+const TASK_LIST_WIDTH = 200;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 
@@ -55,7 +55,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
   
-  const { sortedTasks, months, days, weeks, timelineStart, timelineEnd, totalGridWidth, totalGridColumns } = React.useMemo(() => {
+  const { sortedTasks, months, days, weeks, timelineStart, timelineEnd, totalGridWidth } = React.useMemo(() => {
     const validTasks = tasks?.filter(t => t.startDate && t.dueDate) || [];
     
     const sorted = [...validTasks].sort((a, b) => {
@@ -81,7 +81,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
     
     const dayData = eachDayOfInterval({ start: tStart, end: tEnd });
     const weekData = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
-    const gridColumns = viewMode === 'day' ? dayData.length : weekData.length;
 
     return { 
         sortedTasks: sorted, 
@@ -90,8 +89,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
         weeks: weekData,
         timelineStart: tStart, 
         timelineEnd: tEnd, 
-        totalGridWidth: viewMode === 'day' ? gridColumns * DAY_WIDTH_DAY_VIEW : gridColumns * WEEK_WIDTH,
-        totalGridColumns: gridColumns,
+        totalGridWidth: viewMode === 'day' ? dayData.length * DAY_WIDTH_DAY_VIEW : weekData.length * WEEK_WIDTH,
     };
   }, [tasks, viewMode]);
 
@@ -107,7 +105,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
     let verticalScrollPosition = 0;
     if (firstActiveTaskIndex !== -1) {
-      const taskTop = firstActiveTaskIndex * ROW_HEIGHT;
+      const taskTop = firstActiveTaskIndex * ROW_MIN_HEIGHT;
       verticalScrollPosition = taskTop - container.offsetHeight / 4;
     }
   
@@ -164,10 +162,10 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
               ref={timelineContainerRef} 
               className="w-full border-t overflow-auto relative max-h-[70vh]"
             >
-              <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
+              <div className="relative" style={{ width: 'min-content' }}>
                   {/* Headers */}
-                  <div className="sticky top-0 z-20 flex bg-card">
-                      <div className="sticky left-0 z-10 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
+                  <div className="sticky top-0 z-10 flex bg-card">
+                      <div className="sticky left-0 z-20 bg-inherit border-b border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
                           Tasks / Project
                       </div>
                       <div className="flex-shrink-0 border-b" style={{ width: `${totalGridWidth}px` }}>
@@ -208,35 +206,37 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                       </div>
                   </div>
 
-                  {/* Body Grid */}
-                  <div className="grid" style={{ gridTemplateColumns: `${TASK_LIST_WIDTH}px 1fr`, gridTemplateRows: `repeat(${sortedTasks.length}, ${ROW_HEIGHT}px)` }}>
-                      {/* Task List */}
-                      <div className="contents">
-                          {sortedTasks.map((task, index) => (
-                              <div key={task.id} className="sticky left-0 z-10 bg-card flex flex-col justify-center px-2 py-1 border-b border-r" style={{ gridRow: index + 1, gridColumn: 1 }}>
-                                  <Tooltip>
-                                      <TooltipTrigger asChild>
-                                          <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
-                                      </TooltipTrigger>
-                                      <TooltipContent align="start"><p>{task.title}</p></TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                      <TooltipTrigger asChild>
-                                          <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p>
-                                      </TooltipTrigger>
-                                      <TooltipContent align="start"><p>{task.projectName}</p></TooltipContent>
-                                  </Tooltip>
+                  {/* Body */}
+                  <div className="relative flex">
+                      <div className="sticky left-0 z-20 flex flex-col bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
+                          {sortedTasks.map((task) => (
+                              <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ minHeight: `${ROW_MIN_HEIGHT}px` }}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild><p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p></TooltipTrigger>
+                                    <TooltipContent align="start"><p>{task.title}</p></TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild><p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p></TooltipTrigger>
+                                    <TooltipContent align="start"><p>{task.projectName}</p></TooltipContent>
+                                </Tooltip>
                               </div>
                           ))}
                       </div>
 
-                      {/* Timeline Bars */}
-                      <div className="relative" style={{ gridColumn: 2, gridRow: `1 / span ${sortedTasks.length}` }}>
-                          {/* Vertical Grid Lines */}
-                          <div className="absolute inset-0 z-0 grid" style={{ gridTemplateColumns: `repeat(${totalGridColumns}, 1fr)` }}>
-                            {Array.from({ length: totalGridColumns }).map((_, index) => (
-                                <div key={`v-line-${index}`} className="h-full w-full border-r" />
-                            ))}
+                      <div className="relative" style={{ width: `${totalGridWidth}px` }}>
+                          <div className="absolute inset-0 z-0">
+                              {viewMode === 'day' ? (
+                                  days.map((day, index) => (
+                                      <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
+                                  ))
+                              ) : (
+                                  weeks.map((week, index) => (
+                                      <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} />
+                                  ))
+                              )}
+                              {sortedTasks.map((_, index) => (
+                                  <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ height: `${ROW_MIN_HEIGHT}px`, top: `${index * ROW_MIN_HEIGHT}px` }} />
+                              ))}
                           </div>
                           
                           {(() => {
@@ -246,13 +246,13 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                               let todayLeft;
                               if (viewMode === 'day') {
                                   const todayOffsetDays = differenceInDays(today, timelineStart);
-                                  todayLeft = (todayOffsetDays / days.length) * 100;
+                                  todayLeft = todayOffsetDays * DAY_WIDTH_DAY_VIEW;
                               } else { 
                                   const todayOffsetWeeks = differenceInCalendarISOWeeks(today, timelineStart);
-                                  todayLeft = (todayOffsetWeeks / weeks.length) * 100;
+                                  todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                               }
                               return (
-                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}%` }} >
+                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
                                       <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                           Today
                                       </div>
@@ -260,26 +260,28 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                               );
                           })()}
 
-                          {/* Task bars */}
-                           <div className="relative w-full h-full z-10 grid" style={{ gridTemplateRows: `repeat(${sortedTasks.length}, ${ROW_HEIGHT}px)`}}>
+                          <div className="relative w-full h-full z-10">
                               {sortedTasks.map((task, index) => {
                                   const taskStart = parseISO(task.startDate);
                                   const taskEnd = parseISO(task.dueDate);
 
-                                  let startColumn, endColumn;
-
+                                  let left, width;
                                   if (viewMode === 'day') {
-                                      startColumn = differenceInDays(taskStart, timelineStart) + 1;
-                                      endColumn = differenceInDays(taskEnd, timelineStart) + 2;
+                                      const startOffset = differenceInDays(taskStart, timelineStart);
+                                      const duration = differenceInDays(taskEnd, taskStart) + 1;
+                                      left = startOffset * DAY_WIDTH_DAY_VIEW;
+                                      width = duration * DAY_WIDTH_DAY_VIEW - 2;
                                   } else { 
-                                      startColumn = differenceInCalendarISOWeeks(taskStart, timelineStart) + 1;
-                                      endColumn = differenceInCalendarISOWeeks(taskEnd, timelineStart) + 2;
+                                      const startOffset = differenceInCalendarISOWeeks(taskStart, timelineStart);
+                                      const duration = differenceInCalendarISOWeeks(taskEnd, taskStart) + 1;
+                                      left = startOffset * WEEK_WIDTH;
+                                      width = duration * WEEK_WIDTH - 4;
                                   }
                                   
                                   return (
                                       <Tooltip key={task.id}>
                                           <TooltipTrigger asChild>
-                                              <div className="h-full py-2 px-1" style={{ gridRow: index + 1, gridColumn: `${startColumn} / ${endColumn}` }}>
+                                              <div className="absolute group" style={{ top: `${index * ROW_MIN_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_MIN_HEIGHT - 16}px` }}>
                                                   <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
                                                       <p className="text-[10px] text-center font-bold text-white/90 leading-tight truncate">
                                                          {task.title}
@@ -295,7 +297,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                       </Tooltip>
                                   );
                               })}
-                           </div>
+                          </div>
                       </div>
                   </div>
               </div>
