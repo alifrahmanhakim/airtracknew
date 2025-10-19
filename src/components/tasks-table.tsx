@@ -118,8 +118,8 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     )}
                 </div>
                 </TableCell>
-                {visibleColumns.namaSurat && <TableCell>{task.namaSurat || 'N/A'}</TableCell>}
-                {visibleColumns.tanggalPelaksanaan && <TableCell>{task.tanggalPelaksanaan ? format(parseISO(task.tanggalPelaksanaan), 'PPP') : 'N/A'}</TableCell>}
+                {visibleColumns.namaSurat && <TableCell><Highlight text={task.namaSurat || 'N/A'} query={searchTerm} /></TableCell>}
+                {visibleColumns.tanggalPelaksanaan && <TableCell>{task.tanggalPelaksanaan ? <Highlight text={format(parseISO(task.tanggalPelaksanaan), 'PPP')} query={searchTerm}/> : 'N/A'}</TableCell>}
                 {visibleColumns.attachments && (
                     <TableCell>
                         {(task.attachments || []).length > 0 ? (
@@ -134,7 +134,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                                         className="inline-flex items-center gap-1.5 p-1.5 rounded-md bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-200"
                                     >
                                         <FileText className="h-4 w-4 flex-shrink-0" />
-                                        <span className="text-xs font-medium">{att.name}</span>
+                                        <span className="text-xs font-medium"><Highlight text={att.name} query={searchTerm} /></span>
                                     </a>
                                 ))}
                             </div>
@@ -261,7 +261,12 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
             return tasks.map(task => {
                 const subTasks = task.subTasks ? filterRecursively(task.subTasks) : [];
                 
-                const searchTermMatch = searchTerm ? task.title.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+                const searchTermMatch = searchTerm ? 
+                    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (task.namaSurat && task.namaSurat.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (task.tanggalPelaksanaan && format(parseISO(task.tanggalPelaksanaan), 'PPP').toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (task.attachments && task.attachments.some(att => att.name.toLowerCase().includes(searchTerm.toLowerCase())))
+                    : true;
                 const statusMatch = statusFilter === 'all' || task.status === statusFilter;
                 const assigneeMatch = assigneeFilter === 'all' || (task.assigneeIds && task.assigneeIds.includes(assigneeFilter));
                 
