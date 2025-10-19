@@ -373,7 +373,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           style={{
             backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Screenshot%202025-10-19%20at%2008.40.28.png')",
             backgroundSize: '50%',
-            backgroundPosition: 'right center',
+            backgroundPosition: 'right top',
             backgroundRepeat: 'no-repeat',
           }}
         >
@@ -382,7 +382,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
               <div className="flex-1 flex flex-col">
                 <h1 className="text-3xl font-bold tracking-tight">Tim Kerja Dashboard</h1>
                 <p className="text-white/80">
-                  ini dibuat lurus agar tidak melebarkan card
+                  A centralized hub for tracking compliance and progress of all Tim Kerja projects.
                 </p>
               </div>
               <div className="flex items-center gap-2">
