@@ -373,7 +373,8 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           style={{
             backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Screenshot%202025-10-19%20at%2008.40.28.png')",
             backgroundSize: '50%',
-            backgroundPosition: 'bottom right',
+            backgroundPosition: 'right center',
+            backgroundRepeat: 'no-repeat',
           }}
         >
           <div className="absolute inset-0 bg-black/50 z-0"></div>
