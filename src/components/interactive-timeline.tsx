@@ -210,7 +210,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                   <div className="relative flex">
                       <div className="sticky left-0 z-30 flex flex-col bg-card" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                           {sortedTasks.map((task) => (
-                              <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ minHeight: `${ROW_MIN_HEIGHT}px`, height: `${ROW_MIN_HEIGHT}px` }}>
+                              <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ height: `${ROW_MIN_HEIGHT}px` }}>
                                   <Tooltip>
                                       <TooltipTrigger asChild>
                                           <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
