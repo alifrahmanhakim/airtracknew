@@ -128,10 +128,6 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
   
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Project Timeline</CardTitle>
-        <CardDescription>A chronological view of all project tasks.</CardDescription>
-      </CardHeader>
       <CardContent className="p-0">
         <TooltipProvider>
           <div className="p-4 border-y flex justify-between items-center">
@@ -250,7 +246,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                                   todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                               }
                               return (
-                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-30" style={{ left: `${todayLeft}px` }} >
+                                  <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
                                       <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                           Today
                                       </div>
