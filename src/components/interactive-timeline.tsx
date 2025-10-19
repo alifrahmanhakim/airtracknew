@@ -165,15 +165,15 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                 <div className="relative grid" style={{
                     width: 'min-content',
                     gridTemplateColumns: `${TASK_LIST_WIDTH}px ${totalGridWidth}px`,
-                    gridAutoRows: `${ROW_MIN_HEIGHT}px`,
+                    gridTemplateRows: `${HEADER_HEIGHT}px repeat(${sortedTasks.length}, minmax(${ROW_MIN_HEIGHT}px, 1fr))`,
                 }}>
                   {/* HEADER - Task List */}
-                  <div className="sticky top-0 left-0 z-40 bg-card border-b border-r flex items-center px-4 font-semibold" style={{ gridRow: 1, gridColumn: 1, height: `${HEADER_HEIGHT}px` }}>
+                  <div className="sticky top-0 left-0 z-40 bg-card border-b border-r flex items-center px-4 font-semibold" style={{ gridRow: 1, gridColumn: 1 }}>
                       Tasks / Project
                   </div>
 
                   {/* HEADER - Timeline */}
-                  <div className="sticky top-0 z-30 flex-shrink-0 border-b bg-card" style={{ gridRow: 1, gridColumn: 2, height: `${HEADER_HEIGHT}px` }}>
+                  <div className="sticky top-0 z-30 flex-shrink-0 border-b bg-card" style={{ gridRow: 1, gridColumn: 2 }}>
                       {viewMode === 'week' && (
                           <div className="flex border-b" style={{ height: `${MONTH_HEADER_HEIGHT}px` }}>
                               {months.map((month) => {
@@ -240,14 +240,10 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                             <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border/50" style={{ left: `${index * WEEK_WIDTH}px`}} />
                         ))
                     )}
-                    {/* Horizontal Grid Lines */}
-                    {sortedTasks.map((_, index) => (
-                        <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ top: `${(index + 1) * ROW_MIN_HEIGHT -1}px` }} />
-                    ))}
                   </div>
 
                   {/* Today Marker & Task Bars */}
-                  <div className="relative z-20" style={{ gridRow: '2 / -1', gridColumn: 2 }}>
+                  <div className="relative z-10" style={{ gridRow: '2 / -1', gridColumn: 2 }}>
                     {(() => {
                         const today = startOfDay(new Date());
                         if (today < timelineStart || today > timelineEnd) return null;
