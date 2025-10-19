@@ -48,7 +48,9 @@ const quotes = [
 ];
 
 const backgroundImages = [
-    'https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png?updatedAt=1760806887223'
+    'https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_242idc242idc242i.png?updatedAt=1760806887223',
+    'https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_4unr7i4unr7i4unr.png',
+    'https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_gghizjgghizjgghi.png',
 ];
 
 
