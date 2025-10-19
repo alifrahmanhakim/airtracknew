@@ -632,12 +632,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             )}
 
             <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                      <GanttChartSquare /> Project Timeline
-                  </CardTitle>
-                  <CardDescription>A chronological view of all tasks and deadlines.</CardDescription>
-              </CardHeader>
               <CardContent className="pl-0 pr-0 pb-0">
                   <InteractiveTimeline 
                     tasks={tasks}
