@@ -57,6 +57,7 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import * as XLSX from 'xlsx';
+import { Highlight } from './ui/highlight';
 
 type TaskRowProps = {
   task: Task;
@@ -69,9 +70,10 @@ type TaskRowProps = {
   isDeleting: boolean;
   taskNumber: string;
   visibleColumns: Record<string, boolean>;
+  searchTerm: string;
 };
 
-const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting, taskNumber, visibleColumns }: TaskRowProps) => {
+const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdate, onTaskDelete, isDeleting, taskNumber, visibleColumns, searchTerm }: TaskRowProps) => {
     const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(true);
@@ -102,7 +104,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                 </TableCell>
                 <TableCell className="font-medium text-left">
                 <div className="flex items-center gap-2">
-                    <span>{task.title}</span>
+                    <Highlight text={task.title} query={searchTerm} />
                     {task.criticalIssue && (
                             <Tooltip>
                             <TooltipTrigger onClick={(e) => e.stopPropagation()}>
@@ -189,6 +191,7 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     isDeleting={isDeleting}
                     taskNumber={`${taskNumber}.${subIndex + 1}`}
                     visibleColumns={visibleColumns}
+                    searchTerm={searchTerm}
                 />
             ))}
             <AddTaskDialog 
@@ -517,6 +520,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                         isDeleting={isDeleting && taskToDelete?.id === task.id}
                                         taskNumber={`${index + 1}`}
                                         visibleColumns={columnVisibility}
+                                        searchTerm={searchTerm}
                                     />
                                 )) : (
                                 <TableRow>
