@@ -373,7 +373,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           style={{
             backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Screenshot%202025-10-19%20at%2008.40.28.png')",
             backgroundSize: '50%',
-            backgroundPosition: 'right top',
+            backgroundPosition: 'right 20%',
             backgroundRepeat: 'no-repeat',
           }}
         >
