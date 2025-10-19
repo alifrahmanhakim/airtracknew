@@ -67,6 +67,7 @@ import Link from 'next/link';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { AnimatedCounter } from './ui/animated-counter';
+import { GanttChart } from './gantt-chart';
 
 
 const getEffectiveStatus = (project: Project): Project['status'] => {
@@ -601,6 +602,16 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                         </div>
                     )
                 })}
+            </CardContent>
+        </Card>
+        
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Tim Kerja Gantt Chart</CardTitle>
+                <CardDescription>Overall timeline for all Tim Kerja projects.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px] w-full pl-0">
+                <GanttChart projects={filteredProjects} />
             </CardContent>
         </Card>
 

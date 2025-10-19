@@ -27,6 +27,7 @@ import { ProjectCard } from './project-card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Separator } from './ui/separator';
 import { AnimatedCounter } from './ui/animated-counter';
+import { GanttChart } from './gantt-chart';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -383,6 +384,16 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                     <div className="lg:col-span-1">
                             <StatusLogicGuide />
                         </div>
+                    </CardContent>
+                </Card>
+                
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Rulemaking Gantt Chart</CardTitle>
+                        <CardDescription>Overall timeline for all Rulemaking projects.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-[400px] w-full pl-0">
+                        <GanttChart projects={filteredProjects} />
                     </CardContent>
                 </Card>
 
