@@ -165,15 +165,15 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                 <div className="relative grid" style={{
                     width: 'min-content',
                     gridTemplateColumns: `${TASK_LIST_WIDTH}px ${totalGridWidth}px`,
-                    gridTemplateRows: `${HEADER_HEIGHT}px repeat(${sortedTasks.length}, minmax(${ROW_MIN_HEIGHT}px, auto))`,
+                    gridAutoRows: `${ROW_MIN_HEIGHT}px`,
                 }}>
                   {/* HEADER - Task List */}
-                  <div className="sticky top-0 left-0 z-30 bg-card border-b border-r flex items-center px-4 font-semibold" style={{ gridRow: 1, gridColumn: 1 }}>
+                  <div className="sticky top-0 left-0 z-40 bg-card border-b border-r flex items-center px-4 font-semibold" style={{ gridRow: 1, gridColumn: 1, height: `${HEADER_HEIGHT}px` }}>
                       Tasks / Project
                   </div>
 
                   {/* HEADER - Timeline */}
-                  <div className="sticky top-0 z-20 flex-shrink-0 border-b bg-card" style={{ gridRow: 1, gridColumn: 2 }}>
+                  <div className="sticky top-0 z-30 flex-shrink-0 border-b bg-card" style={{ gridRow: 1, gridColumn: 2, height: `${HEADER_HEIGHT}px` }}>
                       {viewMode === 'week' && (
                           <div className="flex border-b" style={{ height: `${MONTH_HEADER_HEIGHT}px` }}>
                               {months.map((month) => {
@@ -211,39 +211,43 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                   </div>
 
                   {/* BODY - Task List */}
-                  <div className="sticky left-0 z-20 bg-card" style={{ gridRow: '2 / -1', gridColumn: 1 }}>
-                    {sortedTasks.map((task) => (
-                        <div key={task.id} className="flex flex-col justify-center px-2 py-2 border-b border-r" style={{ minHeight: `${ROW_MIN_HEIGHT}px` }}>
-                            <Tooltip>
-                                <TooltipTrigger asChild><p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p></TooltipTrigger>
-                                <TooltipContent>{task.title}</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                                <TooltipTrigger asChild><p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p></TooltipTrigger>
-                                <TooltipContent>{task.projectName}</TooltipContent>
-                            </Tooltip>
-                        </div>
-                    ))}
-                  </div>
+                  {sortedTasks.map((task, index) => (
+                    <div key={task.id} className="sticky left-0 z-20 bg-card flex flex-col justify-center px-2 py-1 border-b border-r" style={{ gridRow: index + 2, gridColumn: 1 }}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <p className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
+                            </TooltipTrigger>
+                            <TooltipContent align="start"><p>{task.title}</p></TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">{task.projectName}</p>
+                            </TooltipTrigger>
+                             <TooltipContent align="start"><p>{task.projectName}</p></TooltipContent>
+                        </Tooltip>
+                    </div>
+                  ))}
 
-                  {/* BODY - Timeline */}
+                  {/* BODY - Timeline Grid */}
                   <div className="relative" style={{ gridRow: '2 / -1', gridColumn: 2 }}>
                     {/* Vertical Grid Lines */}
                     {viewMode === 'day' ? (
-                        days.map((day, index) => (
-                            <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * DAY_WIDTH_DAY_VIEW) + DAY_WIDTH_DAY_VIEW - 1}px`}} />
+                        days.map((_, index) => (
+                            <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border/50" style={{ left: `${index * DAY_WIDTH_DAY_VIEW}px`}} />
                         ))
                     ) : (
-                        weeks.map((week, index) => (
-                            <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-transparent border-l border-dashed border-border/80" style={{ left: `${(index * WEEK_WIDTH) + WEEK_WIDTH - 1}px`}} />
+                        weeks.map((_, index) => (
+                            <div key={`v-line-${index}`} className="absolute top-0 h-full w-px bg-border/50" style={{ left: `${index * WEEK_WIDTH}px`}} />
                         ))
                     )}
                     {/* Horizontal Grid Lines */}
                     {sortedTasks.map((_, index) => (
-                        <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ height: `${ROW_MIN_HEIGHT}px`, top: `${index * ROW_MIN_HEIGHT}px` }} />
+                        <div key={`h-line-${index}`} className="absolute w-full border-b" style={{ top: `${(index + 1) * ROW_MIN_HEIGHT -1}px` }} />
                     ))}
-                    
-                    {/* Today Marker */}
+                  </div>
+
+                  {/* Today Marker & Task Bars */}
+                  <div className="relative z-20" style={{ gridRow: '2 / -1', gridColumn: 2 }}>
                     {(() => {
                         const today = startOfDay(new Date());
                         if (today < timelineStart || today > timelineEnd) return null;
@@ -257,7 +261,7 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                             todayLeft = todayOffsetWeeks * WEEK_WIDTH;
                         }
                         return (
-                            <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-20" style={{ left: `${todayLeft}px` }} >
+                            <div ref={todayRef} className="absolute top-0 bottom-0 w-0.5 bg-primary z-30" style={{ left: `${todayLeft}px` }} >
                                 <div className="sticky top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-b-md">
                                     Today
                                 </div>
@@ -265,45 +269,42 @@ export function InteractiveTimeline({ tasks }: InteractiveTimelineProps) {
                         );
                     })()}
 
-                    {/* Task Bars */}
-                    <div className="relative w-full h-full z-10">
-                        {sortedTasks.map((task, index) => {
-                            const taskStart = parseISO(task.startDate);
-                            const taskEnd = parseISO(task.dueDate);
+                    {sortedTasks.map((task, index) => {
+                        const taskStart = parseISO(task.startDate);
+                        const taskEnd = parseISO(task.dueDate);
 
-                            let left, width;
-                            if (viewMode === 'day') {
-                                const startOffset = differenceInDays(taskStart, timelineStart);
-                                const duration = differenceInDays(taskEnd, taskStart) + 1;
-                                left = startOffset * DAY_WIDTH_DAY_VIEW;
-                                width = duration * DAY_WIDTH_DAY_VIEW - 2;
-                            } else { 
-                                const startOffset = differenceInCalendarISOWeeks(taskStart, timelineStart);
-                                const duration = differenceInCalendarISOWeeks(taskEnd, taskStart) + 1;
-                                left = startOffset * WEEK_WIDTH;
-                                width = duration * WEEK_WIDTH - 4;
-                            }
-                            
-                            return (
-                                <Tooltip key={task.id}>
-                                    <TooltipTrigger asChild>
-                                        <div className="absolute group" style={{ top: `${index * ROW_MIN_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_MIN_HEIGHT - 16}px` }}>
-                                            <div className={cn("h-full w-full rounded-md text-white flex items-start justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
-                                                <p className="text-[10px] text-center font-bold text-white/90 leading-tight">
-                                                    {format(taskStart, 'dd MMM')} - {format(taskEnd, 'dd MMM')}
-                                                </p>
-                                            </div>
+                        let left, width;
+                        if (viewMode === 'day') {
+                            const startOffset = differenceInDays(taskStart, timelineStart);
+                            const duration = differenceInDays(taskEnd, taskStart) + 1;
+                            left = startOffset * DAY_WIDTH_DAY_VIEW;
+                            width = duration * DAY_WIDTH_DAY_VIEW - 2;
+                        } else { 
+                            const startOffset = differenceInCalendarISOWeeks(taskStart, timelineStart);
+                            const duration = differenceInCalendarISOWeeks(taskEnd, taskStart) + 1;
+                            left = startOffset * WEEK_WIDTH;
+                            width = duration * WEEK_WIDTH - 4;
+                        }
+                        
+                        return (
+                            <Tooltip key={task.id}>
+                                <TooltipTrigger asChild>
+                                    <div className="absolute group" style={{ top: `${index * ROW_MIN_HEIGHT + 8}px`, left: `${left}px`, width: `${width}px`, height: `${ROW_MIN_HEIGHT - 16}px` }}>
+                                        <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
+                                            <p className="text-[10px] text-center font-bold text-white/90 leading-tight truncate">
+                                                {task.title}
+                                            </p>
                                         </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p className="font-bold">{task.title}</p>
-                                        <p className="text-sm"><span className="font-semibold">Project:</span> {task.projectName}</p>
-                                        <p className="text-sm"><span className="font-semibold">Duration:</span> {format(taskStart, 'PPP')} - {format(taskEnd, 'PPP')}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            );
-                        })}
-                    </div>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="font-bold">{task.title}</p>
+                                    <p className="text-sm"><span className="font-semibold">Project:</span> {task.projectName}</p>
+                                    <p className="text-sm"><span className="font-semibold">Duration:</span> {format(taskStart, 'PPP')} - {format(taskEnd, 'PPP')}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        );
+                    })}
                   </div>
               </div>
             </div>
