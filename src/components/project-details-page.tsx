@@ -62,7 +62,6 @@ import { AddDocumentLinkDialog } from './add-document-link-dialog';
 import { deleteDocument, deleteProject } from '@/lib/actions/project';
 import { deleteGapAnalysisRecord } from '@/lib/actions/gap-analysis';
 import { useToast } from '@/hooks/use-toast';
-import { InteractiveTimeline } from './project-timeline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { GapAnalysisRecordDetailDialog } from './gap-analysis-record-detail-dialog';
 import { RulemakingAnalytics } from './rulemaking-analytics';
@@ -631,14 +630,6 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                 </Card>
             )}
 
-            <Card>
-              <CardContent className="pl-0 pr-0 pb-0">
-                  <InteractiveTimeline 
-                    tasks={tasks}
-                  />
-              </CardContent>
-            </Card>
-            
             <TasksTable 
               projectId={project.id}
               projectType={project.projectType}
