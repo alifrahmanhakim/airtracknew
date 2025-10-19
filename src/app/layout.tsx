@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css?v=2';
 import { Toaster } from "@/components/ui/toaster"
-import { Roboto } from 'next/font/google';
+import { Roboto, Great_Vibes } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 
@@ -10,6 +10,12 @@ const fontSans = Roboto({
   weight: ['400', '700'],
   variable: "--font-sans",
 })
+
+const fontGreatVibes = Great_Vibes({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-great-vibes',
+});
 
 export const metadata: Metadata = {
   title: 'AirTrack: Aviation Project Tracker',
@@ -28,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("min-h-screen font-sans antialiased", fontSans.variable)}>
+      <body className={cn("min-h-screen font-sans antialiased", fontSans.variable, fontGreatVibes.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

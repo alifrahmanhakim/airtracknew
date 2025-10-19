@@ -104,6 +104,10 @@
     background-attachment: fixed;
   }
 
+  .font-great-vibes {
+    font-family: var(--font-great-vibes);
+  }
+
   .app-content-container {
     max-width: 1600px;
     margin-left: auto;
