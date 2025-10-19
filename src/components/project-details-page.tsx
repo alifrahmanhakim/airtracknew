@@ -583,13 +583,13 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
       </div>
 
        <Card>
-          <CardHeader>
-            <CardTitle>Project Timeline</CardTitle>
-            <CardDescription>A chronological view of all project tasks.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-             <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
-          </CardContent>
+            <CardHeader>
+                <CardTitle>Project Timeline</CardTitle>
+                <CardDescription>A chronological view of all project tasks.</CardDescription>
+            </CardHeader>
+            <CardContent className="overflow-x-auto p-0">
+                <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
+            </CardContent>
        </Card>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
