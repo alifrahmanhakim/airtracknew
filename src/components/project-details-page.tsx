@@ -582,13 +582,15 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </Card>
       </div>
 
-       <Card className="w-full">
+        <Card className="w-full">
             <CardHeader>
                 <CardTitle>Project Timeline</CardTitle>
                 <CardDescription>A chronological view of all project tasks.</CardDescription>
             </CardHeader>
-            <div className="overflow-x-auto p-6 pt-0">
-                <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
+            <div className="overflow-x-auto">
+                <div className="p-6 pt-0">
+                    <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
+                </div>
             </div>
         </Card>
       
@@ -779,3 +781,5 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
 
 }
+
+    
