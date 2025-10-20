@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -21,8 +20,6 @@ import {
   differenceInCalendarISOWeeks,
   isWithinInterval,
   getYear,
-  startOfMonth,
-  endOfMonth,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Task, User } from '@/lib/types';
@@ -39,8 +36,6 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from './ui/scroll-area';
-import { ChevronRight } from 'lucide-react';
 
 type ProjectTimelineProps = {
   tasks: Task[];
@@ -51,7 +46,6 @@ type ViewMode = 'week' | 'day';
 
 const HEADER_HEIGHT = 64;
 const TASK_LIST_WIDTH = 250;
-const ROW_HEIGHT = 50;
 const WEEK_WIDTH = 60;
 const DAY_WIDTH_DAY_VIEW = 40;
 
@@ -73,9 +67,9 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
   const [searchTerm, setSearchTerm] = React.useState('');
   const [assigneeFilter, setAssigneeFilter] = React.useState('all');
   const [yearFilter, setYearFilter] = React.useState<string>('all');
-  
+
   const flattenedTasks = React.useMemo(() => flattenTasks(tasks), [tasks]);
-  
+
   const yearOptions = React.useMemo(() => {
     const years = new Set(flattenedTasks.map(t => getYear(parseISO(t.startDate))));
     if (years.size === 0) return ['all', new Date().getFullYear().toString()];
@@ -92,12 +86,12 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
     if (assigneeFilter !== 'all') {
         filtered = filtered.filter(t => t.assigneeIds?.includes(assigneeFilter));
     }
-    
+
     if (yearFilter !== 'all') {
         const yearNum = parseInt(yearFilter, 10);
         filtered = filtered.filter(t => getYear(parseISO(t.startDate)) === yearNum || getYear(parseISO(t.dueDate)) === yearNum);
     }
-    
+
     const sorted = [...filtered].sort((a, b) => {
         const dateA = parseISO(a.startDate).getTime();
         const dateB = parseISO(b.startDate).getTime();
@@ -109,29 +103,27 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
 
     const now = new Date();
     let tStart, tEnd;
-    
+
     if (yearFilter !== 'all') {
         const year = parseInt(yearFilter, 10);
         tStart = startOfISOWeek(new Date(year, 0, 1));
         tEnd = endOfISOWeek(new Date(year, 11, 31));
     } else {
-        // Default to a 3-month view: current month, one month before, one month after
-        tStart = startOfMonth(addMonths(now, -1));
-        tEnd = endOfMonth(addMonths(now, 1));
+        tStart = startOfISOWeek(addMonths(now, -1));
+        tEnd = endOfISOWeek(addMonths(now, 2));
     }
 
     if (filtered.length > 0) {
       const allDates = filtered.flatMap(t => [parseISO(t.startDate), parseISO(t.dueDate)]);
       const earliestDate = min(allDates);
       const latestDate = max(allDates);
-      
-      // If no year filter is active, expand the view to include all tasks
+
       if (yearFilter === 'all') {
         tStart = min([startOfISOWeek(addMonths(earliestDate, -1)), tStart]);
         tEnd = max([endOfISOWeek(addMonths(latestDate, 1)), tEnd]);
       }
     }
-    
+
     const dayData = eachDayOfInterval({ start: tStart, end: tEnd });
     const weekData = eachWeekOfInterval({ start: tStart, end: tEnd }, { weekStartsOn: 1 });
 
@@ -150,15 +142,15 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
     const container = timelineContainerRef.current;
     const todayMarker = todayRef.current;
     if (!container || !todayMarker) return;
-  
+
     const todayPosition = todayMarker.offsetLeft;
     const horizontalScrollPosition = todayPosition - container.offsetWidth / 3;
-  
+
     container.scrollTo({
       left: horizontalScrollPosition,
       behavior: 'auto',
     });
-  }, [viewMode, timelineStart]); // Re-run when timelineStart changes
+  }, [viewMode, timelineStart]); 
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
@@ -174,7 +166,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
   };
 
   const areFiltersActive = searchTerm !== '' || assigneeFilter !== 'all' || yearFilter !== 'all';
-  
+
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-10 text-muted-foreground">
@@ -241,8 +233,12 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
           ))}
         </div>
       </div>
-      <ScrollArea className="w-full whitespace-nowrap" viewportRef={timelineContainerRef}>
-        <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${Math.min(10, sortedTasks.length) * ROW_HEIGHT + HEADER_HEIGHT}px` }}>
+      <div 
+        ref={timelineContainerRef} 
+        className="w-full overflow-auto relative" 
+        style={{ height: `${Math.min(10, sortedTasks.length) * 50 + HEADER_HEIGHT}px` }}
+      >
+        <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
             {/* Header */}
             <div className="sticky top-0 z-30 flex bg-card border-b">
                 <div className="sticky left-0 z-20 bg-card border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
@@ -306,15 +302,15 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                     }
 
                     return (
-                        <div key={task.id} className="flex border-b" style={{ height: `${ROW_HEIGHT}px` }}>
+                        <div key={task.id} className="flex border-b">
                             <div className="sticky left-0 z-20 bg-card border-r flex items-center px-2 py-2" style={{ width: `${TASK_LIST_WIDTH}px` }}>
-                                <p className="text-xs font-semibold leading-tight line-clamp-2">{task.title}</p>
+                                <p className="text-xs font-semibold leading-tight">{task.title}</p>
                             </div>
-                            <div className="relative flex-grow h-full">
+                            <div className="relative flex-grow h-[50px]">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div 
-                                            className="absolute group top-1/2 -translate-y-1/2"
+                                            className="absolute group top-1/2 -translate-y-1/2 z-10"
                                             style={{ left: `${left}px`, width: `${width}px`, height: '28px' }}
                                         >
                                             <div className={cn("h-full w-full rounded-md text-white flex items-center justify-center overflow-hidden py-1 px-2 cursor-pointer shadow-sm", statusConfig[task.status].color)}>
@@ -349,7 +345,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                  {(() => {
                       const today = startOfDay(new Date());
                       if (today < timelineStart || today > timelineEnd) return null;
-                      
+
                       let todayLeft;
                       if (viewMode === 'day') {
                           const todayOffsetDays = differenceInDays(today, timelineStart);
@@ -368,9 +364,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                   })()}
             </div>
         </div>
-      </ScrollArea>
+      </div>
     </TooltipProvider>
   );
 }
-
-    
