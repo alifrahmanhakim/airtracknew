@@ -13,7 +13,7 @@ import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, Tindak
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getYear, parseISO, isToday } from 'date-fns';
+import { getYear, parseISO, isToday, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
 
@@ -166,7 +166,10 @@ export default function RsiPage() {
                 const dateString = record[dateField];
                 if (dateString && typeof dateString === 'string') {
                     try {
-                        allYears.add(getYear(parseISO(dateString)));
+                        const parsedDate = parseISO(dateString);
+                        if(isValid(parsedDate)) {
+                            allYears.add(getYear(parsedDate));
+                        }
                     } catch (e) {
                         // ignore invalid date
                     }
@@ -175,7 +178,8 @@ export default function RsiPage() {
                 }
             });
         });
-        return ['all', ...Array.from(allYears).sort((a,b) => b-a)];
+        const validYears = Array.from(allYears).filter(year => !isNaN(year));
+        return ['all', ...validYears.sort((a,b) => b-a)];
     }, [data]);
 
     const dashboardStats = React.useMemo(() => {
@@ -192,7 +196,12 @@ export default function RsiPage() {
                 try {
                     let recordYear;
                     if (typeof dateString === 'string') {
-                        recordYear = getYear(parseISO(dateString));
+                        const parsedDate = parseISO(dateString);
+                        if(isValid(parsedDate)) {
+                            recordYear = getYear(parsedDate);
+                        } else {
+                            return false;
+                        }
                     } else if (dateString.toDate) { // Firestore Timestamp
                         recordYear = getYear(dateString.toDate());
                     }
@@ -235,8 +244,8 @@ export default function RsiPage() {
                             </SelectTrigger>
                             <SelectContent>
                                 {yearOptions.map(year => (
-                                    <SelectItem key={year} value={String(year)}>
-                                        {year === 'all' ? 'All Years' : year}
+                                    <SelectItem key={String(year)} value={String(year)}>
+                                        {year === 'all' ? 'All Years' : String(year)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -306,7 +315,10 @@ export default function RsiPage() {
                         const dateString = record[dateField];
                         if (dateString && typeof dateString === 'string') {
                              try {
-                                return getYear(parseISO(dateString)) === parseInt(yearFilter);
+                                const parsedDate = parseISO(dateString);
+                                if(isValid(parsedDate)) {
+                                    return getYear(parsedDate) === parseInt(yearFilter);
+                                }
                             } catch (e) {
                                 return false;
                             }
