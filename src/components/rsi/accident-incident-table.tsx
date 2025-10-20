@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { deleteAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { Highlight } from '../ui/highlight';
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext } from '../ui/pagination';
@@ -73,9 +73,11 @@ export function AccidentIncidentTable({ records, onEdit, searchTerm }: AccidentI
                 const bVal = b[sort.column];
                 
                 if (sort.column === 'tanggal') {
+                    const dateA = aVal && isValid(parseISO(aVal)) ? parseISO(aVal).getTime() : 0;
+                    const dateB = bVal && isValid(parseISO(bVal)) ? parseISO(bVal).getTime() : 0;
                     return sort.direction === 'asc' 
-                        ? new Date(aVal).getTime() - new Date(bVal).getTime()
-                        : new Date(bVal).getTime() - new Date(aVal).getTime();
+                        ? dateA - dateB
+                        : dateB - dateA;
                 }
 
                 if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
@@ -114,6 +116,18 @@ export function AccidentIncidentTable({ records, onEdit, searchTerm }: AccidentI
         setRecordToDelete(null);
     };
 
+    const formatDateSafe = (dateString: string) => {
+        try {
+            const date = parseISO(dateString);
+            if(isValid(date)) {
+                return format(date, 'dd-MMM-yy');
+            }
+        } catch (e) {
+            // Catches invalid date strings for parseISO
+        }
+        return 'Invalid Date';
+    }
+
     return (
         <>
             <div className="border rounded-md w-full overflow-x-auto">
@@ -134,7 +148,7 @@ export function AccidentIncidentTable({ records, onEdit, searchTerm }: AccidentI
                     <TableBody>
                         {paginatedRecords.length > 0 ? paginatedRecords.map((record) => (
                             <TableRow key={record.id} onClick={() => onEdit(record)} className="cursor-pointer">
-                                <TableCell><Highlight text={format(parseISO(record.tanggal), 'dd-MMM-yy')} query={searchTerm} /></TableCell>
+                                <TableCell><Highlight text={record.tanggal ? formatDateSafe(record.tanggal) : 'N/A'} query={searchTerm} /></TableCell>
                                 <TableCell>
                                     <Badge variant={record.kategori === 'Accident (A)' ? 'destructive' : 'secondary'}>
                                         <Highlight text={record.kategori} query={searchTerm} />
@@ -196,7 +210,7 @@ export function AccidentIncidentTable({ records, onEdit, searchTerm }: AccidentI
                         </div>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete the record for registration <span className="font-semibold">{recordToDelete?.registrasiPesawat}</span> on <span className="font-semibold">{recordToDelete?.tanggal ? format(parseISO(recordToDelete.tanggal), 'PPP') : ''}</span>.
+                            This will permanently delete the record for registration <span className="font-semibold">{recordToDelete?.registrasiPesawat}</span> on <span className="font-semibold">{recordToDelete?.tanggal ? formatDateSafe(recordToDelete.tanggal) : ''}</span>.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
