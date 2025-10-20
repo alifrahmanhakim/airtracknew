@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RotateCcw, Search, Loader2, ArrowLeft, FileSpreadsheet } from 'lucide-react';
-import { getYear, parseISO, format } from 'date-fns';
+import { getYear, parseISO, format, isValid } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { accidentIncidentFormSchema } from '@/lib/schemas';
@@ -83,8 +83,18 @@ export default function DataAccidentIncidentPage() {
     
     const yearOptions = React.useMemo(() => {
         if (records.length === 0) return ['all'];
-        const years = [...new Set(records.map(r => getYear(parseISO(r.tanggal))))];
-        return ['all', ...years.sort((a, b) => b - a)];
+        const years = new Set<number>();
+        records.forEach(r => {
+            try {
+                if (r.tanggal && isValid(parseISO(r.tanggal))) {
+                    years.add(getYear(parseISO(r.tanggal)));
+                }
+            } catch (e) {
+                // Ignore invalid date formats
+            }
+        });
+        const validYears = Array.from(years).filter(year => !isNaN(year));
+        return ['all', ...validYears.sort((a, b) => b - a)];
     }, [records]);
     
     const categoryOptions = React.useMemo(() => ['all', ...[...new Set(records.map(r => r.kategori))].sort()], [records]);
@@ -95,7 +105,7 @@ export default function DataAccidentIncidentPage() {
                 String(value).toLowerCase().includes(searchTerm.toLowerCase())
             );
             const aocMatch = aocFilter === 'all' || record.aoc === aocFilter;
-            const yearMatch = yearFilter === 'all' || getYear(parseISO(record.tanggal)) === parseInt(yearFilter);
+            const yearMatch = yearFilter === 'all' || (record.tanggal && isValid(parseISO(record.tanggal)) && getYear(parseISO(record.tanggal)) === parseInt(yearFilter));
             const categoryMatch = categoryFilter === 'all' || record.kategori === categoryFilter;
 
             return searchTermMatch && aocMatch && yearMatch && categoryMatch;
@@ -209,7 +219,7 @@ export default function DataAccidentIncidentPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {yearOptions.map(year => (
-                                            <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>
+                                            <SelectItem key={String(year)} value={String(year)}>{year === 'all' ? 'All Years' : String(year)}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -289,7 +299,7 @@ export default function DataAccidentIncidentPage() {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {categoryOptions.map(cat => (
-                                                <SelectItem key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</SelectItem>
+                                                <SelectItem key={String(cat)} value={String(cat)}>{cat === 'all' ? 'All Categories' : cat}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
