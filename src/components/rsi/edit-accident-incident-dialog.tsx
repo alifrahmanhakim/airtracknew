@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -20,7 +19,7 @@ import type { AccidentIncidentRecord } from '@/lib/types';
 import { AccidentIncidentForm } from './accident-incident-form';
 import { updateAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { accidentIncidentFormSchema } from '@/lib/schemas';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, isValid } from 'date-fns';
 import type { z } from 'zod';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -50,7 +49,7 @@ export function EditAccidentIncidentRecordDialog({ record, onRecordUpdate, open,
     resolver: zodResolver(accidentIncidentFormSchema),
     defaultValues: {
       ...record,
-      tanggal: format(parseISO(record.tanggal), 'yyyy-MM-dd'),
+      tanggal: record.tanggal && isValid(parseISO(record.tanggal)) ? format(parseISO(record.tanggal), 'yyyy-MM-dd') : '',
       adaKorbanJiwa: korbanData.ada,
       jumlahKorbanJiwa: korbanData.jumlah,
       fileUrl: record.fileUrl || '',
@@ -62,7 +61,7 @@ export function EditAccidentIncidentRecordDialog({ record, onRecordUpdate, open,
     const newKorbanData = parseCasualtiesForForm(record.korbanJiwa);
     form.reset({
        ...record,
-      tanggal: format(parseISO(record.tanggal), 'yyyy-MM-dd'),
+      tanggal: record.tanggal && isValid(parseISO(record.tanggal)) ? format(parseISO(record.tanggal), 'yyyy-MM-dd') : '',
       adaKorbanJiwa: newKorbanData.ada,
       jumlahKorbanJiwa: newKorbanData.jumlah,
       fileUrl: record.fileUrl || '',
