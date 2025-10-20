@@ -40,6 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from './ui/scroll-area';
+import { ChevronRight } from 'lucide-react';
 
 type ProjectTimelineProps = {
   tasks: Task[];
@@ -240,11 +241,10 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
           ))}
         </div>
       </div>
-      <ScrollArea 
+      <div 
         ref={timelineContainerRef} 
-        className="w-full relative" 
+        className="w-full relative overflow-x-auto"
         style={{ height: `${Math.min(10, sortedTasks.length + 1) * ROW_HEIGHT + HEADER_HEIGHT}px` }}
-        type="auto"
       >
         <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
             {/* Header */}
@@ -372,8 +372,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                   })()}
             </div>
         </div>
-      </ScrollArea>
+      </div>
     </TooltipProvider>
   );
 }
-
