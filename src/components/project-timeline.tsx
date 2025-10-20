@@ -241,12 +241,8 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
           ))}
         </div>
       </div>
-      <div 
-        ref={timelineContainerRef} 
-        className="w-full relative overflow-x-auto"
-        style={{ height: `${Math.min(10, sortedTasks.length + 1) * ROW_HEIGHT + HEADER_HEIGHT}px` }}
-      >
-        <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
+      <ScrollArea className="w-full whitespace-nowrap" viewportRef={timelineContainerRef}>
+        <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`, height: `${Math.min(10, sortedTasks.length) * ROW_HEIGHT + HEADER_HEIGHT}px` }}>
             {/* Header */}
             <div className="sticky top-0 z-30 flex bg-card border-b">
                 <div className="sticky left-0 z-20 bg-card border-r flex items-center px-4 font-semibold" style={{ width: `${TASK_LIST_WIDTH}px`, height: `${HEADER_HEIGHT}px` }}>
@@ -372,7 +368,9 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
                   })()}
             </div>
         </div>
-      </div>
+      </ScrollArea>
     </TooltipProvider>
   );
 }
+
+    
