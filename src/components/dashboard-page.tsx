@@ -605,16 +605,6 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
             </CardContent>
         </Card>
         
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Tim Kerja Gantt Chart</CardTitle>
-                <CardDescription>Overall timeline for all Tim Kerja projects.</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px] w-full pl-0">
-                <GanttChart projects={filteredProjects} />
-            </CardContent>
-        </Card>
-
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
           <Card className={cn(cardHoverClasses)}>
              <CardHeader>
