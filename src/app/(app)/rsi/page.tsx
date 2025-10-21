@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -83,7 +83,7 @@ const rsiModules: RsiModule[] = [
   {
     title: 'Monitoring Rekomendasi ke DGCA',
     description: 'Track NTSC recommendations to the DGCA.',
-    icon: <BookCheck className="h-8 w-8 text-purple-500" />,
+    icon: <BookOpenCheck className="h-8 w-8 text-purple-500" />,
     href: '/rsi/monitoring-rekomendasi-dgca',
     collectionName: 'tindakLanjutDgcaRecords',
     statusField: 'operator',
@@ -314,7 +314,7 @@ export default function RsiPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <BookCheck className="h-8 w-8 text-purple-500" />
+                                    <BookOpenCheck className="h-8 w-8 text-purple-500" />
                                     <div>
                                         <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalTindakLanjutDgca} /></p>
                                         <p className="text-sm text-muted-foreground">Rekomendasi ke DGCA</p>
