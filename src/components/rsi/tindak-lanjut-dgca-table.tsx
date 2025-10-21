@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, Info, ArrowUpDown, Link as LinkIcon } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
 import { EditTindakLanjutDgcaDialog } from './edit-tindak-lanjut-dgca-dialog';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 type SortDescriptor = {
   column: keyof TindakLanjutDgcaRecord;
@@ -72,6 +72,19 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm,
         return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
     };
 
+    const formatDateSafe = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            const date = parseISO(dateString);
+            if (isValid(date)) {
+                return format(date, 'dd MMM yyyy');
+            }
+        } catch (e) {
+            // Fails silently
+        }
+        return 'Invalid Date';
+    }
+
     return (
         <div className="border rounded-md w-full overflow-x-auto">
             <Table className="table-fixed">
@@ -102,8 +115,8 @@ export function TindakLanjutDgcaTable({ records, onUpdate, onDelete, searchTerm,
                                 <p className="text-sm text-muted-foreground">Tipe Pesawat: <Highlight text={record.tipePesawat} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasi} query={searchTerm} /></p>
                                 <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasi} query={searchTerm} /></p>
-                                <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={format(parseISO(record.tanggalKejadian), 'dd MMM yyyy')} query={searchTerm} /></p>
-                                <p className="text-sm text-muted-foreground">Terbit: <Highlight text={record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'dd MMM yyyy') : 'N/A'} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={formatDateSafe(record.tanggalKejadian)} query={searchTerm} /></p>
+                                <p className="text-sm text-muted-foreground">Terbit: <Highlight text={formatDateSafe(record.tanggalTerbit)} query={searchTerm} /></p>
                             </TableCell>
                             <TableCell className="align-top break-words"><BulletList text={record.rekomendasiKeDgca} searchTerm={searchTerm} /></TableCell>
                             <TableCell className="align-top break-words"><BulletList text={record.nomorRekomendasi} searchTerm={searchTerm} /></TableCell>

@@ -182,6 +182,17 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
         }
         return url;
     };
+    
+    const formatDateSafe = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            const date = parseISO(dateString);
+            if(isValid(date)) return format(date, 'dd-MMM-yy');
+        } catch (e) {
+            // Fails silently
+        }
+        return 'Invalid Date';
+    }
 
 
     return (
@@ -237,34 +248,20 @@ export function LawEnforcementTable({ records, onUpdate }: LawEnforcementTablePr
                                     <TableCell className="align-top">{renderImposition(record)}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col gap-2">
-                                        {(record.references || []).map(ref => {
-                                            let dateDisplay = 'N/A';
-                                            if (ref.dateLetter) {
-                                                try {
-                                                    const parsedDate = parseISO(ref.dateLetter);
-                                                    if (isValid(parsedDate)) {
-                                                        dateDisplay = format(parsedDate, 'dd-MMM-yy');
-                                                    }
-                                                } catch (e) {
-                                                    // keep original if not valid date
-                                                    dateDisplay = ref.dateLetter;
-                                                }
-                                            }
-                                            return (
-                                                <div key={ref.id} className="text-sm p-2 border-l-2 pl-3">
-                                                    <p><strong className="font-semibold">Type:</strong> <Highlight text={ref.sanctionType} query={searchTerm} /></p>
-                                                    <p><strong className="font-semibold">Ref. Letter:</strong> <Highlight text={ref.refLetter} query={searchTerm} /></p>
-                                                    <p><strong className="font-semibold">Date:</strong> <Highlight text={dateDisplay} query={searchTerm} /></p>
-                                                    {ref.fileUrl && (
-                                                        <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                                                            <a href={formatUrl(ref.fileUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                                                                <LinkIcon className="h-3 w-3" /> View File
-                                                            </a>
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            )
-                                        })}
+                                        {(record.references || []).map(ref => (
+                                            <div key={ref.id} className="text-sm p-2 border-l-2 pl-3">
+                                                <p><strong className="font-semibold">Type:</strong> <Highlight text={ref.sanctionType} query={searchTerm} /></p>
+                                                <p><strong className="font-semibold">Ref. Letter:</strong> <Highlight text={ref.refLetter} query={searchTerm} /></p>
+                                                <p><strong className="font-semibold">Date:</strong> <Highlight text={formatDateSafe(ref.dateLetter)} query={searchTerm} /></p>
+                                                {ref.fileUrl && (
+                                                    <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                                                        <a href={formatUrl(ref.fileUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                                            <LinkIcon className="h-3 w-3" /> View File
+                                                        </a>
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right align-top">

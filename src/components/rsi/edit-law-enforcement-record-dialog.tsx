@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -47,10 +46,13 @@ export function EditLawEnforcementRecordDialog({ record, onRecordUpdate }: EditL
             const parsedDate = parseISO(ref.dateLetter);
             if (isValid(parsedDate)) {
               formattedDate = format(parsedDate, 'yyyy-MM-dd');
+            } else {
+              // Attempt to parse from other common formats if needed, or leave as is
+              // For now, if not ISO, we assume it might be in 'yyyy-MM-dd' already for the input
+              formattedDate = ref.dateLetter;
             }
           } catch (e) {
-            // keep original if it's not a valid ISO string
-            formattedDate = ref.dateLetter;
+            formattedDate = ref.dateLetter; // keep original if it's not a valid ISO string
           }
         }
         return { ...ref, dateLetter: formattedDate, fileUrl: ref.fileUrl || '' };
