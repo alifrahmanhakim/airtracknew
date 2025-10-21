@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -40,16 +41,16 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
     resolver: zodResolver(tindakLanjutFormSchema),
     defaultValues: {
       ...record,
-      tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
-      tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
+      tanggalKejadian: record.tanggalKejadian && isValid(parseISO(record.tanggalKejadian)) ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
+      tanggalTerbit: record.tanggalTerbit && isValid(parseISO(record.tanggalTerbit)) ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
       status: record.status || 'Draft',
       registrasiPesawat: record.registrasiPesawat || '',
       tipePesawat: record.tipePesawat || '',
       lokasiKejadian: record.lokasiKejadian || '',
       fileUrl: record.fileUrl || '',
+      rekomendasi: record.rekomendasi || [],
       tindakLanjutDkppu: record.tindakLanjutDkppu || '',
       tindakLanjutOperator: record.tindakLanjutOperator || '',
-      rekomendasi: record.rekomendasi || [],
     },
   });
 
