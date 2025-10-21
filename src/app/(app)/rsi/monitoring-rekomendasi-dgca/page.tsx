@@ -21,7 +21,7 @@ import type { z } from 'zod';
 import { addTindakLanjutDgcaRecord, deleteTindakLanjutDgcaRecord } from '@/lib/actions/tindak-lanjut-dgca';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { getYear, parseISO, format } from 'date-fns';
+import { getYear, parseISO, format, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import * as XLSX from 'xlsx';
 
@@ -141,8 +141,15 @@ export default function MonitoringRekomendasiDgcaPage() {
     };
 
     const yearOptions = React.useMemo(() => {
-        const years = new Set(records.map(r => getYear(parseISO(r.tanggalKejadian))));
-        return ['all', ...Array.from(years).sort((a, b) => b - a)];
+        const years = new Set(records.map(r => {
+            try {
+                return getYear(parseISO(r.tanggalKejadian));
+            } catch (e) {
+                return null;
+            }
+        }));
+        const validYears = Array.from(years).filter(year => year !== null && !isNaN(year)) as number[];
+        return ['all', ...validYears.sort((a, b) => b - a)];
     }, [records]);
 
     const filteredAndSortedRecords = React.useMemo(() => {
@@ -158,7 +165,17 @@ export default function MonitoringRekomendasiDgcaPage() {
         }
 
         if (yearFilter !== 'all') {
-            filtered = filtered.filter(record => getYear(parseISO(record.tanggalKejadian)) === parseInt(yearFilter, 10));
+            filtered = filtered.filter(record => {
+                 try {
+                    const date = parseISO(record.tanggalKejadian);
+                    if (isValid(date)) {
+                         return getYear(date) === parseInt(yearFilter, 10);
+                    }
+                } catch (e) {
+                    return false;
+                }
+                return false;
+            });
         }
 
         if (sort) {
@@ -166,9 +183,9 @@ export default function MonitoringRekomendasiDgcaPage() {
                 const aVal = a[sort.column];
                 const bVal = b[sort.column];
 
-                if (sort.column === 'tanggalKejadian') {
-                    const dateA = aVal ? parseISO(aVal).getTime() : 0;
-                    const dateB = bVal ? parseISO(bVal).getTime() : 0;
+                if (sort.column === 'tanggalKejadian' || sort.column === 'tanggalTerbit') {
+                    const dateA = aVal && isValid(parseISO(aVal as string)) ? parseISO(aVal as string).getTime() : 0;
+                    const dateB = bVal && isValid(parseISO(bVal as string)) ? parseISO(bVal as string).getTime() : 0;
                     return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
 
@@ -202,8 +219,8 @@ export default function MonitoringRekomendasiDgcaPage() {
             'Tipe Pesawat': record.tipePesawat,
             'Registrasi': record.registrasi,
             'Lokasi': record.lokasi,
-            'Tanggal Kejadian': record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
-            'Tanggal Terbit': record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
+            'Tanggal Kejadian': record.tanggalKejadian && isValid(parseISO(record.tanggalKejadian)) ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
+            'Tanggal Terbit': record.tanggalTerbit && isValid(parseISO(record.tanggalTerbit)) ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
             'Rekomendasi ke DGCA': record.rekomendasiKeDgca,
             'Nomor Rekomendasi': record.nomorRekomendasi,
             'Tindak Lanjut DKPPU': record.tindakLanjutDkppu,
@@ -300,7 +317,7 @@ export default function MonitoringRekomendasiDgcaPage() {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {yearOptions.map(year => (
-                                                    <SelectItem key={year} value={String(year)}>
+                                                    <SelectItem key={String(year)} value={String(year)}>
                                                         {year === 'all' ? 'All Years' : year}
                                                     </SelectItem>
                                                 ))}
@@ -361,3 +378,4 @@ export default function MonitoringRekomendasiDgcaPage() {
         </main>
     );
 }
+
