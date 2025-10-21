@@ -23,7 +23,7 @@ import { updateTindakLanjutDgcaRecord } from '@/lib/actions/tindak-lanjut-dgca';
 import { tindakLanjutDgcaFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { ScrollArea } from '../ui/scroll-area';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 type TindakLanjutDgcaFormValues = z.infer<typeof tindakLanjutDgcaFormSchema>;
 
@@ -50,8 +50,8 @@ export function EditTindakLanjutDgcaDialog({ record, onRecordUpdate }: EditTinda
       rekomendasiKeDgca: record.rekomendasiKeDgca || '',
       nomorRekomendasi: record.nomorRekomendasi || '',
       tindakLanjutDkppu: record.tindakLanjutDkppu || '',
-      tanggalKejadian: record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
-      tanggalTerbit: record.tanggalTerbit ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
+      tanggalKejadian: record.tanggalKejadian && isValid(parseISO(record.tanggalKejadian)) ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
+      tanggalTerbit: record.tanggalTerbit && isValid(parseISO(record.tanggalTerbit)) ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
       fileUrl: record.fileUrl || '',
     },
   });
