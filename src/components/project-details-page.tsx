@@ -582,8 +582,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-3 space-y-6">
             {project.projectType === 'Rulemaking' && (
               <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
             )}
@@ -637,9 +637,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               teamMembers={project.team}
               onTasksChange={handleTaskDataChange}
             />
-        </div>
-        <div className="lg:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            
+            <Card className="lg:col-span-3">
                 <CardHeader>
                     <CardTitle>Project Timeline</CardTitle>
                     <CardDescription>A chronological view of all project tasks.</CardDescription>
@@ -648,7 +647,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                     <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
                 </div>
             </Card>
-             <Card>
+
+             <Card className="lg:col-span-3">
                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex-1">
                     <CardTitle className="flex items-center gap-2">
