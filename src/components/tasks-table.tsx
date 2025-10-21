@@ -118,6 +118,8 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                     )}
                 </div>
                 </TableCell>
+                {visibleColumns.startDate && <TableCell>{task.startDate ? format(parseISO(task.startDate), 'PPP') : 'N/A'}</TableCell>}
+                {visibleColumns.dueDate && <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>}
                 {visibleColumns.namaSurat && <TableCell><Highlight text={task.namaSurat || 'N/A'} query={searchTerm} /></TableCell>}
                 {visibleColumns.tanggalPelaksanaan && <TableCell>{task.tanggalPelaksanaan ? <Highlight text={format(parseISO(task.tanggalPelaksanaan), 'PPP')} query={searchTerm}/> : 'N/A'}</TableCell>}
                 {visibleColumns.attachments && (
@@ -143,7 +145,6 @@ const TaskRow = ({ task, level, teamMembers, projectId, projectType, onTaskUpdat
                         )}
                     </TableCell>
                 )}
-                {visibleColumns.dueDate && <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : 'N/A'}</TableCell>}
                 <TableCell>
                     <Badge variant="outline" className={cn("text-xs font-semibold", statusStyles[task.status])}>
                         {task.status}
@@ -234,10 +235,11 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const [columnVisibility, setColumnVisibility] = React.useState<Record<string, boolean>>({
         no: true,
         task: true,
-        namaSurat: true,
-        tanggalPelaksanaan: true,
+        startDate: true,
+        dueDate: true,
+        namaSurat: false,
+        tanggalPelaksanaan: false,
         attachments: true,
-        dueDate: false,
         status: true,
         actions: true,
     });
@@ -245,10 +247,11 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
     const columnDefs: { key: keyof Task | 'no' | 'actions' | 'attachments' | 'namaSurat' | 'tanggalPelaksanaan'; header: string }[] = [
         { key: 'no', header: 'No.' },
         { key: 'title', header: 'Task' },
+        { key: 'startDate', header: 'Start Date' },
+        { key: 'dueDate', header: 'Due Date' },
         { key: 'namaSurat', header: 'Nama Surat' },
         { key: 'tanggalPelaksanaan', header: 'Tgl. Pelaksanaan' },
         { key: 'attachments', header: 'Attachments' },
-        { key: 'dueDate', header: 'Due Date' },
         { key: 'status', header: 'Status' },
         { key: 'actions', header: 'Actions' },
     ];
@@ -499,12 +502,11 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 <TableHead className="w-[30%] text-left" onClick={() => handleSort('title')}>
                                     <div className="flex items-center cursor-pointer">Task {renderSortIcon('title')}</div>
                                 </TableHead>
+                                {columnVisibility.startDate && <TableHead onClick={() => handleSort('startDate')}><div className="flex items-center cursor-pointer">Start Date {renderSortIcon('startDate')}</div></TableHead>}
+                                {columnVisibility.dueDate && <TableHead onClick={() => handleSort('dueDate')}><div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div></TableHead>}
                                 {columnVisibility.namaSurat && <TableHead onClick={() => handleSort('namaSurat')}><div className="flex items-center cursor-pointer">Nama Surat {renderSortIcon('namaSurat')}</div></TableHead>}
                                 {columnVisibility.tanggalPelaksanaan && <TableHead onClick={() => handleSort('tanggalPelaksanaan')}><div className="flex items-center cursor-pointer">Tgl. Pelaksanaan {renderSortIcon('tanggalPelaksanaan')}</div></TableHead>}
                                 {columnVisibility.attachments && <TableHead onClick={() => handleSort('attachments')}><div className="flex items-center cursor-pointer">Attachments {renderSortIcon('attachments')}</div></TableHead>}
-                                {columnVisibility.dueDate && <TableHead onClick={() => handleSort('dueDate')}>
-                                    <div className="flex items-center cursor-pointer">Due Date {renderSortIcon('dueDate')}</div>
-                                </TableHead>}
                                 <TableHead onClick={() => handleSort('status')}>
                                     <div className="flex items-center cursor-pointer">Status {renderSortIcon('status')}</div>
                                 </TableHead>
@@ -561,5 +563,3 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         </TooltipProvider>
     )
 }
-
-    
