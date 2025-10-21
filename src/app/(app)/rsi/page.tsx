@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookOpenCheck } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -70,7 +70,7 @@ const rsiModules: RsiModule[] = [
   {
     title: 'Monitoring Rekomendasi KNKT',
     description: 'Track follow-ups on NTSC safety recommendations.',
-    icon: <BarChart className="h-8 w-8 text-green-500" />,
+    icon: <BookCheck className="h-8 w-8 text-green-500" />,
     href: '/rsi/monitoring-rekomendasi',
     collectionName: 'tindakLanjutRecords',
     statusField: 'status',
@@ -83,7 +83,7 @@ const rsiModules: RsiModule[] = [
   {
     title: 'Monitoring Rekomendasi ke DGCA',
     description: 'Track NTSC recommendations to the DGCA.',
-    icon: <BookOpenCheck className="h-8 w-8 text-purple-500" />,
+    icon: <BookCheck className="h-8 w-8 text-purple-500" />,
     href: '/rsi/monitoring-rekomendasi-dgca',
     collectionName: 'tindakLanjutDgcaRecords',
     statusField: 'operator',
@@ -307,14 +307,14 @@ export default function RsiPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <BarChart className="h-8 w-8 text-green-500" />
+                                    <BookCheck className="h-8 w-8 text-green-500" />
                                     <div>
                                         <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalTindakLanjut} /></p>
                                         <p className="text-sm text-muted-foreground">Rekomendasi KNKT</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <BookOpenCheck className="h-8 w-8 text-purple-500" />
+                                    <BookCheck className="h-8 w-8 text-purple-500" />
                                     <div>
                                         <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalTindakLanjutDgca} /></p>
                                         <p className="text-sm text-muted-foreground">Rekomendasi ke DGCA</p>
@@ -424,7 +424,7 @@ export default function RsiPage() {
                                         <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
                                             Open Module
                                         </span>
-                                        <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-300 group-hover:w-full"></div>
+                                        <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300 group-hover:w-full"></div>
                                         <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
                                     </div>
                                 </CardFooter>
