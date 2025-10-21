@@ -582,18 +582,8 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
         </Card>
       </div>
 
-       <Card className="w-full">
-            <CardHeader>
-                <CardTitle>Project Timeline</CardTitle>
-                <CardDescription>A chronological view of all project tasks.</CardDescription>
-            </CardHeader>
-            <div className="overflow-x-auto p-6 pt-0">
-                <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
-            </div>
-        </Card>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-3 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-2 space-y-6">
             {project.projectType === 'Rulemaking' && (
               <AssociatedGapAnalysisCard records={associatedGapRecords} onDelete={handleDeleteGapRecordRequest} onUpdate={handleGapRecordUpdate} />
             )}
@@ -647,8 +637,18 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
               teamMembers={project.team}
               onTasksChange={handleTaskDataChange}
             />
-            
+        </div>
+        <div className="lg:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
+                <CardHeader>
+                    <CardTitle>Project Timeline</CardTitle>
+                    <CardDescription>A chronological view of all project tasks.</CardDescription>
+                </CardHeader>
+                <div className="overflow-x-auto p-6 pt-0">
+                    <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
+                </div>
+            </Card>
+             <Card>
                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex-1">
                     <CardTitle className="flex items-center gap-2">
@@ -671,7 +671,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                <CardContent>
                 <ScrollArea className="h-72">
                   <div className="space-y-4 pr-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {filteredDocuments.map((doc) => (
                             <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
                               {getDocumentIcon(doc.name)}
