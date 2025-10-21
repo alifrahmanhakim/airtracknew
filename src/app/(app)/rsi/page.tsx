@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -214,12 +215,16 @@ export default function RsiPage() {
 
         const filteredAccidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords') as AccidentIncidentRecord[];
         const totalIncidents = filteredAccidents.length;
+        const totalAccidents = filteredAccidents.filter(r => r.kategori === 'Accident (A)').length;
+        const totalSeriousIncidents = totalIncidents - totalAccidents;
         const totalReports = filterByYear(data.knktReports, 'knktReports').length;
         const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
         const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
 
         return {
             totalIncidents,
+            totalAccidents,
+            totalSeriousIncidents,
             totalReports,
             totalSanctions,
             totalCasualties,
@@ -264,10 +269,14 @@ export default function RsiPage() {
                         <CardContent className="p-0">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <AlertTriangle className="h-8 w-8 text-destructive" />
+                                    <AlertTriangle className="h-8 w-8 text-muted-foreground" />
                                     <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
-                                        <p className="text-sm text-muted-foreground">Total Incidents</p>
+                                        <div className="text-3xl font-bold flex items-baseline gap-1.5">
+                                            <span className="text-destructive"><AnimatedCounter endValue={dashboardStats.totalAccidents} /></span>
+                                            <span className="text-muted-foreground">/</span>
+                                            <span className="text-yellow-500"><AnimatedCounter endValue={dashboardStats.totalSeriousIncidents} /></span>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Accidents / Serious Incidents</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
@@ -408,3 +417,4 @@ export default function RsiPage() {
         </TooltipProvider>
     );
 }
+
