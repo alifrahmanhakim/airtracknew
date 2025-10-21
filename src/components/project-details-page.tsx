@@ -640,70 +640,69 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
             />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                  <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><CalendarRange /> Project Timeline</CardTitle>
-                      <CardDescription>A chronological view of all project tasks.</CardDescription>
-                  </CardHeader>
-                  <div className="p-6 pt-0">
-                      <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
-                  </div>
-              </Card>
-
-               <Card>
-                 <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2">
-                          <Paperclip /> {documentsCardTitle}
-                      </CardTitle>
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><CalendarRange /> Project Timeline</CardTitle>
+                        <CardDescription>A chronological view of all project tasks.</CardDescription>
+                    </CardHeader>
+                    <div className="p-6 pt-0">
+                        <ProjectTimeline tasks={project.tasks} teamMembers={project.team} />
                     </div>
-                    <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-                      <div className="relative w-full sm:w-auto">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Search documents..."
-                          value={documentSearch}
-                          onChange={(e) => setDocumentSearch(e.target.value)}
-                          className="pl-9 w-full sm:w-[200px]"
-                        />
-                      </div>
-                      <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
-                    </div>
-                 </CardHeader>
-                 <CardContent>
-                  <ScrollArea className="h-72">
-                    <div className="space-y-4 pr-6">
-                        <div className="grid grid-cols-1 gap-4">
-                            {filteredDocuments.map((doc) => (
-                              <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
-                                {getDocumentIcon(doc.name)}
-                                <div className="flex-1 overflow-hidden">
-                                    <p className="font-medium truncate">{doc.name}</p>
-                                    {'taskTitle' in doc && doc.taskTitle ? (
-                                      <p className="text-xs text-muted-foreground">From task: {doc.taskTitle}</p>
-                                    ) : ('uploadDate' in doc && doc.uploadDate) && (
-                                      <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>
-                                    )}
-                                </div>
-                                <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
-                                        <LinkIcon className="h-4 w-4" />
-                                    </a>
-                                </Button>
-                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => 'uploadDate' in doc && setDocToDelete(doc)} disabled={isDeletingDoc === doc.id || !('uploadDate' in doc)}>
-                                    {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                 </Button>
-                              </div>
-                            ))}
-                        </div>
-                         {filteredDocuments.length === 0 && (
-                            <p className="text-muted-foreground text-center py-4">No documents {documentSearch ? 'match your search' : 'linked yet'}.</p>
-                        )}
-                    </div>
-                  </ScrollArea>
-                 </CardContent>
-              </Card>
+                </Card>
             </div>
+             <Card>
+               <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <CardTitle className="flex items-center gap-2">
+                        <Paperclip /> {documentsCardTitle}
+                    </CardTitle>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                    <div className="relative w-full sm:w-auto">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search documents..."
+                        value={documentSearch}
+                        onChange={(e) => setDocumentSearch(e.target.value)}
+                        className="pl-9 w-full sm:w-[200px]"
+                      />
+                    </div>
+                    <AddDocumentLinkDialog projectId={project.id} projectType={project.projectType} onDocumentAdd={handleDocumentAdd} />
+                  </div>
+               </CardHeader>
+               <CardContent>
+                <ScrollArea className="h-72">
+                  <div className="space-y-4 pr-6">
+                      <div className="grid grid-cols-1 gap-4">
+                          {filteredDocuments.map((doc) => (
+                            <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                              {getDocumentIcon(doc.name)}
+                              <div className="flex-1 overflow-hidden">
+                                  <p className="font-medium truncate">{doc.name}</p>
+                                  {'taskTitle' in doc && doc.taskTitle ? (
+                                    <p className="text-xs text-muted-foreground">From task: {doc.taskTitle}</p>
+                                  ) : ('uploadDate' in doc && doc.uploadDate) && (
+                                    <p className="text-xs text-muted-foreground">Added: {format(parseISO(doc.uploadDate), 'PPP')}</p>
+                                  )}
+                              </div>
+                              <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                                  <a href={doc.url} target="_blank" rel="noopener noreferrer" aria-label={`Open document ${doc.name}`}>
+                                      <LinkIcon className="h-4 w-4" />
+                                  </a>
+                              </Button>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive print:hidden" onClick={() => 'uploadDate' in doc && setDocToDelete(doc)} disabled={isDeletingDoc === doc.id || !('uploadDate' in doc)}>
+                                  {isDeletingDoc === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                               </Button>
+                            </div>
+                          ))}
+                      </div>
+                       {filteredDocuments.length === 0 && (
+                          <p className="text-muted-foreground text-center py-4">No documents {documentSearch ? 'match your search' : 'linked yet'}.</p>
+                      )}
+                  </div>
+                </ScrollArea>
+               </CardContent>
+            </Card>
         </div>
       </div>
 
