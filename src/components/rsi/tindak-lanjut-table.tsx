@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -16,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, Info, Link as LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Highlight } from '../ui/highlight';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { EditTindakLanjutRecordDialog } from './edit-tindak-lanjut-dialog';
 import { cn } from '@/lib/utils';
 
@@ -30,7 +29,9 @@ type TindakLanjutTableProps = {
 const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) => {
     if (!text) return null;
     const items = text.split(/\s*(?:[a-z]\.|[0-9]\.)\s*/).filter(item => item.trim() !== '');
-    if (items.length <= 1 && !/^[a-z0-9]\./i.test(text.trim())) return <p className="whitespace-pre-wrap"><Highlight text={text} query={searchTerm} /></p>;
+    if (items.length <= 1 && !/^[a-z0-9]\./i.test(text.trim())) {
+        return <p className="whitespace-pre-wrap"><Highlight text={text} query={searchTerm} /></p>;
+    }
     
     return (
       <ul className="list-disc list-inside space-y-1">
@@ -50,6 +51,18 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                 <p className="text-sm">Try adjusting your search or filter criteria.</p>
             </div>
         )
+    }
+
+    const formatDateSafe = (dateStr: string) => {
+        try {
+            const date = parseISO(dateStr);
+            if (isValid(date)) {
+                return format(date, 'dd MMM yyyy');
+            }
+        } catch (e) {
+            // Error parsing, will fall through to return N/A
+        }
+        return 'N/A';
     }
 
     return (
@@ -80,8 +93,8 @@ export function TindakLanjutTable({ records, onUpdate, onDelete, searchTerm }: T
                                 <TableCell className="align-top break-words">
                                     <p className="font-bold"><Highlight text={record.judulLaporan} query={searchTerm} /></p>
                                     <p><Highlight text={record.nomorLaporan} query={searchTerm} /></p>
-                                    <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'dd MMM yyyy') : 'N/A'} query={searchTerm} /></p>
-                                    {record.tanggalTerbit && <p className="text-sm text-muted-foreground">Terbit: <Highlight text={format(parseISO(record.tanggalTerbit), 'dd MMM yyyy')} query={searchTerm} /></p>}
+                                    <p className="text-sm text-muted-foreground">Kejadian: <Highlight text={record.tanggalKejadian ? formatDateSafe(record.tanggalKejadian) : 'N/A'} query={searchTerm} /></p>
+                                    {record.tanggalTerbit && <p className="text-sm text-muted-foreground">Terbit: <Highlight text={formatDateSafe(record.tanggalTerbit)} query={searchTerm} /></p>}
                                     {record.registrasiPesawat && <p className="text-sm text-muted-foreground">Registrasi: <Highlight text={record.registrasiPesawat} query={searchTerm} /></p>}
                                     {record.tipePesawat && <p className="text-sm text-muted-foreground">Tipe: <Highlight text={record.tipePesawat} query={searchTerm} /></p>}
                                     {record.lokasiKejadian && <p className="text-sm text-muted-foreground">Lokasi: <Highlight text={record.lokasiKejadian} query={searchTerm} /></p>}
