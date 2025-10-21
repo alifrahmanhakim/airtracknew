@@ -12,7 +12,7 @@ import {
   ClipboardCheck,
   CircleHelp,
   UserSquare,
-  BookCheck,
+  BookType,
   Settings,
   LogOut,
   MessageSquare,
@@ -24,6 +24,7 @@ import {
   Languages, // Import Languages icon
   BotMessageSquare,
   AlertTriangle,
+  BookCheck,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -73,7 +74,7 @@ const navItems = {
       { href: '/ccefod', label: 'CC/EFOD Monitoring', icon: ClipboardCheck },
       { href: '/pqs', label: 'Protocol Questions', icon: CircleHelp },
       { href: '/state-letter', label: 'State Letter', icon: Mail, countId: 'openStateLetters' },
-      { href: '/glossary', label: 'Glossary', icon: BookCheck },
+      { href: '/glossary', label: 'Glossary', icon: BookType },
       { href: '/rsi', label: 'RSI', icon: Plane },
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
     ],
