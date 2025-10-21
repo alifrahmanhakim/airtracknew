@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -235,7 +236,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
       </div>
       <div 
         ref={timelineContainerRef} 
-        className="w-full overflow-auto relative" 
+        className="w-full overflow-x-auto relative" 
         style={{ height: `${Math.min(10, sortedTasks.length) * 50 + HEADER_HEIGHT}px` }}
       >
         <div className="relative" style={{ width: `${TASK_LIST_WIDTH + totalGridWidth}px`}}>
