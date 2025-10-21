@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -264,7 +263,10 @@ export default function RsiPage() {
                     <div className="flex-1 p-6">
                         <CardHeader className="p-0 mb-6">
                             <CardTitle>Overall Summary</CardTitle>
-                            <CardDescription className="text-foreground">Key metrics from all records.</CardDescription>
+                            <CardDescription className="text-foreground">
+                                Key metrics from all records.
+                                {yearFilter !== 'all' ? ` (Period: ${yearFilter})` : ' (All Time)'}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -417,4 +419,3 @@ export default function RsiPage() {
         </TooltipProvider>
     );
 }
-
