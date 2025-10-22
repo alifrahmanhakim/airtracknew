@@ -82,9 +82,12 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
     if (!history || history.length === 0) {
       return 'N/A';
     }
+    
+    // Sort to be sure, oldest first
+    const sortedHistory = [...history].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    const lastChange = history[history.length - 1];
-    const isCreation = history.length === 1;
+    const lastChange = sortedHistory[sortedHistory.length - 1];
+    const isCreation = sortedHistory.length === 1;
 
     return (
         <div className="flex flex-col">
@@ -96,8 +99,8 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                     </div>
                 ) : (
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <Badge className={cn("font-normal", getStatusClass(history[history.length - 2].status))}>
-                            {history[history.length - 2].status}
+                        <Badge className={cn("font-normal", getStatusClass(sortedHistory[sortedHistory.length - 2].status))}>
+                            {sortedHistory[sortedHistory.length - 2].status}
                         </Badge>
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         <Badge className={cn(getStatusClass(lastChange.status))}>
@@ -128,11 +131,11 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                   <TableHead className="w-[15%] text-left">Makna</TableHead>
                   <TableHead className="w-[15%] text-left">Keterangan</TableHead>
                   <TableHead className="w-[15%] text-left">Referensi</TableHead>
-                  <TableHead className="w-[10%] cursor-pointer text-left whitespace-nowrap" onClick={() => handleSort('status')}>
+                  <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('status')}>
                       <div className="flex items-center">Status {renderSortIcon('status')}</div>
                   </TableHead>
-                  <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('statusDate')}>
-                      <div className="flex items-center">Last Status Change {renderSortIcon('statusDate')}</div>
+                  <TableHead className="w-[15%] cursor-pointer text-center" onClick={() => handleSort('statusDate')}>
+                      <div className="flex items-center justify-center">Last Status Change {renderSortIcon('statusDate')}</div>
                   </TableHead>
                    <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('createdAt')}>
                       <div className="flex items-center">Date Added {renderSortIcon('createdAt')}</div>
