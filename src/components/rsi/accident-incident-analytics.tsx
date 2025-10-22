@@ -55,7 +55,7 @@ const CustomYAxisTick = (props: any) => {
     return (
         <g transform={`translate(${x},${y})`}>
             {lines.map((line, i) => (
-                 <text key={i} x={0} y={i * 12} dy={4} textAnchor="start" fill="hsl(var(--foreground))" className="text-xs">
+                 <text key={i} x={0} y={i * 12} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
                     {line}
                 </text>
             ))}
@@ -220,7 +220,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                     <CardContent>
                         <ChartContainer config={chartConfig(analyticsData.aocData)} className="h-[400px] w-full">
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: -10, right: 30 }}>
+                                <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 100, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
                                     <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={200} />
                                     <XAxis type="number" allowDecimals={false} />
@@ -231,8 +231,43 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                         </ChartContainer>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Incidents by Taxonomy</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig(analyticsData.taxonomyData)} className="h-auto w-full" style={{ height: `${Math.max(400, analyticsData.taxonomyData.length * 40)}px` }}>
+                            <ResponsiveContainer>
+                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 0, right: 30 }}>
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis dataKey="name" type="category" width={300} interval={0} tick={<CustomYAxisTick />} />
+                                    <XAxis type="number" allowDecimals={false} />
+                                    <Tooltip
+                                        cursor={{ fill: 'hsl(var(--muted))' }}
+                                        content={({ active, payload }) => {
+                                            if (active && payload && payload.length) {
+                                                const data = payload[0];
+                                                return (
+                                                    <div className="p-2 bg-background border rounded-lg shadow-lg text-xs">
+                                                        <p className="font-bold">{data.payload.name}</p>
+                                                        <p><span className="font-semibold">Count:</span> {data.value}</p>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        }}
+                                    />
+                                    <Bar dataKey="value" name="Record Count" radius={[0, 4, 4, 0]}>
+                                        {analyticsData.taxonomyData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
             </div>
-
         </div>
     );
 }
