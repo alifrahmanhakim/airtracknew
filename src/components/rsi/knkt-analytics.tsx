@@ -26,7 +26,7 @@ const CHART_COLORS = [
 
 const STATUS_COLORS: Record<string, string> = {
     'Final': 'hsl(var(--chart-1))', // Green
-    'Draft Final': 'hsl(var(--chart-2))', // Yellow
+    'Draft Final': 'hsl(var(--chart-3))', // Red
     'Preliminary': 'hsl(var(--chart-2))', // Yellow
     'Interim Statement': 'hsl(var(--chart-4))', // Blue
 };
