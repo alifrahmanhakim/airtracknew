@@ -35,7 +35,7 @@ const parseCasualties = (casualtyString: string | undefined): number => {
 // Custom tick component for Y-axis to handle text wrapping
 const CustomYAxisTick = (props: any) => {
     const { x, y, payload } = props;
-    const maxCharsPerLine = 35; // Adjust this value as needed
+    const maxCharsPerLine = 40; // Adjust this value as needed
     const text = payload.value;
 
     // Simple function to split text into lines
@@ -59,7 +59,7 @@ const CustomYAxisTick = (props: any) => {
 
     return (
         <g transform={`translate(${x},${y})`}>
-            <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
+            <text x={0} y={0} dy={4} textAnchor="start" fill="hsl(var(--foreground))" className="text-xs">
                 {lines.map((line, index) => (
                     <tspan key={index} x={0} dy={index > 0 ? 12 : 0}>
                         {line}
@@ -229,9 +229,9 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                     <CardContent>
                         <ChartContainer config={chartConfig(analyticsData.taxonomyData)} style={{ height: `${Math.max(400, analyticsData.taxonomyData.length * 40)}px` }}>
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 150, right: 30 }}>
+                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 200, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
-                                    <YAxis dataKey="name" type="category" interval={0} tick={<CustomYAxisTick />} width={300} />
+                                    <YAxis dataKey="name" type="category" interval={0} tick={<CustomYAxisTick />} width={350} />
                                     <XAxis type="number" allowDecimals={false} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.taxonomyData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
