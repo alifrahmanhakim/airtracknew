@@ -189,11 +189,11 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                  <Card>
                     <CardHeader><CardTitle>Incidents by Taxonomy</CardTitle></CardHeader>
                     <CardContent>
-                        <ChartContainer config={chartConfig(analyticsData.taxonomyData)} className="h-[400px] w-full">
+                        <ChartContainer config={chartConfig(analyticsData.taxonomyData)} style={{ height: `${Math.max(400, analyticsData.taxonomyData.length * 20)}px` }}>
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: -10, right: 30 }}>
+                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 150, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
-                                    <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={150} />
+                                    <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={250} />
                                     <XAxis type="number" allowDecimals={false} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.taxonomyData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
