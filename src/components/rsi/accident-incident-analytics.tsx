@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -55,7 +54,7 @@ const CustomYAxisTick = (props: any) => {
     return (
         <g transform={`translate(${x},${y})`}>
             {lines.map((line, i) => (
-                 <text key={i} x={0} y={i * 12} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
+                 <text key={i} x={-10} y={i * 12} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
                     {line}
                 </text>
             ))}
@@ -92,7 +91,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
     const filteredRecords = React.useMemo(() => {
         return allRecords.filter(r => {
             const aocMatch = aocFilter === 'all' || r.aoc === aocFilter;
-            const categoryMatch = categoryFilter === 'all' || r.kategori === categoryMatch;
+            const categoryMatch = categoryFilter === 'all' || r.kategori === categoryFilter;
             const taxonomyMatch = taxonomyFilter === 'all' || r.taxonomy === taxonomyFilter;
             const yearMatch = yearFilter === 'all' || (r.tanggal && isValid(parseISO(r.tanggal)) && getYear(parseISO(r.tanggal)) === parseInt(yearFilter));
             return aocMatch && categoryMatch && taxonomyMatch && yearMatch;
@@ -106,8 +105,8 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
         const totalCasualties = filteredRecords.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
 
         const categoryData = [
-            { name: 'Accident (A)', value: totalAccidents },
-            { name: 'Serious Incident (SI)', value: totalSeriousIncidents },
+            { name: 'Accident (A)', value: totalAccidents, fill: 'hsl(var(--chart-3))' },
+            { name: 'Serious Incident (SI)', value: totalSeriousIncidents, fill: 'hsl(var(--chart-2))' },
         ].filter(d => d.value > 0);
         
         const countBy = (key: keyof AccidentIncidentRecord) => filteredRecords.reduce((acc, record) => {
@@ -117,6 +116,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
         }, {} as Record<string, number>);
 
         const incidentsByYear = Object.entries(countBy('tanggal')).reduce((acc, [date, count]) => {
+            if (!date || !isValid(parseISO(date))) return acc;
             const year = getYear(parseISO(date)).toString();
             acc[year] = (acc[year] || 0) + count;
             return acc;
@@ -148,6 +148,12 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
         setYearFilter('all');
     };
     
+    const categoryChartConfig = {
+      value: { label: 'Count' },
+      'Accident (A)': { label: 'Accident (A)', color: 'hsl(var(--chart-3))' },
+      'Serious Incident (SI)': { label: 'Serious Incident (SI)', color: 'hsl(var(--chart-2))' },
+    };
+
     const chartConfig = (data: {name: string, value: number}[]) => ({
         value: { label: 'Count' },
         ...data.reduce((acc, item, index) => {
@@ -210,7 +216,17 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader><CardTitle>Incident Category</CardTitle></CardHeader>
-                    <CardContent><ChartContainer config={chartConfig(analyticsData.categoryData)} className="mx-auto aspect-square h-[300px]"><PieChart><ChartTooltip content={<ChartTooltipContent hideLabel />} /><Pie data={analyticsData.categoryData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>{analyticsData.categoryData.map(entry => <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.categoryData)[entry.name]?.color} />)}</Pie><ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" /></PieChart></ChartContainer></CardContent>
+                    <CardContent className="flex justify-center items-center h-[300px]">
+                      <ChartContainer config={categoryChartConfig} className="mx-auto aspect-square h-full">
+                        <PieChart>
+                            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                            <Pie data={analyticsData.categoryData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                {analyticsData.categoryData.map((entry) => <Cell key={`cell-${entry.name}`} fill={entry.fill} />)}
+                            </Pie>
+                            <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
+                        </PieChart>
+                      </ChartContainer>
+                    </CardContent>
                 </Card>
             </div>
 
@@ -220,18 +236,18 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                     <CardContent>
                         <ChartContainer config={chartConfig(analyticsData.aocData)} className="h-[400px] w-full">
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 50, right: 30 }}>
+                                <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 100, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
                                     <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={200} />
                                     <XAxis type="number" allowDecimals={false} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.aocData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
+                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]}>{analyticsData.aocData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
                                 </BarChart>
                             </ResponsiveContainer>
                         </ChartContainer>
                     </CardContent>
                 </Card>
-                <Card>
+                 <Card>
                     <CardHeader>
                         <CardTitle>Incidents by Taxonomy</CardTitle>
                     </CardHeader>
@@ -270,4 +286,5 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
             </div>
         </div>
     );
-}
+
+    
