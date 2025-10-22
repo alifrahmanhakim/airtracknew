@@ -143,6 +143,7 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenC
             <div className="flex-grow overflow-y-auto pr-6 my-4">
                 <div className="space-y-8">
                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800/50">
+                        <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-2">LAST CHANGE</p>
                         {renderStatusChange()}
                     </div>
                     <GlossarySharedFormFields form={form} />
