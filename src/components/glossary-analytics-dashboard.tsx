@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { GlossaryRecord } from '@/lib/types';
 import { Info, PieChartIcon } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from './ui/chart';
 import { format, parseISO } from 'date-fns';
 
@@ -94,7 +94,7 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
                             <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
                             <Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
                                 {analyticsData.statusData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
+                                    <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
                                 ))}
                             </Pie>
                             <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
