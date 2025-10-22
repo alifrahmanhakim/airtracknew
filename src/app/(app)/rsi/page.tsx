@@ -16,6 +16,10 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/comp
 import { getYear, parseISO, isToday, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis } from 'recharts';
+import { Button } from '@/components/ui/button';
+
 
 type RsiModule = {
   title: string;
@@ -132,10 +136,44 @@ const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
     }
 };
 
+const ExpandableBreakdownList = ({ items, onToggle, isExpanded }: { items: {name: string, count: number}[], total: number, onToggle: () => void, isExpanded: boolean }) => {
+    const itemsToShow = isExpanded ? items : items.slice(0, 5);
+
+    return (
+        <div className="space-y-1">
+            {itemsToShow.map(({ name, count }) => (
+                <div key={name} className="flex items-center gap-2">
+                    <Badge variant="secondary" className={cn('bg-purple-100 text-purple-800')}>
+                        {name}: <span className="font-bold ml-1">{count}</span>
+                    </Badge>
+                </div>
+            ))}
+            {items.length > 5 && (
+                <Button
+                    variant="link"
+                    className="text-xs h-auto p-0"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onToggle();
+                    }}
+                >
+                    {isExpanded ? 'Show less' : `Show ${items.length - 5} more`}
+                </Button>
+            )}
+        </div>
+    );
+};
+
+
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
     const [yearFilter, setYearFilter] = React.useState<string>('all');
+    const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
+
+    const toggleCardExpansion = (cardTitle: string) => {
+        setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
+    }
 
     React.useEffect(() => {
         setIsLoading(true);
@@ -214,23 +252,34 @@ export default function RsiPage() {
 
         const filteredAccidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords') as AccidentIncidentRecord[];
         const totalIncidents = filteredAccidents.length;
-        const totalAccidents = filteredAccidents.filter(r => r.kategori === 'Accident (A)').length;
-        const totalSeriousIncidents = totalIncidents - totalAccidents;
         const totalReports = filterByYear(data.knktReports, 'knktReports').length;
         const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
         const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
-        const totalTindakLanjut = filterByYear(data.tindakLanjutRecords, 'tindakLanjutRecords').length;
-        const totalTindakLanjutDgca = filterByYear(data.tindakLanjutDgcaRecords, 'tindakLanjutDgcaRecords').length;
+        
+        const trendData = (data.accidentIncidentRecords || []).reduce((acc, record) => {
+            if (!record.tanggal || !isValid(parseISO(record.tanggal))) return acc;
+            const year = getYear(parseISO(record.tanggal));
+            if (!acc[year]) {
+                acc[year] = { year, A: 0, SI: 0, Casualties: 0 };
+            }
+            if (record.kategori === 'Accident (A)') {
+                acc[year].A++;
+            }
+            if (record.kategori === 'Serious Incident (SI)') {
+                acc[year].SI++;
+            }
+            acc[year].Casualties += parseCasualties(record.korbanJiwa);
+            return acc;
+        }, {} as Record<number, { year: number, A: number, SI: number, Casualties: number }>);
+
+        const sortedTrendData = Object.values(trendData).sort((a, b) => a.year - b.year);
 
         return {
             totalIncidents,
-            totalAccidents,
-            totalSeriousIncidents,
             totalReports,
             totalSanctions,
             totalCasualties,
-            totalTindakLanjut,
-            totalTindakLanjutDgca,
+            incidentTrend: sortedTrendData,
         }
     }, [data, yearFilter]);
 
@@ -277,12 +326,8 @@ export default function RsiPage() {
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                                     <AlertTriangle className="h-8 w-8 text-muted-foreground" />
                                     <div>
-                                        <div className="text-3xl font-bold flex items-baseline gap-1.5">
-                                            <span className="text-destructive"><AnimatedCounter endValue={dashboardStats.totalAccidents} /></span>
-                                            <span className="text-muted-foreground">/</span>
-                                            <span className="text-yellow-500"><AnimatedCounter endValue={dashboardStats.totalSeriousIncidents} /></span>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">Accidents / Serious Incidents</p>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
+                                        <p className="text-sm text-muted-foreground">Total Incidents</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
@@ -306,20 +351,6 @@ export default function RsiPage() {
                                         <p className="text-sm text-muted-foreground">Total Casualties</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <BookCheck className="h-8 w-8 text-green-500" />
-                                    <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalTindakLanjut} /></p>
-                                        <p className="text-sm text-muted-foreground">Rekomendasi KNKT</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <BookOpenCheck className="h-8 w-8 text-purple-500" />
-                                    <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalTindakLanjutDgca} /></p>
-                                        <p className="text-sm text-muted-foreground">Rekomendasi ke DGCA</p>
-                                    </div>
-                                </div>
                             </div>
                         </CardContent>
                     </div>
@@ -333,6 +364,36 @@ export default function RsiPage() {
                         />
                     </div>
                 </div>
+            </Card>
+
+            <Card className="mb-6">
+                <CardHeader>
+                    <CardTitle>Incident Trends by Year</CardTitle>
+                    <CardDescription>Year-over-year trends for Accidents, Serious Incidents, and Casualties.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer
+                        config={{
+                            A: { label: "Accident", color: "hsl(var(--chart-3))" },
+                            SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
+                            Casualties: { label: "Casualties", color: "hsl(var(--destructive))" },
+                        }}
+                        className="h-[300px] w-full"
+                    >
+                        <ResponsiveContainer>
+                            <LineChart data={dashboardStats.incidentTrend} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="year" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Legend />
+                                <Line type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line type="monotone" dataKey="Casualties" stroke="hsl(var(--destructive))" strokeWidth={2} activeDot={{ r: 8 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </CardContent>
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -368,8 +429,12 @@ export default function RsiPage() {
                         return acc;
                     }, {} as Record<string, number>);
 
-                    const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
+                    const statusArray = Object.entries(statusCounts)
+                        .map(([name, count]) => ({ name, count }))
+                        .sort((a, b) => b.count - a.count);
 
+                    const isExpanded = expandedCards[module.title] || false;
+                    
                     const totalCasualties = module.collectionName === 'accidentIncidentRecords'
                         ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
                         : null;
@@ -395,27 +460,23 @@ export default function RsiPage() {
                                         </p>
                                     )}
                                 </div>
-                                {(totalCount > 0 || totalCasualties !== null) && (
-                                    <div className="pt-2 space-y-3">
+                                {(totalCount > 0) && (
+                                     <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
-                                        <div className="space-y-1">
-                                            {totalCasualties !== null && (
-                                                <div className="flex items-center gap-2">
-                                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                                    <Badge variant="destructive">
-                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
-                                                    </Badge>
-                                                </div>
-                                            )}
-                                            {statusArray.map(({ name, count }) => (
-                                                <div key={name} className="flex items-center gap-2">
-                                                    <div className={cn("h-2 w-2 rounded-full", module.statusVariant(name) === 'destructive' ? 'bg-destructive' : 'bg-secondary-foreground')}></div>
-                                                    <Badge variant={module.statusVariant(name) === 'destructive' ? 'destructive' : 'default'} className={cn(module.statusVariant(name))}>
-                                                        {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
-                                                    </Badge>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {totalCasualties !== null && (
+                                            <div className="flex items-center gap-2">
+                                                <Users className="h-4 w-4 text-muted-foreground" />
+                                                <Badge variant="destructive">
+                                                    Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
+                                                </Badge>
+                                            </div>
+                                        )}
+                                        <ExpandableBreakdownList
+                                            items={statusArray}
+                                            total={totalCount}
+                                            onToggle={() => toggleCardExpansion(module.title)}
+                                            isExpanded={isExpanded}
+                                        />
                                     </div>
                                 )}
                                 </CardContent>
