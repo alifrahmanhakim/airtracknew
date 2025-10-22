@@ -94,7 +94,7 @@ const rsiModules: RsiModule[] = [
     collectionName: 'knktReports',
     statusField: 'status',
     statusVariant: (status) => {
-        if (status.toLowerCase().includes('draft final')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
+        if (status.toLowerCase().includes('draft final')) return 'bg-orange-400 text-orange-900';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
         if (status.toLowerCase().includes('interim')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
@@ -175,6 +175,7 @@ export default function RsiPage() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [yearFilter, setYearFilter] = React.useState<string>('all');
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
+    const [chartYearScope, setChartYearScope] = React.useState<string>('all');
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -288,6 +289,16 @@ export default function RsiPage() {
         }
     }, [data, yearFilter]);
 
+    const filteredTrendData = React.useMemo(() => {
+        const allTrendData = dashboardStats.incidentTrend;
+        if (chartYearScope === 'all') {
+            return allTrendData;
+        }
+        const scope = parseInt(chartYearScope, 10);
+        const currentYear = new Date().getFullYear();
+        return allTrendData.filter(d => d.year >= currentYear - scope + 1);
+    }, [dashboardStats.incidentTrend, chartYearScope]);
+
     return (
         <TooltipProvider>
             <main className="p-4 md:p-8">
@@ -387,8 +398,22 @@ export default function RsiPage() {
 
             <Card className="mb-6">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><LineChartIcon /> Incident Trends by Year</CardTitle>
-                    <CardDescription>Year-over-year trends for Accidents, Serious Incidents, and Casualties.</CardDescription>
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                        <div>
+                            <CardTitle className="flex items-center gap-2"><LineChartIcon /> Incident Trends by Year</CardTitle>
+                            <CardDescription>Year-over-year trends for Accidents, Serious Incidents, and Casualties.</CardDescription>
+                        </div>
+                        <Select value={chartYearScope} onValueChange={setChartYearScope}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="Select date range..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="5">Last 5 Years</SelectItem>
+                                <SelectItem value="10">Last 10 Years</SelectItem>
+                                <SelectItem value="all">All Time</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <ChartContainer
@@ -400,7 +425,7 @@ export default function RsiPage() {
                         className="h-[300px] w-full"
                     >
                         <ResponsiveContainer>
-                            <LineChart data={dashboardStats.incidentTrend} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <LineChart data={filteredTrendData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="year" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
