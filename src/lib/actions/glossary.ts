@@ -1,10 +1,9 @@
 
-
 'use server';
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, deleteDoc, writeBatch, updateDoc, getDocs, getDoc, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, deleteDoc, writeBatch, updateDoc, getDocs, getDoc, arrayUnion, Timestamp } from 'firebase/firestore';
 import type { GlossaryRecord, StatusHistoryItem } from '../types';
 import { glossaryFormSchema } from '../schemas';
 
@@ -46,7 +45,7 @@ export async function updateGlossaryRecord(id: string, data: z.infer<typeof glos
             return { success: false, error: "Record not found" };
         }
 
-        const oldData = docSnap.data() as GlossaryRecord;
+        const oldData = docSnap.data();
         const now = new Date().toISOString();
         const dataToUpdate: any = { ...parsed.data, updatedAt: serverTimestamp() };
 
@@ -60,16 +59,29 @@ export async function updateGlossaryRecord(id: string, data: z.infer<typeof glos
 
         await updateDoc(docRef, dataToUpdate);
         
-        // Refetch the document to get the updated statusHistory
+        // Refetch the document to get the updated data with server timestamps resolved.
         const updatedDocSnap = await getDoc(docRef);
         const updatedDataFromServer = updatedDocSnap.data();
 
+        if (!updatedDataFromServer) {
+             return { success: false, error: "Failed to refetch updated record." };
+        }
+
         const updatedRecord: GlossaryRecord = {
             id,
-            ...data,
-            createdAt: oldData.createdAt, // Keep original creation date
-            updatedAt: now,
-            statusHistory: updatedDataFromServer?.statusHistory || oldData.statusHistory,
+            tsu: updatedDataFromServer.tsu,
+            tsa: updatedDataFromServer.tsa,
+            editing: updatedDataFromServer.editing,
+            makna: updatedDataFromServer.makna,
+            keterangan: updatedDataFromServer.keterangan,
+            referensi: updatedDataFromServer.referensi,
+            status: updatedDataFromServer.status,
+            createdAt: (updatedDataFromServer.createdAt as Timestamp)?.toDate().toISOString() || new Date().toISOString(),
+            updatedAt: (updatedDataFromServer.updatedAt as Timestamp)?.toDate().toISOString() || new Date().toISOString(),
+            statusHistory: (updatedDataFromServer.statusHistory || []).map((item: any) => ({
+                ...item,
+                date: item.date instanceof Timestamp ? item.date.toDate().toISOString() : item.date,
+            })),
         };
         return { success: true, data: updatedRecord };
     } catch (error) {
