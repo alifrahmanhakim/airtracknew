@@ -57,6 +57,7 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
 
     return {
       totalRecords: records.length,
+      statusCounts,
       statusData,
       monthlyCreationData
     };
@@ -82,9 +83,9 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
   });
   
   const monthlyChartConfig = {
-      Draft: { label: 'Draft', color: 'hsl(var(--chart-2))' },
-      Final: { label: 'Final', color: 'hsl(var(--chart-1))' },
-      Usulan: { label: 'Usulan', color: 'hsl(var(--chart-3))' },
+      Draft: { label: `Draft (${analyticsData.statusCounts['Draft'] || 0})`, color: 'hsl(var(--chart-2))' },
+      Final: { label: `Final (${analyticsData.statusCounts['Final'] || 0})`, color: 'hsl(var(--chart-1))' },
+      Usulan: { label: `Usulan (${analyticsData.statusCounts['Usulan'] || 0})`, color: 'hsl(var(--chart-3))' },
   }
 
   return (
