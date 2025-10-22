@@ -93,7 +93,8 @@ export default function GlossaryPage() {
         recordsFromDb.push({ 
             id: doc.id, 
             ...data,
-            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
+            updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt
          } as GlossaryRecord);
       });
       setAllRecords(recordsFromDb);
