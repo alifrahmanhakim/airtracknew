@@ -17,7 +17,7 @@ import { getYear, parseISO, isToday, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
-import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis } from 'recharts';
 import { Button } from '../ui/button';
 
 
@@ -367,6 +367,36 @@ export default function RsiPage() {
                 </div>
             </Card>
 
+            <Card className="mb-6">
+                <CardHeader>
+                    <CardTitle>Incident Trends by Year</CardTitle>
+                    <CardDescription>Year-over-year trends for Accidents, Serious Incidents, and Casualties.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer
+                        config={{
+                            A: { label: "Accident", color: "hsl(var(--chart-3))" },
+                            SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
+                            Casualties: { label: "Casualties", color: "hsl(var(--destructive))" },
+                        }}
+                        className="h-[300px] w-full"
+                    >
+                        <ResponsiveContainer>
+                            <LineChart data={dashboardStats.incidentTrend} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="year" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Legend />
+                                <Line type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line type="monotone" dataKey="Casualties" stroke="hsl(var(--destructive))" strokeWidth={2} activeDot={{ r: 8 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rsiModules.map((module) => {
                     const dateField = getDateFieldForCollection(module.collectionName);
@@ -403,12 +433,6 @@ export default function RsiPage() {
                     const statusArray = Object.entries(statusCounts)
                         .map(([name, count]) => ({ name, count }))
                         .sort((a, b) => b.count - a.count);
-                    
-                    const chartConfig = {
-                        A: { label: "Accident", color: "hsl(var(--chart-3))" },
-                        SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
-                        Casualties: { label: "Casualties", color: "hsl(var(--destructive))" },
-                    };
 
                     const isExpanded = expandedCards[module.title] || false;
 
@@ -434,22 +458,7 @@ export default function RsiPage() {
                                         </p>
                                     )}
                                 </div>
-                                {module.collectionName === 'accidentIncidentRecords' ? (
-                                    <div className="pt-2 flex-grow flex flex-col justify-end">
-                                      <ChartContainer config={chartConfig} className="h-[60px] w-full">
-                                        <ResponsiveContainer>
-                                            <LineChart data={dashboardStats.incidentTrend} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
-                                                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-                                                <XAxis dataKey="year" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                                                <ChartTooltip content={<ChartTooltipContent />} />
-                                                <Line type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
-                                                <Line type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
-                                                <Line type="monotone" dataKey="Casualties" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                      </ChartContainer>
-                                    </div>
-                                ) : (totalCount > 0) && (
+                                {(totalCount > 0) && (
                                      <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
                                         <ExpandableBreakdownList
