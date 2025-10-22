@@ -111,7 +111,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                               <Highlight text={record.status} query={searchTerm} />
                           </Badge>
                       </TableCell>
-                       <TableCell className="whitespace-nowrap text-left">
+                       <TableCell className="text-left">
                           {record.createdAt ? format(parseISO(record.createdAt as string), 'dd MMM yyyy, HH:mm') : 'N/A'}
                       </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
