@@ -118,6 +118,11 @@ export const gapAnalysisFormSchema = z.object({
   })).optional(),
 });
 
+const statusHistoryItemSchema = z.object({
+  status: z.enum(['Draft', 'Final', 'Usulan']),
+  date: z.string(),
+});
+
 export const glossaryFormSchema = z.object({
   tsu: z.string().min(1, 'TSU is required'),
   tsa: z.string().min(1, 'TSA is required'),
@@ -126,6 +131,8 @@ export const glossaryFormSchema = z.object({
   keterangan: z.string().min(1, 'Keterangan / Pengaplikasian is required'),
   referensi: z.string().optional(),
   status: z.enum(['Draft', 'Final', 'Usulan']),
+  updatedAt: z.string().optional(),
+  statusHistory: z.array(statusHistoryItemSchema).optional(),
 });
 
 export const accidentIncidentFormSchema = z.object({

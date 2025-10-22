@@ -173,6 +173,11 @@ export type GapAnalysisRecord = {
     createdAt: string;
 };
 
+export type StatusHistoryItem = {
+    status: 'Draft' | 'Final' | 'Usulan';
+    date: string;
+};
+
 export type GlossaryRecord = {
     id: string;
     tsu: string;
@@ -181,8 +186,10 @@ export type GlossaryRecord = {
     makna: string;
     keterangan: string;
     referensi?: string;
-    status: 'Draft' | 'Final';
+    status: 'Draft' | 'Final' | 'Usulan';
     createdAt: string | Date;
+    updatedAt?: string;
+    statusHistory?: StatusHistoryItem[];
 };
 
 export type Notification = {

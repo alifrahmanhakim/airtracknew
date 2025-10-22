@@ -4,8 +4,8 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, deleteDoc, writeBatch, updateDoc, getDocs } from 'firebase/firestore';
-import type { GlossaryRecord } from '../types';
+import { collection, addDoc, serverTimestamp, doc, deleteDoc, writeBatch, updateDoc, getDocs, getDoc, arrayUnion } from 'firebase/firestore';
+import type { GlossaryRecord, StatusHistoryItem } from '../types';
 import { glossaryFormSchema } from '../schemas';
 
 export async function addGlossaryRecord(data: z.infer<typeof glossaryFormSchema>) {
@@ -14,14 +14,19 @@ export async function addGlossaryRecord(data: z.infer<typeof glossaryFormSchema>
         return { success: false, error: "Invalid data provided." };
     }
     try {
+        const now = new Date().toISOString();
         const docRef = await addDoc(collection(db, 'glossaryRecords'), {
             ...parsed.data,
             createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            statusHistory: [{ status: parsed.data.status, date: now }],
         });
         const newRecord: GlossaryRecord = {
             id: docRef.id,
             ...parsed.data,
-            createdAt: new Date().toISOString(),
+            createdAt: now,
+            updatedAt: now,
+            statusHistory: [{ status: parsed.data.status, date: now }],
         };
         return { success: true, data: newRecord };
     } catch (error) {
@@ -36,11 +41,30 @@ export async function updateGlossaryRecord(id: string, data: z.infer<typeof glos
     }
     try {
         const docRef = doc(db, 'glossaryRecords', id);
-        await updateDoc(docRef, parsed.data);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+            return { success: false, error: "Record not found" };
+        }
+
+        const oldData = docSnap.data() as GlossaryRecord;
+        const now = new Date().toISOString();
+        const dataToUpdate: any = { ...parsed.data, updatedAt: now };
+
+        if (oldData.status !== parsed.data.status) {
+            const newStatusHistoryEntry: StatusHistoryItem = {
+                status: parsed.data.status,
+                date: now,
+            };
+            dataToUpdate.statusHistory = arrayUnion(newStatusHistoryEntry);
+        }
+
+        await updateDoc(docRef, dataToUpdate);
+
         const updatedRecord: GlossaryRecord = {
             id,
-            ...parsed.data,
-            createdAt: new Date().toISOString() // This might not be accurate, but it's a placeholder
+            ...oldData,
+            ...dataToUpdate,
+            statusHistory: [...(oldData.statusHistory || []), ...(dataToUpdate.statusHistory ? [dataToUpdate.statusHistory] : [])]
         };
         return { success: true, data: updatedRecord };
     } catch (error) {
@@ -92,7 +116,7 @@ export async function importGlossaryRecords(records: Record<string, any>[]) {
             makna: recordData.makna || '',
             keterangan: recordData.keterangan || '',
             referensi: recordData.referensi || '',
-            status: (recordData.status === 'Final' || recordData.status === 'Draft') ? recordData.status : 'Draft',
+            status: (['Draft', 'Final', 'Usulan'].includes(recordData.status)) ? recordData.status : 'Draft',
         };
 
         // If a required field was originally empty, fill it with a placeholder
@@ -105,8 +129,14 @@ export async function importGlossaryRecords(records: Record<string, any>[]) {
         const finalParsed = glossaryFormSchema.safeParse(dataToValidate);
 
         if (finalParsed.success) {
+            const now = new Date().toISOString();
             const docRef = doc(collection(db, 'glossaryRecords'));
-            batch.set(docRef, { ...finalParsed.data, createdAt: serverTimestamp() });
+            batch.set(docRef, { 
+                ...finalParsed.data,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                statusHistory: [{ status: finalParsed.data.status, date: now }]
+            });
             count++;
         } else {
             const firstError = finalParsed.error.issues[0];
