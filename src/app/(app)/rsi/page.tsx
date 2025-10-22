@@ -20,14 +20,14 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 
-const ExpandableBreakdownList = ({ items, onToggle, isExpanded }: { items: {name: string, count: number, className: string, percentage: number}[], onToggle: () => void, isExpanded: boolean }) => {
+const ExpandableBreakdownList = ({ items, onToggle, isExpanded, itemClassName }: { items: {name: string, count: number, className: string, percentage: number}[], onToggle: () => void, isExpanded: boolean, itemClassName?: string }) => {
     const itemsToShow = isExpanded ? items : items.slice(0, 5);
 
     return (
         <div className="space-y-1">
             {itemsToShow.map(({ name, count, className, percentage }) => (
                 <div key={name} className="flex items-center gap-2">
-                    <Badge variant="secondary" className={cn(className, "whitespace-nowrap")}>
+                    <Badge variant="secondary" className={cn(className, itemClassName, "whitespace-nowrap")}>
                         {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
                     </Badge>
                 </div>
@@ -422,8 +422,8 @@ export default function RsiPage() {
                 <CardContent>
                     <ChartContainer
                         config={{
-                            A: { label: "Accident", color: "hsl(var(--chart-3))" },
-                            SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
+                            Accident: { label: "Accident", color: "hsl(var(--chart-3))" },
+                            'S. Incident': { label: "S. Incident", color: "hsl(var(--chart-2))" },
                             Casualties: { label: "Casualties", color: "hsl(var(--chart-5))" },
                         }}
                         className="h-[300px] w-full"
@@ -435,9 +435,9 @@ export default function RsiPage() {
                                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
                                 <Legend />
-                                <Line type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} activeDot={{ r: 8 }} />
-                                <Line type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
-                                <Line type="monotone" dataKey="Casualties" stroke="hsl(var(--chart-5))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line name="Accident" type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line name="S. Incident" type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line name="Casualties" type="monotone" dataKey="Casualties" stroke="hsl(var(--chart-5))" strokeWidth={2} activeDot={{ r: 8 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </ChartContainer>
@@ -497,6 +497,22 @@ export default function RsiPage() {
                     const totalCasualties = module.collectionName === 'accidentIncidentRecords'
                         ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
                         : null;
+                        
+                    const breakdownItems = module.title === 'Monitoring Rekomendasi ke DGCA'
+                        ? Object.entries(
+                            (filteredRecords as TindakLanjutDgcaRecord[]).reduce((acc, r) => {
+                                acc[r.operator] = (acc[r.operator] || 0) + 1;
+                                return acc;
+                            }, {} as Record<string, number>)
+                          )
+                          .map(([name, count]) => ({
+                              name,
+                              count,
+                              className: module.statusVariant(name),
+                              percentage: totalCount > 0 ? (count / totalCount) * 100 : 0,
+                          }))
+                          .sort((a,b) => b.count - a.count)
+                        : statusArray;
 
                     return (
                         <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
@@ -530,10 +546,11 @@ export default function RsiPage() {
                                                 </Badge>
                                             </div>
                                         )}
-                                        <ExpandableBreakdownList
-                                            items={statusArray}
+                                         <ExpandableBreakdownList
+                                            items={breakdownItems}
                                             onToggle={() => toggleCardExpansion(module.title)}
                                             isExpanded={isExpanded}
+                                            itemClassName={module.title === 'Monitoring Rekomendasi ke DGCA' ? 'bg-indigo-100 text-indigo-800' : ''}
                                         />
                                     </div>
                                 )}
@@ -556,5 +573,3 @@ export default function RsiPage() {
         </TooltipProvider>
     );
 }
-
-    
