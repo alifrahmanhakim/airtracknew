@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { GlossaryRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { format, parseISO } from 'date-fns';
+import { Separator } from './ui/separator';
 
 type DetailRowProps = {
   label: string;
@@ -58,6 +59,11 @@ export function GlossaryRecordDetailDialog({ record, open, onOpenChange }: Gloss
     return 'Invalid Date';
   }
 
+  const statusHistory = record.statusHistory || [];
+  // Sort history chronologically, oldest first
+  statusHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -75,8 +81,28 @@ export function GlossaryRecordDetailDialog({ record, open, onOpenChange }: Gloss
                 <DetailRow label="Makna" value={record.makna} isLongText />
                 <DetailRow label="Keterangan / Pengaplikasian" value={record.keterangan} isLongText />
                 <DetailRow label="Referensi / Daftar Pustaka" value={record.referensi} isLongText />
-                <DetailRow label="Status" value={<Badge>{record.status}</Badge>} />
+                <DetailRow label="Current Status" value={<Badge>{record.status}</Badge>} />
                 <DetailRow label="Created At" value={getFormattedDate(record.createdAt)} />
+                <DetailRow label="Last Updated" value={record.updatedAt ? getFormattedDate(record.updatedAt) : 'N/A'} />
+                
+                <div className="py-3">
+                    <dt className="font-semibold text-muted-foreground">Status History</dt>
+                    <dd className="sm:col-span-2 text-sm mt-2">
+                        {statusHistory.length > 0 ? (
+                            <ul className="space-y-2">
+                                {statusHistory.map((historyItem, index) => (
+                                    <li key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                                        <Badge>{historyItem.status}</Badge>
+                                        <span className="flex-grow border-b border-dashed"></span>
+                                        <span className="text-muted-foreground">{getFormattedDate(historyItem.date)}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-muted-foreground">No status history available.</p>
+                        )}
+                    </dd>
+                </div>
             </dl>
         </ScrollArea>
       </DialogContent>
