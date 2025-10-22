@@ -369,6 +369,9 @@ export default function LoginPage() {
                                       Google
                                   </Button>
                               </div>
+                              <div className="mt-6 flex justify-center">
+                                <StatusIndicator variant="icon" />
+                              </div>
                           </div>
                     </div>
                 ) : (
@@ -426,13 +429,13 @@ export default function LoginPage() {
                                       Google
                                   </Button>
                               </div>
+                               <div className="mt-6 flex justify-center">
+                                <StatusIndicator variant="icon" />
+                              </div>
                           </div>
                     </div>
                 )}
               </div>
-            </div>
-             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50">
-                <StatusIndicator variant="icon" />
             </div>
           </div>
         </div>
