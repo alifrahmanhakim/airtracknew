@@ -16,12 +16,14 @@ import {
 } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Calendar, Pencil } from 'lucide-react';
+import { Loader2, Calendar, Pencil, ArrowRight } from 'lucide-react';
 import type { GlossaryRecord } from '@/lib/types';
 import { GlossarySharedFormFields, formSchema, type GlossaryFormValues } from './glossary-shared-form-fields';
 import { updateGlossaryRecord } from '@/lib/actions/glossary';
 import { ScrollArea } from './ui/scroll-area';
 import { format, parseISO, isValid } from 'date-fns';
+import { Badge } from './ui/badge';
+import { cn } from '@/lib/utils';
 
 type EditGlossaryRecordDialogProps = {
   record: GlossaryRecord;
@@ -70,17 +72,56 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenC
     }
   };
   
-  const getFormattedDate = (dateString?: string): string => {
-    if (!dateString) return 'Not available';
-    try {
-        const date = parseISO(dateString);
-        if (isValid(date)) {
-            return format(date, 'PPP p');
-        }
-        return 'Invalid Date';
-    } catch {
-        return 'Invalid Date';
+  const getStatusClass = (status: string) => {
+    switch (status) {
+        case 'Final': return 'bg-green-100 text-green-800 hover:bg-green-200';
+        case 'Draft': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+        case 'Usulan': return 'bg-red-100 text-red-800 hover:bg-red-200';
+        default: return 'bg-muted text-muted-foreground';
     }
+  };
+
+  const renderStatusChange = () => {
+    const history = record.statusHistory || [];
+    if (!history || history.length === 0) {
+      return (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar className="h-4 w-4" />
+            <span>No status history available.</span>
+          </div>
+      );
+    }
+  
+    const lastChange = history[history.length - 1];
+    const isCreation = history.length === 1;
+
+    return (
+        <div className="flex flex-col gap-1.5 text-sm">
+            <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Last Change:</span>
+                {isCreation ? (
+                     <div className="flex items-center gap-1.5">
+                        <span className="text-xs">Created as</span>
+                        <Badge className={cn(getStatusClass(lastChange.status))}>{lastChange.status}</Badge>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge className={cn("font-normal", getStatusClass(history[history.length - 2].status))}>
+                            {history[history.length - 2].status}
+                        </Badge>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        <Badge className={cn(getStatusClass(lastChange.status))}>
+                            {lastChange.status}
+                        </Badge>
+                    </div>
+                )}
+            </div>
+             <span className="text-muted-foreground text-xs flex items-center gap-2">
+                <Calendar className="h-3 w-3" />
+                {format(parseISO(lastChange.date), 'dd MMM yyyy, HH:mm')}
+            </span>
+        </div>
+    );
   }
 
   return (
@@ -102,11 +143,8 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenC
             
             <div className="flex-grow overflow-y-auto pr-6 my-4">
                 <div className="space-y-8">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                            Last Updated: {getFormattedDate(record.updatedAt)}
-                        </span>
+                     <div className="p-3 bg-muted rounded-md border">
+                        {renderStatusChange()}
                     </div>
                     <GlossarySharedFormFields form={form} />
                 </div>
