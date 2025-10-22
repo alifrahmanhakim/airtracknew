@@ -92,7 +92,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
     const filteredRecords = React.useMemo(() => {
         return allRecords.filter(r => {
             const aocMatch = aocFilter === 'all' || r.aoc === aocFilter;
-            const categoryMatch = categoryFilter === 'all' || r.kategori === categoryFilter;
+            const categoryMatch = categoryFilter === 'all' || r.kategori === categoryMatch;
             const taxonomyMatch = taxonomyFilter === 'all' || r.taxonomy === taxonomyFilter;
             const yearMatch = yearFilter === 'all' || (r.tanggal && isValid(parseISO(r.tanggal)) && getYear(parseISO(r.tanggal)) === parseInt(yearFilter));
             return aocMatch && categoryMatch && taxonomyMatch && yearMatch;
@@ -220,7 +220,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                     <CardContent>
                         <ChartContainer config={chartConfig(analyticsData.aocData)} className="h-[400px] w-full">
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 100, right: 30 }}>
+                                <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: 50, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
                                     <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={200} />
                                     <XAxis type="number" allowDecimals={false} />
