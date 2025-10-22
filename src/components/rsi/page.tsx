@@ -435,7 +435,10 @@ export default function RsiPage() {
                         .sort((a, b) => b.count - a.count);
 
                     const isExpanded = expandedCards[module.title] || false;
-
+                    
+                    const totalCasualties = module.collectionName === 'accidentIncidentRecords'
+                        ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
+                        : null;
 
                     return (
                         <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
@@ -461,12 +464,22 @@ export default function RsiPage() {
                                 {(totalCount > 0) && (
                                      <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
-                                        <ExpandableBreakdownList
-                                            items={statusArray}
-                                            total={totalCount}
-                                            onToggle={() => toggleCardExpansion(module.title)}
-                                            isExpanded={isExpanded}
-                                        />
+                                        <div className="space-y-1">
+                                            {totalCasualties !== null && (
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                                    <Badge variant="destructive">
+                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                           <ExpandableBreakdownList
+                                                items={statusArray}
+                                                total={totalCount}
+                                                onToggle={() => toggleCardExpansion(module.title)}
+                                                isExpanded={isExpanded}
+                                            />
+                                        </div>
                                     </div>
                                 )}
                                 </CardContent>
