@@ -228,7 +228,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                     <CardContent>
                         <ChartContainer config={chartConfig(analyticsData.taxonomyData)} style={{ height: `${Math.max(400, analyticsData.taxonomyData.length * 40)}px` }}>
                             <ResponsiveContainer>
-                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 150, right: 30 }}>
+                                <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 0, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
                                     <YAxis dataKey="name" type="category" interval={0} tick={<CustomYAxisTick />} width={250} />
                                     <XAxis type="number" allowDecimals={false} />
@@ -245,4 +245,5 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
     );
 }
 
+    
     
