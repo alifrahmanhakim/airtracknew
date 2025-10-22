@@ -395,7 +395,7 @@ export default function RsiPage() {
                         config={{
                             A: { label: "Accident", color: "hsl(var(--chart-3))" },
                             SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
-                            Casualties: { label: "Casualties", color: "hsl(var(--destructive))" },
+                            Casualties: { label: "Casualties", color: "hsl(var(--chart-5))" },
                         }}
                         className="h-[300px] w-full"
                     >
@@ -408,7 +408,7 @@ export default function RsiPage() {
                                 <Legend />
                                 <Line type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} activeDot={{ r: 8 }} />
                                 <Line type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
-                                <Line type="monotone" dataKey="Casualties" stroke="hsl(var(--destructive))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                <Line type="monotone" dataKey="Casualties" stroke="hsl(var(--chart-5))" strokeWidth={2} activeDot={{ r: 8 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </ChartContainer>
