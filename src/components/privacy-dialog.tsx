@@ -19,8 +19,8 @@ export function PrivacyDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="link" className="text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground p-0 h-auto text-left justify-start whitespace-normal">
-          <BookCheck className="mr-2 h-4 w-4 flex-shrink-0" />
+        <Button variant="link" className="text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground p-0 h-auto justify-center whitespace-normal flex-col gap-1">
+          <BookCheck className="h-5 w-5 flex-shrink-0" />
           <span>Syarat &amp; Ketentuan, Kebijakan Privasi &amp; Cookie</span>
         </Button>
       </DialogTrigger>
