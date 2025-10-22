@@ -27,7 +27,7 @@ const ExpandableBreakdownList = ({ items, onToggle, isExpanded }: { items: {name
         <div className="space-y-1">
             {itemsToShow.map(({ name, count, className, percentage }) => (
                 <div key={name} className="flex items-center gap-2">
-                    <Badge variant="secondary" className={className}>
+                    <Badge variant="secondary" className={cn(className, "whitespace-nowrap")}>
                         {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
                     </Badge>
                 </div>
@@ -68,8 +68,8 @@ const rsiModules: RsiModule[] = [
     collectionName: 'accidentIncidentRecords',
     statusField: 'kategori',
     statusVariant: (status) => {
-        if (status === 'Accident (A)') return 'destructive';
-        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        if (status === 'Accident (A)') return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
         return 'secondary';
     },
   },
@@ -81,8 +81,8 @@ const rsiModules: RsiModule[] = [
     collectionName: 'pemeriksaanRecords',
     statusField: 'kategori',
      statusVariant: (status) => {
-        if (status === 'Accident (A)') return 'destructive';
-        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        if (status === 'Accident (A)') return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+        if (status === 'Serious Incident (SI)') return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
         return 'secondary';
     },
   },
@@ -97,7 +97,7 @@ const rsiModules: RsiModule[] = [
         if (status.toLowerCase().includes('draft final')) return 'bg-orange-400 text-orange-900';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
-        if (status.toLowerCase().includes('interim')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+        if (status.toLowerCase().includes('interim')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
         return 'secondary';
     },
   },
