@@ -17,7 +17,7 @@ import {
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Calendar, Pencil, ArrowRight } from 'lucide-react';
-import type { GlossaryRecord } from '@/lib/types';
+import type { GlossaryRecord, StatusHistoryItem } from '@/lib/types';
 import { GlossarySharedFormFields, formSchema, type GlossaryFormValues } from './glossary-shared-form-fields';
 import { updateGlossaryRecord } from '@/lib/actions/glossary';
 import { ScrollArea } from './ui/scroll-area';
@@ -97,9 +97,8 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenC
 
     return (
         <div className="flex flex-col gap-1.5 text-sm">
-            <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Last Change:</span>
-                {isCreation ? (
+            <div className="flex items-center gap-1.5 flex-wrap">
+                 {isCreation ? (
                      <div className="flex items-center gap-1.5">
                         <span className="text-xs">Created as</span>
                         <Badge className={cn(getStatusClass(lastChange.status))}>{lastChange.status}</Badge>
@@ -143,7 +142,7 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenC
             
             <div className="flex-grow overflow-y-auto pr-6 my-4">
                 <div className="space-y-8">
-                     <div className="p-3 bg-muted rounded-md border">
+                     <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800/50">
                         {renderStatusChange()}
                     </div>
                     <GlossarySharedFormFields form={form} />
