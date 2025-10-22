@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo } from 'react';
@@ -99,7 +98,7 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
                  <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
+                            <ChartTooltip wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
                             <Pie data={analyticsData.statusData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
                                 {analyticsData.statusData.map((entry, index) => (
                                     <Cell key={`cell-${entry.originalName}`} fill={chartConfig(analyticsData.statusData)[entry.originalName].color} />
