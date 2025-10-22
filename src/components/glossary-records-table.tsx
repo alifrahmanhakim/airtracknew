@@ -73,17 +73,17 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
     }
 
     const lastChange = history[history.length - 1];
-    const previousChange = history.length > 1 ? history[history.length - 2] : null;
+    const isCreation = history.length === 1;
 
     return (
         <div className="flex flex-col">
-            {previousChange ? (
-                <span className="text-xs">
-                    {previousChange.status} → <span className="font-bold">{lastChange.status}</span>
-                </span>
-            ) : (
+            {isCreation ? (
                 <span className="text-xs">
                     Created as <span className="font-bold">{lastChange.status}</span>
+                </span>
+            ) : (
+                 <span className="text-xs">
+                    Changed to <span className="font-bold">{lastChange.status}</span>
                 </span>
             )}
              <span className="text-muted-foreground text-xs">
@@ -112,7 +112,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                       <div className="flex items-center">Status {renderSortIcon('status')}</div>
                   </TableHead>
                   <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('statusDate')}>
-                      <div className="flex items-center">Status Date {renderSortIcon('statusDate')}</div>
+                      <div className="flex items-center">Last Status Change {renderSortIcon('statusDate')}</div>
                   </TableHead>
                    <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('createdAt')}>
                       <div className="flex items-center">Date Added {renderSortIcon('createdAt')}</div>
