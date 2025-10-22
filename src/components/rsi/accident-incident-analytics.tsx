@@ -115,13 +115,16 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
             return acc;
         }, {} as Record<string, number>);
 
-        const incidentsByYear = Object.entries(countBy('tanggal')).reduce((acc, [date, count]) => {
-            if (!date || !isValid(parseISO(date))) return acc;
-            const year = getYear(parseISO(date)).toString();
-            acc[year] = (acc[year] || 0) + count;
+        const incidentsByYear = filteredRecords.reduce((acc, record) => {
+            if (!record.tanggal || !isValid(parseISO(record.tanggal))) return acc;
+            const year = getYear(parseISO(record.tanggal)).toString();
+            if (!acc[year]) {
+                acc[year] = { name: year, 'Accident (A)': 0, 'Serious Incident (SI)': 0 };
+            }
+            acc[year][record.kategori]++;
             return acc;
-        }, {} as Record<string, number>);
-        const yearData = Object.entries(incidentsByYear).map(([name, value]) => ({ name, value })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
+        }, {} as Record<string, { name: string; 'Accident (A)': number; 'Serious Incident (SI)': number; }>);
+        const yearData = Object.values(incidentsByYear).sort((a,b) => parseInt(a.name) - parseInt(b.name));
         
         const incidentsByTaxonomy = countBy('taxonomy');
         const taxonomyData = Object.entries(incidentsByTaxonomy).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
@@ -212,7 +215,21 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <Card className="lg:col-span-3">
                     <CardHeader><CardTitle>Incidents by Year</CardTitle></CardHeader>
-                    <CardContent><ChartContainer config={chartConfig(analyticsData.yearData)} className="h-[300px] w-full"><ResponsiveContainer><BarChart data={analyticsData.yearData}><CartesianGrid vertical={false} /><XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} /><YAxis allowDecimals={false} /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4} /></BarChart></ResponsiveContainer></ChartContainer></CardContent>
+                    <CardContent>
+                        <ChartContainer config={categoryChartConfig} className="h-[300px] w-full">
+                            <ResponsiveContainer>
+                                <BarChart data={analyticsData.yearData}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                                    <YAxis allowDecimals={false} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Legend />
+                                    <Bar dataKey="Serious Incident (SI)" stackId="a" fill="hsl(var(--chart-2))" radius={[0, 0, 4, 4]} />
+                                    <Bar dataKey="Accident (A)" stackId="a" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader><CardTitle>Incident Category</CardTitle></CardHeader>
@@ -288,3 +305,4 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
     );
 
     
+}
