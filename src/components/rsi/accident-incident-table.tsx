@@ -30,6 +30,8 @@ import { format, parseISO, isValid } from 'date-fns';
 import { deleteAccidentIncidentRecord } from '@/lib/actions/accident-incident';
 import { Highlight } from '../ui/highlight';
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext } from '../ui/pagination';
+import { cn } from '@/lib/utils';
+import { EditAccidentIncidentRecordDialog } from './edit-accident-incident-dialog';
 
 type AccidentIncidentTableProps = {
   records: AccidentIncidentRecord[];
@@ -150,7 +152,7 @@ export function AccidentIncidentTable({ records, onEdit, searchTerm }: AccidentI
                             <TableRow key={record.id} onClick={() => onEdit(record)} className="cursor-pointer">
                                 <TableCell><Highlight text={record.tanggal ? formatDateSafe(record.tanggal) : 'N/A'} query={searchTerm} /></TableCell>
                                 <TableCell>
-                                    <Badge variant={record.kategori === 'Accident (A)' ? 'destructive' : 'secondary'}>
+                                    <Badge variant={record.kategori === 'Accident (A)' ? 'destructive' : 'secondary'} className={cn(record.kategori === 'Serious Incident (SI)' && 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200')}>
                                         <Highlight text={record.kategori} query={searchTerm} />
                                     </Badge>
                                 </TableCell>
