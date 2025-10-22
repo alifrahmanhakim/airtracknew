@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Image from 'next/image';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts';
+import { Button } from '../ui/button';
 
 
 type RsiModule = {
@@ -139,6 +140,11 @@ export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
     const [yearFilter, setYearFilter] = React.useState<string>('all');
+    const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
+
+    const toggleCardExpansion = (cardTitle: string) => {
+        setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
+    }
 
     React.useEffect(() => {
         setIsLoading(true);
@@ -364,7 +370,9 @@ export default function RsiPage() {
                         return acc;
                     }, {} as Record<string, number>);
 
-                    const statusArray = Object.entries(statusCounts).map(([name, count]) => ({ name, count }));
+                    const statusArray = Object.entries(statusCounts)
+                        .map(([name, count]) => ({ name, count }))
+                        .sort((a, b) => b.count - a.count);
 
                     const totalCasualties = module.collectionName === 'accidentIncidentRecords'
                         ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
@@ -375,6 +383,10 @@ export default function RsiPage() {
                         SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
                         Casualties: { label: "Casualties", color: "hsl(var(--destructive))" },
                     }
+
+                    const isExpanded = expandedCards[module.title] || false;
+                    const itemsToShow = isExpanded ? statusArray : statusArray.slice(0, 5);
+
 
                     return (
                         <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
@@ -397,7 +409,6 @@ export default function RsiPage() {
                                         </p>
                                     )}
                                 </div>
-
                                 {module.collectionName === 'accidentIncidentRecords' ? (
                                     <div className="pt-2 flex-grow flex flex-col justify-end">
                                       <ChartContainer config={chartConfig} className="h-[60px] w-full">
@@ -425,7 +436,7 @@ export default function RsiPage() {
                                                     </Badge>
                                                 </div>
                                             )}
-                                            {statusArray.map(({ name, count }) => (
+                                            {itemsToShow.map(({ name, count }) => (
                                                 <div key={name} className="flex items-center gap-2">
                                                     <div className={cn("h-2 w-2 rounded-full", module.statusVariant(name) === 'destructive' ? 'bg-destructive' : 'bg-secondary-foreground')}></div>
                                                     <Badge variant={module.statusVariant(name) === 'destructive' ? 'destructive' : 'default'} className={cn(module.statusVariant(name))}>
@@ -433,6 +444,18 @@ export default function RsiPage() {
                                                     </Badge>
                                                 </div>
                                             ))}
+                                            {statusArray.length > 5 && (
+                                                <Button
+                                                    variant="link"
+                                                    className="text-xs h-auto p-0"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        toggleCardExpansion(module.title);
+                                                    }}
+                                                >
+                                                    {isExpanded ? 'Show less' : `Show ${statusArray.length - 5} more`}
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -454,5 +477,8 @@ export default function RsiPage() {
             </main>
         </TooltipProvider>
     );
+
+    
+}
 
     
