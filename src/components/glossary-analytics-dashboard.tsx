@@ -102,7 +102,7 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
                             <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
                             <Pie data={analyticsData.statusData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
                                 {analyticsData.statusData.map((entry, index) => (
-                                    <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.originalName].color} />
+                                    <Cell key={`cell-${entry.originalName}`} fill={chartConfig(analyticsData.statusData)[entry.originalName].color} />
                                 ))}
                             </Pie>
                             <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
