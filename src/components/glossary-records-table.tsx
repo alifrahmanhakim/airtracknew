@@ -112,7 +112,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                           </Badge>
                       </TableCell>
                        <TableCell className="whitespace-nowrap text-left">
-                          {record.createdAt ? format(parseISO(record.createdAt as string), 'dd MMM yyyy') : 'N/A'}
+                          {record.createdAt ? format(parseISO(record.createdAt as string), 'dd MMM yyyy, HH:mm') : 'N/A'}
                       </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex justify-end gap-0">
