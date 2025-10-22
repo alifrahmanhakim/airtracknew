@@ -6,8 +6,9 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { GlossaryRecord } from '@/lib/types';
 import { Info, PieChartIcon } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from './ui/chart';
+import { format, parseISO } from 'date-fns';
 
 type GlossaryAnalyticsDashboardProps = {
   records: GlossaryRecord[];
@@ -36,9 +37,22 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
         .map(([name, value]) => ({ name, value }))
         .sort((a,b) => b.value - a.value);
 
+    const monthlyData = records.reduce((acc, record) => {
+        const month = format(parseISO(record.createdAt as string), 'yyyy-MM');
+        if (!acc[month]) {
+            acc[month] = { month, Draft: 0, Final: 0, Usulan: 0 };
+        }
+        acc[month][record.status]++;
+        return acc;
+    }, {} as Record<string, { month: string; Draft: number; Final: number; Usulan: number }>);
+    
+    const monthlyCreationData = Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
+
+
     return {
       totalRecords: records.length,
-      statusData
+      statusData,
+      monthlyCreationData
     };
   }, [records]);
 
@@ -59,6 +73,12 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
           return acc;
       }, {} as any)
   });
+  
+  const monthlyChartConfig = {
+      Draft: { label: 'Draft', color: 'hsl(var(--chart-2))' },
+      Final: { label: 'Final', color: 'hsl(var(--chart-1))' },
+      Usulan: { label: 'Usulan', color: 'hsl(var(--chart-3))' },
+  }
 
   return (
     <div className="grid grid-cols-1 gap-6">
@@ -79,6 +99,34 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
                             </Pie>
                             <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
                         </PieChart>
+                    </ResponsiveContainer>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Monthly Record Creation by Status</CardTitle>
+                <CardDescription>Number of records created each month, broken down by status.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={monthlyChartConfig} className="h-[350px] w-full">
+                    <ResponsiveContainer>
+                        <BarChart data={analyticsData.monthlyCreationData}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis
+                                dataKey="month"
+                                tickLine={false}
+                                tickMargin={10}
+                                axisLine={false}
+                                tickFormatter={(value) => format(parseISO(value), 'MMM yyyy')}
+                            />
+                            <YAxis allowDecimals={false} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Legend />
+                            <Bar dataKey="Draft" stackId="a" fill="var(--color-Draft)" radius={[0, 0, 4, 4]} />
+                            <Bar dataKey="Final" stackId="a" fill="var(--color-Final)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="Usulan" stackId="a" fill="var(--color-Usulan)" radius={[0, 0, 0, 0]} />
+                        </BarChart>
                     </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>
