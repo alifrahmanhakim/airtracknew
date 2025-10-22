@@ -427,7 +427,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter>
              <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
-                <Link href="/privacy-policy" className="hover:underline">Kebijakan Privasi &amp; Cookie</Link>
+                <Link href="/privacy-policy" className="hover:underline">Syarat &amp; Ketentuan, Kebijakan Privasi &amp; Cookie</Link>
             </div>
              <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
                 stdatabase © 2025
@@ -493,3 +493,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </SidebarInset>
     </SidebarProvider>
   );
+
+    

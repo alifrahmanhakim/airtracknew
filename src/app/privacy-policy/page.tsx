@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
     <main className="min-h-screen bg-background p-4 sm:p-8 flex items-center justify-center">
       <Card className="w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>Kebijakan Privasi dan Cookie</CardTitle>
+          <CardTitle>Syarat & Ketentuan, Kebijakan Privasi & Cookie</CardTitle>
           <CardDescription>
             Terakhir diperbarui: 24 Oktober 2025
           </CardDescription>
@@ -87,3 +87,5 @@ export default function PrivacyPolicyPage() {
     </main>
   );
 }
+
+    
