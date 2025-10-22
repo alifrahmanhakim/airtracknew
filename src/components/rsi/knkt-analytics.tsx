@@ -24,6 +24,13 @@ const CHART_COLORS = [
     'hsl(var(--chart-5))',
 ];
 
+const STATUS_COLORS: Record<string, string> = {
+    'Final': 'hsl(var(--chart-1))', // Green
+    'Draft Final': 'hsl(var(--chart-2))', // Yellow
+    'Preliminary': 'hsl(var(--chart-2))', // Yellow
+    'Interim Statement': 'hsl(var(--chart-4))', // Blue
+};
+
 export function KnktAnalytics({ allRecords }: AnalyticsProps) {
     const [operatorFilter, setOperatorFilter] = React.useState('all');
     const [yearFilter, setYearFilter] = React.useState('all');
@@ -56,7 +63,7 @@ export function KnktAnalytics({ allRecords }: AnalyticsProps) {
         const yearData = Object.entries(reportsByYear).map(([name, value]) => ({ name, value })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
         
         const reportsByStatus = countBy('status');
-        const statusData = Object.entries(reportsByStatus).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+        const statusData = Object.entries(reportsByStatus).map(([name, value]) => ({ name, value, fill: STATUS_COLORS[name] || 'hsl(var(--muted))' })).sort((a,b) => b.value - a.value);
 
         const reportsByOperator = countBy('operator');
         const operatorData = Object.entries(reportsByOperator).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 10);
@@ -81,6 +88,12 @@ export function KnktAnalytics({ allRecords }: AnalyticsProps) {
             return acc;
         }, {} as any)
     });
+    
+    const statusChartConfig = analyticsData.statusData.reduce((acc, item) => {
+        acc[item.name] = { label: item.name, color: item.fill };
+        return acc;
+    }, {} as any);
+
 
     if (allRecords.length === 0) {
         return (
@@ -131,7 +144,7 @@ export function KnktAnalytics({ allRecords }: AnalyticsProps) {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader><CardTitle>Report Status</CardTitle></CardHeader>
-                    <CardContent><ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[300px]"><PieChart><ChartTooltip content={<ChartTooltipContent hideLabel />} /><Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>{analyticsData.statusData.map(entry => <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.name]?.color} />)}</Pie><ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" /></PieChart></ChartContainer></CardContent>
+                    <CardContent><ChartContainer config={statusChartConfig} className="mx-auto aspect-square h-[300px]"><PieChart><ChartTooltip content={<ChartTooltipContent hideLabel />} /><Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>{analyticsData.statusData.map((entry) => <Cell key={`cell-${entry.name}`} fill={entry.fill} />)}</Pie><ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" /></PieChart></ChartContainer></CardContent>
                 </Card>
             </div>
 
