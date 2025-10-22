@@ -80,7 +80,7 @@ const rsiModules: RsiModule[] = [
     statusField: 'status',
      statusVariant: (status) => {
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
-        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-green-300';
+        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
         return 'secondary';
     },
   },
@@ -135,6 +135,36 @@ const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
         default: return 'tanggal';
     }
 };
+
+const ExpandableBreakdownList = ({ items, total, onToggle, isExpanded }: { items: {name: string, count: number}[], total: number, onToggle: () => void, isExpanded: boolean }) => {
+    const itemsToShow = isExpanded ? items : items.slice(0, 5);
+
+    return (
+        <div className="space-y-1">
+            {itemsToShow.map(({ name, count }) => (
+                <div key={name} className="flex items-center gap-2">
+                    <div className={cn('h-2 w-2 rounded-full bg-secondary-foreground')}></div>
+                    <Badge variant="secondary" className={cn('bg-purple-100 text-purple-800')}>
+                        {name}: <span className="font-bold ml-1">{count} ({total > 0 ? ((count / total) * 100).toFixed(0) : 0}%)</span>
+                    </Badge>
+                </div>
+            ))}
+            {items.length > 5 && (
+                <Button
+                    variant="link"
+                    className="text-xs h-auto p-0"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onToggle();
+                    }}
+                >
+                    {isExpanded ? 'Show less' : `Show ${items.length - 5} more`}
+                </Button>
+            )}
+        </div>
+    );
+};
+
 
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
@@ -385,7 +415,6 @@ export default function RsiPage() {
                     };
 
                     const isExpanded = expandedCards[module.title] || false;
-                    const itemsToShow = isExpanded ? statusArray : statusArray.slice(0, 5);
 
 
                     return (
@@ -425,38 +454,39 @@ export default function RsiPage() {
                                       </ChartContainer>
                                     </div>
                                 ) : (totalCount > 0 || totalCasualties !== null) && (
-                                    <div className="pt-2 space-y-3">
+                                     <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
-                                        <div className="space-y-1">
-                                            {totalCasualties !== null && (
-                                                <div className="flex items-center gap-2">
-                                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                                    <Badge variant="destructive">
-                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
-                                                    </Badge>
-                                                </div>
-                                            )}
-                                            {itemsToShow.map(({ name, count }) => (
-                                                <div key={name} className="flex items-center gap-2">
-                                                    <div className={cn("h-2 w-2 rounded-full", module.statusVariant(name) === 'destructive' ? 'bg-destructive' : 'bg-secondary-foreground')}></div>
-                                                    <Badge variant={module.statusVariant(name) === 'destructive' ? 'destructive' : 'default'} className={cn(module.statusVariant(name))}>
-                                                        {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
-                                                    </Badge>
-                                                </div>
-                                            ))}
-                                            {statusArray.length > 5 && (
-                                                <Button
-                                                    variant="link"
-                                                    className="text-xs h-auto p-0"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        toggleCardExpansion(module.title);
-                                                    }}
-                                                >
-                                                    {isExpanded ? 'Show less' : `Show ${statusArray.length - 5} more`}
-                                                </Button>
-                                            )}
-                                        </div>
+                                         {module.collectionName === 'tindakLanjutDgcaRecords' ? (
+                                            <ExpandableBreakdownList
+                                                items={statusArray}
+                                                total={totalCount}
+                                                onToggle={() => toggleCardExpansion(module.title)}
+                                                isExpanded={isExpanded}
+                                            />
+                                        ) : (
+                                            <div className="space-y-1">
+                                                {(isExpanded ? statusArray : statusArray.slice(0, 5)).map(({ name, count }) => (
+                                                    <div key={name} className="flex items-center gap-2">
+                                                        <div className={cn("h-2 w-2 rounded-full", module.statusVariant(name) === 'destructive' ? 'bg-destructive' : 'bg-secondary-foreground')}></div>
+                                                        <Badge variant={module.statusVariant(name) === 'destructive' ? 'destructive' : 'default'} className={cn(module.statusVariant(name))}>
+                                                            {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
+                                                        </Badge>
+                                                    </div>
+                                                ))}
+                                                {statusArray.length > 5 && (
+                                                    <Button
+                                                        variant="link"
+                                                        className="text-xs h-auto p-0"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            toggleCardExpansion(module.title);
+                                                        }}
+                                                    >
+                                                        {isExpanded ? 'Show less' : `Show ${statusArray.length - 5} more`}
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 </CardContent>
