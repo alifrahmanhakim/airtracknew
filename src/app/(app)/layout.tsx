@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -59,6 +60,7 @@ import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/global-search';
 import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
 import { AskStdAiWidget } from '@/components/ask-std-ai-widget';
+import { PrivacyDialog } from '@/components/privacy-dialog';
 
 const navItems = {
     dashboards: [
@@ -427,7 +429,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter>
              <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
-                <Link href="/privacy-policy" className="hover:underline">Syarat &amp; Ketentuan, Kebijakan Privasi &amp; Cookie</Link>
+                <PrivacyDialog />
             </div>
              <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
                 stdatabase © 2025
