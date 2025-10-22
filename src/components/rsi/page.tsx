@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -13,8 +13,12 @@ import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, Tindak
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getYear, parseISO, isToday } from 'date-fns';
+import { getYear, parseISO, isToday, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Image from 'next/image';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
+import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts';
+
 
 type RsiModule = {
   title: string;
@@ -69,7 +73,7 @@ const rsiModules: RsiModule[] = [
   {
     title: 'Monitoring Rekomendasi KNKT',
     description: 'Track follow-ups on NTSC safety recommendations.',
-    icon: <BarChart className="h-8 w-8 text-green-500" />,
+    icon: <BookCheck className="h-8 w-8 text-green-500" />,
     href: '/rsi/monitoring-rekomendasi',
     collectionName: 'tindakLanjutRecords',
     statusField: 'status',
@@ -82,7 +86,7 @@ const rsiModules: RsiModule[] = [
   {
     title: 'Monitoring Rekomendasi ke DGCA',
     description: 'Track NTSC recommendations to the DGCA.',
-    icon: <ShieldQuestion className="h-8 w-8 text-purple-500" />,
+    icon: <BookOpenCheck className="h-8 w-8 text-purple-500" />,
     href: '/rsi/monitoring-rekomendasi-dgca',
     collectionName: 'tindakLanjutDgcaRecords',
     statusField: 'operator',
@@ -165,7 +169,10 @@ export default function RsiPage() {
                 const dateString = record[dateField];
                 if (dateString && typeof dateString === 'string') {
                     try {
-                        allYears.add(getYear(parseISO(dateString)));
+                        const parsedDate = parseISO(dateString);
+                        if(isValid(parsedDate)) {
+                            allYears.add(getYear(parsedDate));
+                        }
                     } catch (e) {
                         // ignore invalid date
                     }
@@ -174,7 +181,8 @@ export default function RsiPage() {
                 }
             });
         });
-        return ['all', ...Array.from(allYears).sort((a,b) => b-a)];
+        const validYears = Array.from(allYears).filter(year => !isNaN(year));
+        return ['all', ...validYears.sort((a,b) => b-a)];
     }, [data]);
 
     const dashboardStats = React.useMemo(() => {
@@ -191,7 +199,12 @@ export default function RsiPage() {
                 try {
                     let recordYear;
                     if (typeof dateString === 'string') {
-                        recordYear = getYear(parseISO(dateString));
+                        const parsedDate = parseISO(dateString);
+                        if(isValid(parsedDate)) {
+                            recordYear = getYear(parsedDate);
+                        } else {
+                            return false;
+                        }
                     } else if (dateString.toDate) { // Firestore Timestamp
                         recordYear = getYear(dateString.toDate());
                     }
@@ -207,12 +220,31 @@ export default function RsiPage() {
         const totalReports = filterByYear(data.knktReports, 'knktReports').length;
         const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
         const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
+        
+        const trendData = (data.accidentIncidentRecords || []).reduce((acc, record) => {
+            if (!record.tanggal || !isValid(parseISO(record.tanggal))) return acc;
+            const year = getYear(parseISO(record.tanggal));
+            if (!acc[year]) {
+                acc[year] = { year, A: 0, SI: 0, Casualties: 0 };
+            }
+            if (record.kategori === 'Accident (A)') {
+                acc[year].A++;
+            }
+            if (record.kategori === 'Serious Incident (SI)') {
+                acc[year].SI++;
+            }
+            acc[year].Casualties += parseCasualties(record.korbanJiwa);
+            return acc;
+        }, {} as Record<number, { year: number, A: number, SI: number, Casualties: number }>);
+
+        const sortedTrendData = Object.values(trendData).sort((a, b) => a.year - b.year);
 
         return {
             totalIncidents,
             totalReports,
             totalSanctions,
             totalCasualties,
+            incidentTrend: sortedTrendData,
         }
     }, [data, yearFilter]);
 
@@ -234,8 +266,8 @@ export default function RsiPage() {
                             </SelectTrigger>
                             <SelectContent>
                                 {yearOptions.map(year => (
-                                    <SelectItem key={year} value={String(year)}>
-                                        {year === 'all' ? 'All Years' : year}
+                                    <SelectItem key={String(year)} value={String(year)}>
+                                        {year === 'all' ? 'All Years' : String(year)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -244,43 +276,59 @@ export default function RsiPage() {
                 </div>
             </div>
 
-            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background">
-                <CardHeader>
-                    <CardTitle>Overall Summary</CardTitle>
-                    <CardDescription className="text-foreground">Key metrics from all records.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <AlertTriangle className="h-8 w-8 text-destructive" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
-                                <p className="text-sm text-muted-foreground">Total Incidents</p>
+            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background overflow-hidden">
+                <div className="flex flex-col lg:flex-row">
+                    <div className="flex-1 p-6">
+                        <CardHeader className="p-0 mb-6">
+                            <CardTitle>Overall Summary</CardTitle>
+                            <CardDescription className="text-foreground">
+                                Key metrics from all records.
+                                {yearFilter !== 'all' ? ` (Period: ${yearFilter})` : ' (All Time)'}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
+                                        <p className="text-sm text-muted-foreground">Total Incidents</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <FileSearch className="h-8 w-8 text-yellow-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
+                                        <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <Gavel className="h-8 w-8 text-gray-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
+                                        <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <Users className="h-8 w-8 text-red-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
+                                        <p className="text-sm text-muted-foreground">Total Casualties</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <FileSearch className="h-8 w-8 text-yellow-500" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
-                                <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <Gavel className="h-8 w-8 text-gray-500" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
-                                <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
-                            </div>
-                        </div>
-                         <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                             <Users className="h-8 w-8 text-red-500" />
-                            <div>
-                                <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
-                                <p className="text-sm text-muted-foreground">Total Casualties</p>
-                            </div>
-                        </div>
+                        </CardContent>
                     </div>
-                </CardContent>
+                    <div className="relative w-full lg:w-1/3 min-h-[200px] lg:min-h-0">
+                        <Image
+                            src="https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_4unr7i4unr7i4unr.png"
+                            alt="RSI Summary Illustration"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 100vw, 33vw"
+                        />
+                    </div>
+                </div>
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -292,7 +340,10 @@ export default function RsiPage() {
                         const dateString = record[dateField];
                         if (dateString && typeof dateString === 'string') {
                              try {
-                                return getYear(parseISO(dateString)) === parseInt(yearFilter);
+                                const parsedDate = parseISO(dateString);
+                                if(isValid(parsedDate)) {
+                                    return getYear(parsedDate) === parseInt(yearFilter);
+                                }
                             } catch (e) {
                                 return false;
                             }
@@ -319,6 +370,12 @@ export default function RsiPage() {
                         ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
                         : null;
 
+                    const chartConfig = {
+                        A: { label: "Accident", color: "hsl(var(--chart-3))" },
+                        SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
+                        Casualties: { label: "Casualties", color: "hsl(var(--destructive))" },
+                    }
+
                     return (
                         <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
                             <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20">
@@ -340,7 +397,23 @@ export default function RsiPage() {
                                         </p>
                                     )}
                                 </div>
-                                {(totalCount > 0 || totalCasualties !== null) && (
+
+                                {module.collectionName === 'accidentIncidentRecords' ? (
+                                    <div className="pt-2 flex-grow flex flex-col justify-end">
+                                      <ChartContainer config={chartConfig} className="h-[60px] w-full">
+                                        <ResponsiveContainer>
+                                            <LineChart data={dashboardStats.incidentTrend} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
+                                                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                                                <XAxis dataKey="year" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <Line type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                                                <Line type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                                                <Line type="monotone" dataKey="Casualties" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                      </ChartContainer>
+                                    </div>
+                                ) : (totalCount > 0 || totalCasualties !== null) && (
                                     <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
                                         <div className="space-y-1">
@@ -366,7 +439,7 @@ export default function RsiPage() {
                                 </CardContent>
                                 <CardFooter className="bg-muted/50 p-4 mt-auto">
                                     <div className="relative text-sm font-semibold w-full flex items-center">
-                                        <span className="bg-gradient-to-r from-blue-500 via-green-500 to-blue-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
+                                        <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
                                             Open Module
                                         </span>
                                         <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300 group-hover:w-full"></div>
