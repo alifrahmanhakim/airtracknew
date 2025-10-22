@@ -103,7 +103,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                 <p>Syarat dan Ketentuan Penggunaan ("Ketentuan") ini merupakan aturan yang mengikat secara hukum antara Penyelenggara Sistem Elektronik, yaitu Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("Penyelenggara"), dengan Anda selaku pegawai di lingkungan Subdirektorat Standardisasi DKPPU ("Pengguna") dalam penggunaan Aplikasi AirTrack ("Layanan").</p>
                 <p>Dengan melakukan registrasi dan/atau menggunakan Layanan ini, Anda menyatakan telah membaca, memahami, menyetujui, dan akan mematuhi seluruh Ketentuan yang tertulis di bawah ini.</p>
 
-                <h3 className="font-bold pt-4">Pasal 1: Definisi</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 1: Definisi</h3>
                 <ul className="list-disc pl-5 space-y-2">
                     <li><strong>Layanan</strong> adalah aplikasi berbasis web AirTrack yang berfungsi sebagai platform manajemen pekerjaan dan kepatuhan regulasi internal di lingkungan Subdirektorat Standardisasi DKPPU.</li>
                     <li><strong>Penyelenggara</strong> adalah Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara (DKPPU) yang bertanggung jawab atas pengelolaan dan operasional Layanan.</li>
@@ -113,7 +113,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                     <li><strong>Data Elektronik Kedinasan</strong> adalah data dan informasi terkait pekerjaan, proyek, dokumen, dan komunikasi yang dibuat atau diunggah oleh Pengguna ke dalam Layanan untuk tujuan pelaksanaan tugas dan fungsi.</li>
                 </ul>
 
-                <h3 className="font-bold pt-4">Pasal 2: Akun dan Keamanan</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 2: Akun dan Keamanan</h3>
                 <ul className="list-disc pl-5 space-y-2">
                     <li>Untuk dapat menggunakan Layanan, Pengguna diwajibkan melakukan registrasi dan login menggunakan Akun Google yang aktif.</li>
                     <li>Pengguna bertanggung jawab penuh atas segala aktivitas yang dilakukan menggunakan akunnya.</li>
@@ -123,7 +123,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                     <li>Hak akses Pengguna terhadap Layanan bersifat melekat pada jabatan dan status kepegawaian yang sah. Hak akses akan dicabut atau dihentikan oleh administrator sistem apabila Pengguna tidak lagi bertugas di Subdirektorat Standardisasi DKPPU karena mutasi, pensiun, berhenti, atau sebab lain yang mengakibatkan berakhirnya hubungan kerja.</li>
                 </ul>
 
-                <h3 className="font-bold pt-4">Pasal 3: Pengelolaan dan Pelindungan Data</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 3: Pengelolaan dan Pelindungan Data</h3>
                 <ul className="list-disc pl-5 space-y-2">
                     <li><strong>Dasar Pemrosesan Data:</strong> Pemrosesan data Pengguna dilakukan dalam rangka pelaksanaan kewajiban pelayanan publik dan tugas kedinasan sesuai amanat peraturan perundang-undangan.</li>
                     <li><strong>Data Pribadi:</strong> Dengan menggunakan otentikasi Akun Google, Pengguna memberikan persetujuan kepada Penyelenggara untuk mengakses data dasar yang melekat pada akun tersebut (nama, alamat email, foto profil) untuk keperluan identifikasi, manajemen akses, dan personalisasi Layanan.</li>
@@ -133,14 +133,14 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                     <li>Data Pengguna tidak akan dibagikan, disewakan, atau dijual kepada pihak ketiga untuk tujuan komersial maupun non-komersial tanpa dasar hukum yang sah.</li>
                 </ul>
                 
-                <h3 className="font-bold pt-4">Pasal 4: Penggunaan Cookies</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 4: Penggunaan Cookies</h3>
                 <ul className="list-disc pl-5 space-y-2">
                     <li>Layanan ini menggunakan cookies untuk fungsionalitas teknis, seperti mempertahankan sesi login dan mengingat preferensi tampilan.</li>
                     <li>Cookies yang digunakan tidak melacak aktivitas Pengguna di luar Layanan ini.</li>
                     <li>Pengguna dapat mengatur peramban (browser) untuk menolak cookies, namun tindakan tersebut dapat menyebabkan beberapa fungsi Layanan tidak berjalan secara optimal.</li>
                 </ul>
 
-                <h3 className="font-bold pt-4">Pasal 5: Kewajiban Pengguna</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 5: Kewajiban Pengguna</h3>
                  <ul className="list-disc pl-5 space-y-2">
                     <li>Menggunakan Layanan dengan itikad baik dan hanya untuk tujuan pelaksanaan tugas dan fungsi kedinasan.</li>
                     <li>Dilarang keras menggunakan sumber daya Layanan, termasuk kapasitas penyimpanan dan fitur komunikasi, untuk tujuan di luar kedinasan atau untuk kepentingan pribadi.</li>
@@ -149,25 +149,25 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                     <li>Dilarang melakukan upaya peretasan, rekayasa balik (reverse engineering), atau tindakan lain yang dapat mengganggu integritas dan ketersediaan sistem Layanan.</li>
                 </ul>
 
-                <h3 className="font-bold pt-4">Pasal 6: Pencatatan Aktivitas (Audit Log)</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 6: Pencatatan Aktivitas (Audit Log)</h3>
                 <p>Untuk tujuan keamanan, pemeliharaan sistem, dan penegakan kepatuhan, Penyelenggara mencatat (log) seluruh aktivitas yang dilakukan oleh Pengguna di dalam Layanan. Catatan aktivitas ini dapat diperiksa jika terdapat dugaan pelanggaran keamanan atau penyalahgunaan sistem sesuai dengan prosedur yang berlaku.</p>
 
-                <h3 className="font-bold pt-4">Pasal 7: Hak Kekayaan Intelektual</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 7: Hak Kekayaan Intelektual</h3>
                 <p>Layanan, termasuk namun tidak terbatas pada nama, logo, kode sumber, dan desain, merupakan aset milik Negara Republik Indonesia yang dikelola oleh Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara dan dilindungi oleh undang-undang hak cipta yang berlaku.</p>
 
-                <h3 className="font-bold pt-4">Pasal 8: Batasan Tanggung Jawab</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 8: Batasan Tanggung Jawab</h3>
                  <ul className="list-disc pl-5 space-y-2">
                     <li>Penyelenggara berupaya menjaga Layanan agar dapat beroperasi dengan baik dan aman. Namun, Penyelenggara tidak bertanggung jawab atas kerugian yang timbul akibat kelalaian Pengguna atau faktor eksternal di luar kendali Penyelenggara (force majeure).</li>
                     <li>Penyelenggara tidak bertanggung jawab atas keakuratan dan validitas konten atau data yang diunggah oleh Pengguna.</li>
                 </ul>
 
-                <h3 className="font-bold pt-4">Pasal 9: Perubahan Ketentuan</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 9: Perubahan Ketentuan</h3>
                 <p>Penyelenggara berhak untuk mengubah Ketentuan ini dari waktu ke waktu. Setiap perubahan akan diinformasikan kepada Pengguna melalui saluran komunikasi resmi. Dengan terus menggunakan Layanan setelah perubahan diumumkan, Pengguna dianggap menyetujui Ketentuan yang baru.</p>
 
-                <h3 className="font-bold pt-4">Pasal 10: Hukum yang Berlaku</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 10: Hukum yang Berlaku</h3>
                 <p>Syarat dan Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum yang berlaku di Negara Kesatuan Republik Indonesia.</p>
 
-                <h3 className="font-bold pt-4">Pasal 11: Kontak dan Laporan</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 11: Kontak dan Laporan</h3>
                 <p>Jika Pengguna memiliki pertanyaan mengenai Ketentuan ini atau ingin melaporkan dugaan pelanggaran, silakan hubungi administrator sistem melalui email: riskregisterdkppu@gmail.com.</p>
                 
             </div>

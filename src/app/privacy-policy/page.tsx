@@ -9,15 +9,83 @@ export default function PrivacyPolicyPage() {
     <main className="min-h-screen bg-background p-4 sm:p-8 flex items-center justify-center">
       <Card className="w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>Syarat & Ketentuan, Kebijakan Privasi & Cookie</CardTitle>
+          <CardTitle>Syarat &amp; Ketentuan, Kebijakan Privasi &amp; Cookie</CardTitle>
           <CardDescription>
             Terakhir diperbarui: 24 Oktober 2025
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
+          <section id="terms-and-conditions">
+            <h2 className="text-xl font-semibold mb-4">Syarat dan Ketentuan Penggunaan</h2>
+            <div className="space-y-4 text-muted-foreground text-sm text-justify">
+                <p>Syarat dan Ketentuan Penggunaan ("Ketentuan") ini merupakan aturan yang mengikat secara hukum antara Penyelenggara Sistem Elektronik, yaitu Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("Penyelenggara"), dengan Anda selaku pegawai di lingkungan Subdirektorat Standardisasi DKPPU ("Pengguna") dalam penggunaan Aplikasi AirTrack ("Layanan").</p>
+                <p>Dengan melakukan registrasi dan/atau menggunakan Layanan ini, Anda menyatakan telah membaca, memahami, menyetujui, dan akan mematuhi seluruh Ketentuan yang tertulis di bawah ini.</p>
+                
+                <h3 className="font-bold pt-2 text-foreground">Pasal 1: Definisi</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                    <li><strong>Layanan</strong> adalah aplikasi berbasis web AirTrack yang berfungsi sebagai platform manajemen pekerjaan dan kepatuhan regulasi internal di lingkungan Subdirektorat Standardisasi DKPPU.</li>
+                    <li><strong>Penyelenggara</strong> adalah Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara (DKPPU) yang bertanggung jawab atas pengelolaan dan operasional Layanan.</li>
+                    <li><strong>Pengguna</strong> adalah Aparatur Sipil Negara (ASN) atau pegawai yang secara sah memiliki hak akses untuk menggunakan Layanan dalam rangka pelaksanaan tugas kedinasan.</li>
+                    <li><strong>Akun Google</strong> adalah layanan autentikasi pihak ketiga yang digunakan untuk proses registrasi dan login ke dalam Layanan.</li>
+                    <li><strong>Data Pribadi</strong> adalah data tentang orang perseorangan yang teridentifikasi atau dapat diidentifikasi secara tersendiri atau dikombinasi dengan informasi lainnya, sesuai dengan Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi.</li>
+                    <li><strong>Data Elektronik Kedinasan</strong> adalah data dan informasi terkait pekerjaan, proyek, dokumen, dan komunikasi yang dibuat atau diunggah oleh Pengguna ke dalam Layanan untuk tujuan pelaksanaan tugas dan fungsi.</li>
+                </ul>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 2: Akun dan Keamanan</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                    <li>Untuk dapat menggunakan Layanan, Pengguna diwajibkan melakukan registrasi dan login menggunakan Akun Google yang aktif.</li>
+                    <li>Pengguna bertanggung jawab penuh atas segala aktivitas yang dilakukan menggunakan akunnya.</li>
+                    <li>Pengguna wajib menjaga kerahasiaan informasi login (kata sandi Akun Google) dan tidak membagikannya kepada pihak lain yang tidak berwenang.</li>
+                    <li>Pengguna wajib segera melapor kepada administrator sistem jika mengetahui atau menduga adanya akses ilegal atau penyalahgunaan akun.</li>
+                    <li>Penyalahgunaan akun untuk tujuan yang melanggar hukum atau Ketentuan ini dapat dikenakan sanksi sesuai peraturan disiplin pegawai dan perundang-undangan yang berlaku.</li>
+                    <li>Hak akses Pengguna terhadap Layanan bersifat melekat pada jabatan dan status kepegawaian yang sah. Hak akses akan dicabut atau dihentikan oleh administrator sistem apabila Pengguna tidak lagi bertugas di Subdirektorat Standardisasi DKPPU karena mutasi, pensiun, berhenti, atau sebab lain yang mengakibatkan berakhirnya hubungan kerja.</li>
+                </ul>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 3: Pengelolaan dan Pelindungan Data</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                    <li><strong>Dasar Pemrosesan Data:</strong> Pemrosesan data Pengguna dilakukan dalam rangka pelaksanaan kewajiban pelayanan publik dan tugas kedinasan sesuai amanat peraturan perundang-undangan.</li>
+                    <li><strong>Data Pribadi:</strong> Dengan menggunakan otentikasi Akun Google, Pengguna memberikan persetujuan kepada Penyelenggara untuk mengakses data dasar yang melekat pada akun tersebut (nama, alamat email, foto profil) untuk keperluan identifikasi, manajemen akses, dan personalisasi Layanan.</li>
+                    <li><strong>Data Elektronik Kedinasan:</strong> Seluruh data kedinasan yang diunggah dan diolah dalam Layanan bersifat internal dan hanya dapat diakses oleh Pengguna yang memiliki otorisasi. Penyelenggara menjamin kerahasiaan data tersebut dari pihak eksternal yang tidak berwenang.</li>
+                    <li><strong>Kepatuhan:</strong> Penyelenggara berkomitmen untuk mengelola seluruh data sesuai dengan prinsip-prinsip dalam Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi dan peraturan terkait Penyelenggaraan Sistem dan Transaksi Elektronik (PSTE) di lingkungan instansi pemerintah.</li>
+                    <li><strong>Kepemilikan Data:</strong> Seluruh Data Elektronik Kedinasan yang diunggah, dibuat, atau dikelola di dalam Layanan merupakan aset informasi milik Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara dan tunduk pada peraturan perundang-undangan mengenai Keterbukaan Informasi Publik serta klasifikasi keamanan informasi yang berlaku.</li>
+                    <li>Data Pengguna tidak akan dibagikan, disewakan, atau dijual kepada pihak ketiga untuk tujuan komersial maupun non-komersial tanpa dasar hukum yang sah.</li>
+                </ul>
+                
+                <h3 className="font-bold pt-2 text-foreground">Pasal 4: Kewajiban Pengguna</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                    <li>Menggunakan Layanan dengan itikad baik dan hanya untuk tujuan pelaksanaan tugas dan fungsi kedinasan.</li>
+                    <li>Dilarang keras menggunakan sumber daya Layanan, termasuk kapasitas penyimpanan dan fitur komunikasi, untuk tujuan di luar kedinasan atau untuk kepentingan pribadi.</li>
+                    <li>Dilarang menggunakan Layanan untuk menyebarkan informasi yang mengandung SARA, ujaran kebencian, hoaks, atau melanggar peraturan perundang-undangan lainnya.</li>
+                    <li>Dilarang mengunggah, menyimpan, atau mengirimkan dokumen atau informasi dengan klasifikasi RAHASIA atau SANGAT RAHASIA ke dalam Layanan, kecuali jika Layanan telah disertifikasi secara resmi untuk tingkat keamanan tersebut.</li>
+                    <li>Dilarang melakukan upaya peretasan, rekayasa balik (reverse engineering), atau tindakan lain yang dapat mengganggu integritas dan ketersediaan sistem Layanan.</li>
+                </ul>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 5: Pencatatan Aktivitas (Audit Log)</h3>
+                <p>Untuk tujuan keamanan, pemeliharaan sistem, dan penegakan kepatuhan, Penyelenggara mencatat (log) seluruh aktivitas yang dilakukan oleh Pengguna di dalam Layanan. Catatan aktivitas ini dapat diperiksa jika terdapat dugaan pelanggaran keamanan atau penyalahgunaan sistem sesuai dengan prosedur yang berlaku.</p>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 6: Hak Kekayaan Intelektual</h3>
+                <p>Layanan, termasuk namun tidak terbatas pada nama, logo, kode sumber, dan desain, merupakan aset milik Negara Republik Indonesia yang dikelola oleh Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara dan dilindungi oleh undang-undang hak cipta yang berlaku.</p>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 7: Batasan Tanggung Jawab</h3>
+                <ul className="list-disc pl-6 space-y-2">
+                    <li>Penyelenggara berupaya menjaga Layanan agar dapat beroperasi dengan baik dan aman. Namun, Penyelenggara tidak bertanggung jawab atas kerugian yang timbul akibat kelalaian Pengguna atau faktor eksternal di luar kendali Penyelenggara (force majeure).</li>
+                    <li>Penyelenggara tidak bertanggung jawab atas keakuratan dan validitas konten atau data yang diunggah oleh Pengguna.</li>
+                </ul>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 8: Perubahan Ketentuan</h3>
+                <p>Penyelenggara berhak untuk mengubah Ketentuan ini dari waktu ke waktu. Setiap perubahan akan diinformasikan kepada Pengguna melalui saluran komunikasi resmi. Dengan terus menggunakan Layanan setelah perubahan diumumkan, Pengguna dianggap menyetujui Ketentuan yang baru.</p>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 9: Hukum yang Berlaku</h3>
+                <p>Syarat dan Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum yang berlaku di Negara Kesatuan Republik Indonesia.</p>
+
+                <h3 className="font-bold pt-2 text-foreground">Pasal 10: Kontak dan Laporan</h3>
+                <p>Jika Pengguna memiliki pertanyaan mengenai Ketentuan ini atau ingin melaporkan dugaan pelanggaran, silakan hubungi administrator sistem melalui email: riskregisterdkppu@gmail.com.</p>
+            </div>
+          </section>
+
           <section id="privacy-policy">
-            <h2 className="text-xl font-semibold mb-2">Kebijakan Privasi</h2>
-            <div className="space-y-4 text-muted-foreground text-sm">
+            <h2 className="text-xl font-semibold mb-4">Kebijakan Privasi</h2>
+            <div className="space-y-4 text-muted-foreground text-sm text-justify">
               <p>
                 Aplikasi <strong>AirTrack</strong> ("Layanan") ini adalah sistem internal yang dikelola oleh Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("DKPPU"). Kami berkomitmen untuk melindungi privasi dan keamanan data Anda.
               </p>
@@ -50,8 +118,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section id="cookie-policy">
-            <h2 className="text-xl font-semibold mb-2">Kebijakan Cookie</h2>
-            <div className="space-y-4 text-muted-foreground text-sm">
+            <h2 className="text-xl font-semibold mb-4">Kebijakan Cookie</h2>
+            <div className="space-y-4 text-muted-foreground text-sm text-justify">
               <h3 className="font-semibold text-foreground">1. Apa itu Cookie?</h3>
               <p>
                 Cookie adalah file teks kecil yang disimpan di perangkat Anda (komputer atau ponsel) saat Anda mengunjungi sebuah situs web. Cookie membantu situs web mengenali perangkat Anda dan mengingat informasi tertentu tentang preferensi atau aktivitas Anda.
@@ -87,5 +155,3 @@ export default function PrivacyPolicyPage() {
     </main>
   );
 }
-
-    
