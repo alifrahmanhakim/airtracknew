@@ -13,7 +13,7 @@ import {
 import type { GlossaryRecord, StatusHistoryItem } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Pencil, Trash2, ArrowUpDown, Info } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Info, ArrowRight } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -66,6 +66,16 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
       </div>
     );
   }
+  
+  const getStatusClass = (status: string) => {
+    switch (status) {
+        case 'Final': return 'text-green-600 dark:text-green-400';
+        case 'Draft': return 'text-yellow-600 dark:text-yellow-400';
+        case 'Usulan': return 'text-red-600 dark:text-red-400';
+        default: return 'text-muted-foreground';
+    }
+  };
+
 
   const renderStatusChange = (history: StatusHistoryItem[] | undefined) => {
     if (!history || history.length === 0) {
@@ -77,16 +87,25 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
 
     return (
         <div className="flex flex-col">
-            {isCreation ? (
-                <span className="text-xs">
-                    Created as <span className="font-bold">{lastChange.status}</span>
-                </span>
-            ) : (
-                 <span className="text-xs">
-                    Changed to <span className="font-bold">{lastChange.status}</span>
-                </span>
-            )}
-             <span className="text-muted-foreground text-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+                 {isCreation ? (
+                    <>
+                        <span className="text-xs">Created as</span>
+                        <span className={cn("font-bold text-xs", getStatusClass(lastChange.status))}>{lastChange.status}</span>
+                    </>
+                ) : (
+                    <>
+                        <span className={cn("font-bold text-xs", getStatusClass(history[history.length - 2].status))}>
+                            {history[history.length - 2].status}
+                        </span>
+                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                        <span className={cn("font-bold text-xs", getStatusClass(lastChange.status))}>
+                            {lastChange.status}
+                        </span>
+                    </>
+                )}
+            </div>
+             <span className="text-muted-foreground text-xs mt-1">
                 {format(parseISO(lastChange.date), 'dd MMM yyyy, HH:mm')}
             </span>
         </div>
@@ -97,7 +116,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
     <>
       <TooltipProvider>
           <div className="border rounded-md w-full overflow-x-auto">
-            <Table className="table-fixed">
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('tsu')}>
@@ -123,12 +142,12 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
               <TableBody>
                 {records.map((record) => (
                     <TableRow key={record.id} className="cursor-pointer align-top" onClick={() => setRecordToEdit(record)}>
-                        <TableCell className="font-semibold whitespace-normal break-words text-left"><Highlight text={record.tsu} query={searchTerm} /></TableCell>
-                        <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.tsa} query={searchTerm} /></TableCell>
-                        <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.editing} query={searchTerm} /></TableCell>
-                        <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.makna} query={searchTerm} /></TableCell>
-                        <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.keterangan} query={searchTerm} /></TableCell>
-                        <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.referensi || ''} query={searchTerm} /></TableCell>
+                        <TableCell className="font-semibold whitespace-pre-wrap break-words text-left"><Highlight text={record.tsu} query={searchTerm} /></TableCell>
+                        <TableCell className="whitespace-pre-wrap break-words text-left"><Highlight text={record.tsa} query={searchTerm} /></TableCell>
+                        <TableCell className="whitespace-pre-wrap break-words text-left"><Highlight text={record.editing} query={searchTerm} /></TableCell>
+                        <TableCell className="whitespace-pre-wrap break-words text-left"><Highlight text={record.makna} query={searchTerm} /></TableCell>
+                        <TableCell className="whitespace-pre-wrap break-words text-left"><Highlight text={record.keterangan} query={searchTerm} /></TableCell>
+                        <TableCell className="whitespace-pre-wrap break-words text-left"><Highlight text={record.referensi || ''} query={searchTerm} /></TableCell>
                         <TableCell className="text-left">
                             <Badge
                                 className={cn({
