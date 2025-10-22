@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
@@ -5,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { GlossaryRecord, User } from '@/lib/types';
-import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +36,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { parseISO } from 'date-fns';
 
 // Dynamically import heavy components
 const GlossaryForm = dynamic(() => import('@/components/glossary-form').then(mod => mod.GlossaryForm), { 
@@ -52,7 +54,7 @@ const ImportGlossaryCsvDialog = dynamic(() => import('@/components/import-glossa
 });
 
 type SortDescriptor = {
-    column: keyof GlossaryRecord;
+    column: keyof GlossaryRecord | 'createdAt';
     direction: 'asc' | 'desc';
 } | null;
 
@@ -73,7 +75,7 @@ export default function GlossaryPage() {
   // Filters and sorting
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sort, setSort] = useState<SortDescriptor>({ column: 'tsu', direction: 'asc' });
+  const [sort, setSort] = useState<SortDescriptor>({ column: 'createdAt', direction: 'desc' });
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Pagination state
@@ -87,7 +89,12 @@ export default function GlossaryPage() {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const recordsFromDb: GlossaryRecord[] = [];
       querySnapshot.forEach((doc) => {
-        recordsFromDb.push({ id: doc.id, ...doc.data() } as GlossaryRecord);
+        const data = doc.data();
+        recordsFromDb.push({ 
+            id: doc.id, 
+            ...data,
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt
+         } as GlossaryRecord);
       });
       setAllRecords(recordsFromDb);
       setIsLoading(false);
@@ -139,6 +146,12 @@ export default function GlossaryPage() {
         const aVal = a[sort.column as keyof GlossaryRecord] as string | undefined;
         const bVal = b[sort.column as keyof GlossaryRecord] as string | undefined;
         
+        if (sort.column === 'createdAt') {
+            const dateA = aVal ? parseISO(aVal).getTime() : 0;
+            const dateB = bVal ? parseISO(bVal).getTime() : 0;
+            return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+
         if (aVal === undefined || aVal === null) return 1;
         if (bVal === undefined || bVal === null) return -1;
 

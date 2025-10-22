@@ -23,6 +23,7 @@ import {
 import { cn } from '@/lib/utils';
 import { EditGlossaryRecordDialog } from './edit-glossary-record-dialog';
 import { Highlight } from './ui/highlight';
+import { format, parseISO } from 'date-fns';
 
 
 type GlossaryRecordsTableProps = {
@@ -35,14 +36,14 @@ type GlossaryRecordsTableProps = {
 };
 
 type SortDescriptor = {
-    column: keyof GlossaryRecord;
+    column: keyof GlossaryRecord | 'createdAt';
     direction: 'asc' | 'desc';
 } | null;
 
 export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSort, searchTerm }: GlossaryRecordsTableProps) {
   const [recordToEdit, setRecordToEdit] = useState<GlossaryRecord | null>(null);
 
-  const handleSort = (column: keyof GlossaryRecord) => {
+  const handleSort = (column: keyof GlossaryRecord | 'createdAt') => {
     setSort(prevSort => {
         if (prevSort?.column === column) {
             return { column, direction: prevSort.direction === 'asc' ? 'desc' : 'asc' };
@@ -51,7 +52,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
     });
   }
 
-  const renderSortIcon = (column: keyof GlossaryRecord) => {
+  const renderSortIcon = (column: keyof GlossaryRecord | 'createdAt') => {
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
       return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
   }
@@ -84,6 +85,9 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                   <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('status')}>
                       <div className="flex items-center">Status {renderSortIcon('status')}</div>
                   </TableHead>
+                   <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('createdAt')}>
+                      <div className="flex items-center">Date Added {renderSortIcon('createdAt')}</div>
+                  </TableHead>
                   <TableHead className="w-[10%] text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -107,8 +111,11 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                               <Highlight text={record.status} query={searchTerm} />
                           </Badge>
                       </TableCell>
+                       <TableCell className="whitespace-nowrap text-left">
+                          {record.createdAt ? format(parseISO(record.createdAt as string), 'dd MMM yyyy') : 'N/A'}
+                      </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-0">
                               <Tooltip>
                                   <TooltipTrigger asChild>
                                       <Button variant="ghost" size="icon" onClick={() => setRecordToEdit(record)}>
