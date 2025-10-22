@@ -36,7 +36,7 @@ const parseCasualties = (casualtyString: string | undefined): number => {
 // Custom tick component for Y-axis to handle text wrapping
 const CustomYAxisTick = (props: any) => {
     const { x, y, payload } = props;
-    const maxChars = 30; // Max characters before wrapping
+    const maxChars = 40; // Max characters before wrapping
     const text = payload.value;
     const words = text.split(' ');
     const lines = [];
