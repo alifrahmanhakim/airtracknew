@@ -33,8 +33,14 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
         return acc;
     }, {} as Record<string, number>);
 
+    const totalStatus = Object.values(statusCounts).reduce((acc, v) => acc + v, 0);
+
     const statusData = Object.entries(statusCounts)
-        .map(([name, value]) => ({ name, value }))
+        .map(([name, value]) => ({
+             name: `${name} (${((value / totalStatus) * 100).toFixed(1)}%)`, 
+             value,
+             originalName: name
+        }))
         .sort((a,b) => b.value - a.value);
 
     const monthlyData = records.reduce((acc, record) => {
@@ -66,10 +72,11 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
     );
   }
 
-  const chartConfig = (data: {name: string, value: number}[]) => ({
+  const chartConfig = (data: {name: string, value: number, originalName?: string}[]) => ({
       value: { label: 'Count' },
       ...data.reduce((acc, item, index) => {
-          acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
+          const key = item.originalName || item.name;
+          acc[key] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
           return acc;
       }, {} as any)
   });
@@ -92,9 +99,9 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
-                            <Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                            <Pie data={analyticsData.statusData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
                                 {analyticsData.statusData.map((entry, index) => (
-                                    <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
+                                    <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.originalName].color} />
                                 ))}
                             </Pie>
                             <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
