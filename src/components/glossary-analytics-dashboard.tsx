@@ -28,7 +28,8 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
     }
 
     const statusCounts = records.reduce((acc, record) => {
-        acc[record.status] = (acc[record.status] || 0) + 1;
+        const status = record.status || 'Usulan';
+        acc[status] = (acc[status] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
 
@@ -44,10 +45,13 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
 
     const monthlyData = records.reduce((acc, record) => {
         const month = format(parseISO(record.createdAt as string), 'yyyy-MM');
+        const status = record.status || 'Usulan';
         if (!acc[month]) {
             acc[month] = { month, Draft: 0, Final: 0, Usulan: 0 };
         }
-        acc[month][record.status]++;
+        if (status in acc[month]) {
+            acc[month][status as 'Draft' | 'Final' | 'Usulan']++;
+        }
         return acc;
     }, {} as Record<string, { month: string; Draft: number; Final: number; Usulan: number }>);
     
