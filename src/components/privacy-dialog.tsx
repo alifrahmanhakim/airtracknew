@@ -13,12 +13,16 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from './ui/button';
+import { BookCheck } from 'lucide-react';
 
 export function PrivacyDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="link" className="text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground p-0 h-auto">Syarat &amp; Ketentuan, Kebijakan Privasi &amp; Cookie</Button>
+        <Button variant="link" className="text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground p-0 h-auto text-left justify-start whitespace-normal">
+          <BookCheck className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span>Syarat &amp; Ketentuan, Kebijakan Privasi &amp; Cookie</span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-3xl max-h-[80vh]">
         <DialogHeader>

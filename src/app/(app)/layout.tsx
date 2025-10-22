@@ -428,7 +428,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-             <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
+             <div className="px-2 py-1 group-data-[collapsible=icon]:hidden">
                 <PrivacyDialog />
             </div>
              <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
@@ -497,3 +497,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
 
     
+
