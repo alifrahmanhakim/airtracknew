@@ -69,10 +69,10 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
   
   const getStatusClass = (status: string) => {
     switch (status) {
-        case 'Final': return 'text-green-600 dark:text-green-400';
-        case 'Draft': return 'text-yellow-600 dark:text-yellow-400';
-        case 'Usulan': return 'text-red-600 dark:text-red-400';
-        default: return 'text-muted-foreground';
+        case 'Final': return 'bg-green-100 text-green-800';
+        case 'Draft': return 'bg-yellow-100 text-yellow-800';
+        case 'Usulan': return 'bg-red-100 text-red-800';
+        default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -89,20 +89,20 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
         <div className="flex flex-col">
             <div className="flex items-center gap-1.5 flex-wrap">
                  {isCreation ? (
-                    <>
+                     <div className="flex items-center gap-1.5">
                         <span className="text-xs">Created as</span>
-                        <span className={cn("font-bold text-xs", getStatusClass(lastChange.status))}>{lastChange.status}</span>
-                    </>
+                        <Badge className={cn(getStatusClass(lastChange.status))}>{lastChange.status}</Badge>
+                    </div>
                 ) : (
-                    <>
-                        <span className={cn("font-bold text-xs", getStatusClass(history[history.length - 2].status))}>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge className={cn("font-normal", getStatusClass(history[history.length - 2].status))}>
                             {history[history.length - 2].status}
-                        </span>
-                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                        <span className={cn("font-bold text-xs", getStatusClass(lastChange.status))}>
+                        </Badge>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        <Badge className={cn(getStatusClass(lastChange.status))}>
                             {lastChange.status}
-                        </span>
-                    </>
+                        </Badge>
+                    </div>
                 )}
             </div>
              <span className="text-muted-foreground text-xs mt-1">
@@ -116,7 +116,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
     <>
       <TooltipProvider>
           <div className="border rounded-md w-full overflow-x-auto">
-            <Table>
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('tsu')}>
@@ -127,16 +127,16 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                   <TableHead className="w-[15%] text-left">Makna</TableHead>
                   <TableHead className="w-[15%] text-left">Keterangan</TableHead>
                   <TableHead className="w-[15%] text-left">Referensi</TableHead>
-                  <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('status')}>
+                  <TableHead className="w-[10%] cursor-pointer text-left whitespace-nowrap" onClick={() => handleSort('status')}>
                       <div className="flex items-center">Status {renderSortIcon('status')}</div>
                   </TableHead>
-                  <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('statusDate')}>
+                  <TableHead className="w-[15%] cursor-pointer text-left whitespace-nowrap" onClick={() => handleSort('statusDate')}>
                       <div className="flex items-center">Last Status Change {renderSortIcon('statusDate')}</div>
                   </TableHead>
-                   <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('createdAt')}>
+                   <TableHead className="w-[10%] cursor-pointer text-left whitespace-nowrap" onClick={() => handleSort('createdAt')}>
                       <div className="flex items-center">Date Added {renderSortIcon('createdAt')}</div>
                   </TableHead>
-                  <TableHead className="w-[10%] text-right">Actions</TableHead>
+                  <TableHead className="w-[10%] text-right whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -150,11 +150,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                         <TableCell className="whitespace-pre-wrap break-words text-left"><Highlight text={record.referensi || ''} query={searchTerm} /></TableCell>
                         <TableCell className="text-left">
                             <Badge
-                                className={cn({
-                                    'bg-green-100 text-green-800 hover:bg-green-200': record.status === 'Final',
-                                    'bg-yellow-100 text-yellow-800 hover:bg-yellow-200': record.status === 'Draft',
-                                    'bg-red-100 text-red-800 hover:bg-red-200': record.status === 'Usulan',
-                                })}
+                                className={cn(getStatusClass(record.status))}
                             >
                                 <Highlight text={record.status} query={searchTerm} />
                             </Badge>
@@ -162,7 +158,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                         <TableCell className="text-left">
                           {renderStatusChange(record.statusHistory)}
                         </TableCell>
-                         <TableCell className="text-left">
+                         <TableCell className="text-left whitespace-nowrap">
                             {record.createdAt ? format(parseISO(record.createdAt as string), 'dd MMM yyyy, HH:mm') : 'N/A'}
                         </TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
