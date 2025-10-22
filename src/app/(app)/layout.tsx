@@ -61,6 +61,7 @@ import { GlobalSearch } from '@/components/global-search';
 import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
 import { AskStdAiWidget } from '@/components/ask-std-ai-widget';
 import { PrivacyDialog } from '@/components/privacy-dialog';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const navItems = {
     dashboards: [
@@ -310,191 +311,191 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
-      <Sidebar variant="inset" collapsible="icon">
-        <SidebarHeader>
-           <div className="flex items-center justify-center gap-2 py-4">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={40} className="object-contain" />
-            </div>
-        </SidebarHeader>
-        <SidebarContent>
-            <SidebarGroup>
-                <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
-                <SidebarMenu>
-                    {navItems.dashboards.map((item) => {
-                      const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
-                      const isActive = pathname.startsWith(item.href);
-                      return (
+    <TooltipProvider>
+      <SidebarProvider>
+        <Sidebar variant="inset" collapsible="icon">
+          <SidebarHeader>
+            <div className="flex items-center justify-center gap-2 py-4">
+                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={40} className="object-contain" />
+              </div>
+          </SidebarHeader>
+          <SidebarContent>
+              <SidebarGroup>
+                  <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
+                  <SidebarMenu>
+                      {navItems.dashboards.map((item) => {
+                        const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
+                        const isActive = pathname.startsWith(item.href);
+                        return (
+                          <SidebarMenuItem key={item.href} isActive={isActive}>
+                              <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                              <SidebarMenuButton
+                                  asChild
+                                  isActive={isActive}
+                                  className="transition-colors"
+                              >
+                                  <Link href={item.href}>
+                                      <item.icon />
+                                      <span>{item.label}</span>
+                                      {item.href === '/my-dashboard' ? (
+                                          <>
+                                              {dynamicCounts.criticalProjects > 0 && (
+                                                  <SidebarMenuBadge className="bg-red-500 text-white">
+                                                      <AlertTriangle className="h-3 w-3 mr-1" />
+                                                      {dynamicCounts.criticalProjects}
+                                                  </SidebarMenuBadge>
+                                              )}
+                                              {dynamicCounts.overdueTasks > 0 && (
+                                                  <SidebarMenuBadge className="bg-yellow-400 text-yellow-900">
+                                                      <AlertTriangle className="h-3 w-3 mr-1" />
+                                                      {dynamicCounts.overdueTasks}
+                                                  </SidebarMenuBadge>
+                                              )}
+                                          </>
+                                      ) : count > 0 ? (
+                                          <SidebarMenuBadge className="bg-primary text-primary-foreground">
+                                              {count}
+                                          </SidebarMenuBadge>
+                                      ) : null}
+                                  </Link>
+                              </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        )
+                      })}
+                  </SidebarMenu>
+              </SidebarGroup>
+              <SidebarGroup>
+                  <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+                  <SidebarMenu>
+                      {navItems.workspace.map((item: any) => {
+                        if (item.requiredRole && !isAdmin) {
+                          return null;
+                        }
+                        
+                        const linkProps = item.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
+                        const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
+                        const isActive = !item.isExternal && pathname.startsWith(item.href);
+                        
+                        return (
+                          <SidebarMenuItem key={item.href} isActive={isActive}>
+                              <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                              <SidebarMenuButton
+                                  asChild
+                                  isActive={isActive}
+                                  className="transition-colors"
+                              >
+                                  <Link href={item.href} {...linkProps}>
+                                      <item.icon />
+                                      <span>{item.label}</span>
+                                      {count > 0 && item.countId === 'openStateLetters' ? (
+                                          <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
+                                              <AlertTriangle className="h-3 w-3 mr-1" />
+                                              {count}
+                                          </SidebarMenuBadge>
+                                      ) : count > 0 ? (
+                                          <SidebarMenuBadge className={cn(
+                                              'bg-destructive text-destructive-foreground'
+                                          )}>
+                                              {count}
+                                          </SidebarMenuBadge>
+                                      ) : null}
+                                  </Link>
+                              </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        )
+                      })}
+                  </SidebarMenu>
+              </SidebarGroup>
+              <SidebarGroup>
+                  <SidebarGroupLabel>Tools</SidebarGroupLabel>
+                  <SidebarMenu>
+                      {navItems.tools.map((item) => {
+                        const isActive = pathname.startsWith(item.href);
+                        return (
                         <SidebarMenuItem key={item.href} isActive={isActive}>
-                             <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
-                             <SidebarMenuButton
-                                asChild
-                                isActive={isActive}
-                                className="transition-colors"
-                            >
-                                <Link href={item.href}>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                    {item.href === '/my-dashboard' ? (
-                                        <>
-                                            {dynamicCounts.criticalProjects > 0 && (
-                                                <SidebarMenuBadge className="bg-red-500 text-white">
-                                                    <AlertTriangle className="h-3 w-3 mr-1" />
-                                                    {dynamicCounts.criticalProjects}
-                                                </SidebarMenuBadge>
-                                            )}
-                                            {dynamicCounts.overdueTasks > 0 && (
-                                                <SidebarMenuBadge className="bg-yellow-400 text-yellow-900">
-                                                    <AlertTriangle className="h-3 w-3 mr-1" />
-                                                    {dynamicCounts.overdueTasks}
-                                                </SidebarMenuBadge>
-                                            )}
-                                        </>
-                                    ) : count > 0 ? (
-                                        <SidebarMenuBadge className="bg-primary text-primary-foreground">
-                                            {count}
-                                        </SidebarMenuBadge>
-                                    ) : null}
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      )
-                    })}
-                </SidebarMenu>
-            </SidebarGroup>
-             <SidebarGroup>
-                <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-                <SidebarMenu>
-                    {navItems.workspace.map((item: any) => {
-                      if (item.requiredRole && !isAdmin) {
-                        return null;
-                      }
-                      
-                      const linkProps = item.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
-                      const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
-                      const isActive = !item.isExternal && pathname.startsWith(item.href);
-                      
-                      return (
-                        <SidebarMenuItem key={item.href} isActive={isActive}>
-                            <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
-                             <SidebarMenuButton
-                                asChild
-                                isActive={isActive}
-                                className="transition-colors"
-                            >
-                                <Link href={item.href} {...linkProps}>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                    {count > 0 && item.countId === 'openStateLetters' ? (
-                                        <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
-                                            <AlertTriangle className="h-3 w-3 mr-1" />
-                                            {count}
-                                        </SidebarMenuBadge>
-                                    ) : count > 0 ? (
-                                         <SidebarMenuBadge className={cn(
-                                            'bg-destructive text-destructive-foreground'
-                                        )}>
-                                            {count}
-                                        </SidebarMenuBadge>
-                                    ) : null}
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      )
-                    })}
-                </SidebarMenu>
-            </SidebarGroup>
-             <SidebarGroup>
-                <SidebarGroupLabel>Tools</SidebarGroupLabel>
-                <SidebarMenu>
-                    {navItems.tools.map((item) => {
-                      const isActive = pathname.startsWith(item.href);
-                      return (
-                      <SidebarMenuItem key={item.href} isActive={isActive}>
-                         <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
-                         <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
-                            className="transition-colors"
-                        >
-                            <Link href={item.href}>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    )})}
-                </SidebarMenu>
-            </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter>
-             <div className="px-2 py-1 group-data-[collapsible=icon]:hidden">
-                <PrivacyDialog />
-            </div>
-             <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
-                stdatabase © 2025
-            </div>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-30 m-2 mt-4 flex items-center justify-between rounded-lg border bg-card/80 p-2 backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <GlobalSearch onViewProfile={() => {}} />
-            </div>
-            <div className="flex items-center gap-2">
-                <LiveClock />
-                <StatusIndicator variant="server-icon" />
-                <NotificationBell userId={userId} />
-                <ThemeToggle />
-                 <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                            <Avatar className="h-9 w-9 aspect-square" online={isCurrentUserOnline}>
-                                <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                                <AvatarFallback>
-                                <UserIcon className="h-5 w-5" />
-                                </AvatarFallback>
-                            </Avatar>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56" align="end" forceMount>
-                            <DropdownMenuLabel className="font-normal">
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{currentUser.name}</p>
-                                <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
-                            </div>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                            <DropdownMenuItem asChild>
-                                <Link href="/profile">
-                                <Settings className="mr-2 h-4 w-4" />
-                                <span>Profile</span>
-                                </Link>
-                            </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            <span>Logout</span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-        <main className="flex-1 overflow-auto">
-            <div className="app-content-container animate-in fade-in-50 duration-500">
-              {children}
-            </div>
-        </main>
-        <AskStdAiWidget />
-      </SidebarInset>
-    </SidebarProvider>
+                          <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                          <SidebarMenuButton
+                              asChild
+                              isActive={isActive}
+                              className="transition-colors"
+                          >
+                              <Link href={item.href}>
+                                  <item.icon />
+                                  <span>{item.label}</span>
+                              </Link>
+                          </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      )})}
+                  </SidebarMenu>
+              </SidebarGroup>
+          </SidebarContent>
+          <SidebarFooter>
+              <div className="px-2 py-1 group-data-[collapsible=icon]:hidden text-center">
+                  <PrivacyDialog />
+              </div>
+              <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
+                  stdatabase © 2025
+              </div>
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>
+          <header className="sticky top-0 z-30 m-2 mt-4 flex items-center justify-between rounded-lg border bg-card/80 p-2 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                  <SidebarTrigger />
+                  <GlobalSearch onViewProfile={() => {}} />
+              </div>
+              <div className="flex items-center gap-2">
+                  <LiveClock />
+                  <StatusIndicator variant="server-icon" />
+                  <NotificationBell userId={userId} />
+                  <ThemeToggle />
+                  <div className="relative group">
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                      <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                              <Avatar className="h-9 w-9 aspect-square" online={isCurrentUserOnline}>
+                                  <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                                  <AvatarFallback>
+                                  <UserIcon className="h-5 w-5" />
+                                  </AvatarFallback>
+                              </Avatar>
+                              </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-56" align="end" forceMount>
+                              <DropdownMenuLabel className="font-normal">
+                              <div className="flex flex-col space-y-1">
+                                  <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+                                  <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
+                              </div>
+                              </DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuGroup>
+                              <DropdownMenuItem asChild>
+                                  <Link href="/profile">
+                                  <Settings className="mr-2 h-4 w-4" />
+                                  <span>Profile</span>
+                                  </Link>
+                              </DropdownMenuItem>
+                              </DropdownMenuGroup>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
+                              <LogOut className="mr-2 h-4 w-4" />
+                              <span>Logout</span>
+                              </DropdownMenuItem>
+                          </DropdownMenuContent>
+                      </DropdownMenu>
+                  </div>
+              </div>
+          </header>
+          <main className="flex-1 overflow-auto">
+              <div className="app-content-container animate-in fade-in-50 duration-500">
+                {children}
+              </div>
+          </main>
+          <AskStdAiWidget />
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
-
-    
-
+}
