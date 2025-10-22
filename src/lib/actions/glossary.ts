@@ -48,7 +48,7 @@ export async function updateGlossaryRecord(id: string, data: z.infer<typeof glos
 
         const oldData = docSnap.data() as GlossaryRecord;
         const now = new Date().toISOString();
-        const dataToUpdate: any = { ...parsed.data, updatedAt: now };
+        const dataToUpdate: any = { ...parsed.data, updatedAt: serverTimestamp() };
 
         if (oldData.status !== parsed.data.status) {
             const newStatusHistoryEntry: StatusHistoryItem = {
