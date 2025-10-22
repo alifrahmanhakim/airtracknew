@@ -59,7 +59,7 @@ const CustomYAxisTick = (props: any) => {
 
     return (
         <g transform={`translate(${x},${y})`}>
-            <text x={0} y={0} dy={4} textAnchor="start" fill="hsl(var(--foreground))" className="text-xs">
+            <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
                 {lines.map((line, index) => (
                     <tspan key={index} x={0} dy={index > 0 ? 12 : 0}>
                         {line}
