@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon, ChevronsUpDown } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -95,10 +94,11 @@ const rsiModules: RsiModule[] = [
     collectionName: 'knktReports',
     statusField: 'status',
     statusVariant: (status) => {
+        if (status.toLowerCase().includes('draft final')) return 'bg-orange-400 text-orange-900';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
         if (status.toLowerCase().includes('interim')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
-        return 'secondary';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'; // Default for 'Draft'
     },
   },
   {
@@ -291,6 +291,8 @@ export default function RsiPage() {
 
         const filteredAccidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords') as AccidentIncidentRecord[];
         const totalIncidents = filteredAccidents.length;
+        const totalAccidents = filteredAccidents.filter(r => r.kategori === 'Accident (A)').length;
+        const totalSeriousIncidents = totalIncidents - totalAccidents;
         const totalReports = filterByYear(data.knktReports, 'knktReports').length;
         const filteredLawEnforcements = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords');
         const totalSanctions = filteredLawEnforcements.length;
@@ -339,6 +341,8 @@ export default function RsiPage() {
 
         return {
             totalIncidents,
+            totalAccidents,
+            totalSeriousIncidents,
             totalReports,
             totalSanctions,
             totalCasualties,
@@ -402,7 +406,10 @@ export default function RsiPage() {
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                                     <AlertTriangle className="h-8 w-8 text-muted-foreground" />
                                     <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
+                                        <div className="flex items-baseline gap-2">
+                                            <p className="text-3xl font-bold text-red-500"><AnimatedCounter endValue={dashboardStats.totalAccidents} /></p>
+                                            <p className="text-xl font-bold text-yellow-500">/ <AnimatedCounter endValue={dashboardStats.totalSeriousIncidents} /></p>
+                                        </div>
                                         <p className="text-sm text-muted-foreground">Accidents / Serious Incidents</p>
                                     </div>
                                 </div>
@@ -478,9 +485,9 @@ export default function RsiPage() {
                 <CardContent>
                     <ChartContainer
                         config={{
-                            Accident: { label: "Accident", color: "hsl(var(--chart-3))" },
-                            'S. Incident': { label: "S. Incident", color: "hsl(var(--chart-2))" },
-                            Casualties: { label: "Casualties", color: "hsl(var(--chart-5))" },
+                            "Accident": { label: "Accident", color: "hsl(var(--chart-3))" },
+                            "S. Incident": { label: "S. Incident", color: "hsl(var(--chart-2))" },
+                            "Casualties": { label: "Casualties", color: "hsl(var(--chart-5))" },
                         }}
                         className="h-[300px] w-full"
                     >
@@ -607,15 +614,29 @@ export default function RsiPage() {
                                 {(totalCount > 0) && (
                                      <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
-                                        {totalCasualties !== null && (
-                                            <div className="flex items-center gap-2">
-                                                <Users className="h-4 w-4 text-muted-foreground" />
-                                                <Badge variant="destructive">
-                                                    Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
-                                                </Badge>
+                                        {module.collectionName === 'accidentIncidentRecords' && (
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                                    <Badge variant="destructive">
+                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                                                    <Badge className={module.statusVariant('Accident (A)')}>
+                                                        Accidents: <span className="font-bold ml-1">{statusCounts['Accident (A)'] || 0}</span>
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                                                    <Badge className={module.statusVariant('Serious Incident (SI)')}>
+                                                        Serious Incidents: <span className="font-bold ml-1">{statusCounts['Serious Incident (SI)'] || 0}</span>
+                                                    </Badge>
+                                                </div>
                                             </div>
                                         )}
-                                        {module.title === 'List of Law Enforcement' && dashboardStats.sanctionTypesBreakdown.length > 0 && (
+                                        {module.collectionName !== 'accidentIncidentRecords' && module.title === 'List of Law Enforcement' && dashboardStats.sanctionTypesBreakdown.length > 0 && (
                                             <>
                                                 <ExpandableBreakdownList
                                                     items={dashboardStats.sanctionTypesBreakdown}
@@ -653,4 +674,3 @@ export default function RsiPage() {
         </TooltipProvider>
     );
 }
-
