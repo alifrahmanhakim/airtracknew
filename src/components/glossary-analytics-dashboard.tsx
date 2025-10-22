@@ -37,7 +37,7 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
 
     const statusData = Object.entries(statusCounts)
         .map(([name, value]) => ({
-             name: `${name} (${value} - ${((value / totalStatus) * 100).toFixed(1)}%)`,
+             name: `${name} (${value} - ${totalStatus > 0 ? ((value / totalStatus) * 100).toFixed(1) : 0}%)`,
              value,
              originalName: name
         }))
@@ -93,27 +93,48 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
 
   return (
     <div className="grid grid-cols-1 gap-6">
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><PieChartIcon /> Status Distribution</CardTitle>
-                <CardDescription>Breakdown of all records by their status.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <ChartTooltip wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
-                            <Pie data={analyticsData.statusData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
-                                {analyticsData.statusData.map((entry, index) => (
-                                    <Cell key={`cell-${entry.originalName}`} fill={chartConfig(analyticsData.statusData)[entry.originalName].color} />
-                                ))}
-                            </Pie>
-                            <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><PieChartIcon /> Status Distribution</CardTitle>
+                    <CardDescription>Breakdown of all records by their status.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={chartConfig(analyticsData.statusData)} className="mx-auto aspect-square h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <ChartTooltip wrapperStyle={{ zIndex: 1000 }} content={<ChartTooltipContent hideLabel />} />
+                                <Pie data={analyticsData.statusData} dataKey="value" nameKey="originalName" innerRadius={60} strokeWidth={5}>
+                                    {analyticsData.statusData.map((entry, index) => (
+                                        <Cell key={`cell-${entry.originalName}`} fill={chartConfig(analyticsData.statusData)[entry.originalName].color} />
+                                    ))}
+                                </Pie>
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Status Breakdown</CardTitle>
+                    <CardDescription>Detailed count and percentage for each status.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    {analyticsData.statusData.map(item => (
+                        <div key={item.originalName} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div
+                                    className="h-3 w-3 rounded-full"
+                                    style={{ backgroundColor: chartConfig(analyticsData.statusData)[item.originalName].color }}
+                                />
+                                <span className="text-sm font-medium">{item.originalName}</span>
+                            </div>
+                            <span className="text-sm font-semibold">{item.value} ({((item.value / analyticsData.totalRecords) * 100).toFixed(1)}%)</span>
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+        </div>
         <Card>
             <CardHeader>
                 <CardTitle>Monthly Record Creation by Status</CardTitle>
