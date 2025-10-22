@@ -377,12 +377,12 @@ export default function RsiPage() {
                     const totalCasualties = module.collectionName === 'accidentIncidentRecords'
                         ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
                         : null;
-
+                    
                     const chartConfig = {
                         A: { label: "Accident", color: "hsl(var(--chart-3))" },
                         SI: { label: "S. Incident", color: "hsl(var(--chart-2))" },
                         Casualties: { label: "Casualties", color: "hsl(var(--destructive))" },
-                    }
+                    };
 
                     const isExpanded = expandedCards[module.title] || false;
                     const itemsToShow = isExpanded ? statusArray : statusArray.slice(0, 5);
@@ -479,6 +479,5 @@ export default function RsiPage() {
     );
 
     
-}
 
     
