@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -130,10 +131,10 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                   <TableHead className="w-[10%] cursor-pointer text-left whitespace-nowrap" onClick={() => handleSort('status')}>
                       <div className="flex items-center">Status {renderSortIcon('status')}</div>
                   </TableHead>
-                  <TableHead className="w-[15%] cursor-pointer text-left whitespace-nowrap" onClick={() => handleSort('statusDate')}>
+                  <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('statusDate')}>
                       <div className="flex items-center">Last Status Change {renderSortIcon('statusDate')}</div>
                   </TableHead>
-                   <TableHead className="w-[10%] cursor-pointer text-left whitespace-nowrap" onClick={() => handleSort('createdAt')}>
+                   <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('createdAt')}>
                       <div className="flex items-center">Date Added {renderSortIcon('createdAt')}</div>
                   </TableHead>
                   <TableHead className="w-[10%] text-right whitespace-nowrap">Actions</TableHead>
