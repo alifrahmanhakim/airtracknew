@@ -135,10 +135,16 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                       <div className="flex items-center">Status {renderSortIcon('status')}</div>
                   </TableHead>
                   <TableHead className="w-[15%] cursor-pointer text-center" onClick={() => handleSort('statusDate')}>
-                      <div className="flex items-center justify-center">Last Status Change {renderSortIcon('statusDate')}</div>
+                      <div className="flex items-center justify-center">
+                          <span className="mr-2">Last Status Change</span>
+                          {renderSortIcon('statusDate')}
+                      </div>
                   </TableHead>
                    <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('createdAt')}>
-                      <div className="flex items-center">Date Added {renderSortIcon('createdAt')}</div>
+                      <div className="flex items-center">
+                          <span>Date Added</span>
+                          {renderSortIcon('createdAt')}
+                      </div>
                   </TableHead>
                   <TableHead className="w-[10%] text-right whitespace-nowrap">Actions</TableHead>
                 </TableRow>
