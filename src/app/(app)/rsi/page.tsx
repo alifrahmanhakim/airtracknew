@@ -94,7 +94,7 @@ const rsiModules: RsiModule[] = [
     collectionName: 'knktReports',
     statusField: 'status',
     statusVariant: (status) => {
-        if (status.toLowerCase().includes('draft final')) return 'bg-orange-400 text-orange-900';
+        if (status.toLowerCase().includes('draft final')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
         if (status.toLowerCase().includes('interim')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
@@ -109,7 +109,7 @@ const rsiModules: RsiModule[] = [
     collectionName: 'tindakLanjutRecords',
     statusField: 'status',
      statusVariant: (status) => {
-        if (status.toLowerCase().includes('draft final')) return 'bg-orange-400 text-orange-900';
+        if (status.toLowerCase().includes('draft final')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
@@ -570,6 +570,14 @@ export default function RsiPage() {
 
                     const isExpanded = expandedCards[module.title] || false;
                     
+                    const totalAccidents = module.collectionName === 'accidentIncidentRecords'
+                        ? (filteredRecords as AccidentIncidentRecord[]).filter(r => r.kategori === 'Accident (A)').length
+                        : 0;
+                    
+                    const totalSeriousIncidents = module.collectionName === 'accidentIncidentRecords'
+                        ? totalCount - totalAccidents
+                        : 0;
+
                     const totalCasualties = module.collectionName === 'accidentIncidentRecords'
                         ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
                         : null;
@@ -606,9 +614,16 @@ export default function RsiPage() {
                                     {isLoading ? (
                                         <Skeleton className="h-10 w-20 mt-1" />
                                     ) : (
-                                        <p className="text-4xl font-bold">
-                                            <AnimatedCounter endValue={totalCount} />
-                                        </p>
+                                        module.collectionName === 'accidentIncidentRecords' ? (
+                                            <div className="flex items-baseline gap-2">
+                                                <p className="text-4xl font-bold text-red-500"><AnimatedCounter endValue={totalAccidents} /></p>
+                                                <p className="text-2xl font-bold text-yellow-500">/ <AnimatedCounter endValue={totalSeriousIncidents} /></p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-4xl font-bold">
+                                                <AnimatedCounter endValue={totalCount} />
+                                            </p>
+                                        )
                                     )}
                                 </div>
                                 {(totalCount > 0) && (
@@ -620,18 +635,6 @@ export default function RsiPage() {
                                                     <Users className="h-4 w-4 text-muted-foreground" />
                                                     <Badge variant="destructive">
                                                         Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
-                                                    </Badge>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <AlertTriangle className="h-4 w-4 text-destructive" />
-                                                    <Badge className={module.statusVariant('Accident (A)')}>
-                                                        Accidents: <span className="font-bold ml-1">{statusCounts['Accident (A)'] || 0}</span>
-                                                    </Badge>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                                    <Badge className={module.statusVariant('Serious Incident (SI)')}>
-                                                        Serious Incidents: <span className="font-bold ml-1">{statusCounts['Serious Incident (SI)'] || 0}</span>
                                                     </Badge>
                                                 </div>
                                             </div>
