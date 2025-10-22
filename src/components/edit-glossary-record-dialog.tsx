@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -12,14 +11,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar, Pencil } from 'lucide-react';
 import type { GlossaryRecord } from '@/lib/types';
 import { GlossarySharedFormFields, formSchema, type GlossaryFormValues } from './glossary-shared-form-fields';
 import { updateGlossaryRecord } from '@/lib/actions/glossary';
 import { ScrollArea } from './ui/scroll-area';
+import { format, parseISO, isValid } from 'date-fns';
 
 type EditGlossaryRecordDialogProps = {
   record: GlossaryRecord;
@@ -67,9 +68,27 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenC
         });
     }
   };
+  
+  const getFormattedDate = (dateString?: string): string => {
+    if (!dateString) return 'Not available';
+    try {
+        const date = parseISO(dateString);
+        if (isValid(date)) {
+            return format(date, 'PPP p');
+        }
+        return 'Invalid Date';
+    } catch {
+        return 'Invalid Date';
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onOpenChange(true); }}>
+            <Pencil className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col max-h-[90vh]">
@@ -80,11 +99,17 @@ export function EditGlossaryRecordDialog({ record, onRecordUpdate, open, onOpenC
               </DialogDescription>
             </DialogHeader>
             
-            <ScrollArea className="flex-grow overflow-y-auto pr-6 my-4">
+            <div className="flex-grow overflow-y-auto pr-6 my-4">
                 <div className="space-y-8">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                            Last Updated: {getFormattedDate(record.updatedAt)}
+                        </span>
+                    </div>
                     <GlossarySharedFormFields form={form} />
                 </div>
-            </ScrollArea>
+            </div>
 
             <DialogFooter className="pt-4 border-t flex-shrink-0">
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
