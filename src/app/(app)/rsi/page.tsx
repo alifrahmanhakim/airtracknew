@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -19,6 +19,34 @@ import Image from 'next/image';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
+
+const ExpandableBreakdownList = ({ items, onToggle, isExpanded }: { items: {name: string, count: number, className: string, percentage: number}[], onToggle: () => void, isExpanded: boolean }) => {
+    const itemsToShow = isExpanded ? items : items.slice(0, 5);
+
+    return (
+        <div className="space-y-1">
+            {itemsToShow.map(({ name, count, className, percentage }) => (
+                <div key={name} className="flex items-center gap-2">
+                    <Badge variant="secondary" className={className}>
+                        {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
+                    </Badge>
+                </div>
+            ))}
+            {items.length > 5 && (
+                <Button
+                    variant="link"
+                    className="text-xs h-auto p-0"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onToggle();
+                    }}
+                >
+                    {isExpanded ? 'Show less' : `Show ${items.length - 5} more`}
+                </Button>
+            )}
+        </div>
+    );
+};
 
 
 type RsiModule = {
@@ -66,9 +94,9 @@ const rsiModules: RsiModule[] = [
     collectionName: 'knktReports',
     statusField: 'status',
     statusVariant: (status) => {
+        if (status.toLowerCase().includes('draft final')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
-        if (status.toLowerCase().includes('draft final')) return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
         if (status.toLowerCase().includes('interim')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
         return 'secondary';
     },
@@ -139,34 +167,6 @@ const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
         case 'pemeriksaanRecords': return 'tanggal';
         default: return 'tanggal';
     }
-};
-
-const ExpandableBreakdownList = ({ items, onToggle, isExpanded }: { items: {name: string, count: number, className: string}[], onToggle: () => void, isExpanded: boolean }) => {
-    const itemsToShow = isExpanded ? items : items.slice(0, 5);
-
-    return (
-        <div className="space-y-1">
-            {itemsToShow.map(({ name, count, className }) => (
-                <div key={name} className="flex items-center gap-2">
-                    <Badge variant="secondary" className={className}>
-                        {name}: <span className="font-bold ml-1">{count}</span>
-                    </Badge>
-                </div>
-            ))}
-            {items.length > 5 && (
-                <Button
-                    variant="link"
-                    className="text-xs h-auto p-0"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onToggle();
-                    }}
-                >
-                    {isExpanded ? 'Show less' : `Show ${items.length - 5} more`}
-                </Button>
-            )}
-        </div>
-    );
 };
 
 
@@ -387,7 +387,7 @@ export default function RsiPage() {
 
             <Card className="mb-6">
                 <CardHeader>
-                    <CardTitle>Incident Trends by Year</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><LineChartIcon /> Incident Trends by Year</CardTitle>
                     <CardDescription>Year-over-year trends for Accidents, Serious Incidents, and Casualties.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -455,7 +455,12 @@ export default function RsiPage() {
                     }, {} as Record<string, number>);
 
                     const statusArray = Object.entries(statusCounts)
-                        .map(([name, count]) => ({ name, count, className: module.statusVariant(name) }))
+                        .map(([name, count]) => ({ 
+                            name, 
+                            count, 
+                            className: module.statusVariant(name),
+                            percentage: totalCount > 0 ? (count / totalCount) * 100 : 0
+                         }))
                         .sort((a, b) => b.count - a.count);
 
                     const isExpanded = expandedCards[module.title] || false;
