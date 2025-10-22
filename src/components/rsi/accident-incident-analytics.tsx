@@ -32,6 +32,44 @@ const parseCasualties = (casualtyString: string | undefined): number => {
     return match ? parseInt(match[0], 10) : 0;
 };
 
+// Custom tick component for Y-axis to handle text wrapping
+const CustomYAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const maxCharsPerLine = 35; // Adjust this value as needed
+    const text = payload.value;
+
+    // Simple function to split text into lines
+    const splitTextIntoLines = (text: string, maxChars: number) => {
+        const words = text.split(' ');
+        let lines: string[] = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+            if ((currentLine + word).length > maxChars) {
+                lines.push(currentLine.trim());
+                currentLine = '';
+            }
+            currentLine += word + ' ';
+        });
+        lines.push(currentLine.trim());
+        return lines;
+    };
+
+    const lines = splitTextIntoLines(text, maxCharsPerLine);
+
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
+                {lines.map((line, index) => (
+                    <tspan key={index} x={0} dy={index > 0 ? 12 : 0}>
+                        {line}
+                    </tspan>
+                ))}
+            </text>
+        </g>
+    );
+};
+
 
 export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
     const [aocFilter, setAocFilter] = React.useState('all');
@@ -177,7 +215,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                             <ResponsiveContainer>
                                 <BarChart data={analyticsData.aocData} layout="vertical" margin={{ left: -10, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
-                                    <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={150} />
+                                    <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={200} />
                                     <XAxis type="number" allowDecimals={false} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.aocData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
@@ -189,11 +227,11 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                  <Card>
                     <CardHeader><CardTitle>Incidents by Taxonomy</CardTitle></CardHeader>
                     <CardContent>
-                        <ChartContainer config={chartConfig(analyticsData.taxonomyData)} style={{ height: `${Math.max(400, analyticsData.taxonomyData.length * 20)}px` }}>
+                        <ChartContainer config={chartConfig(analyticsData.taxonomyData)} style={{ height: `${Math.max(400, analyticsData.taxonomyData.length * 40)}px` }}>
                             <ResponsiveContainer>
                                 <BarChart data={analyticsData.taxonomyData} layout="vertical" margin={{ left: 150, right: 30 }}>
                                     <CartesianGrid horizontal={false} />
-                                    <YAxis dataKey="name" type="category" interval={0} tick={{fontSize: 12}} width={250} />
+                                    <YAxis dataKey="name" type="category" interval={0} tick={<CustomYAxisTick />} width={300} />
                                     <XAxis type="number" allowDecimals={false} />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>{analyticsData.taxonomyData.map((entry, index) => <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}</Bar>
