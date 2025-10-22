@@ -66,8 +66,10 @@ const rsiModules: RsiModule[] = [
     collectionName: 'knktReports',
     statusField: 'status',
     statusVariant: (status) => {
-        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
-        if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300';
+        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+        if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+        if (status.toLowerCase().includes('draft final')) return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+        if (status.toLowerCase().includes('interim')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
         return 'secondary';
     },
   },
@@ -79,8 +81,10 @@ const rsiModules: RsiModule[] = [
     collectionName: 'tindakLanjutRecords',
     statusField: 'status',
      statusVariant: (status) => {
-        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
-        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+        if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+        if (status.toLowerCase().includes('interim')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
         return 'secondary';
     },
   },
@@ -101,9 +105,9 @@ const rsiModules: RsiModule[] = [
     collectionName: 'lawEnforcementRecords',
     statusField: 'impositionType',
     statusVariant: (status) => {
-        if (status === 'aoc') return 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300';
-        if (status === 'personnel') return 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/50 dark:text-purple-300';
-        if (status === 'organization') return 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/50 dark:text-orange-300';
+        if (status === 'aoc') return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+        if (status === 'personnel') return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
+        if (status === 'organization') return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
         return 'secondary';
     },
   },
@@ -132,18 +136,19 @@ const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
         case 'tindakLanjutDgcaRecords': return 'tanggalKejadian';
         case 'tindakLanjutRecords': return 'tanggalKejadian';
         case 'lawEnforcementRecords': return 'createdAt';
+        case 'pemeriksaanRecords': return 'tanggal';
         default: return 'tanggal';
     }
 };
 
-const ExpandableBreakdownList = ({ items, onToggle, isExpanded }: { items: {name: string, count: number}[], total: number, onToggle: () => void, isExpanded: boolean }) => {
+const ExpandableBreakdownList = ({ items, onToggle, isExpanded }: { items: {name: string, count: number, className: string}[], onToggle: () => void, isExpanded: boolean }) => {
     const itemsToShow = isExpanded ? items : items.slice(0, 5);
 
     return (
         <div className="space-y-1">
-            {itemsToShow.map(({ name, count }) => (
+            {itemsToShow.map(({ name, count, className }) => (
                 <div key={name} className="flex items-center gap-2">
-                    <Badge variant="secondary" className={cn('bg-purple-100 text-purple-800')}>
+                    <Badge variant="secondary" className={className}>
                         {name}: <span className="font-bold ml-1">{count}</span>
                     </Badge>
                 </div>
@@ -327,7 +332,7 @@ export default function RsiPage() {
                                     <AlertTriangle className="h-8 w-8 text-muted-foreground" />
                                     <div>
                                         <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalIncidents} /></p>
-                                        <p className="text-sm text-muted-foreground">Total Incidents</p>
+                                        <p className="text-sm text-muted-foreground">Accidents / Serious Incidents</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
@@ -349,6 +354,20 @@ export default function RsiPage() {
                                     <div>
                                         <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
                                         <p className="text-sm text-muted-foreground">Total Casualties</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <BookCheck className="h-8 w-8 text-green-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={data.tindakLanjutRecords?.length || 0} /></p>
+                                        <p className="text-sm text-muted-foreground">Rekomendasi KNKT</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                    <BookOpenCheck className="h-8 w-8 text-purple-500" />
+                                    <div>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={data.tindakLanjutDgcaRecords?.length || 0} /></p>
+                                        <p className="text-sm text-muted-foreground">Rekomendasi ke DGCA</p>
                                     </div>
                                 </div>
                             </div>
@@ -424,13 +443,19 @@ export default function RsiPage() {
                     const statusCounts = filteredRecords.reduce((acc, record) => {
                         const status = (record as any)[module.statusField];
                         if (status) {
-                            acc[status] = (acc[status] || 0) + 1;
+                            if (Array.isArray(status)) {
+                                status.forEach(s => {
+                                     acc[s] = (acc[s] || 0) + 1;
+                                });
+                            } else {
+                                acc[status] = (acc[status] || 0) + 1;
+                            }
                         }
                         return acc;
                     }, {} as Record<string, number>);
 
                     const statusArray = Object.entries(statusCounts)
-                        .map(([name, count]) => ({ name, count }))
+                        .map(([name, count]) => ({ name, count, className: module.statusVariant(name) }))
                         .sort((a, b) => b.count - a.count);
 
                     const isExpanded = expandedCards[module.title] || false;
@@ -473,7 +498,6 @@ export default function RsiPage() {
                                         )}
                                         <ExpandableBreakdownList
                                             items={statusArray}
-                                            total={totalCount}
                                             onToggle={() => toggleCardExpansion(module.title)}
                                             isExpanded={isExpanded}
                                         />
