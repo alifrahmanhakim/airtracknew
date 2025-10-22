@@ -9,7 +9,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveCo
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Button } from '../ui/button';
 import { RotateCcw, Plane, AlertTriangle, Users, Info } from 'lucide-react';
-import { getYear, parseISO } from 'date-fns';
+import { getYear, parseISO, isValid } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '../ui/chart';
 import { AnimatedCounter } from '../ui/animated-counter';
 
@@ -36,11 +36,29 @@ const parseCasualties = (casualtyString: string | undefined): number => {
 // Custom tick component for Y-axis to handle text wrapping
 const CustomYAxisTick = (props: any) => {
     const { x, y, payload } = props;
+    const maxChars = 30; // Max characters before wrapping
+    const text = payload.value;
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    words.forEach((word: string) => {
+        if (currentLine.length + word.length < maxChars) {
+            currentLine += ` ${word}`;
+        } else {
+            lines.push(currentLine.trim());
+            currentLine = word;
+        }
+    });
+    lines.push(currentLine.trim());
+
     return (
         <g transform={`translate(${x},${y})`}>
-            <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs">
-                {payload.value}
-            </text>
+            {lines.map((line, i) => (
+                 <text key={i} x={0} y={i * 12} dy={4} textAnchor="start" fill="hsl(var(--foreground))" className="text-xs">
+                    {line}
+                </text>
+            ))}
         </g>
     );
 };
@@ -55,14 +73,28 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
     const aocOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => r.aoc))].sort()], [allRecords]);
     const categoryOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => r.kategori))].sort()], [allRecords]);
     const taxonomyOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => r.taxonomy))].filter(Boolean).sort()], [allRecords]);
-    const yearOptions = React.useMemo(() => ['all', ...[...new Set(allRecords.map(r => getYear(parseISO(r.tanggal))))].sort((a, b) => b - a)], [allRecords]);
+    
+    const yearOptions = React.useMemo(() => {
+        const years = new Set<number>();
+        allRecords.forEach(r => {
+            try {
+                if (r.tanggal && isValid(parseISO(r.tanggal))) {
+                    years.add(getYear(parseISO(r.tanggal)));
+                }
+            } catch (e) {
+                // Ignore invalid date formats
+            }
+        });
+        const validYears = Array.from(years).filter(year => !isNaN(year));
+        return ['all', ...validYears.sort((a, b) => b - a)];
+    }, [allRecords]);
     
     const filteredRecords = React.useMemo(() => {
         return allRecords.filter(r => {
             const aocMatch = aocFilter === 'all' || r.aoc === aocFilter;
             const categoryMatch = categoryFilter === 'all' || r.kategori === categoryFilter;
             const taxonomyMatch = taxonomyFilter === 'all' || r.taxonomy === taxonomyFilter;
-            const yearMatch = yearFilter === 'all' || getYear(parseISO(r.tanggal)) === parseInt(yearFilter);
+            const yearMatch = yearFilter === 'all' || (r.tanggal && isValid(parseISO(r.tanggal)) && getYear(parseISO(r.tanggal)) === parseInt(yearFilter));
             return aocMatch && categoryMatch && taxonomyMatch && yearMatch;
         });
     }, [allRecords, aocFilter, categoryFilter, taxonomyFilter, yearFilter]);
@@ -158,7 +190,7 @@ export function AccidentIncidentAnalytics({ allRecords }: AnalyticsProps) {
                     </Select>
                     <Select value={String(yearFilter)} onValueChange={setYearFilter}>
                         <SelectTrigger><SelectValue placeholder="Filter by year..." /></SelectTrigger>
-                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>)}</SelectContent>
+                        <SelectContent>{yearOptions.map(year => <SelectItem key={String(year)} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>)}</SelectContent>
                     </Select>
                     <Button variant="ghost" onClick={resetFilters}><RotateCcw className="mr-2 h-4 w-4" /> Reset Filters</Button>
                 </CardContent>
