@@ -93,13 +93,14 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
           "sm:max-w-3xl max-h-[80vh] bg-background/80 backdrop-blur-sm",
         )}>
         <DialogHeader>
-          <DialogTitle>Syarat dan Ketentuan Penggunaan</DialogTitle>
+          <DialogTitle>Syarat &amp; Ketentuan, Kebijakan Privasi &amp; Cookie</DialogTitle>
           <DialogDescription>
             Aplikasi Internal AirTrack DKPPU
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-6">
             <div className="space-y-4 text-justify text-foreground/80">
+                <h2 className="font-bold text-lg pt-4 text-foreground">Syarat dan Ketentuan Penggunaan</h2>
                 <p>Syarat dan Ketentuan Penggunaan ("Ketentuan") ini merupakan aturan yang mengikat secara hukum antara Penyelenggara Sistem Elektronik, yaitu Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("Penyelenggara"), dengan Anda selaku pegawai di lingkungan Subdirektorat Standardisasi DKPPU ("Pengguna") dalam penggunaan Aplikasi AirTrack ("Layanan").</p>
                 <p>Dengan melakukan registrasi dan/atau menggunakan Layanan ini, Anda menyatakan telah membaca, memahami, menyetujui, dan akan mematuhi seluruh Ketentuan yang tertulis di bawah ini.</p>
 
@@ -133,14 +134,7 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                     <li>Data Pengguna tidak akan dibagikan, disewakan, atau dijual kepada pihak ketiga untuk tujuan komersial maupun non-komersial tanpa dasar hukum yang sah.</li>
                 </ul>
                 
-                <h3 className="font-bold pt-4 text-foreground">Pasal 4: Penggunaan Cookies</h3>
-                <ul className="list-disc pl-5 space-y-2">
-                    <li>Layanan ini menggunakan cookies untuk fungsionalitas teknis, seperti mempertahankan sesi login dan mengingat preferensi tampilan.</li>
-                    <li>Cookies yang digunakan tidak melacak aktivitas Pengguna di luar Layanan ini.</li>
-                    <li>Pengguna dapat mengatur peramban (browser) untuk menolak cookies, namun tindakan tersebut dapat menyebabkan beberapa fungsi Layanan tidak berjalan secara optimal.</li>
-                </ul>
-
-                <h3 className="font-bold pt-4 text-foreground">Pasal 5: Kewajiban Pengguna</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 4: Kewajiban Pengguna</h3>
                  <ul className="list-disc pl-5 space-y-2">
                     <li>Menggunakan Layanan dengan itikad baik dan hanya untuk tujuan pelaksanaan tugas dan fungsi kedinasan.</li>
                     <li>Dilarang keras menggunakan sumber daya Layanan, termasuk kapasitas penyimpanan dan fitur komunikasi, untuk tujuan di luar kedinasan atau untuk kepentingan pribadi.</li>
@@ -149,27 +143,66 @@ export function TermsAndConditionsDialog({ checked, onCheckedChange }: TermsAndC
                     <li>Dilarang melakukan upaya peretasan, rekayasa balik (reverse engineering), atau tindakan lain yang dapat mengganggu integritas dan ketersediaan sistem Layanan.</li>
                 </ul>
 
-                <h3 className="font-bold pt-4 text-foreground">Pasal 6: Pencatatan Aktivitas (Audit Log)</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 5: Pencatatan Aktivitas (Audit Log)</h3>
                 <p>Untuk tujuan keamanan, pemeliharaan sistem, dan penegakan kepatuhan, Penyelenggara mencatat (log) seluruh aktivitas yang dilakukan oleh Pengguna di dalam Layanan. Catatan aktivitas ini dapat diperiksa jika terdapat dugaan pelanggaran keamanan atau penyalahgunaan sistem sesuai dengan prosedur yang berlaku.</p>
 
-                <h3 className="font-bold pt-4 text-foreground">Pasal 7: Hak Kekayaan Intelektual</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 6: Hak Kekayaan Intelektual</h3>
                 <p>Layanan, termasuk namun tidak terbatas pada nama, logo, kode sumber, dan desain, merupakan aset milik Negara Republik Indonesia yang dikelola oleh Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara dan dilindungi oleh undang-undang hak cipta yang berlaku.</p>
 
-                <h3 className="font-bold pt-4 text-foreground">Pasal 8: Batasan Tanggung Jawab</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 7: Batasan Tanggung Jawab</h3>
                  <ul className="list-disc pl-5 space-y-2">
                     <li>Penyelenggara berupaya menjaga Layanan agar dapat beroperasi dengan baik dan aman. Namun, Penyelenggara tidak bertanggung jawab atas kerugian yang timbul akibat kelalaian Pengguna atau faktor eksternal di luar kendali Penyelenggara (force majeure).</li>
                     <li>Penyelenggara tidak bertanggung jawab atas keakuratan dan validitas konten atau data yang diunggah oleh Pengguna.</li>
                 </ul>
 
-                <h3 className="font-bold pt-4 text-foreground">Pasal 9: Perubahan Ketentuan</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 8: Perubahan Ketentuan</h3>
                 <p>Penyelenggara berhak untuk mengubah Ketentuan ini dari waktu ke waktu. Setiap perubahan akan diinformasikan kepada Pengguna melalui saluran komunikasi resmi. Dengan terus menggunakan Layanan setelah perubahan diumumkan, Pengguna dianggap menyetujui Ketentuan yang baru.</p>
 
-                <h3 className="font-bold pt-4 text-foreground">Pasal 10: Hukum yang Berlaku</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 9: Hukum yang Berlaku</h3>
                 <p>Syarat dan Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum yang berlaku di Negara Kesatuan Republik Indonesia.</p>
 
-                <h3 className="font-bold pt-4 text-foreground">Pasal 11: Kontak dan Laporan</h3>
+                <h3 className="font-bold pt-4 text-foreground">Pasal 10: Kontak dan Laporan</h3>
                 <p>Jika Pengguna memiliki pertanyaan mengenai Ketentuan ini atau ingin melaporkan dugaan pelanggaran, silakan hubungi administrator sistem melalui email: riskregisterdkppu@gmail.com.</p>
                 
+                <h2 className="font-bold text-lg pt-6 text-foreground">Kebijakan Privasi</h2>
+                <p>Aplikasi AirTrack ("Layanan") ini adalah sistem internal yang dikelola oleh Direktorat Kelaikudaraan dan Pengoperasian Pesawat Udara ("DKPPU"). Kami berkomitmen untuk melindungi privasi dan keamanan data Anda.</p>
+
+                <h3 className="font-bold pt-4 text-foreground">1. Data yang Kami Kumpulkan</h3>
+                <p>Saat Anda melakukan registrasi dan login menggunakan Akun Google, kami hanya mengakses dan menyimpan informasi dasar yang diperlukan untuk fungsionalitas akun, yaitu:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>Nama Lengkap:</strong> Digunakan untuk identifikasi Anda di dalam sistem.</li>
+                  <li><strong>Alamat Email:</strong> Digunakan sebagai nama pengguna unik dan untuk komunikasi terkait akun.</li>
+                  <li><strong>Foto Profil:</strong> Digunakan untuk personalisasi antarmuka pengguna.</li>
+                </ul>
+                <p>Kami <strong>tidak</strong> mengumpulkan atau menyimpan kata sandi Akun Google Anda.</p>
+
+                <h3 className="font-bold pt-4 text-foreground">2. Penggunaan Data</h3>
+                <p>Data yang kami kumpulkan digunakan secara eksklusif untuk tujuan berikut:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Manajemen otentikasi dan otorisasi akses ke dalam Layanan.</li>
+                  <li>Identifikasi kontribusi dan aktivitas Anda dalam konteks pekerjaan (misalnya, siapa yang membuat atau memperbarui tugas).</li>
+                  <li>Personalisasi pengalaman pengguna di dalam aplikasi.</li>
+                </ul>
+
+                <h3 className="font-bold pt-4 text-foreground">3. Keamanan dan Penyimpanan Data</h3>
+                <p>Seluruh data pengguna dan data pekerjaan disimpan dalam infrastruktur Google Firebase yang aman. Data ini bersifat internal dan rahasia, serta tidak akan dibagikan, dijual, atau diungkapkan kepada pihak ketiga mana pun di luar DKPPU tanpa dasar hukum yang sah.</p>
+                
+                <h2 className="font-bold text-lg pt-6 text-foreground">Kebijakan Cookie</h2>
+                
+                <h3 className="font-bold pt-4 text-foreground">1. Apa itu Cookie?</h3>
+                <p>Cookie adalah file teks kecil yang disimpan di perangkat Anda (komputer atau ponsel) saat Anda mengunjungi sebuah situs web. Cookie membantu situs web mengenali perangkat Anda dan mengingat informasi tertentu tentang preferensi atau aktivitas Anda.</p>
+
+                <h3 className="font-bold pt-4 text-foreground">2. Bagaimana Kami Menggunakan Cookie</h3>
+                <p>Layanan kami menggunakan cookie untuk tujuan fungsional yang esensial, seperti:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                    <li><strong>Manajemen Sesi:</strong> Untuk menjaga Anda tetap login selama menggunakan aplikasi.</li>
+                    <li><strong>Preferensi Pengguna:</strong> Untuk mengingat preferensi tampilan Anda, seperti tema terang (light) atau gelap (dark).</li>
+                </ul>
+                <p>Kami <strong>tidak</strong> menggunakan cookie untuk tujuan pelacakan (tracking), analisis perilaku di luar aplikasi kami, atau untuk tujuan periklanan.</p>
+
+                <h3 className="font-bold pt-4 text-foreground">3. Mengelola Cookie</h3>
+                <p>Anda dapat mengatur atau menghapus cookie melalui pengaturan peramban (browser) Anda. Namun, perlu diketahui bahwa menonaktifkan cookie dapat menyebabkan beberapa fitur Layanan tidak berfungsi secara optimal.</p>
+
             </div>
         </ScrollArea>
         <DialogFooter>
