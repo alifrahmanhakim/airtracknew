@@ -187,7 +187,7 @@ export type GlossaryRecord = {
     keterangan: string;
     referensi?: string;
     status: 'Draft' | 'Final' | 'Usulan';
-    createdAt: string | Date;
+    createdAt: string;
     updatedAt?: string;
     statusHistory?: StatusHistoryItem[];
 };

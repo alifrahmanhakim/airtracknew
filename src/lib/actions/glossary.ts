@@ -59,12 +59,17 @@ export async function updateGlossaryRecord(id: string, data: z.infer<typeof glos
         }
 
         await updateDoc(docRef, dataToUpdate);
+        
+        // Refetch the document to get the updated statusHistory
+        const updatedDocSnap = await getDoc(docRef);
+        const updatedDataFromServer = updatedDocSnap.data();
 
         const updatedRecord: GlossaryRecord = {
             id,
-            ...oldData,
-            ...dataToUpdate,
-            statusHistory: [...(oldData.statusHistory || []), ...(dataToUpdate.statusHistory ? [dataToUpdate.statusHistory] : [])]
+            ...data,
+            createdAt: oldData.createdAt, // Keep original creation date
+            updatedAt: now,
+            statusHistory: updatedDataFromServer?.statusHistory || oldData.statusHistory,
         };
         return { success: true, data: updatedRecord };
     } catch (error) {

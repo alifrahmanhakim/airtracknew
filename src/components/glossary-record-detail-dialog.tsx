@@ -11,7 +11,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { GlossaryRecord } from '@/lib/types';
 import { Badge } from './ui/badge';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from './ui/separator';
 
 type DetailRowProps = {
@@ -39,24 +39,17 @@ type GlossaryRecordDetailDialogProps = {
 export function GlossaryRecordDetailDialog({ record, open, onOpenChange }: GlossaryRecordDetailDialogProps) {
   if (!record) return null;
 
-  const getFormattedDate = (dateString: string | Date): string => {
+  const getFormattedDate = (dateString?: string): string => {
     if (!dateString) return 'N/A';
     try {
-      if (typeof dateString === 'string') {
-        return format(parseISO(dateString), 'PPP p');
-      }
-      if (dateString instanceof Date) {
-        return format(dateString, 'PPP p');
-      }
-      // Firestore Timestamp object might be passed in some cases
-      if (typeof dateString === 'object' && 'toDate' in dateString) {
-        return format((dateString as any).toDate(), 'PPP p');
-      }
-    } catch (e) {
-      console.error("Date formatting failed", e);
-      return 'Invalid Date';
+        const date = parseISO(dateString);
+        if (isValid(date)) {
+            return format(date, 'PPP p');
+        }
+        return 'Invalid Date';
+    } catch {
+        return 'Invalid Date';
     }
-    return 'Invalid Date';
   }
 
   const statusHistory = record.statusHistory || [];
@@ -83,7 +76,7 @@ export function GlossaryRecordDetailDialog({ record, open, onOpenChange }: Gloss
                 <DetailRow label="Referensi / Daftar Pustaka" value={record.referensi} isLongText />
                 <DetailRow label="Current Status" value={<Badge>{record.status}</Badge>} />
                 <DetailRow label="Created At" value={getFormattedDate(record.createdAt)} />
-                <DetailRow label="Last Updated" value={record.updatedAt ? getFormattedDate(record.updatedAt) : 'N/A'} />
+                <DetailRow label="Last Updated" value={getFormattedDate(record.updatedAt)} />
                 
                 <div className="py-3">
                     <dt className="font-semibold text-muted-foreground">Status History</dt>
