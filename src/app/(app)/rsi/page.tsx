@@ -20,33 +20,6 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 
-const ExpandableBreakdownList = ({ items, onToggle, isExpanded, itemClassName }: { items: {name: string, count: number, className: string, percentage: number}[], onToggle: () => void, isExpanded: boolean, itemClassName?: string }) => {
-    const itemsToShow = isExpanded ? items : items.slice(0, 5);
-
-    return (
-        <div className="space-y-1">
-            {itemsToShow.map(({ name, count, className, percentage }) => (
-                <div key={name} className="flex items-center gap-2">
-                    <Badge variant="secondary" className={cn(className, itemClassName, "whitespace-nowrap")}>
-                        {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
-                    </Badge>
-                </div>
-            ))}
-            {items.length > 5 && (
-                <Button
-                    variant="link"
-                    className="text-xs h-auto p-0"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onToggle();
-                    }}
-                >
-                    {isExpanded ? 'Show less' : `Show ${items.length - 5} more`}
-                </Button>
-            )}
-        </div>
-    );
-};
 
 
 type RsiModule = {
@@ -362,6 +335,35 @@ export default function RsiPage() {
         const currentYear = new Date().getFullYear();
         return allTrendData.filter(d => d.year >= currentYear - scope + 1);
     }, [dashboardStats.incidentTrend, chartYearScope]);
+    
+    const ExpandableBreakdownList = ({ items, onToggle, isExpanded, itemClassName }: { items: {name: string, count: number, className: string, percentage: number}[], onToggle: () => void, isExpanded: boolean, itemClassName?: string }) => {
+        const itemsToShow = isExpanded ? items : items.slice(0, 5);
+    
+        return (
+            <div className="space-y-1">
+                {itemsToShow.map(({ name, count, className, percentage }) => (
+                    <div key={name} className="flex items-center gap-2">
+                        <Badge variant="secondary" className={cn(className, itemClassName, "whitespace-nowrap")}>
+                            {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
+                        </Badge>
+                    </div>
+                ))}
+                {items.length > 5 && (
+                    <Button
+                        variant="link"
+                        className="text-xs h-auto p-0"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onToggle();
+                        }}
+                    >
+                        {isExpanded ? 'Show less' : `Show ${items.length - 5} more`}
+                    </Button>
+                )}
+            </div>
+        );
+    };
+
 
     return (
         <TooltipProvider>
@@ -630,13 +632,11 @@ export default function RsiPage() {
                                      <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
                                         {module.collectionName === 'accidentIncidentRecords' && (
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                                    <Badge variant="destructive">
-                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
-                                                    </Badge>
-                                                </div>
+                                             <div className="flex items-center gap-2">
+                                                <Users className="h-4 w-4 text-muted-foreground" />
+                                                <Badge variant="destructive">
+                                                    Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
+                                                </Badge>
                                             </div>
                                         )}
                                         {module.collectionName !== 'accidentIncidentRecords' && module.title === 'List of Law Enforcement' && dashboardStats.sanctionTypesBreakdown.length > 0 && (
