@@ -158,7 +158,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                         <TableCell className="text-left">
                           {renderStatusChange(record.statusHistory)}
                         </TableCell>
-                         <TableCell className="text-left whitespace-nowrap">
+                         <TableCell className="text-left">
                             {record.createdAt ? format(parseISO(record.createdAt as string), 'dd MMM yyyy, HH:mm') : 'N/A'}
                         </TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
