@@ -94,7 +94,6 @@ const rsiModules: RsiModule[] = [
     collectionName: 'knktReports',
     statusField: 'status',
     statusVariant: (status) => {
-        if (status.toLowerCase().includes('draft final')) return 'bg-orange-400 text-orange-900';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
         if (status.toLowerCase().includes('interim')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
@@ -262,6 +261,8 @@ export default function RsiPage() {
         const totalReports = filterByYear(data.knktReports, 'knktReports').length;
         const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
         const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
+        const totalRekomendasiKnkt = filterByYear(data.tindakLanjutRecords, 'tindakLanjutRecords').length;
+        const totalRekomendasiDgca = filterByYear(data.tindakLanjutDgcaRecords, 'tindakLanjutDgcaRecords').length;
         
         const trendData = (data.accidentIncidentRecords || []).reduce((acc, record) => {
             if (!record.tanggal || !isValid(parseISO(record.tanggal))) return acc;
@@ -286,6 +287,8 @@ export default function RsiPage() {
             totalReports,
             totalSanctions,
             totalCasualties,
+            totalRekomendasiKnkt,
+            totalRekomendasiDgca,
             incidentTrend: sortedTrendData,
         }
     }, [data, yearFilter]);
@@ -371,14 +374,14 @@ export default function RsiPage() {
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                                     <BookCheck className="h-8 w-8 text-green-500" />
                                     <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={data.tindakLanjutRecords?.length || 0} /></p>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalRekomendasiKnkt} /></p>
                                         <p className="text-sm text-muted-foreground">Rekomendasi KNKT</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                                     <BookOpenCheck className="h-8 w-8 text-purple-500" />
                                     <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={data.tindakLanjutDgcaRecords?.length || 0} /></p>
+                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalRekomendasiDgca} /></p>
                                         <p className="text-sm text-muted-foreground">Rekomendasi ke DGCA</p>
                                     </div>
                                 </div>
@@ -553,3 +556,5 @@ export default function RsiPage() {
         </TooltipProvider>
     );
 }
+
+    
