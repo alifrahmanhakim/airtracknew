@@ -403,10 +403,6 @@ export default function RsiPage() {
                     const statusArray = Object.entries(statusCounts)
                         .map(([name, count]) => ({ name, count }))
                         .sort((a, b) => b.count - a.count);
-
-                    const totalCasualties = module.collectionName === 'accidentIncidentRecords'
-                        ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
-                        : null;
                     
                     const chartConfig = {
                         A: { label: "Accident", color: "hsl(var(--chart-3))" },
@@ -453,40 +449,15 @@ export default function RsiPage() {
                                         </ResponsiveContainer>
                                       </ChartContainer>
                                     </div>
-                                ) : (totalCount > 0 || totalCasualties !== null) && (
+                                ) : (totalCount > 0) && (
                                      <div className="pt-2 space-y-3">
                                         <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
-                                         {module.collectionName === 'tindakLanjutDgcaRecords' ? (
-                                            <ExpandableBreakdownList
-                                                items={statusArray}
-                                                total={totalCount}
-                                                onToggle={() => toggleCardExpansion(module.title)}
-                                                isExpanded={isExpanded}
-                                            />
-                                        ) : (
-                                            <div className="space-y-1">
-                                                {(isExpanded ? statusArray : statusArray.slice(0, 5)).map(({ name, count }) => (
-                                                    <div key={name} className="flex items-center gap-2">
-                                                        <div className={cn("h-2 w-2 rounded-full", module.statusVariant(name) === 'destructive' ? 'bg-destructive' : 'bg-secondary-foreground')}></div>
-                                                        <Badge variant={module.statusVariant(name) === 'destructive' ? 'destructive' : 'default'} className={cn(module.statusVariant(name))}>
-                                                            {name === 'aoc' ? 'AOC' : name}: <span className="font-bold ml-1">{count} ({totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0}%)</span>
-                                                        </Badge>
-                                                    </div>
-                                                ))}
-                                                {statusArray.length > 5 && (
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-xs h-auto p-0"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            toggleCardExpansion(module.title);
-                                                        }}
-                                                    >
-                                                        {isExpanded ? 'Show less' : `Show ${statusArray.length - 5} more`}
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        )}
+                                        <ExpandableBreakdownList
+                                            items={statusArray}
+                                            total={totalCount}
+                                            onToggle={() => toggleCardExpansion(module.title)}
+                                            isExpanded={isExpanded}
+                                        />
                                     </div>
                                 )}
                                 </CardContent>
