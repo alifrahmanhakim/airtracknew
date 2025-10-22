@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { GlossaryRecord } from '@/lib/types';
+import type { GlossaryRecord, StatusHistoryItem } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Pencil, Trash2, ArrowUpDown, Info } from 'lucide-react';
@@ -67,6 +67,32 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
     );
   }
 
+  const renderStatusChange = (history: StatusHistoryItem[] | undefined) => {
+    if (!history || history.length === 0) {
+      return 'N/A';
+    }
+
+    const lastChange = history[history.length - 1];
+    const previousChange = history.length > 1 ? history[history.length - 2] : null;
+
+    return (
+        <div className="flex flex-col">
+            {previousChange ? (
+                <span className="text-xs">
+                    {previousChange.status} → <span className="font-bold">{lastChange.status}</span>
+                </span>
+            ) : (
+                <span className="text-xs">
+                    Created as <span className="font-bold">{lastChange.status}</span>
+                </span>
+            )}
+             <span className="text-muted-foreground text-xs">
+                {format(parseISO(lastChange.date), 'dd MMM yyyy, HH:mm')}
+            </span>
+        </div>
+    );
+  }
+
   return (
     <>
       <TooltipProvider>
@@ -85,7 +111,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                   <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('status')}>
                       <div className="flex items-center">Status {renderSortIcon('status')}</div>
                   </TableHead>
-                  <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('statusDate')}>
+                  <TableHead className="w-[15%] cursor-pointer text-left" onClick={() => handleSort('statusDate')}>
                       <div className="flex items-center">Status Date {renderSortIcon('statusDate')}</div>
                   </TableHead>
                    <TableHead className="w-[10%] cursor-pointer text-left" onClick={() => handleSort('createdAt')}>
@@ -95,12 +121,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {records.map((record) => {
-                  const lastStatusHistory = record.statusHistory && record.statusHistory.length > 0
-                    ? record.statusHistory[record.statusHistory.length - 1]
-                    : null;
-                  
-                  return (
+                {records.map((record) => (
                     <TableRow key={record.id} className="cursor-pointer align-top" onClick={() => setRecordToEdit(record)}>
                         <TableCell className="font-semibold whitespace-normal break-words text-left"><Highlight text={record.tsu} query={searchTerm} /></TableCell>
                         <TableCell className="whitespace-normal break-words text-left"><Highlight text={record.tsa} query={searchTerm} /></TableCell>
@@ -120,7 +141,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                             </Badge>
                         </TableCell>
                         <TableCell className="text-left">
-                          {lastStatusHistory ? format(parseISO(lastStatusHistory.date), 'dd MMM yyyy, HH:mm') : 'N/A'}
+                          {renderStatusChange(record.statusHistory)}
                         </TableCell>
                          <TableCell className="text-left">
                             {record.createdAt ? format(parseISO(record.createdAt as string), 'dd MMM yyyy, HH:mm') : 'N/A'}
@@ -147,7 +168,7 @@ export function GlossaryRecordsTable({ records, onDelete, onUpdate, sort, setSor
                         </TableCell>
                     </TableRow>
                   )
-                })}
+                )}
               </TableBody>
             </Table>
           </div>
