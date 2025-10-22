@@ -37,7 +37,7 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
 
     const statusData = Object.entries(statusCounts)
         .map(([name, value]) => ({
-             name: `${name} (${((value / totalStatus) * 100).toFixed(1)}%)`, 
+             name: `${name} (${value} - ${((value / totalStatus) * 100).toFixed(1)}%)`,
              value,
              originalName: name
         }))
