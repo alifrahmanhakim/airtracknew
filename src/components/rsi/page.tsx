@@ -80,7 +80,7 @@ const rsiModules: RsiModule[] = [
     statusField: 'status',
      statusVariant: (status) => {
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300';
-        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300';
+        if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-green-300';
         return 'secondary';
     },
   },
@@ -477,6 +477,8 @@ export default function RsiPage() {
             </main>
         </TooltipProvider>
     );
+
+    
 
     
 
