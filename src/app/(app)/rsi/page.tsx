@@ -109,6 +109,7 @@ const rsiModules: RsiModule[] = [
     collectionName: 'tindakLanjutRecords',
     statusField: 'status',
      statusVariant: (status) => {
+        if (status.toLowerCase().includes('draft final')) return 'bg-orange-400 text-orange-900';
         if (status.toLowerCase().includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         if (status.toLowerCase().includes('draft')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
         if (status.toLowerCase().includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
