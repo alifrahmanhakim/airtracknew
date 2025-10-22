@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -205,21 +206,40 @@ export default function RsiPage() {
         const allYears = new Set<number>();
         rsiModules.forEach(module => {
             const records = data[module.collectionName] || [];
-            const dateField = getDateFieldForCollection(module.collectionName);
+            let dateField: string;
+
+            if (module.collectionName === 'lawEnforcementRecords') {
+                dateField = 'dateLetter'; // Special handling for this collection
+            } else {
+                dateField = getDateFieldForCollection(module.collectionName);
+            }
+
             records.forEach((record: any) => {
-                const dateString = record[dateField];
-                if (dateString && typeof dateString === 'string') {
-                    try {
-                        const parsedDate = parseISO(dateString);
-                        if(isValid(parsedDate)) {
-                            allYears.add(getYear(parsedDate));
-                        }
-                    } catch (e) {
-                        // ignore invalid date
+                let dateStrings: string[] = [];
+
+                if (module.collectionName === 'lawEnforcementRecords') {
+                    dateStrings = (record.references || []).map((ref: any) => ref.dateLetter).filter(Boolean);
+                } else {
+                    const dateString = record[dateField];
+                    if (dateString) {
+                        dateStrings.push(dateString);
                     }
-                } else if (dateString && dateString.toDate) { // For Firestore Timestamps
-                    allYears.add(getYear(dateString.toDate()));
                 }
+                
+                dateStrings.forEach(dateString => {
+                    if (dateString && typeof dateString === 'string') {
+                        try {
+                            const parsedDate = parseISO(dateString);
+                            if(isValid(parsedDate)) {
+                                allYears.add(getYear(parsedDate));
+                            }
+                        } catch (e) {
+                            // ignore invalid date
+                        }
+                    } else if (dateString && (dateString as any).toDate) { // For Firestore Timestamps
+                        allYears.add(getYear((dateString as any).toDate()));
+                    }
+                });
             });
         });
         const validYears = Array.from(allYears).filter(year => !isNaN(year));
@@ -231,35 +251,49 @@ export default function RsiPage() {
             if (!records) return [];
             if (yearFilter === 'all') return records;
             
-            const dateField = getDateFieldForCollection(collectionName);
+            let dateField: string;
+             if (collectionName === 'lawEnforcementRecords') {
+                dateField = 'dateLetter';
+            } else {
+                dateField = getDateFieldForCollection(collectionName);
+            }
             
             return records.filter((record: any) => {
-                const dateString = record[dateField];
-                if (!dateString) return false;
-                
-                try {
-                    let recordYear;
-                    if (typeof dateString === 'string') {
-                        const parsedDate = parseISO(dateString);
-                        if(isValid(parsedDate)) {
-                            recordYear = getYear(parsedDate);
-                        } else {
-                            return false;
-                        }
-                    } else if (dateString.toDate) { // Firestore Timestamp
-                        recordYear = getYear(dateString.toDate());
-                    }
-                    return recordYear === parseInt(yearFilter);
-                } catch(e) {
-                    return false;
+                let dateStrings: string[] = [];
+                if (collectionName === 'lawEnforcementRecords') {
+                    dateStrings = (record.references || []).map((ref: any) => ref.dateLetter).filter(Boolean);
+                } else {
+                     const dateString = record[dateField];
+                    if (dateString) dateStrings.push(dateString);
                 }
+
+                return dateStrings.some(dateString => {
+                     if (!dateString) return false;
+                     try {
+                        let recordYear;
+                        if (typeof dateString === 'string') {
+                            const parsedDate = parseISO(dateString);
+                            if(isValid(parsedDate)) {
+                                recordYear = getYear(parsedDate);
+                            } else {
+                                return false;
+                            }
+                        } else if ((dateString as any).toDate) { // Firestore Timestamp
+                            recordYear = getYear((dateString as any).toDate());
+                        }
+                        return recordYear === parseInt(yearFilter);
+                    } catch(e) {
+                        return false;
+                    }
+                });
             });
         };
 
         const filteredAccidents = filterByYear(data.accidentIncidentRecords, 'accidentIncidentRecords') as AccidentIncidentRecord[];
         const totalIncidents = filteredAccidents.length;
         const totalReports = filterByYear(data.knktReports, 'knktReports').length;
-        const totalSanctions = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords').length;
+        const filteredLawEnforcements = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords');
+        const totalSanctions = filteredLawEnforcements.length;
         const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
         const totalRekomendasiKnkt = filterByYear(data.tindakLanjutRecords, 'tindakLanjutRecords').length;
         const totalRekomendasiDgca = filterByYear(data.tindakLanjutDgcaRecords, 'tindakLanjutDgcaRecords').length;
@@ -281,6 +315,27 @@ export default function RsiPage() {
         }, {} as Record<number, { year: number, A: number, SI: number, Casualties: number }>);
 
         const sortedTrendData = Object.values(trendData).sort((a, b) => a.year - b.year);
+        
+        const sanctionTypeCounts = filteredLawEnforcements.reduce((acc, record) => {
+            (record.references || []).forEach(ref => {
+                if(ref.sanctionType) {
+                    acc[ref.sanctionType] = (acc[ref.sanctionType] || 0) + 1;
+                }
+            })
+            return acc;
+        }, {} as Record<string, number>);
+
+        const totalSanctionTypes = Object.values(sanctionTypeCounts).reduce((a, b) => a + b, 0);
+
+        const sanctionTypesBreakdown = Object.entries(sanctionTypeCounts)
+            .map(([name, count]) => ({
+                name,
+                count,
+                className: 'bg-gray-100 text-gray-800',
+                percentage: totalSanctionTypes > 0 ? (count / totalSanctionTypes) * 100 : 0
+            }))
+            .sort((a,b) => b.count - a.count);
+
 
         return {
             totalIncidents,
@@ -290,6 +345,7 @@ export default function RsiPage() {
             totalRekomendasiKnkt,
             totalRekomendasiDgca,
             incidentTrend: sortedTrendData,
+            sanctionTypesBreakdown
         }
     }, [data, yearFilter]);
 
@@ -450,21 +506,34 @@ export default function RsiPage() {
                     
                     const filteredRecords = (data[module.collectionName] || []).filter((record: any) => {
                         if (yearFilter === 'all') return true;
-                        const dateString = record[dateField];
-                        if (dateString && typeof dateString === 'string') {
+                        
+                        let dateStrings: string[] = [];
+                        if (module.collectionName === 'lawEnforcementRecords') {
+                             dateStrings = (record.references || []).map((ref: any) => ref.dateLetter).filter(Boolean);
+                        } else {
+                            const dateString = record[dateField];
+                            if (dateString) dateStrings.push(dateString);
+                        }
+
+                       return dateStrings.some(dateString => {
+                             if (!dateString) return false;
                              try {
-                                const parsedDate = parseISO(dateString);
-                                if(isValid(parsedDate)) {
-                                    return getYear(parsedDate) === parseInt(yearFilter);
+                                let recordYear;
+                                if (typeof dateString === 'string') {
+                                    const parsedDate = parseISO(dateString);
+                                    if(isValid(parsedDate)) {
+                                        recordYear = getYear(parsedDate);
+                                    } else {
+                                        return false;
+                                    }
+                                } else if ((dateString as any).toDate) { // For Firestore Timestamps
+                                    recordYear = getYear((dateString as any).toDate());
                                 }
-                            } catch (e) {
+                                return recordYear === parseInt(yearFilter);
+                            } catch(e) {
                                 return false;
                             }
-                        }
-                         if (dateString && dateString.toDate) { // For Firestore Timestamps
-                            return getYear(dateString.toDate()) === parseInt(yearFilter);
-                        }
-                        return false;
+                        });
                     });
                     
                     const totalCount = filteredRecords.length;
@@ -546,6 +615,17 @@ export default function RsiPage() {
                                                 </Badge>
                                             </div>
                                         )}
+                                        {module.title === 'List of Law Enforcement' && dashboardStats.sanctionTypesBreakdown.length > 0 && (
+                                            <>
+                                                <ExpandableBreakdownList
+                                                    items={dashboardStats.sanctionTypesBreakdown}
+                                                    onToggle={() => toggleCardExpansion(`${module.title}-sanction`)}
+                                                    isExpanded={expandedCards[`${module.title}-sanction`] || false}
+                                                    itemClassName={'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'}
+                                                />
+                                                <p className="text-xs uppercase text-muted-foreground font-semibold pt-2">By Entity</p>
+                                            </>
+                                        )}
                                          <ExpandableBreakdownList
                                             items={breakdownItems}
                                             onToggle={() => toggleCardExpansion(module.title)}
@@ -573,3 +653,4 @@ export default function RsiPage() {
         </TooltipProvider>
     );
 }
+
