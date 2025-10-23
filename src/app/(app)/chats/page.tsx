@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatWindow } from '@/components/chat/chat-window';
 import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
+import { AppLayout } from '@/components/app-layout-component';
 
 const GLOBAL_CHAT_USER: User = {
     id: 'global_chat_room',
@@ -155,7 +156,7 @@ export default function ChatsPage() {
     };
 
     return (
-        <>
+        <AppLayout>
             <main className="p-4 md:p-8 h-[calc(100vh-80px)]">
                 <Card className="h-full flex">
                     <ChatSidebar 
@@ -181,6 +182,6 @@ export default function ChatsPage() {
                 open={!!profileUser}
                 onOpenChange={(open) => !open && setProfileUser(null)}
             />
-        </>
+        </AppLayout>
     );
 }

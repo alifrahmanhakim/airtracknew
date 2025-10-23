@@ -4,6 +4,7 @@ import { db } from '@/lib/firebase';
 import type { Project, Document as ProjectDocument, Task, Attachment } from '@/lib/types';
 import { DocumentsClientPage } from '@/components/documents-client-page';
 import { parseISO } from 'date-fns';
+import { AppLayout } from '@/components/app-layout-component';
 
 type LinkedFile = {
   id: string;
@@ -106,5 +107,9 @@ async function getAllLinkedFiles() {
 
 export default async function DocumentsPage() {
     const files = await getAllLinkedFiles();
-    return <DocumentsClientPage initialFiles={files} />;
+    return (
+        <AppLayout>
+            <DocumentsClientPage initialFiles={files} />
+        </AppLayout>
+    );
 }

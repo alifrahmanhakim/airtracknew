@@ -5,6 +5,7 @@ import type { Project, User, GapAnalysisRecord } from '@/lib/types';
 import { ProjectDetailsPage } from '@/components/project-details-page';
 import { ProjectDetailsPageLoader } from '@/components/project-details-page-loader';
 import { Suspense } from 'react';
+import { AppLayout } from '@/components/app-layout-component';
 
 type ProjectPageProps = {
   params: {
@@ -76,8 +77,10 @@ export default function ProjectPage({ params, searchParams }: ProjectPageProps) 
   const projectType = searchParams.type || 'timkerja';
 
   return (
-    <Suspense fallback={<ProjectDetailsPageLoader />}>
-      <ProjectData projectId={projectId} projectType={projectType} />
-    </Suspense>
+    <AppLayout>
+        <Suspense fallback={<ProjectDetailsPageLoader />}>
+        <ProjectData projectId={projectId} projectType={projectType} />
+        </Suspense>
+    </AppLayout>
   );
 }

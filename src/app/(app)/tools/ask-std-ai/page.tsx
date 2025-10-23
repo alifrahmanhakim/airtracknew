@@ -1,8 +1,10 @@
 
+import { AppLayout } from '@/components/app-layout-component';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AskStdAiPage() {
   return (
+    <AppLayout>
     <div className="p-4 md:p-8">
       <Card>
         <CardHeader>
@@ -23,5 +25,6 @@ export default function AskStdAiPage() {
         </CardContent>
       </Card>
     </div>
+    </AppLayout>
   );
 }

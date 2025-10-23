@@ -4,6 +4,7 @@ import { db } from '@/lib/firebase';
 import type { Project, Task, User } from '@/lib/types';
 import { MyDashboardPageComponent } from '@/components/my-dashboard-page';
 import { headers } from 'next/headers';
+import { AppLayout } from '@/components/app-layout-component';
 
 async function getDashboardData() {
   // This page is a server component. We fetch all data and the client component
@@ -59,5 +60,9 @@ async function getDashboardData() {
 
 export default async function MyDashboardPage() {
     const { allProjects, allUsers } = await getDashboardData();
-    return <MyDashboardPageComponent initialProjects={allProjects} initialUsers={allUsers} />;
+    return (
+        <AppLayout>
+            <MyDashboardPageComponent initialProjects={allProjects} initialUsers={allUsers} />
+        </AppLayout>
+    );
 }

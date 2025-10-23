@@ -3,6 +3,7 @@ import { collection, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User } from '@/lib/types';
 import { RulemakingDashboardPage } from '@/components/rulemaking-dashboard-page';
+import { AppLayout } from '@/components/app-layout-component';
 
 async function getRulemakingData() {
     try {
@@ -39,5 +40,9 @@ export default async function RulemakingDashboard() {
   
   // The onProjectAdd prop is removed to fix the client/server prop passing error.
   // Data refresh is now handled inside the dialog component via router.refresh().
-  return <RulemakingDashboardPage projects={allProjects} allUsers={allUsers} />;
+  return (
+    <AppLayout>
+      <RulemakingDashboardPage projects={allProjects} allUsers={allUsers} />
+    </AppLayout>
+  );
 }

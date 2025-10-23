@@ -3,6 +3,7 @@ import { collection, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User } from '@/lib/types';
 import { DashboardPage } from '@/components/dashboard-page';
+import { AppLayout } from '@/components/app-layout-component';
 
 // This page is now a Server Component that fetches data on the server.
 async function getProjectsAndUsers() {
@@ -36,5 +37,9 @@ async function getProjectsAndUsers() {
 
 export default async function Dashboard() {
   const { allProjects, allUsers } = await getProjectsAndUsers();
-  return <DashboardPage initialProjects={allProjects} initialUsers={allUsers} />;
+  return (
+    <AppLayout>
+      <DashboardPage initialProjects={allProjects} initialUsers={allUsers} />
+    </AppLayout>
+  );
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -27,14 +28,5 @@ function AppLayoutLoader() {
 }
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
-    return (
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-        >
-            <AppLayout>{children}</AppLayout>
-        </ThemeProvider>
-    );
+    return <>{children}</>;
 }

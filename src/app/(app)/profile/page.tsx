@@ -33,6 +33,7 @@ import { updateUserProfile, sendPasswordReset } from '@/lib/actions/user';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { AppLayout } from '@/components/app-layout-component';
 
 const profileSchema = z.object({
   name: z.string().min(3, { message: 'Name must be at least 3 characters long.' }),
@@ -157,6 +158,7 @@ export default function ProfilePage() {
   }
 
   return (
+    <AppLayout>
     <div className="p-4 md:p-8">
       <div className="max-w-2xl mx-auto grid gap-6">
         <Form {...form}>
@@ -225,5 +227,6 @@ export default function ProfilePage() {
         </Card>
       </div>
     </div>
+    </AppLayout>
   );
 }

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -36,6 +35,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 import { userDepartments } from '@/lib/data';
+import { AppLayout } from '@/components/app-layout-component';
 
 const USERS_PER_PAGE = 10;
 
@@ -278,6 +278,7 @@ export default function TeamPage() {
   const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
 
   return (
+    <AppLayout>
     <TooltipProvider>
     <div className="p-4 md:p-8">
       <Card>
@@ -458,5 +459,6 @@ export default function TeamPage() {
       </AlertDialog>
     </div>
     </TooltipProvider>
+    </AppLayout>
   );
 }
