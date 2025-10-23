@@ -65,7 +65,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-sm p-0">
+            <DialogContent className="max-w-6xl flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-sm p-0 border-border/20">
                 <DialogHeader className="p-6 pb-2">
                     <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                     <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
@@ -73,7 +73,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                 <TooltipProvider>
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-y-auto p-6 pt-0">
                         <div className="md:col-span-1 space-y-6">
-                            <Card>
+                            <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800">
                                  <CardHeader>
                                     <CardTitle className="text-lg flex items-center gap-2">
                                         <BarChart2 className="h-5 w-5"/>
@@ -104,7 +104,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                     </div>
                                  </CardContent>
                             </Card>
-                             <Card>
+                             <Card className="bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800">
                                 <CardHeader>
                                     <CardTitle className="text-lg flex items-center gap-2"><ListTodo className="h-5 w-5" /> All Open Tasks</CardTitle>
                                 </CardHeader>
