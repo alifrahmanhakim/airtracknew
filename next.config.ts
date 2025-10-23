@@ -9,6 +9,19 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Referer",
+            value: "https://airtrack-c7979.firebaseapp.com/",
+          },
+        ],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
