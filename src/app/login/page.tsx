@@ -45,6 +45,12 @@ const quoteSlides = [
     { text: "Safety is not an intellectual exercise to keep us in work. It is a practical and emotional issue. It is about our lives.", author: "Sir Jackie Stewart" }
 ];
 
+const cardBackgroundImages = [
+    'https://ik.imagekit.io/avmxsiusm/airplane-runway%20(1).jpg',
+    'https://ik.imagekit.io/avmxsiusm/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai%20(1).jpg',
+    'https://ik.imagekit.io/avmxsiusm/drones-futuristic-cityscape-sunset%20(1).jpg',
+];
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -63,6 +69,7 @@ export default function LoginPage() {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [currentCardImageIndex, setCurrentCardImageIndex] = useState(0);
   
   
   useEffect(() => {
@@ -96,6 +103,13 @@ export default function LoginPage() {
         setCurrentQuoteIndex(prev => (prev + 1) % quoteSlides.length);
     }, 5000);
     return () => clearInterval(slideInterval);
+  }, []);
+
+  useEffect(() => {
+    const imageSlideInterval = setInterval(() => {
+        setCurrentCardImageIndex(prev => (prev + 1) % cardBackgroundImages.length);
+    }, 5000);
+    return () => clearInterval(imageSlideInterval);
   }, []);
 
   const handleSuccessfullLogin = (userId: string) => {
@@ -270,14 +284,20 @@ export default function LoginPage() {
           {/* Left Side */}
           <div className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl overflow-hidden">
              <div className="absolute inset-0 z-0">
-                <Image
-                    src={loginBackgroundImage}
-                    alt="Aircraft Engine"
-                    layout="fill"
-                    objectFit="cover"
-                    quality={75}
-                    priority
-                />
+                 {cardBackgroundImages.map((src, index) => (
+                    <Image
+                        key={src}
+                        src={src}
+                        alt="Aircraft slideshow"
+                        layout="fill"
+                        objectFit="cover"
+                        quality={75}
+                        priority={index === 0}
+                        className={cn("transition-opacity duration-1000",
+                            index === currentCardImageIndex ? 'opacity-100' : 'opacity-0'
+                        )}
+                    />
+                ))}
             </div>
             <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
