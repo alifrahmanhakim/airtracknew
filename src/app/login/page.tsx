@@ -240,7 +240,7 @@ export default function LoginPage() {
     <>
       <main className="flex items-center justify-center min-h-screen p-4 md:p-8">
         <Image
-          src="https://ik.imagekit.io/avmxsiusm/green-plane-ecofriendly-environment.webp"
+          src="https://ik.imagekit.io/avmxsiusm/green-plane-ecofriendly-environment%20(1).jpg"
           alt="Background"
           layout="fill"
           objectFit="cover"
