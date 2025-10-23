@@ -36,7 +36,18 @@ const GoogleIcon = () => (
     </svg>
 );
 
-const quote = { text: "The engine is the heart of an airplane, but the pilot is its soul.", author: "Walter Raleigh" };
+const backgroundImages = [
+    'https://ik.imagekit.io/avmxsiusm/airplane-runway%20(1).jpg',
+    'https://ik.imagekit.io/avmxsiusm/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai%20(1).jpg',
+    'https://ik.imagekit.io/avmxsiusm/drones-futuristic-cityscape-sunset%20(1).jpg'
+];
+
+const quoteSlides = [
+    { text: "The engine is the heart of an airplane, but the pilot is its soul.", author: "Walter Raleigh" },
+    { text: "To invent an airplane is nothing. To build one is something. But to fly is everything.", author: "Otto Lilienthal" },
+    { text: "The future of aviation is not in the sky, but in the data.", author: "Modern Proverb" },
+    { text: "Safety is not an intellectual exercise to keep us in work. It is a practical and emotional issue. It is about our lives.", author: "Sir Jackie Stewart" }
+];
 
 
 export default function LoginPage() {
@@ -53,6 +64,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [progress, setProgress] = useState(0);
   
@@ -82,6 +94,13 @@ export default function LoginPage() {
         return () => clearInterval(timer);
     }
   }, [router]);
+
+  useEffect(() => {
+    const slideInterval = setInterval(() => {
+        setCurrentSlide(prev => (prev + 1) % backgroundImages.length);
+    }, 5000);
+    return () => clearInterval(slideInterval);
+  }, []);
 
   const handleSuccessfullLogin = (userId: string) => {
     localStorage.setItem('loggedInUserId', userId);
@@ -238,28 +257,37 @@ export default function LoginPage() {
 
   return (
     <>
-      <main className="flex items-center justify-center min-h-screen p-4 md:p-8">
-        <Image
-          src="https://ik.imagekit.io/avmxsiusm/green-plane-ecofriendly-environment%20(1).jpg"
-          alt="Background"
-          layout="fill"
-          objectFit="cover"
-          quality={80}
-          priority
-          className="-z-10"
-        />
+      <main className="flex items-center justify-center min-h-screen p-4 md:p-8 overflow-hidden">
+        {backgroundImages.map((src, index) => (
+            <Image
+                key={src}
+                src={src}
+                alt="Background"
+                layout="fill"
+                objectFit="cover"
+                quality={80}
+                priority={index === 0}
+                className={cn(
+                    "absolute inset-0 -z-10 transition-opacity duration-1000",
+                    index === currentSlide ? "opacity-100" : "opacity-0"
+                )}
+            />
+        ))}
+        <div className="absolute inset-0 bg-black/30 -z-10" />
+
         <div className="relative group login-grid">
          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}
           <div className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl overflow-hidden">
              <div className="absolute inset-0 z-0">
                 <Image
-                    src="https://ik.imagekit.io/avmxsiusm/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
+                    src={backgroundImages[currentSlide]}
                     alt="Aircraft Engine"
                     layout="fill"
                     objectFit="cover"
                     quality={75}
                     priority
+                    className="login-bg-slideshow"
                 />
             </div>
             <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
@@ -267,13 +295,13 @@ export default function LoginPage() {
                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={180} height={48} className="object-contain" />
             </div>
              <div className="z-20">
-              <h2 className="text-4xl font-great-vibes text-white">"{quote.text}"</h2>
-              <p className="text-right mt-2 font-medium text-white/80">- {quote.author}</p>
+              <h2 className="text-4xl font-great-vibes text-white">"{quoteSlides[currentSlide % quoteSlides.length].text}"</h2>
+              <p className="text-right mt-2 font-medium text-white/80">- {quoteSlides[currentSlide % quoteSlides.length].author}</p>
             </div>
           </div>
 
           {/* Right Side */}
-          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/60 backdrop-blur-sm rounded-r-3xl">
+          <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/60 backdrop-blur-sm rounded-3xl md:rounded-l-none">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
