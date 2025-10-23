@@ -65,13 +65,13 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-6xl h-[90vh] flex flex-col bg-background/80 backdrop-blur-sm">
-                <DialogHeader>
+            <DialogContent className="max-w-6xl h-[90vh] flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-sm p-0">
+                <DialogHeader className="p-6 pb-2">
                     <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                     <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
                 </DialogHeader>
                 <TooltipProvider>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-y-auto pr-2">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-y-auto p-6 pt-0">
                         <div className="md:col-span-1 space-y-6">
                             <Card>
                                  <CardHeader>
