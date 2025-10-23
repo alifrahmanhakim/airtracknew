@@ -413,19 +413,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         const isActive = pathname.startsWith(item.href);
                         return (
                         <SidebarMenuItem key={item.href} isActive={isActive}>
-                          <div className={cn(
-                            "absolute -inset-0.5 rounded-lg blur transition duration-1000 animate-gradient-move",
-                            "bg-gradient-to-r from-green-400 to-blue-500 opacity-75"
-                          )}></div>
                           <SidebarMenuButton
                               asChild
                               isActive={isActive}
-                              className="transition-colors !bg-transparent"
+                              className="transition-colors"
                           >
                               <Link href={item.href}>
                                   <item.icon />
                                   <span>{item.label}</span>
-                                  {item.isBeta && <SidebarMenuBadge className="bg-blue-500/20 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300">Beta</SidebarMenuBadge>}
+                                  {item.isBeta && (
+                                    <SidebarMenuBadge 
+                                        className="relative overflow-hidden border-none bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg animate-gradient-move"
+                                        style={{ backgroundSize: '200% 200%' }}
+                                    >
+                                        Beta
+                                    </SidebarMenuBadge>
+                                  )}
                               </Link>
                           </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -434,7 +437,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
-              <div className="px-2 py-1 group-data-[collapsible=icon]:hidden text-center">
+              <div className="px-2 py-1 group-data-[collapsible=icon]:hidden">
                   <PrivacyDialog />
               </div>
               <div className="text-center text-xs text-sidebar-foreground/50 pt-2 group-data-[collapsible=icon]:hidden">
