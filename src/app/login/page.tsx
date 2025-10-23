@@ -4,8 +4,6 @@
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail } from "lucide-react";
 import { useState, useEffect } from 'react';
 import type { User } from '@/lib/types';
@@ -29,6 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -351,7 +351,7 @@ export default function LoginPage() {
                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={97} height={24} style={{ width: 'auto', height: 'auto' }} />
             </div>
              <div className="z-20">
-              <h2 className="text-2xl font-semibold text-white">"{quoteSlides[currentQuoteIndex].text}"</h2>
+              <h2 className="text-2xl font-semibold text-white">{quoteSlides[currentQuoteIndex].text}</h2>
               <p className="text-right mt-2 font-medium text-white/80">- {quoteSlides[currentQuoteIndex].author}</p>
             </div>
           </div>
@@ -363,8 +363,11 @@ export default function LoginPage() {
             </div>
             <div className='flex-grow flex flex-col justify-center'>
                 {isCheckingAuth && (
-                     <Card className="absolute inset-0 flex flex-col items-center justify-center bg-yellow-50/80 dark:bg-yellow-950/80 backdrop-blur-sm rounded-3xl md:rounded-l-none z-30 animate-fade-in-blur">
-                        <CardHeader className="text-center">
+                    <Card className="absolute inset-0 flex flex-col items-center justify-center bg-yellow-50/80 dark:bg-yellow-950/80 backdrop-blur-sm rounded-3xl md:rounded-l-none z-30 animate-fade-in-blur">
+                        <CardHeader className="text-center items-center">
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 mb-2">
+                                <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                            </div>
                             <CardTitle className="text-yellow-900 dark:text-yellow-200">Connecting to AirTrack</CardTitle>
                             <CardDescription className="text-yellow-800 dark:text-yellow-300">Authenticating session and connecting to servers.</CardDescription>
                         </CardHeader>
