@@ -363,14 +363,14 @@ export default function LoginPage() {
             </div>
             <div className='flex-grow flex flex-col justify-center'>
                 {isCheckingAuth && (
-                     <Card className="absolute inset-0 flex flex-col items-center justify-center bg-card/80 backdrop-blur-sm rounded-3xl md:rounded-l-none z-30 animate-fade-in-blur">
+                     <Card className="absolute inset-0 flex flex-col items-center justify-center bg-yellow-50/80 dark:bg-yellow-950/80 backdrop-blur-sm rounded-3xl md:rounded-l-none z-30 animate-fade-in-blur">
                         <CardHeader className="text-center">
-                            <CardTitle>Connecting to AirTrack</CardTitle>
-                            <CardDescription>Authenticating session and connecting to servers.</CardDescription>
+                            <CardTitle className="text-yellow-900 dark:text-yellow-200">Connecting to AirTrack</CardTitle>
+                            <CardDescription className="text-yellow-800 dark:text-yellow-300">Authenticating session and connecting to servers.</CardDescription>
                         </CardHeader>
                         <CardContent className="w-full max-w-xs text-center">
-                             <Progress value={progress} className="h-2" />
-                             <p className="text-sm text-muted-foreground mt-2">{Math.round(progress)}%</p>
+                             <Progress value={progress} className="h-2" indicatorClassName="bg-yellow-500" />
+                             <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-2">{Math.round(progress)}%</p>
                         </CardContent>
                     </Card>
                 )}
