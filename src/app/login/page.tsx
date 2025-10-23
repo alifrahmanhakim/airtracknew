@@ -17,6 +17,8 @@ import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TermsAndConditionsDialog } from '@/components/terms-and-conditions-dialog';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { sendPasswordReset } from '@/lib/actions/user';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -45,6 +47,7 @@ const cardBackgroundImages = [
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoginView, setIsLoginView] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -52,6 +55,7 @@ export default function LoginPage() {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,21 +77,19 @@ export default function LoginPage() {
             setProgress(prev => {
                 if (prev >= 100) {
                     clearInterval(timer);
-                    // Add a small delay before hiding the loader to ensure 100% is visible
                     setTimeout(() => setIsCheckingAuth(false), 300);
                     return 100;
                 }
-                const increment = Math.random() * 15; // Faster increment
+                const increment = Math.random() * 15;
                 return Math.min(prev + increment, 100);
             });
-        }, 15); // Faster interval
+        }, 15);
 
         return () => clearInterval(timer);
     }
   }, [router]);
 
   useEffect(() => {
-    // Set a random quote on initial load and keep it for the session
     setCurrentQuoteIndex(Math.floor(Math.random() * quoteSlides.length));
 
     const imageSlideInterval = setInterval(() => {
@@ -124,8 +126,7 @@ export default function LoginPage() {
                 setIsGoogleLoading(false);
                 return;
             }
-             // User exists, check if avatar or name needs updating
-            const updates: Partial<User> = {};
+             const updates: Partial<User> = {};
             if (firebaseUser.photoURL && userData.avatarUrl !== firebaseUser.photoURL) {
                 updates.avatarUrl = firebaseUser.photoURL;
             }
@@ -266,6 +267,34 @@ export default function LoginPage() {
         setIsSubmitting(false);
     }
   };
+  
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        variant: 'destructive',
+        title: 'Email Required',
+        description: 'Please enter your email address to reset your password.',
+      });
+      return;
+    }
+
+    setIsSendingReset(true);
+    const result = await sendPasswordReset(email);
+    setIsSendingReset(false);
+
+    if (result.success) {
+      toast({
+        title: 'Password Reset Email Sent',
+        description: `An email has been sent to ${email} with instructions to reset your password.`,
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: result.error,
+      });
+    }
+  };
 
   const toggleView = () => {
     setIsLoginView(!isLoginView);
@@ -364,7 +393,21 @@ export default function LoginPage() {
                                     <Input id="login-email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting || isCheckingAuth} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="login-password">Password</Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="login-password">Password</Label>
+                                        <Button
+                                            type="button"
+                                            variant="link"
+                                            className="h-auto p-0 text-xs"
+                                            onClick={handleForgotPassword}
+                                            disabled={isSendingReset}
+                                        >
+                                            {isSendingReset ? (
+                                                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                            ) : null}
+                                            Forgot password?
+                                        </Button>
+                                    </div>
                                     <div className="relative">
                                         <Input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required disabled={isSubmitting || isCheckingAuth} />
                                         <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
