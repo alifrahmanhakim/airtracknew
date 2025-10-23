@@ -121,7 +121,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                         </Card>
                     </div>
                     <div className="md:col-span-3">
-                         <ProjectTimeline tasks={tasks} teamMembers={[user]} />
+                         <ProjectTimeline tasks={tasks} teamMembers={[user]} open={open} />
                     </div>
                 </div>
             </DialogContent>

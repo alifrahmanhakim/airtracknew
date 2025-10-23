@@ -41,6 +41,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 type ProjectTimelineProps = {
   tasks: Task[];
   teamMembers?: User[];
+  open?: boolean; // Add open prop to trigger scroll effect
 };
 
 type ViewMode = 'week' | 'day';
@@ -61,7 +62,7 @@ const flattenTasks = (tasks: Task[]): Task[] => {
   return allTasks;
 };
 
-export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProps) {
+export function ProjectTimeline({ tasks, teamMembers = [], open }: ProjectTimelineProps) {
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const todayRef = React.useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = React.useState<ViewMode>('week');
@@ -151,7 +152,7 @@ export function ProjectTimeline({ tasks, teamMembers = [] }: ProjectTimelineProp
       left: horizontalScrollPosition,
       behavior: 'auto',
     });
-  }, [viewMode, timelineStart]); 
+  }, [viewMode, timelineStart, open]); 
 
   const statusConfig: { [key in Task['status']]: { color: string; label: string } } = {
     'Done': { color: 'bg-green-500 hover:bg-green-600', label: 'Done' },
