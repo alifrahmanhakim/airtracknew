@@ -522,9 +522,7 @@ export default function LoginPage() {
         <AlertDialog open={showResetSuccessDialog} onOpenChange={setShowResetSuccessDialog}>
             <AlertDialogContent>
                 <AlertDialogHeader className="text-center items-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-2">
-                        <Mail className="h-6 w-6 text-green-600" />
-                    </div>
+                     <Image src="https://ik.imagekit.io/avmxsiusm/IMG_6912.png" alt="Email sent" width={80} height={80} className="mb-4" />
                     <AlertDialogTitle>Password Reset Email Sent</AlertDialogTitle>
                     <AlertDialogDescription className="text-sm text-muted-foreground text-center">
                         An email has been sent to <span className="font-semibold">{resetEmail}</span> with instructions to reset your password.
