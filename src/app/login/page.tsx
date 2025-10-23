@@ -71,16 +71,16 @@ export default function LoginPage() {
         setIsCheckingAuth(true);
         const timer = setInterval(() => {
             setProgress(prev => {
-                const newProgress = prev + 5;
-                if (newProgress >= 100) {
+                if (prev >= 100) {
                     clearInterval(timer);
-                    setTimeout(() => setIsCheckingAuth(false), 300); 
+                    setTimeout(() => setIsCheckingAuth(false), 300);
                     return 100;
                 }
-                return newProgress;
+                const increment = prev < 70 ? Math.random() * 5 : Math.random() * 2;
+                return Math.min(prev + increment, 100);
             });
-        }, 110);
-        
+        }, 120);
+
         return () => clearInterval(timer);
     }
   }, [router]);
@@ -314,7 +314,7 @@ export default function LoginPage() {
                 <ThemeToggle />
             </div>
             <div className='flex-grow flex flex-col justify-center'>
-              <div key={isLoginView ? 'login' : 'signup'} className="animate-in fade-in duration-500">
+              <div key={isLoginView ? 'login' : 'signup'} className="animate-fade-in-blur">
                 {isLoginView ? (
                     // Login View
                     <div className="h-full flex flex-col">
