@@ -73,13 +73,13 @@ export default function LoginPage() {
             setProgress(prev => {
                 if (prev >= 100) {
                     clearInterval(timer);
-                    setTimeout(() => setIsCheckingAuth(false), 300);
+                    setIsCheckingAuth(false);
                     return 100;
                 }
                 const increment = prev < 70 ? Math.random() * 5 : Math.random() * 2;
                 return Math.min(prev + increment, 100);
             });
-        }, 120);
+        }, 50);
 
         return () => clearInterval(timer);
     }
@@ -265,8 +265,7 @@ export default function LoginPage() {
   }
 
   return (
-    <>
-      <main className="relative flex items-center justify-center min-h-screen p-4 md:p-8 overflow-hidden">
+    <main className="relative flex items-center justify-center min-h-screen p-4 md:p-8 overflow-hidden">
         <Image
             src={loginBackgroundImage}
             alt="Background"
@@ -300,7 +299,7 @@ export default function LoginPage() {
             </div>
             <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
-                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={97} height={29} style={{ width: 'auto', height: 'auto' }} />
+                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={97} height={24} style={{ width: 'auto', height: 'auto' }} />
             </div>
              <div className="z-20">
               <h2 className="text-4xl font-great-vibes text-white">"{quoteSlides[currentQuoteIndex].text}"</h2>
@@ -452,6 +451,5 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-    </>
   );
 }
