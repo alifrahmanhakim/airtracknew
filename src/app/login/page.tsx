@@ -73,13 +73,14 @@ export default function LoginPage() {
             setProgress(prev => {
                 if (prev >= 100) {
                     clearInterval(timer);
-                    setIsCheckingAuth(false);
+                    // Add a small delay before hiding the loader to ensure 100% is visible
+                    setTimeout(() => setIsCheckingAuth(false), 300);
                     return 100;
                 }
-                const increment = prev < 70 ? Math.random() * 5 : Math.random() * 2;
+                const increment = Math.random() * 15; // Faster increment
                 return Math.min(prev + increment, 100);
             });
-        }, 50);
+        }, 15); // Faster interval
 
         return () => clearInterval(timer);
     }
@@ -313,6 +314,18 @@ export default function LoginPage() {
                 <ThemeToggle />
             </div>
             <div className='flex-grow flex flex-col justify-center'>
+                {isCheckingAuth && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/80 backdrop-blur-sm rounded-3xl md:rounded-l-none z-30">
+                        <Alert variant="default" className="w-auto bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
+                            <AlertTriangle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
+                            <AlertTitle className="font-bold">Connecting</AlertTitle>
+                            <AlertDescription>
+                                Please wait, checking session...
+                                <Progress value={progress} className="mt-2 h-1" />
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                )}
               <div key={isLoginView ? 'login' : 'signup'} className="animate-fade-in-blur">
                 {isLoginView ? (
                     // Login View
@@ -326,16 +339,6 @@ export default function LoginPage() {
                                     Create account
                                 </button>
                             </p>
-                             {isCheckingAuth && (
-                                  <Alert variant="default" className="mt-6 bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
-                                      <AlertTriangle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
-                                      <AlertTitle className="font-bold">Connecting</AlertTitle>
-                                      <AlertDescription>
-                                          Please wait, we are checking your session. Do not enter credentials until this message disappears.
-                                          <Progress value={progress} className="mt-2 h-1" />
-                                      </AlertDescription>
-                                  </Alert>
-                              )}
                             {signupSuccess && (
                                 <Alert variant="default" className="mt-6 bg-green-500/20 border-green-500/50 text-green-300">
                                     <CheckCircle className="h-4 w-4 !text-green-400" />
