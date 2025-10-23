@@ -3,7 +3,6 @@ import './globals.css?v=2';
 import { Toaster } from "@/components/ui/toaster"
 import { Roboto, Great_Vibes } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { ThemeProvider } from '@/components/theme-provider';
 
 const fontSans = Roboto({
   subsets: ["latin"],
@@ -35,25 +34,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link
-          rel="stylesheet"
-          href="/path-to-your-main-stylesheet.css"
-          media="print"
-          // @ts-ignore
-          onLoad="this.media='all'"
-        />
-      </head>
+      <head />
       <body className={cn("min-h-screen font-sans antialiased", fontSans.variable, fontGreatVibes.variable)}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
           {children}
           <Toaster />
-        </ThemeProvider>
       </body>
     </html>
   );
