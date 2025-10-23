@@ -304,7 +304,7 @@ export function ProjectTimeline({ tasks, teamMembers = [], open }: ProjectTimeli
                     }
 
                     return (
-                        <div key={task.id} className="flex border-b">
+                        <div key={`${task.id}-${index}`} className="flex border-b">
                             <div className="sticky left-0 z-20 bg-card border-r flex items-center px-2 py-2" style={{ width: `${TASK_LIST_WIDTH}px` }}>
                                 <p className="text-xs font-semibold leading-tight">{task.title}</p>
                             </div>
