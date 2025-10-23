@@ -81,7 +81,7 @@ const navItems = {
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
     ],
     tools: [
-      { href: '/tools/ask-std-ai', label: 'Ask STD.Ai', icon: BotMessageSquare },
+      { href: '/tools/ask-std-ai', label: 'Ask STD.Ai', icon: BotMessageSquare, isBeta: true },
     ]
 }
 
@@ -409,19 +409,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroup>
                   <SidebarGroupLabel>Tools</SidebarGroupLabel>
                   <SidebarMenu>
-                      {navItems.tools.map((item) => {
+                      {navItems.tools.map((item: any) => {
                         const isActive = pathname.startsWith(item.href);
                         return (
                         <SidebarMenuItem key={item.href} isActive={isActive}>
-                          <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                          <div className={cn(
+                            "absolute -inset-0.5 rounded-lg blur transition duration-1000 animate-gradient-move",
+                            "bg-gradient-to-r from-green-400 to-blue-500 opacity-75"
+                          )}></div>
                           <SidebarMenuButton
                               asChild
                               isActive={isActive}
-                              className="transition-colors"
+                              className="transition-colors !bg-transparent"
                           >
                               <Link href={item.href}>
                                   <item.icon />
                                   <span>{item.label}</span>
+                                  {item.isBeta && <SidebarMenuBadge className="bg-blue-500/20 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300">Beta</SidebarMenuBadge>}
                               </Link>
                           </SidebarMenuButton>
                       </SidebarMenuItem>
