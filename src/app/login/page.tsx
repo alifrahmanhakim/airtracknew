@@ -285,7 +285,13 @@ export default function LoginPage() {
     if (result.success) {
       toast({
         title: 'Password Reset Email Sent',
-        description: `An email has been sent to ${email} with instructions to reset your password.`,
+        description: (
+          <>
+            An email has been sent to {email} with instructions to reset your password.
+            <br />
+            <strong className="text-red-500">Please also check your spam folder.</strong>
+          </>
+        ),
       });
     } else {
       toast({
