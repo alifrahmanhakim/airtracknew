@@ -301,7 +301,7 @@ export default function LoginPage() {
             </div>
             <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
-                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={86} height={29} style={{ width: 'auto', height: 'auto' }} />
+                <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={97} height={29} style={{ width: 'auto', height: 'auto' }} />
             </div>
              <div className="z-20">
               <h2 className="text-4xl font-great-vibes text-white">"{quoteSlides[currentQuoteIndex].text}"</h2>
