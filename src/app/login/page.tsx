@@ -44,7 +44,7 @@ const loginBackgroundImage = 'https://ik.imagekit.io/avmxsiusm/green-plane-ecofr
 const quoteSlides = [
     { text: "The engine is the heart of an airplane, but the pilot is its soul.", author: "Walter Raleigh" },
     { text: "To invent an airplane is nothing. To build one is something. But to fly is everything.", author: "Otto Lilienthal" },
-    { text: "The future of aviation is not in the sky, but in the data.", author: "Modern Proverb" },
+    { text: "The future of aviation is not in the data.", author: "Modern Proverb" },
     { text: "Safety is not an intellectual exercise to keep us in work. It is a practical and emotional issue. It is about our lives.", author: "Sir Jackie Stewart" }
 ];
 
@@ -528,6 +528,8 @@ export default function LoginPage() {
                     <AlertDialogTitle>Password Reset Email Sent</AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
                         An email has been sent to <span className="font-semibold">{resetEmail}</span> with instructions to reset your password.
+                        <br />
+                        The email is sent from <span className="font-semibold">noreply@airtrack-c7979.firebaseapp.com</span>.
                         <br />
                         <strong className="text-red-500">Please also check your spam folder.</strong>
                     </AlertDialogDescription>
