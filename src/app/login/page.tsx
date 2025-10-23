@@ -109,7 +109,7 @@ export default function LoginPage() {
     try {
         const { db, auth, googleProvider } = await import('@/lib/firebase');
         const { signInWithPopup, signOut } = await import('firebase/auth');
-        const { doc, getDoc, setDoc } = await import('firebase/firestore');
+        const { doc, getDoc, setDoc, updateDoc } = await import('firebase/firestore');
 
         const result = await signInWithPopup(auth, googleProvider);
         const firebaseUser = result.user;
@@ -124,6 +124,19 @@ export default function LoginPage() {
                 setIsGoogleLoading(false);
                 return;
             }
+             // User exists, check if avatar or name needs updating
+            const updates: Partial<User> = {};
+            if (firebaseUser.photoURL && userData.avatarUrl !== firebaseUser.photoURL) {
+                updates.avatarUrl = firebaseUser.photoURL;
+            }
+            if (firebaseUser.displayName && userData.name !== firebaseUser.displayName) {
+                updates.name = firebaseUser.displayName;
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await updateDoc(userRef, updates);
+            }
+
             handleSuccessfullLogin(firebaseUser.uid);
         } else {
             const newUser: Omit<User, 'id'> = {
