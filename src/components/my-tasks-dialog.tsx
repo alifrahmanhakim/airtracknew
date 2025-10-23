@@ -6,7 +6,7 @@ import type { User, Task } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
-import { getISOWeek, startOfWeek, endOfWeek, parseISO, format, eachDayOfInterval, isSameDay, getDay, isWithinInterval, addWeeks, subWeeks, differenceInDays } from 'date-fns';
+import { getISOWeek, startOfWeek, endOfWeek, parseISO, format, eachDayOfInterval, isSameDay, getDay, isWithinInterval, addWeeks, subWeeks, differenceInDays, isBefore, startOfDay } from 'date-fns';
 import { Activity, ArrowLeft, ArrowRight, BarChart2, Calendar, CheckCircle, Clock, ListTodo, Zap } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
@@ -65,13 +65,13 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-6xl flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-sm p-0 border-border/20">
+            <DialogContent className="max-w-6xl flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-sm p-0 border-border/20 rounded-lg">
                 <DialogHeader className="p-6 pb-2">
                     <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                     <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
                 </DialogHeader>
                 <TooltipProvider>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-y-auto p-6 pt-0">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 p-6 pt-0">
                         <div className="md:col-span-1 space-y-6">
                             <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800">
                                  <CardHeader>
@@ -110,12 +110,20 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                 </CardHeader>
                                 <CardContent className="max-h-60 overflow-y-auto">
                                     <div className="space-y-2">
-                                        {tasks.filter(t => t.status !== 'Done').map(task => (
-                                            <div key={task.id} className="text-sm p-2 rounded-md bg-muted/50">
-                                                <p className="font-semibold truncate">{task.title}</p>
-                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
-                                            </div>
-                                        ))}
+                                        {tasks.filter(t => t.status !== 'Done').map(task => {
+                                            const isOverdue = isBefore(parseISO(task.dueDate), startOfDay(new Date()));
+                                            const taskColorClass = 
+                                                isOverdue ? 'bg-red-100 dark:bg-red-900/30' :
+                                                task.status === 'In Progress' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                                                'bg-muted/50';
+
+                                            return (
+                                                <div key={task.id} className={cn("text-sm p-2 rounded-md", taskColorClass)}>
+                                                    <p className="font-semibold truncate">{task.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                                </div>
+                                            )
+                                        })}
                                         {tasks.filter(t => t.status !== 'Done').length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No open tasks!</p>}
                                     </div>
                                 </CardContent>
