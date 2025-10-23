@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const AppLayout = dynamic(
     () => import('@/components/app-layout-component').then(mod => mod.AppLayout),
@@ -26,5 +27,14 @@ function AppLayoutLoader() {
 }
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
-    return <AppLayout>{children}</AppLayout>;
+    return (
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+        >
+            <AppLayout>{children}</AppLayout>
+        </ThemeProvider>
+    );
 }
