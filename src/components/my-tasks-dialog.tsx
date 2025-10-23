@@ -7,12 +7,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { getISOWeek, startOfWeek, endOfWeek, parseISO, format, eachDayOfInterval, isSameDay, getDay, isWithinInterval, addWeeks, subWeeks, differenceInDays, isBefore, startOfDay } from 'date-fns';
-import { Activity, ArrowLeft, ArrowRight, BarChart2, Calendar, CheckCircle, Clock, ListTodo, Zap } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, BarChart2, Calendar, CheckCircle, Clock, ListTodo, User as UserIcon, Zap } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { AnimatedCounter } from './ui/animated-counter';
 import { ProjectTimeline } from './project-timeline';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -62,13 +63,21 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.status === 'Done').length;
     const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    const isUserOnline = user.lastOnline ? (new Date().getTime() - new Date(user.lastOnline).getTime()) / (1000 * 60) < 5 : false;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-6xl flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg">
-                <DialogHeader className="p-6 pb-2">
-                    <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
-                    <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
+                <DialogHeader className="p-6 pb-2 flex flex-row items-center gap-4">
+                    <Avatar className="h-16 w-16" online={isUserOnline}>
+                        <AvatarImage src={user.avatarUrl} alt={user.name} />
+                        <AvatarFallback><UserIcon /></AvatarFallback>
+                    </Avatar>
+                    <div className='flex-1'>
+                        <p className="text-muted-foreground">{user.name}</p>
+                        <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
+                        <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
+                    </div>
                 </DialogHeader>
                 <TooltipProvider>
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 p-6 pt-0">
