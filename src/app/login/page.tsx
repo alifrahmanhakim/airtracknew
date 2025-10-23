@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -83,8 +82,8 @@ export default function LoginPage() {
         setTimeout(() => {
             clearInterval(timer);
             setProgress(100);
-            setTimeout(() => setIsCheckingAuth(false), 300); // End "loading"
-        }, 2000);
+            setTimeout(() => setIsCheckingAuth(false), 500); // End "loading" with a delay
+        }, 2500);
         
         return () => clearInterval(timer);
     }
@@ -117,6 +116,7 @@ export default function LoginPage() {
     try {
         const { db, auth, googleProvider } = await import('@/lib/firebase');
         const { signInWithPopup, signOut } = await import('firebase/auth');
+        const { doc, getDoc, setDoc } = await import('firebase/firestore');
 
         const result = await signInWithPopup(auth, googleProvider);
         const firebaseUser = result.user;
@@ -168,6 +168,8 @@ export default function LoginPage() {
     try {
       const { db, auth } = await import('@/lib/firebase');
       const { signInWithEmailAndPassword, signOut } = await import('firebase/auth');
+      const { doc, getDoc } = await import('firebase/firestore');
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
@@ -221,6 +223,7 @@ export default function LoginPage() {
     try {
       const { db, auth } = await import('@/lib/firebase');
       const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
+      const { doc, setDoc } = await import('firebase/firestore');
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;

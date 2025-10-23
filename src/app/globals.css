@@ -221,6 +221,6 @@
         }
     }
     .animate-fade-in-out-blur {
-        animation: fade-in-out-blur 2s ease-in-out forwards;
+        animation: fade-in-out-blur 2.5s ease-in-out forwards;
     }
 }
