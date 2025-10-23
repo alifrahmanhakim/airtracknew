@@ -1,5 +1,4 @@
 
-
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { User } from './types';
 
@@ -8,7 +7,7 @@ import type { User } from './types';
 
 export const users = [
     { id: 'admin-00', name: 'Admin User', email: 'admin@admin2023.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head', isApproved: true },
-    { id: 'admin-01', name: 'Hakim Alif Rahman', email: 'hakimalifrahman@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head', isApproved: true },
+    { id: 'admin-01', name: 'Hakim Alif Rahman', email: 'hakimalifrahman@gmail.com', avatarUrl: 'https://lh3.googleusercontent.com/a/ACg8ocL-Xb1W-9733aG4ttD2Qp2i54s1g7T6lS7-_h2Y4d-3pA=s96-c', role: 'Sub-Directorate Head', isApproved: true },
     { id: '8aOs7OSaL8XFXLq7DxzbnuXN5eC3', name: 'Chewy Sihusky', email: 'chewysihusky@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head' },
     { id: 'rizkywirapratama434', name: 'Rizky Wirapratama', email: 'rizkywirapratama434@gmail.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Sub-Directorate Head', isApproved: true },
     { id: 'user-1', name: 'Alex Johnson', email: 'alex.johnson@example.com', avatarUrl: 'https://placehold.co/100x100.png', role: 'Team Lead' },
