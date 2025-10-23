@@ -528,9 +528,9 @@ export default function LoginPage() {
                     <AlertDialogTitle>Password Reset Email Sent</AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
                         An email has been sent to <span className="font-semibold">{resetEmail}</span> with instructions to reset your password.
-                        <br />
+                        <br /><br />
                         The email is sent from <span className="font-semibold">noreply@airtrack-c7979.firebaseapp.com</span>.
-                        <br />
+                        <br /><br />
                         <strong className="text-red-500">Please also check your spam folder.</strong>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
