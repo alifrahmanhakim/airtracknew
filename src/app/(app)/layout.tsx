@@ -27,6 +27,7 @@ import {
   BookCheck,
   ListTodo,
   Clock,
+  Activity,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -362,17 +363,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                               <span>{myTaskStats.done}/{myTaskStats.total} Done</span>
                           </div>
                           <Progress value={myTaskStats.completionPercentage} className="h-2" />
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-sm text-sidebar-foreground">
-                             <div className="flex items-center gap-2">
-                                 <ListTodo className="h-4 w-4 text-sidebar-primary" />
-                                 <span className="font-bold">{myTaskStats.todo}</span>
-                                 <span>To Do</span>
-                             </div>
-                             <div className="flex items-center gap-2">
-                                 <Clock className="h-4 w-4 text-blue-400" />
-                                 <span className="font-bold">{myTaskStats.inProgress}</span>
-                                 <span>In Progress</span>
-                             </div>
+                          <div className="flex items-center gap-2 mt-2 text-sm text-sidebar-foreground">
+                             <Activity className="h-4 w-4 text-sidebar-primary" />
+                             <span className="font-bold">{myTaskStats.todo + myTaskStats.inProgress}</span>
+                             <span>Active Tasks</span>
                           </div>
                       </div>
                   </Link>
