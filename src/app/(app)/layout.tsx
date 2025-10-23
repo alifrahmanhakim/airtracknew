@@ -412,27 +412,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       {navItems.tools.map((item: any) => {
                         const isActive = pathname.startsWith(item.href);
                         return (
-                        <SidebarMenuItem key={item.href} isActive={isActive}>
-                          <SidebarMenuButton
-                              asChild
-                              isActive={isActive}
-                              className="transition-colors"
-                          >
-                              <Link href={item.href}>
-                                  <item.icon />
-                                  <span>{item.label}</span>
-                                  {item.isBeta && (
-                                    <SidebarMenuBadge 
-                                        className="relative overflow-hidden border-none bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg animate-gradient-move"
-                                        style={{ backgroundSize: '200% 200%' }}
-                                    >
-                                        Beta
-                                    </SidebarMenuBadge>
-                                  )}
-                              </Link>
-                          </SidebarMenuButton>
-                      </SidebarMenuItem>
-                      )})}
+                          <div key={item.href} className="relative group/menu-item">
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg blur opacity-0 group-hover/menu-item:opacity-75 transition-opacity duration-300"></div>
+                            <SidebarMenuItem isActive={isActive}>
+                              <SidebarMenuButton
+                                  asChild
+                                  isActive={isActive}
+                                  className="transition-colors !bg-transparent"
+                              >
+                                  <Link href={item.href}>
+                                      <item.icon />
+                                      <span>{item.label}</span>
+                                      {item.isBeta && (
+                                        <SidebarMenuBadge 
+                                            className="bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg animate-gradient-move"
+                                            style={{ backgroundSize: '200% 200%' }}
+                                        >
+                                            Beta
+                                        </SidebarMenuBadge>
+                                      )}
+                                  </Link>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </div>
+                        )
+                      })}
                   </SidebarMenu>
               </SidebarGroup>
           </SidebarContent>
