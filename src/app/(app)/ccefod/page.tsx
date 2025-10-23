@@ -39,9 +39,11 @@ const CcefodForm = dynamic(() => import('@/components/ccefod-form').then(mod => 
     loading: () => <Skeleton className="h-[400px] w-full" /> 
 });
 const CcefodRecordsTable = dynamic(() => import('@/components/ccefod-records-table').then(mod => mod.CcefodRecordsTable), { 
+    ssr: false,
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
 const CcefodAnalyticsDashboard = dynamic(() => import('@/components/ccefod-analytics-dashboard').then(mod => mod.CcefodAnalyticsDashboard), { 
+    ssr: false,
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
 const ImportCcefodCsvDialog = dynamic(() => import('@/components/import-ccefod-csv-dialog').then(mod => mod.ImportCcefodCsvDialog), {

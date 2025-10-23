@@ -37,9 +37,11 @@ const PqsForm = dynamic(() => import('@/components/pqs-form').then(mod => mod.Pq
     loading: () => <Skeleton className="h-[400px] w-full" /> 
 });
 const PqsRecordsTable = dynamic(() => import('@/components/pqs-records-table').then(mod => mod.PqsRecordsTable), { 
+    ssr: false,
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
 const PqsAnalyticsDashboard = dynamic(() => import('@/components/pqs-analytics-dashboard').then(mod => mod.PqsAnalyticsDashboard), { 
+    ssr: false,
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
 const ImportPqsCsvDialog = dynamic(() => import('@/components/import-pqs-csv-dialog').then(mod => mod.ImportPqsCsvDialog), {

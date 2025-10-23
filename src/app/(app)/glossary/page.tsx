@@ -44,9 +44,11 @@ const GlossaryForm = dynamic(() => import('@/components/glossary-form').then(mod
     loading: () => <Skeleton className="h-[400px] w-full" /> 
 });
 const GlossaryRecordsTable = dynamic(() => import('@/components/glossary-records-table').then(mod => mod.GlossaryRecordsTable), { 
+    ssr: false,
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
 const GlossaryAnalyticsDashboard = dynamic(() => import('@/components/glossary-analytics-dashboard').then(mod => mod.GlossaryAnalyticsDashboard), { 
+    ssr: false,
     loading: () => <Skeleton className="h-[600px] w-full" /> 
 });
 const ImportGlossaryCsvDialog = dynamic(() => import('@/components/import-glossary-csv-dialog').then(mod => mod.ImportGlossaryCsvDialog), {

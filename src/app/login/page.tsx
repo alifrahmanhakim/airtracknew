@@ -36,22 +36,7 @@ const GoogleIcon = () => (
     </svg>
 );
 
-const quotes = [
-    { text: "The engine is the heart of an airplane, but the pilot is its soul.", author: "Walter Raleigh" },
-    { text: "Once you have tasted flight, you will forever walk the earth with your eyes turned skyward.", author: "Leonardo da Vinci" },
-    { text: "Flying is more than a sport and more than a job; flying is pure passion and desire.", author: "Adolf Galland" },
-    { text: "To most people, the sky is the limit. To those who love aviation, the sky is home.", author: "Anonymous" },
-    { text: "Aviation is proof that, given the will, we have the capacity to achieve the impossible.", author: "Eddie Rickenbacker" },
-    { text: "The airplane has unveiled for us the true face of the earth.", author: "Antoine de Saint-Exupéry" },
-    { text: "In the sky, there is no distinction of east and west; there is only the rising and the setting of the sun.", author: "The Buddha" },
-    { text: "The good thing about flying is that it's the only time you're truly free.", author: "Anonymous" },
-];
-
-const backgroundImages = [
-    'https://ik.imagekit.io/avmxsiusm/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp',
-    'https://ik.imagekit.io/avmxsiusm/drones-futuristic-cityscape-sunset.webp',
-    'https://ik.imagekit.io/avmxsiusm/airplane-runway.webp',
-];
+const quote = { text: "The engine is the heart of an airplane, but the pilot is its soul.", author: "Walter Raleigh" };
 
 
 export default function LoginPage() {
@@ -71,23 +56,7 @@ export default function LoginPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [progress, setProgress] = useState(0);
   
-  const [dailyQuote, setDailyQuote] = useState({ text: 'Aviation Safety', author: 'Starts Here' });
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-   useEffect(() => {
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    setDailyQuote(quotes[dayOfYear % quotes.length]);
-    
-    if (backgroundImages.length > 1) {
-        const imageInterval = setInterval(() => {
-            setCurrentImageIndex(prevIndex => (prevIndex + 1) % backgroundImages.length);
-        }, 5000); 
-        return () => clearInterval(imageInterval);
-    }
-  }, []);
-
-
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (loggedInUserId) {
@@ -284,24 +253,22 @@ export default function LoginPage() {
           {/* Left Side */}
           <div className="relative hidden md:flex flex-col justify-between p-8 rounded-l-3xl overflow-hidden">
              <div className="absolute inset-0 z-0">
-                {backgroundImages.map((src, index) => (
-                    <div
-                        key={src}
-                        className="absolute inset-0 bg-cover bg-center login-bg-slideshow"
-                        style={{
-                            backgroundImage: `url(${src})`,
-                            opacity: index === currentImageIndex ? 1 : 0,
-                        }}
-                    />
-                ))}
+                <Image
+                    src="https://ik.imagekit.io/avmxsiusm/shiny-metallic-engine-propeller-turning-workshop-generated-by-ai.webp"
+                    alt="Aircraft Engine"
+                    layout="fill"
+                    objectFit="cover"
+                    quality={75}
+                    priority
+                />
             </div>
             <div className="absolute inset-0 bg-black/40 z-10 rounded-l-3xl"></div>
             <div className="z-20">
                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={180} height={48} className="object-contain" />
             </div>
              <div className="z-20">
-              <h2 className="text-4xl font-great-vibes text-white">"{dailyQuote.text}"</h2>
-              <p className="text-right mt-2 font-medium text-white/80">- {dailyQuote.author}</p>
+              <h2 className="text-4xl font-great-vibes text-white">"{quote.text}"</h2>
+              <p className="text-right mt-2 font-medium text-white/80">- {quote.author}</p>
             </div>
           </div>
 

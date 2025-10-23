@@ -15,6 +15,7 @@ const fontGreatVibes = Great_Vibes({
   subsets: ['latin'],
   weight: '400',
   variable: '--font-great-vibes',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
