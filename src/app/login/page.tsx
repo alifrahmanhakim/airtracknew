@@ -523,7 +523,7 @@ export default function LoginPage() {
             <AlertDialogContent>
                 <AlertDialogHeader className="text-center items-center">
                      <Image src="https://ik.imagekit.io/avmxsiusm/IMG_6912.png" alt="Email sent" width={80} height={80} className="mb-4" />
-                    <AlertDialogTitle>Password Reset Email Sent</AlertDialogTitle>
+                    <AlertDialogTitle className='flex items-center gap-2'><Mail className='h-5 w-5' />Password Reset Email Sent</AlertDialogTitle>
                     <AlertDialogDescription className="text-sm text-muted-foreground text-center">
                         An email has been sent to <span className="font-semibold">{resetEmail}</span> with instructions to reset your password.
                         <br /><br />
