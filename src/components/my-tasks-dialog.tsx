@@ -65,7 +65,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-6xl h-[90vh] flex flex-col bg-background/80 backdrop-blur-sm">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                     <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
