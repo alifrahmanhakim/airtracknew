@@ -65,7 +65,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-6xl flex flex-col bg-white/80 dark:bg-black/60 backdrop-blur-sm p-0 border-border/20 rounded-lg">
+            <DialogContent className="max-w-6xl flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg">
                 <DialogHeader className="p-6 pb-2">
                     <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                     <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
@@ -112,6 +112,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                     <div className="space-y-2">
                                         {tasks.filter(t => t.status !== 'Done').map(task => {
                                             const isOverdue = isBefore(parseISO(task.dueDate), startOfDay(new Date()));
+                                            const daysOverdue = isOverdue ? differenceInDays(startOfDay(new Date()), parseISO(task.dueDate)) : 0;
                                             const taskColorClass = 
                                                 isOverdue ? 'bg-red-100 dark:bg-red-900/30' :
                                                 task.status === 'In Progress' ? 'bg-blue-100 dark:bg-blue-900/30' :
@@ -119,7 +120,14 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
                                             return (
                                                 <div key={task.id} className={cn("text-sm p-2 rounded-md", taskColorClass)}>
-                                                    <p className="font-semibold truncate">{task.title}</p>
+                                                    <div className="flex justify-between items-start">
+                                                        <p className="font-semibold truncate pr-2">{task.title}</p>
+                                                        {isOverdue && (
+                                                            <span className="text-xs font-bold text-red-600 whitespace-nowrap">
+                                                                {daysOverdue}d overdue
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <p className="text-xs text-muted-foreground">{task.projectName}</p>
                                                 </div>
                                             )
