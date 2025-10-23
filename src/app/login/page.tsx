@@ -71,20 +71,16 @@ export default function LoginPage() {
         setIsCheckingAuth(true);
         const timer = setInterval(() => {
             setProgress(prev => {
-                if (prev >= 100) {
+                const newProgress = prev + 5;
+                if (newProgress >= 100) {
                     clearInterval(timer);
+                    // Ensure it hits 100 before starting fade out
+                    setTimeout(() => setIsCheckingAuth(false), 300); 
                     return 100;
                 }
-                return prev + 5;
+                return newProgress;
             });
-        }, 100);
-
-        setTimeout(() => {
-            clearInterval(timer);
-            setProgress(100); // Ensure it hits 100
-            // Wait a moment after hitting 100 before starting fade out
-            setTimeout(() => setIsCheckingAuth(false), 300);
-        }, 2200);
+        }, 110); // Slightly adjusted interval for a ~2.2s load time
         
         return () => clearInterval(timer);
     }
