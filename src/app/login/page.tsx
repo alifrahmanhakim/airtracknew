@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail } from "lucide-react";
 import { useState, useEffect } from 'react';
 import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,16 @@ import { TermsAndConditionsDialog } from '@/components/terms-and-conditions-dial
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { sendPasswordReset } from '@/lib/actions/user';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -56,6 +66,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [showResetSuccessDialog, setShowResetSuccessDialog] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,10 +92,10 @@ export default function LoginPage() {
                     setTimeout(() => setIsCheckingAuth(false), 300);
                     return 100;
                 }
-                const increment = Math.random() * 15;
+                const increment = Math.random() * 20; // Increased increment
                 return Math.min(prev + increment, 100);
             });
-        }, 15);
+        }, 15); // Faster interval
 
         return () => clearInterval(timer);
     }
@@ -283,16 +295,8 @@ export default function LoginPage() {
     setIsSendingReset(false);
 
     if (result.success) {
-      toast({
-        title: 'Password Reset Email Sent',
-        description: (
-          <>
-            An email has been sent to {email} with instructions to reset your password.
-            <br />
-            <strong className="text-red-500">Please also check your spam folder.</strong>
-          </>
-        ),
-      });
+      setResetEmail(email);
+      setShowResetSuccessDialog(true);
     } else {
       toast({
         variant: 'destructive',
@@ -359,16 +363,16 @@ export default function LoginPage() {
             </div>
             <div className='flex-grow flex flex-col justify-center'>
                 {isCheckingAuth && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/80 backdrop-blur-sm rounded-3xl md:rounded-l-none z-30 animate-fade-in-blur">
-                        <Alert variant="default" className="w-auto bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
-                            <AlertTriangle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
-                            <AlertTitle className="font-bold">Connecting</AlertTitle>
-                            <AlertDescription>
-                                Please wait, checking session...
-                                <Progress value={progress} className="mt-2 h-1" />
-                            </AlertDescription>
-                        </Alert>
-                    </div>
+                     <Card className="absolute inset-0 flex flex-col items-center justify-center bg-card/80 backdrop-blur-sm rounded-3xl md:rounded-l-none z-30 animate-fade-in-blur">
+                        <CardHeader className="text-center">
+                            <CardTitle>Connecting to AirTrack</CardTitle>
+                            <CardDescription>Authenticating session and connecting to servers.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="w-full max-w-xs text-center">
+                             <Progress value={progress} className="h-2" />
+                             <p className="text-sm text-muted-foreground mt-2">{Math.round(progress)}%</p>
+                        </CardContent>
+                    </Card>
                 )}
               <div key={isLoginView ? 'login' : 'signup'} className="animate-fade-in-blur">
                 {isLoginView ? (
@@ -511,6 +515,28 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
+
+        <AlertDialog open={showResetSuccessDialog} onOpenChange={setShowResetSuccessDialog}>
+            <AlertDialogContent>
+                <AlertDialogHeader className="text-center items-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-2">
+                        <Mail className="h-6 w-6 text-green-600" />
+                    </div>
+                    <AlertDialogTitle>Password Reset Email Sent</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        An email has been sent to <span className="font-semibold">{resetEmail}</span> with instructions to reset your password.
+                        <br />
+                        <strong className="text-red-500">Please also check your spam folder.</strong>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogAction onClick={() => setShowResetSuccessDialog(false)}>
+                        Close
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
       </main>
   );
 }

@@ -115,7 +115,7 @@ export async function sendPasswordReset(email: string) {
         case 'auth/invalid-email':
             return { success: false, error: 'The email address is not valid.' };
         case 'auth/user-not-found':
-            return { success: false, error: 'No user found with this email address.' };
+            return { success: false, error: 'No user account found for this email address.' };
         case 'auth/missing-email':
             return { success: false, error: 'Email address is missing.' };
         case 'auth/network-request-failed':
