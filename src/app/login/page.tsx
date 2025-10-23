@@ -68,22 +68,23 @@ export default function LoginPage() {
     if (loggedInUserId) {
         router.push('/my-dashboard');
     } else {
-        setIsCheckingAuth(true); // Start "loading"
+        setIsCheckingAuth(true);
         const timer = setInterval(() => {
             setProgress(prev => {
-                if (prev >= 95) {
+                if (prev >= 100) {
                     clearInterval(timer);
-                    return 95;
+                    return 100;
                 }
-                return prev + 10;
-            })
-        }, 200);
+                return prev + 5;
+            });
+        }, 100);
 
         setTimeout(() => {
             clearInterval(timer);
-            setProgress(100);
-            setTimeout(() => setIsCheckingAuth(false), 500); // End "loading" with a delay
-        }, 2500);
+            setProgress(100); // Ensure it hits 100
+            // Wait a moment after hitting 100 before starting fade out
+            setTimeout(() => setIsCheckingAuth(false), 300);
+        }, 2200);
         
         return () => clearInterval(timer);
     }
