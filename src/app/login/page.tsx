@@ -298,7 +298,7 @@ export default function LoginPage() {
       setResetEmail(email);
       setShowResetSuccessDialog(true);
     } else {
-      toast({
+       toast({
         variant: 'destructive',
         title: 'Error',
         description: result.error,
@@ -526,7 +526,7 @@ export default function LoginPage() {
                         <Mail className="h-6 w-6 text-green-600" />
                     </div>
                     <AlertDialogTitle>Password Reset Email Sent</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogDescription className="text-center">
                         An email has been sent to <span className="font-semibold">{resetEmail}</span> with instructions to reset your password.
                         <br />
                         <strong className="text-red-500">Please also check your spam folder.</strong>
