@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   title: 'AirTrack: Aviation Project Tracker',
   description: 'A project tracker for the aviation industry.',
   icons: {
-    icon: 'https://i.postimg.cc/6qPgDcy2/faviconairtrack.png',
-    shortcut: 'https://i.postimg.cc/6qPgDcy2/faviconairtrack.png',
-    apple: 'https://i.postimg.cc/6qPgDcy2/faviconairtrack.png',
+    icon: 'https://ik.imagekit.io/avmxsiusm/icon.png',
+    shortcut: 'https://ik.imagekit.io/avmxsiusm/icon.png',
+    apple: 'https://ik.imagekit.io/avmxsiusm/icon.png',
   },
 };
 
