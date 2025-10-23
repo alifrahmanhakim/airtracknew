@@ -24,12 +24,6 @@ type NotificationBellProps = {
   userId: string | null;
 };
 
-let notificationAudio: HTMLAudioElement | null = null;
-if (typeof window !== 'undefined') {
-    notificationAudio = new Audio('https://firebasestorage.googleapis.com/v0/b/aoc-insight.appspot.com/o/sound%2Fnotification.wav?alt=media&token=875375e1-8314-4161-b44c-24755ea1e73a');
-    notificationAudio.preload = 'auto';
-}
-
 const getNotificationIcon = (title: string) => {
     const lowerTitle = title.toLowerCase();
     if (lowerTitle.includes('new message')) return <MessageSquare className="h-5 w-5 text-blue-500" />;
@@ -73,15 +67,6 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
     return () => unsubscribe();
   }, [userId]);
-
-  React.useEffect(() => {
-    if (unreadCount > prevUnreadCount.current && notificationAudio) {
-        notificationAudio.play().catch(error => {
-            console.warn("Audio play failed, likely due to browser policy:", error);
-        });
-    }
-    prevUnreadCount.current = unreadCount;
-  }, [unreadCount]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     if (!userId) return;

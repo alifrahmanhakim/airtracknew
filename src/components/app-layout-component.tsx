@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -350,18 +351,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem
-        disableTransitionOnChange
-    >
-        <TooltipProvider>
+    <>
         <SidebarProvider>
             <Sidebar variant="inset" collapsible="icon">
             <SidebarHeader>
                 <div className="flex items-center justify-center gap-2 py-4">
-                    <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={40} className="object-contain" />
+                    <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={150} height={40} className="object-contain" style={{ width: 'auto', height: 'auto' }} />
                 </div>
             </SidebarHeader>
             <SidebarContent>
@@ -581,7 +576,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 tasks={myTasks}
             />
         )}
-        </TooltipProvider>
-    </ThemeProvider>
+    </>
   );
 }
