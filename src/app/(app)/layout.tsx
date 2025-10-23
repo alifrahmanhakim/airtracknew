@@ -66,6 +66,7 @@ import { AskStdAiWidget } from '@/components/ask-std-ai-widget';
 import { PrivacyDialog } from '@/components/privacy-dialog';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
+import { MyTasksDialog } from '@/components/my-tasks-dialog';
 
 const navItems = {
     dashboards: [
@@ -139,6 +140,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [criticalProjectsCount, setCriticalProjectsCount] = React.useState(0);
   const [unreadChatsCount, setUnreadChatsCount] = React.useState(0);
   const [openStateLettersCount, setOpenStateLettersCount] = React.useState(0);
+  const [myTasks, setMyTasks] = React.useState<AssignedTask[]>([]);
+  const [isMyTasksDialogOpen, setIsMyTasksDialogOpen] = React.useState(false);
   
   const [myTaskStats, setMyTaskStats] = React.useState({
     todo: 0,
@@ -255,23 +258,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         setOverdueTasksCount(0);
         setCriticalProjectsCount(0);
         setMyTaskStats({ todo: 0, inProgress: 0, done: 0, total: 0, completionPercentage: 0 });
+        setMyTasks([]);
         return;
     };
     
     let overdueCount = 0;
     const criticalProjectIds = new Set<string>();
     const today = new Date();
+    const tasksForUser: AssignedTask[] = [];
     
     let myTodo = 0;
     let myInProgress = 0;
     let myDone = 0;
     let myTotal = 0;
   
-    const checkTasksRecursively = (tasks: Task[]): boolean => {
-      let hasCritical = false;
+    const processTasksRecursively = (tasks: Task[], project: Project) => {
       for (const task of tasks) {
         // Count tasks for the current user
         if (task.assigneeIds?.includes(userId)) {
+          tasksForUser.push({
+            ...task,
+            projectId: project.id,
+            projectName: project.name,
+            projectType: project.projectType,
+          });
           myTotal++;
           if(task.status === 'To Do') myTodo++;
           if(task.status === 'In Progress') myInProgress++;
@@ -290,28 +300,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         
         // Check for any critical issue in the task
         if (task.criticalIssue) {
-          hasCritical = true;
+          criticalProjectIds.add(project.id);
         }
   
         // Recurse into subtasks
-        if (task.subTasks && checkTasksRecursively(task.subTasks)) {
-          hasCritical = true;
+        if (task.subTasks) {
+          processTasksRecursively(task.subTasks, project);
         }
       }
-      return hasCritical;
     };
   
     allProjects.forEach(project => {
-      // Only count tasks for projects the user is a member of
-      if (project.team.some(member => member.id === userId)) {
-        if (checkTasksRecursively(project.tasks || [])) {
-          criticalProjectIds.add(project.id);
-        }
-      }
+        processTasksRecursively(project.tasks || [], project);
     });
   
     setOverdueTasksCount(overdueCount);
     setCriticalProjectsCount(criticalProjectIds.size);
+    setMyTasks(tasksForUser.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
     setMyTaskStats({
         todo: myTodo,
         inProgress: myInProgress,
@@ -356,8 +361,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarContent>
               <SidebarGroup>
                   <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
-                  <Link href="/my-dashboard" className="px-2 block">
-                      <div className="p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors">
+                  <div className="px-2 block">
+                      <div 
+                        className="p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors cursor-pointer"
+                        onClick={() => setIsMyTasksDialogOpen(true)}
+                      >
                           <div className="flex justify-between items-center text-xs font-semibold text-sidebar-foreground/80 mb-2">
                               <span>My Tasks</span>
                               <span>{myTaskStats.done}/{myTaskStats.total} Done</span>
@@ -369,7 +377,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                              <span>Active Tasks</span>
                           </div>
                       </div>
-                  </Link>
+                  </div>
               </SidebarGroup>
               <SidebarGroup>
                   <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
@@ -558,6 +566,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <AskStdAiWidget />
         </SidebarInset>
       </SidebarProvider>
+      {currentUser && (
+        <MyTasksDialog
+            open={isMyTasksDialogOpen}
+            onOpenChange={setIsMyTasksDialogOpen}
+            user={currentUser}
+            tasks={myTasks}
+        />
+      )}
     </TooltipProvider>
   );
 }
