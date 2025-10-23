@@ -329,7 +329,7 @@ export default function LoginPage() {
                                 </button>
                             </p>
                              {isCheckingAuth && (
-                                  <Alert variant="default" className="mt-6 bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
+                                  <Alert variant="default" className="mt-6 bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300 animate-fade-in-out-blur">
                                       <AlertTriangle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
                                       <AlertTitle className="font-bold">Connecting</AlertTitle>
                                       <AlertDescription>

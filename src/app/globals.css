@@ -208,3 +208,19 @@
         border-radius: 1rem;
     }
 }
+
+@layer utilities {
+    @keyframes fade-in-out-blur {
+        0%, 100% {
+            opacity: 0;
+            filter: blur(4px);
+        }
+        50% {
+            opacity: 1;
+            filter: blur(0);
+        }
+    }
+    .animate-fade-in-out-blur {
+        animation: fade-in-out-blur 2s ease-in-out forwards;
+    }
+}
