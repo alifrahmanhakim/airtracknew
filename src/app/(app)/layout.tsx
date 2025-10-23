@@ -25,6 +25,7 @@ import {
   BotMessageSquare,
   AlertTriangle,
   BookCheck,
+  ListTodo,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -62,6 +63,7 @@ import { UserProfileDialog } from '@/components/chat/user-profile-dialog';
 import { AskStdAiWidget } from '@/components/ask-std-ai-widget';
 import { PrivacyDialog } from '@/components/privacy-dialog';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 
 const navItems = {
     dashboards: [
@@ -136,6 +138,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [unreadChatsCount, setUnreadChatsCount] = React.useState(0);
   const [openStateLettersCount, setOpenStateLettersCount] = React.useState(0);
   
+  const [myTaskStats, setMyTaskStats] = React.useState({
+    todo: 0,
+    done: 0,
+    total: 0,
+    completionPercentage: 0,
+  });
+
   React.useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (!loggedInUserId) {
@@ -242,24 +251,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (!userId || allProjects.length === 0) {
         setOverdueTasksCount(0);
         setCriticalProjectsCount(0);
+        setMyTaskStats({ todo: 0, done: 0, total: 0, completionPercentage: 0 });
         return;
     };
     
     let overdueCount = 0;
     const criticalProjectIds = new Set<string>();
     const today = new Date();
+    
+    let myTodo = 0;
+    let myDone = 0;
+    let myTotal = 0;
   
     const checkTasksRecursively = (tasks: Task[]): boolean => {
       let hasCritical = false;
       for (const task of tasks) {
-        // Count overdue tasks assigned to the current user
-        if (task.assigneeIds?.includes(userId) && task.status !== 'Done') {
-          try {
-            if (isAfter(today, parseISO(task.dueDate))) {
-              overdueCount++;
+        // Count tasks for the current user
+        if (task.assigneeIds?.includes(userId)) {
+          myTotal++;
+          if(task.status === 'To Do') myTodo++;
+          if(task.status === 'Done') myDone++;
+          
+          if (task.status !== 'Done') {
+            try {
+              if (isAfter(today, parseISO(task.dueDate))) {
+                overdueCount++;
+              }
+            } catch (e) {
+              // Ignore invalid date formats
             }
-          } catch (e) {
-            // Ignore invalid date formats
           }
         }
         
@@ -277,6 +297,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     };
   
     allProjects.forEach(project => {
+      // Only count tasks for projects the user is a member of
       if (project.team.some(member => member.id === userId)) {
         if (checkTasksRecursively(project.tasks || [])) {
           criticalProjectIds.add(project.id);
@@ -286,6 +307,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   
     setOverdueTasksCount(overdueCount);
     setCriticalProjectsCount(criticalProjectIds.size);
+    setMyTaskStats({
+        todo: myTodo,
+        done: myDone,
+        total: myTotal,
+        completionPercentage: myTotal > 0 ? (myDone / myTotal) * 100 : 0
+    });
+
   }, [allProjects, userId]);
 
 
@@ -365,6 +393,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </SidebarMenu>
               </SidebarGroup>
               <SidebarGroup>
+                <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
+                 <Link href="/my-dashboard" className="px-2 block">
+                    <div className="p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors">
+                        <div className="flex justify-between items-center text-xs font-semibold text-sidebar-foreground/80 mb-2">
+                            <span>My Tasks</span>
+                            <span>{myTaskStats.done}/{myTaskStats.total} Done</span>
+                        </div>
+                        <Progress value={myTaskStats.completionPercentage} className="h-2" />
+                        <div className="flex items-center gap-2 mt-2 text-sm text-sidebar-foreground">
+                           <ListTodo className="h-4 w-4 text-sidebar-primary" />
+                           <span className="font-bold">{myTaskStats.todo}</span>
+                           <span>tasks to do</span>
+                        </div>
+                    </div>
+                 </Link>
+              </SidebarGroup>
+              <SidebarGroup>
                   <SidebarGroupLabel>Workspace</SidebarGroupLabel>
                   <SidebarMenu>
                       {navItems.workspace.map((item: any) => {
@@ -413,7 +458,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         const isActive = pathname.startsWith(item.href);
                         return (
                           <div key={item.href} className="relative group/menu-item">
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg blur opacity-0 group-hover/menu-item:opacity-75 transition-opacity duration-300"></div>
+                             <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg blur opacity-0 group-hover/menu-item:opacity-75 transition-opacity duration-300"></div>
                             <SidebarMenuItem isActive={isActive}>
                               <SidebarMenuButton
                                   asChild
