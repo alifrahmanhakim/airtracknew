@@ -87,13 +87,9 @@ export default function LoginPage() {
   }, [router]);
 
   useEffect(() => {
-    const slideInterval = setInterval(() => {
-        setCurrentQuoteIndex(prev => (prev + 1) % quoteSlides.length);
-    }, 5000);
-    return () => clearInterval(slideInterval);
-  }, []);
+    // Set a random quote on initial load and keep it for the session
+    setCurrentQuoteIndex(Math.floor(Math.random() * quoteSlides.length));
 
-  useEffect(() => {
     const imageSlideInterval = setInterval(() => {
         setCurrentCardImageIndex(prev => (prev + 1) % cardBackgroundImages.length);
     }, 5000);
@@ -303,7 +299,7 @@ export default function LoginPage() {
                 <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={97} height={24} style={{ width: 'auto', height: 'auto' }} />
             </div>
              <div className="z-20">
-              <h2 className="text-4xl font-great-vibes text-white">"{quoteSlides[currentQuoteIndex].text}"</h2>
+              <h2 className="text-2xl font-semibold text-white">"{quoteSlides[currentQuoteIndex].text}"</h2>
               <p className="text-right mt-2 font-medium text-white/80">- {quoteSlides[currentQuoteIndex].author}</p>
             </div>
           </div>
