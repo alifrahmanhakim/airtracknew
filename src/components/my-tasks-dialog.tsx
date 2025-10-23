@@ -12,6 +12,7 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/t
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { AnimatedCounter } from './ui/animated-counter';
+import { ProjectTimeline } from './project-timeline';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -57,38 +58,19 @@ const getPaceAndWorkload = (tasks: AssignedTask[]) => {
 
 
 export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialogProps) {
-    const [currentDate, setCurrentDate] = React.useState(new Date());
-
     const { pace, workloadScore, workloadLabel } = React.useMemo(() => getPaceAndWorkload(tasks), [tasks]);
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.status === 'Done').length;
     const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-    
-    const startOfCurrentWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const endOfCurrentWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: startOfCurrentWeek, end: endOfCurrentWeek });
-
-    const weekTasks = tasks.filter(task => {
-        const taskStart = parseISO(task.startDate);
-        const taskEnd = parseISO(task.dueDate);
-        return isWithinInterval({ start: taskStart, end: taskEnd }, { start: startOfCurrentWeek, end: endOfCurrentWeek });
-    });
-
-    const tasksByDay = weekDays.map(day => ({
-        day,
-        tasks: weekTasks.filter(task => isWithinInterval(day, { start: parseISO(task.startDate), end: parseISO(task.dueDate) }))
-    }));
-
-    const maxTasksPerDay = Math.max(...tasksByDay.map(d => d.tasks.length), 3);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+            <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                     <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
                 </DialogHeader>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-y-auto pr-2">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-y-auto pr-2">
                     <div className="md:col-span-1 space-y-6">
                         <Card>
                              <CardHeader>
@@ -138,57 +120,8 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                             </CardContent>
                         </Card>
                     </div>
-                    <div className="md:col-span-2">
-                        <Card className="h-full">
-                            <CardHeader>
-                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-lg flex items-center gap-2"><Calendar className="h-5 w-5"/> Weekly Schedule</CardTitle>
-                                    <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subWeeks(currentDate, 1))}>
-                                            <ArrowLeft className="h-4 w-4"/>
-                                        </Button>
-                                        <span className="text-sm font-medium w-32 text-center">
-                                            Week {getISOWeek(currentDate)}
-                                        </span>
-                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addWeeks(currentDate, 1))}>
-                                            <ArrowRight className="h-4 w-4"/>
-                                        </Button>
-                                    </div>
-                                 </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-7 gap-2">
-                                    {tasksByDay.map(({day, tasks: dayTasks}) => (
-                                        <div key={day.toISOString()} className={cn("rounded-lg p-2 flex flex-col items-center gap-2", isSameDay(day, new Date()) && "bg-primary/10")}>
-                                             <div className={cn("text-center font-bold text-sm", isSameDay(day, new Date()) && "text-primary")}>
-                                                <p>{format(day, 'E')}</p>
-                                                <p>{format(day, 'd')}</p>
-                                            </div>
-                                            <TooltipProvider>
-                                                <div className="w-full h-48 bg-muted/50 rounded-md p-1 space-y-1 overflow-y-auto">
-                                                    {dayTasks.map(task => (
-                                                        <Tooltip key={task.id}>
-                                                            <TooltipTrigger asChild>
-                                                                <div className={cn(
-                                                                    "h-4 w-full rounded-sm",
-                                                                    task.status === 'Done' ? 'bg-green-500/50' :
-                                                                    task.status === 'In Progress' ? 'bg-blue-500/50' :
-                                                                    'bg-gray-400/50'
-                                                                )}></div>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p className="font-semibold">{task.title}</p>
-                                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    ))}
-                                                </div>
-                                            </TooltipProvider>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                    <div className="md:col-span-3">
+                         <ProjectTimeline tasks={tasks} teamMembers={[user]} />
                     </div>
                 </div>
             </DialogContent>
