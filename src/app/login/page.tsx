@@ -267,15 +267,15 @@ export default function LoginPage() {
 
   return (
     <>
-      <main className="flex items-center justify-center min-h-screen p-4 md:p-8 overflow-hidden">
+      <main className="relative flex items-center justify-center min-h-screen p-4 md:p-8 overflow-hidden">
         <Image
             src={loginBackgroundImage}
             alt="Background"
-            layout="fill"
-            objectFit="cover"
+            fill
+            sizes="100vw"
+            className="object-cover -z-10"
             quality={75}
             priority
-            className="absolute inset-0 -z-10"
         />
         <div className="absolute inset-0 bg-black/30 -z-10" />
 
@@ -289,11 +289,11 @@ export default function LoginPage() {
                         key={src}
                         src={src}
                         alt="Aircraft slideshow"
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         quality={75}
                         priority={index === 0}
-                        className={cn("transition-opacity duration-1000",
+                        className={cn("object-cover transition-opacity duration-1000",
                             index === currentCardImageIndex ? 'opacity-100' : 'opacity-0'
                         )}
                     />
