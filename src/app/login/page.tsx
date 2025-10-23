@@ -9,14 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, setDoc, doc, getDoc } from 'firebase/firestore';
-import { db, auth, googleProvider } from '@/lib/firebase';
-import { 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword,
-    updateProfile, 
-    signOut,
-    signInWithPopup,
-} from 'firebase/auth';
 import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -123,6 +115,9 @@ export default function LoginPage() {
     setSignupSuccess(false);
 
     try {
+        const { db, auth, googleProvider } = await import('@/lib/firebase');
+        const { signInWithPopup, signOut } = await import('firebase/auth');
+
         const result = await signInWithPopup(auth, googleProvider);
         const firebaseUser = result.user;
         const userRef = doc(db, "users", firebaseUser.uid);
@@ -171,6 +166,8 @@ export default function LoginPage() {
     setSignupSuccess(false);
 
     try {
+      const { db, auth } = await import('@/lib/firebase');
+      const { signInWithEmailAndPassword, signOut } = await import('firebase/auth');
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
@@ -222,6 +219,9 @@ export default function LoginPage() {
     setSignupSuccess(false);
 
     try {
+      const { db, auth } = await import('@/lib/firebase');
+      const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
@@ -273,7 +273,7 @@ export default function LoginPage() {
             alt="Background"
             layout="fill"
             objectFit="cover"
-            quality={80}
+            quality={75}
             priority
             className="absolute inset-0 -z-10"
         />
@@ -456,3 +456,5 @@ export default function LoginPage() {
     </>
   );
 }
+
+    
