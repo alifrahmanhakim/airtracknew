@@ -74,13 +74,12 @@ export default function LoginPage() {
                 const newProgress = prev + 5;
                 if (newProgress >= 100) {
                     clearInterval(timer);
-                    // Ensure it hits 100 before starting fade out
                     setTimeout(() => setIsCheckingAuth(false), 300); 
                     return 100;
                 }
                 return newProgress;
             });
-        }, 110); // Slightly adjusted interval for a ~2.2s load time
+        }, 110);
         
         return () => clearInterval(timer);
     }
@@ -329,7 +328,7 @@ export default function LoginPage() {
                                 </button>
                             </p>
                              {isCheckingAuth && (
-                                  <Alert variant="default" className="mt-6 bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300 animate-fade-in-out-blur">
+                                  <Alert variant="default" className="mt-6 bg-yellow-100/80 border-yellow-500/50 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700/50 dark:text-yellow-300">
                                       <AlertTriangle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
                                       <AlertTitle className="font-bold">Connecting</AlertTitle>
                                       <AlertDescription>
