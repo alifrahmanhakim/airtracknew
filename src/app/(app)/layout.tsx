@@ -348,6 +348,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
           </SidebarHeader>
           <SidebarContent>
+            <SidebarGroup>
+                <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
+                 <Link href="/my-dashboard" className="px-2 block">
+                    <div className="p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors">
+                        <div className="flex justify-between items-center text-xs font-semibold text-sidebar-foreground/80 mb-2">
+                            <span>My Tasks</span>
+                            <span>{myTaskStats.done}/{myTaskStats.total} Done</span>
+                        </div>
+                        <Progress value={myTaskStats.completionPercentage} className="h-2" />
+                        <div className="flex items-center gap-2 mt-2 text-sm text-sidebar-foreground">
+                           <ListTodo className="h-4 w-4 text-sidebar-primary" />
+                           <span className="font-bold">{myTaskStats.todo}</span>
+                           <span>tasks to do</span>
+                        </div>
+                    </div>
+                 </Link>
+              </SidebarGroup>
               <SidebarGroup>
                   <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
                   <SidebarMenu>
@@ -391,23 +408,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         )
                       })}
                   </SidebarMenu>
-              </SidebarGroup>
-              <SidebarGroup>
-                <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
-                 <Link href="/my-dashboard" className="px-2 block">
-                    <div className="p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors">
-                        <div className="flex justify-between items-center text-xs font-semibold text-sidebar-foreground/80 mb-2">
-                            <span>My Tasks</span>
-                            <span>{myTaskStats.done}/{myTaskStats.total} Done</span>
-                        </div>
-                        <Progress value={myTaskStats.completionPercentage} className="h-2" />
-                        <div className="flex items-center gap-2 mt-2 text-sm text-sidebar-foreground">
-                           <ListTodo className="h-4 w-4 text-sidebar-primary" />
-                           <span className="font-bold">{myTaskStats.todo}</span>
-                           <span>tasks to do</span>
-                        </div>
-                    </div>
-                 </Link>
               </SidebarGroup>
               <SidebarGroup>
                   <SidebarGroupLabel>Workspace</SidebarGroupLabel>
@@ -458,7 +458,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         const isActive = pathname.startsWith(item.href);
                         return (
                           <div key={item.href} className="relative group/menu-item">
-                             <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg blur opacity-0 group-hover/menu-item:opacity-75 transition-opacity duration-300"></div>
+                             <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-75 group-hover/menu-item:opacity-100 transition duration-1000 animate-gradient-move"></div>
                             <SidebarMenuItem isActive={isActive}>
                               <SidebarMenuButton
                                   asChild
