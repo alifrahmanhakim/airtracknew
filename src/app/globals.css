@@ -184,13 +184,6 @@
   }
 }
 
-.login-background {
-    background-image: url('https://ik.imagekit.io/avmxsiusm/green-plane-ecofriendly-environment.webp');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
 .login-bg-slideshow {
     transition: opacity 1s ease-in-out;
 }

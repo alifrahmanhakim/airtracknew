@@ -269,7 +269,16 @@ export default function LoginPage() {
 
   return (
     <>
-      <main className="flex items-center justify-center min-h-screen p-4 md:p-8 login-background">
+      <main className="flex items-center justify-center min-h-screen p-4 md:p-8">
+        <Image
+          src="https://ik.imagekit.io/avmxsiusm/green-plane-ecofriendly-environment.webp"
+          alt="Background"
+          layout="fill"
+          objectFit="cover"
+          quality={80}
+          priority
+          className="-z-10"
+        />
         <div className="relative group login-grid">
          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-3xl blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
           {/* Left Side */}

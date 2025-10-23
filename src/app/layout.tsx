@@ -34,6 +34,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="/path-to-your-main-stylesheet.css"
+          media="print"
+          // @ts-ignore
+          onLoad="this.media='all'"
+        />
+      </head>
       <body className={cn("min-h-screen font-sans antialiased", fontSans.variable, fontGreatVibes.variable)}>
         <ThemeProvider
           attribute="class"

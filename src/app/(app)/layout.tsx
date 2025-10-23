@@ -362,7 +362,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroup>
                   <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
                   <div className="px-2 block relative group/menu-item">
-                       <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 animate-gradient-move"></div>
+                       <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover/menu-item:opacity-75 animate-gradient-move"></div>
                       <div 
                         className="relative p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors cursor-pointer"
                         onClick={() => setIsMyTasksDialogOpen(true)}
