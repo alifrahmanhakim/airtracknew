@@ -70,60 +70,62 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                     <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                     <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
                 </DialogHeader>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-y-auto pr-2">
-                    <div className="md:col-span-1 space-y-6">
-                        <Card>
-                             <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <BarChart2 className="h-5 w-5"/>
-                                    Statistics
-                                </CardTitle>
-                             </CardHeader>
-                             <CardContent className="space-y-4">
-                                <div>
-                                    <div className="flex justify-between items-baseline mb-1">
-                                        <p className="text-sm font-medium">Task Completion</p>
-                                        <p className="text-sm text-muted-foreground">{completedTasks} / {totalTasks}</p>
-                                    </div>
-                                    <Progress value={completionPercentage} />
-                                </div>
-                                 <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
-                                    <Zap className="h-6 w-6 text-primary"/>
+                <TooltipProvider>
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-y-auto pr-2">
+                        <div className="md:col-span-1 space-y-6">
+                            <Card>
+                                 <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <BarChart2 className="h-5 w-5"/>
+                                        Statistics
+                                    </CardTitle>
+                                 </CardHeader>
+                                 <CardContent className="space-y-4">
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Pace (Tasks This Week)</p>
-                                        <p className="text-xl font-bold"><AnimatedCounter endValue={pace} /></p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
-                                    <Activity className="h-6 w-6 text-primary"/>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Workload</p>
-                                        <p className="text-xl font-bold">{workloadLabel} ({workloadScore})</p>
-                                    </div>
-                                </div>
-                             </CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2"><ListTodo className="h-5 w-5" /> All Open Tasks</CardTitle>
-                            </CardHeader>
-                            <CardContent className="max-h-60 overflow-y-auto">
-                                <div className="space-y-2">
-                                    {tasks.filter(t => t.status !== 'Done').map(task => (
-                                        <div key={task.id} className="text-sm p-2 rounded-md bg-muted/50">
-                                            <p className="font-semibold truncate">{task.title}</p>
-                                            <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <p className="text-sm font-medium">Task Completion</p>
+                                            <p className="text-sm text-muted-foreground">{completedTasks} / {totalTasks}</p>
                                         </div>
-                                    ))}
-                                    {tasks.filter(t => t.status !== 'Done').length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No open tasks!</p>}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                        <Progress value={completionPercentage} />
+                                    </div>
+                                     <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
+                                        <Zap className="h-6 w-6 text-primary"/>
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Pace (Tasks This Week)</p>
+                                            <p className="text-xl font-bold"><AnimatedCounter endValue={pace} /></p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
+                                        <Activity className="h-6 w-6 text-primary"/>
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Workload</p>
+                                            <p className="text-xl font-bold">{workloadLabel} ({workloadScore})</p>
+                                        </div>
+                                    </div>
+                                 </CardContent>
+                            </Card>
+                             <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2"><ListTodo className="h-5 w-5" /> All Open Tasks</CardTitle>
+                                </CardHeader>
+                                <CardContent className="max-h-60 overflow-y-auto">
+                                    <div className="space-y-2">
+                                        {tasks.filter(t => t.status !== 'Done').map(task => (
+                                            <div key={task.id} className="text-sm p-2 rounded-md bg-muted/50">
+                                                <p className="font-semibold truncate">{task.title}</p>
+                                                <p className="text-xs text-muted-foreground">{task.projectName}</p>
+                                            </div>
+                                        ))}
+                                        {tasks.filter(t => t.status !== 'Done').length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No open tasks!</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                        <div className="md:col-span-3">
+                             <ProjectTimeline tasks={tasks} teamMembers={[user]} open={open} />
+                        </div>
                     </div>
-                    <div className="md:col-span-3">
-                         <ProjectTimeline tasks={tasks} teamMembers={[user]} open={open} />
-                    </div>
-                </div>
+                </TooltipProvider>
             </DialogContent>
         </Dialog>
     );
