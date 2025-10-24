@@ -37,11 +37,6 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
     if (progress === 100) {
       return 'Completed';
     }
-    
-    // Manual override takes precedence over automatic calculation (except for completion)
-    if (status && status !== 'On Track') {
-      return status;
-    }
   
     const today = startOfToday();
     const projectEnd = parseISO(endDate);
@@ -52,6 +47,11 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   
     if (hasCritical) {
       return 'At Risk';
+    }
+    
+    // Check original status if it provides a more severe warning
+    if (status === 'At Risk' || status === 'Off Track') {
+      return status;
     }
     
     const projectStart = parseISO(startDate);

@@ -74,7 +74,7 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
     const { total, completed, hasCritical } = countAllTasks(project.tasks || []);
     const progress = total > 0 ? (completed / total) * 100 : 0;
   
-    if (progress === 100 || project.status === 'Completed') {
+    if (progress === 100) {
       return 'Completed';
     }
   
@@ -87,6 +87,11 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
   
     if (hasCritical) {
       return 'At Risk';
+    }
+    
+    // Check original status if it provides a more severe warning
+    if (project.status === 'At Risk' || project.status === 'Off Track') {
+      return project.status;
     }
     
     const projectStart = parseISO(project.startDate);
