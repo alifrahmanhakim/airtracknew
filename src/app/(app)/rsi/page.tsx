@@ -151,6 +151,7 @@ export default function RsiPage() {
     const [yearFilter, setYearFilter] = React.useState<string>('all');
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
+    const [isFollowUpExpanded, setIsFollowUpExpanded] = React.useState(false);
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -373,6 +374,10 @@ export default function RsiPage() {
         );
     };
 
+    const followUpItemsToShow = isFollowUpExpanded
+        ? dashboardStats.openOperatorFollowUps
+        : dashboardStats.openOperatorFollowUps.slice(0, 3);
+
 
     return (
         <TooltipProvider>
@@ -478,25 +483,25 @@ export default function RsiPage() {
                 <Card className="mb-6 border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
-                            <Send /> Awaiting Operator Follow-Up
+                            <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
                         </CardTitle>
                          <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
                             <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
-                                {dashboardStats.openOperatorFollowUps.length} of {dashboardStats.totalRekomendasiKnkt} recommendations require operator action.
+                                These KNKT recommendations are waiting for a response or action from the related operator.
                             </CardDescription>
                             <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
                         </div>
                         <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        {dashboardStats.openOperatorFollowUps.slice(0, 3).map((record) => (
+                     <CardContent className="space-y-3">
+                        {followUpItemsToShow.map((record) => (
                             <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                 <div>
                                     <p className="font-semibold text-sm">{record.judulLaporan}</p>
                                      <p className="text-xs text-muted-foreground">
                                         {record.nomorLaporan}
                                         <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                            ({record.penerimaRekomendasi?.join(', ')})
+                                            ({(record.penerimaRekomendasi || []).join(', ') || 'N/A'})
                                         </span>
                                     </p>
                                 </div>
@@ -507,8 +512,8 @@ export default function RsiPage() {
                         ))}
                         {dashboardStats.openOperatorFollowUps.length > 3 && (
                             <div className="text-center pt-2">
-                                <Button asChild variant="link">
-                                    <Link href="/rsi/monitoring-rekomendasi">View all {dashboardStats.openOperatorFollowUps.length} items</Link>
+                                <Button variant="link" onClick={() => setIsFollowUpExpanded(!isFollowUpExpanded)}>
+                                    {isFollowUpExpanded ? 'Show less' : `View all ${dashboardStats.openOperatorFollowUps.length} items`}
                                 </Button>
                             </div>
                         )}
