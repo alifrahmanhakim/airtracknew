@@ -68,7 +68,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[80vw] h-[80vh] max-w-[1200px] flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg text-sm">
+            <DialogContent className="w-[80vw] max-h-[80vh] max-w-[1200px] flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg text-sm">
                 <DialogHeader className="p-6 pb-2 flex flex-row items-center gap-4">
                     <Avatar className="h-16 w-16" online={isUserOnline}>
                         <AvatarImage src={user.avatarUrl} alt={user.name} />
