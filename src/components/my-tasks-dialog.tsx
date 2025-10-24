@@ -67,7 +67,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[80vw] h-[80vh] max-w-[1200px] flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg">
+            <DialogContent className="w-[80vw] h-[80vh] max-w-[1200px] flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg text-sm">
                 <DialogHeader className="p-6 pb-2 flex flex-row items-center gap-4">
                     <Avatar className="h-16 w-16" online={isUserOnline}>
                         <AvatarImage src={user.avatarUrl} alt={user.name} />
@@ -92,22 +92,22 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                  <CardContent className="space-y-4">
                                     <div>
                                         <div className="flex justify-between items-baseline mb-1">
-                                            <p className="text-sm font-medium">Task Completion</p>
-                                            <p className="text-sm text-muted-foreground">{completedTasks} / {totalTasks}</p>
+                                            <p className="text-xs font-medium">Task Completion</p>
+                                            <p className="text-xs text-muted-foreground">{completedTasks} / {totalTasks}</p>
                                         </div>
                                         <Progress value={completionPercentage} />
                                     </div>
                                      <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
-                                        <Zap className="h-6 w-6 text-primary"/>
+                                        <Zap className="h-5 w-5 text-primary"/>
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Pace (Tasks This Week)</p>
+                                            <p className="text-xs text-muted-foreground">Pace (Tasks This Week)</p>
                                             <p className="text-base font-bold"><AnimatedCounter endValue={pace} /></p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
-                                        <Activity className="h-6 w-6 text-primary"/>
+                                        <Activity className="h-5 w-5 text-primary"/>
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Workload</p>
+                                            <p className="text-xs text-muted-foreground">Workload</p>
                                             <p className="text-base font-bold">{workloadLabel} ({workloadScore})</p>
                                         </div>
                                     </div>
@@ -115,7 +115,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                             </Card>
                              <Card className="bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800">
                                 <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2"><ListTodo className="h-5 w-5" /> All Open Tasks</CardTitle>
+                                    <CardTitle className="text-base flex items-center gap-2"><ListTodo className="h-5 w-5" /> All Open Tasks</CardTitle>
                                 </CardHeader>
                                 <CardContent className="max-h-60 overflow-y-auto">
                                     <div className="space-y-2">
@@ -128,7 +128,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                                 'bg-muted/50';
 
                                             return (
-                                                <div key={task.id} className={cn("text-sm p-2 rounded-md", taskColorClass)}>
+                                                <div key={task.id} className={cn("text-xs p-2 rounded-md", taskColorClass)}>
                                                     <div className="flex justify-between items-start">
                                                         <p className="font-semibold truncate pr-2">{task.title}</p>
                                                         {isOverdue && (
@@ -141,7 +141,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                                 </div>
                                             )
                                         })}
-                                        {tasks.filter(t => t.status !== 'Done').length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No open tasks!</p>}
+                                        {tasks.filter(t => t.status !== 'Done').length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No open tasks!</p>}
                                     </div>
                                 </CardContent>
                             </Card>
