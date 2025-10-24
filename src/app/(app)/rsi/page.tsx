@@ -151,7 +151,6 @@ export default function RsiPage() {
     const [yearFilter, setYearFilter] = React.useState<string>('all');
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
-    const [isFollowUpExpanded, setIsFollowUpExpanded] = React.useState(false);
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -320,7 +319,7 @@ export default function RsiPage() {
         const operatorFollowUpPercentage = totalRekomendasiKnkt > 0 ? (operatorFollowUpCompleted / totalRekomendasiKnkt) * 100 : 0;
         
         const openFollowUpsByOperator = openOperatorFollowUps.reduce((acc, record) => {
-            const operators = record.penerimaRekomendasi || [];
+            const operators = Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : (typeof record.penerimaRekomendasi === 'string' ? [record.penerimaRekomendasi] : []);
             operators.forEach(op => {
                 if (op && op.trim() !== '' && op.trim() !== '-') {
                      acc[op] = (acc[op] || 0) + 1;
@@ -395,10 +394,6 @@ export default function RsiPage() {
         );
     };
 
-    const followUpItemsToShow = isFollowUpExpanded
-        ? dashboardStats.openOperatorFollowUps
-        : dashboardStats.openOperatorFollowUps.slice(0, 3);
-        
     const operatorChartConfig = dashboardStats.openFollowUpsOperatorChartData.reduce((acc, item) => {
         acc[item.name] = { label: item.name };
         return acc;
@@ -520,15 +515,15 @@ export default function RsiPage() {
                             </div>
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                            {followUpItemsToShow.map((record) => (
+                        <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+                            {dashboardStats.openOperatorFollowUps.map((record) => (
                                 <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                     <div>
                                         <p className="font-semibold text-sm">{record.judulLaporan}</p>
                                         <p className="text-xs text-muted-foreground">
                                             {record.nomorLaporan}
                                             <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                               ({(record.penerimaRekomendasi || ['N/A']).join(', ')})
+                                               ({(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ') || 'N/A'})
                                             </span>
                                         </p>
                                     </div>
@@ -537,13 +532,6 @@ export default function RsiPage() {
                                     </Button>
                                 </div>
                             ))}
-                            {dashboardStats.openOperatorFollowUps.length > 3 && (
-                                <div className="text-center pt-2">
-                                    <Button variant="link" onClick={() => setIsFollowUpExpanded(!isFollowUpExpanded)}>
-                                        {isFollowUpExpanded ? 'Show less' : `View all ${dashboardStats.openOperatorFollowUps.length} items`}
-                                    </Button>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                     <Card>
