@@ -67,7 +67,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-6xl flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg">
+            <DialogContent className="w-[80vw] h-[80vh] max-w-[1200px] flex flex-col bg-white/80 dark:bg-black/80 backdrop-blur-sm p-0 border-border/20 rounded-lg">
                 <DialogHeader className="p-6 pb-2 flex flex-row items-center gap-4">
                     <Avatar className="h-16 w-16" online={isUserOnline}>
                         <AvatarImage src={user.avatarUrl} alt={user.name} />
@@ -80,7 +80,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                     </div>
                 </DialogHeader>
                 <TooltipProvider>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 p-6 pt-0">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 p-6 pt-0 overflow-y-auto">
                         <div className="md:col-span-1 space-y-6">
                             <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800">
                                  <CardHeader>
@@ -146,7 +146,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                 </CardContent>
                             </Card>
                         </div>
-                        <div className="md:col-span-3">
+                        <div className="md:col-span-3 h-full flex flex-col">
                              <ProjectTimeline tasks={tasks} teamMembers={[user]} open={open} />
                         </div>
                     </div>
