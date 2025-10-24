@@ -20,6 +20,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 
@@ -151,6 +152,8 @@ export default function RsiPage() {
     const [yearFilter, setYearFilter] = React.useState<string>('all');
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
+    const [isAwaitingFollowUpExpanded, setIsAwaitingFollowUpExpanded] = React.useState(false);
+
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -501,8 +504,8 @@ export default function RsiPage() {
             </Card>
             
             {dashboardStats.totalRekomendasiKnkt > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 flex flex-col">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
                                 <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
@@ -515,7 +518,7 @@ export default function RsiPage() {
                             </div>
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
-                        <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+                        <CardContent className="space-y-3 overflow-y-auto flex-grow">
                             {dashboardStats.openOperatorFollowUps.map((record) => (
                                 <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                     <div>
@@ -534,35 +537,39 @@ export default function RsiPage() {
                             ))}
                         </CardContent>
                     </Card>
-                    <Card>
+                   <Card className="flex flex-col">
                         <CardHeader>
                             <CardTitle>Pending Follow-Ups by Operator</CardTitle>
                             <CardDescription>Breakdown of pending follow-ups by responsible operator.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                            {dashboardStats.openFollowUpsOperatorChartData.map((item, index) => {
-                                const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
-                                const barPercentage = (item.value / maxVal) * 100;
-                                return (
-                                    <div key={item.name} className="flex items-center gap-3 text-sm">
-                                        <Tooltip>
-                                            <TooltipTrigger className="truncate text-left flex-1">
-                                                <span>{item.name}</span>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                {item.name}
-                                            </TooltipContent>
-                                        </Tooltip>
-                                        <div className="w-1/3 bg-muted rounded-full h-2.5">
-                                            <div
-                                                className="bg-primary h-2.5 rounded-full"
-                                                style={{ width: `${barPercentage}%` }}
-                                            ></div>
+                        <CardContent className="flex-grow">
+                            <ScrollArea className="h-full max-h-[400px]">
+                                <div className="space-y-3 pr-4">
+                                {dashboardStats.openFollowUpsOperatorChartData.slice(0, 10).map((item, index) => {
+                                    const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
+                                    const barPercentage = (item.value / maxVal) * 100;
+                                    return (
+                                        <div key={item.name} className="flex items-center gap-3 text-sm">
+                                            <Tooltip>
+                                                <TooltipTrigger className="truncate text-left flex-1">
+                                                    <span>{item.name}</span>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    {item.name}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <div className="w-1/3 bg-muted rounded-full h-2.5">
+                                                <div
+                                                    className="bg-primary h-2.5 rounded-full"
+                                                    style={{ width: `${barPercentage}%` }}
+                                                ></div>
+                                            </div>
+                                            <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
                                         </div>
-                                        <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
-                                    </div>
-                                )
-                            })}
+                                    )
+                                })}
+                                </div>
+                            </ScrollArea>
                         </CardContent>
                     </Card>
                 </div>
