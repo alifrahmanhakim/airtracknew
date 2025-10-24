@@ -27,17 +27,14 @@ export const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>((props
   const [inputValue, setInputValue] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
-  const [filteredOptions, setFilteredOptions] = React.useState<string[]>(options);
 
-  React.useEffect(() => {
-    const newFilteredOptions = options.filter(
+  const filteredOptions = React.useMemo(() => {
+    return options.filter(
       (option) =>
         !tags.includes(option) &&
         option.toLowerCase().includes(inputValue.toLowerCase())
     );
-    setFilteredOptions(newFilteredOptions);
   }, [inputValue, tags, options]);
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
