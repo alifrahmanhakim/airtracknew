@@ -44,7 +44,7 @@ export function WhatsNewDialog({ trigger }: WhatsNewDialogProps) {
         <DialogHeader>
           <DialogTitle>What's New in AirTrack?</DialogTitle>
           <DialogDescription>
-            Here's a summary of the latest major features and improvements.
+            Rangkuman pembaruan dari versi `06b753e` ke `714731b`.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-6">
