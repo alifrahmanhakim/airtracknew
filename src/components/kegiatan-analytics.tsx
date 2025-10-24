@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Kegiatan } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Info, BarChart } from 'lucide-react';
-import { Bar as BarChartComponent, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Bar, BarChart as BarChartComponent, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
 type KegiatanAnalyticsProps = {
@@ -40,7 +40,7 @@ export function KegiatanAnalytics({ records }: KegiatanAnalyticsProps) {
         <CardContent className="text-center py-10 text-muted-foreground">
           <Info className="mx-auto h-8 w-8 mb-2" />
           <p className="font-semibold">No Data to Analyze</p>
-          <p className="text-sm">There are no activities in the selected month to display analytics for.</p>
+          <p className="text-sm">There are no activities in the selected week to display analytics for.</p>
         </CardContent>
       </Card>
     );
@@ -51,7 +51,7 @@ export function KegiatanAnalytics({ records }: KegiatanAnalyticsProps) {
       <CardHeader>
         <CardTitle>Activity Analytics</CardTitle>
         <CardDescription>
-          Overview of activities for the selected month.
+          Overview of activities for the selected week.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
