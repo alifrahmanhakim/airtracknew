@@ -38,7 +38,9 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                 : (typeof record.penerimaRekomendasi === 'string' && record.penerimaRekomendasi ? [record.penerimaRekomendasi] : []);
 
             penerimaList.forEach(penerima => {
-                acc[penerima] = (acc[penerima] || 0) + 1;
+                if (penerima && penerima.trim() !== '') {
+                    acc[penerima] = (acc[penerima] || 0) + 1;
+                }
             });
             return acc;
         }, {} as Record<string, number>);
