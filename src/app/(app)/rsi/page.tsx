@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon, ChevronsUpDown } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon, ChevronsUpDown, Send } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -270,9 +270,12 @@ export default function RsiPage() {
         const filteredLawEnforcements = filterByYear(data.lawEnforcementRecords, 'lawEnforcementRecords');
         const totalSanctions = filteredLawEnforcements.length;
         const totalCasualties = filteredAccidents.reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0);
-        const totalRekomendasiKnkt = filterByYear(data.tindakLanjutRecords, 'tindakLanjutRecords').length;
+        const allTindakLanjut = filterByYear(data.tindakLanjutRecords, 'tindakLanjutRecords') as TindakLanjutRecord[];
+        const totalRekomendasiKnkt = allTindakLanjut.length;
         const totalRekomendasiDgca = filterByYear(data.tindakLanjutDgcaRecords, 'tindakLanjutDgcaRecords').length;
         
+        const openOperatorFollowUps = allTindakLanjut.filter(r => !r.tindakLanjutOperator || r.tindakLanjutOperator.trim() === '-');
+
         const trendData = (data.accidentIncidentRecords || []).reduce((acc, record) => {
             if (!record.tanggal || !isValid(parseISO(record.tanggal))) return acc;
             const year = getYear(parseISO(record.tanggal));
@@ -322,7 +325,8 @@ export default function RsiPage() {
             totalRekomendasiKnkt,
             totalRekomendasiDgca,
             incidentTrend: sortedTrendData,
-            sanctionTypesBreakdown
+            sanctionTypesBreakdown,
+            openOperatorFollowUps
         }
     }, [data, yearFilter]);
 
@@ -464,6 +468,39 @@ export default function RsiPage() {
                     </div>
                 </div>
             </Card>
+            
+            {dashboardStats.openOperatorFollowUps.length > 0 && (
+                <Card className="mb-6 border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
+                            <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
+                        </CardTitle>
+                        <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
+                            These KNKT recommendations are waiting for a response or action from the related operator.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {dashboardStats.openOperatorFollowUps.slice(0, 3).map((record) => (
+                            <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
+                                <div>
+                                    <p className="font-semibold text-sm">{record.judulLaporan}</p>
+                                    <p className="text-xs text-muted-foreground">{record.nomorLaporan}</p>
+                                </div>
+                                <Button asChild variant="outline" size="sm">
+                                    <Link href="/rsi/monitoring-rekomendasi">View Details</Link>
+                                </Button>
+                            </div>
+                        ))}
+                        {dashboardStats.openOperatorFollowUps.length > 3 && (
+                            <div className="text-center pt-2">
+                                <Button asChild variant="link">
+                                    <Link href="/rsi/monitoring-rekomendasi">View all {dashboardStats.openOperatorFollowUps.length} items</Link>
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
             <Card className="mb-6">
                 <CardHeader>
