@@ -101,14 +101,14 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                         <Zap className="h-6 w-6 text-primary"/>
                                         <div>
                                             <p className="text-sm text-muted-foreground">Pace (Tasks This Week)</p>
-                                            <p className="text-xl font-bold"><AnimatedCounter endValue={pace} /></p>
+                                            <p className="text-lg font-bold"><AnimatedCounter endValue={pace} /></p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
                                         <Activity className="h-6 w-6 text-primary"/>
                                         <div>
                                             <p className="text-sm text-muted-foreground">Workload</p>
-                                            <p className="text-xl font-bold">{workloadLabel} ({workloadScore})</p>
+                                            <p className="text-lg font-bold">{workloadLabel} ({workloadScore})</p>
                                         </div>
                                     </div>
                                  </CardContent>
