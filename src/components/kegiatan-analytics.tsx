@@ -12,7 +12,7 @@ type KegiatanAnalyticsProps = {
   records: Kegiatan[];
 };
 
-export default function KegiatanAnalytics({ records }: KegiatanAnalyticsProps) {
+export function KegiatanAnalytics({ records }: KegiatanAnalyticsProps) {
   const analyticsData = React.useMemo(() => {
     if (records.length === 0) {
       return null;
