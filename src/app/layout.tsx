@@ -37,7 +37,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={cn("min-h-screen font-sans antialiased", fontSans.variable, fontGreatVibes.variable)}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             {children}
             <Toaster />
         </ThemeProvider>
@@ -45,5 +45,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

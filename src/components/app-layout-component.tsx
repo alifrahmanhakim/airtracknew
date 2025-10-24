@@ -83,6 +83,7 @@ const navItems = {
       { href: '/state-letter', label: 'State Letter', icon: Mail, countId: 'openStateLetters' },
       { href: '/glossary', label: 'Glossary', icon: BookType },
       { href: '/rsi', label: 'RSI', icon: Plane },
+      { href: '/kegiatan', label: 'Kegiatan Subdit', icon: CalendarDays },
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
     ],
     tools: [
