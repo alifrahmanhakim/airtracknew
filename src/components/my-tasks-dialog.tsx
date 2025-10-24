@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { getISOWeek, startOfWeek, endOfWeek, parseISO, format, eachDayOfInterval, isSameDay, getDay, isWithinInterval, addWeeks, subWeeks, differenceInDays, isBefore, startOfDay } from 'date-fns';
-import { Activity, ArrowLeft, ArrowRight, BarChart2, Calendar, CheckCircle, Clock, ListTodo, User as UserIcon, Zap } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, BarChart2, Calendar, CheckCircle, Clock, ListTodo, Plus, User as UserIcon, Zap } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 type AssignedTask = Task & {
   projectId: string;
   projectName: string;
-  projectType: Project['projectType'];
+  projectType: 'Rulemaking' | 'Tim Kerja';
 };
 
 interface MyTasksDialogProps {
@@ -78,6 +78,10 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                         <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                         <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
                     </div>
+                    <Button disabled>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Task
+                    </Button>
                 </DialogHeader>
                 <TooltipProvider>
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 p-6 pt-0 overflow-y-auto">
