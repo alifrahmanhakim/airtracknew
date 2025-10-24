@@ -17,7 +17,7 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/comp
 import { getYear, parseISO, isToday, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -323,15 +323,21 @@ export default function RsiPage() {
         const openFollowUpsByOperator = openOperatorFollowUps.reduce((acc, record) => {
             const operators = record.penerimaRekomendasi || [];
             operators.forEach(op => {
-                if (op.trim() !== '' && op.trim() !== '-') {
+                if (op && op.trim() !== '' && op.trim() !== '-') {
                      acc[op] = (acc[op] || 0) + 1;
                 }
             });
             return acc;
         }, {} as Record<string, number>);
 
+        const totalPending = Object.values(openFollowUpsByOperator).reduce((a, b) => a + b, 0);
+
         const openFollowUpsOperatorChartData = Object.entries(openFollowUpsByOperator)
-            .map(([name, value]) => ({ name, value }))
+            .map(([name, value]) => ({ 
+                name, 
+                value,
+                percentage: totalPending > 0 ? (value / totalPending) * 100 : 0,
+            }))
             .sort((a,b) => b.value - a.value);
 
 
@@ -546,11 +552,11 @@ export default function RsiPage() {
                             <CardTitle>Pending Follow-Ups by Operator</CardTitle>
                             <CardDescription>Breakdown of pending follow-ups by responsible operator.</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex justify-center items-center h-[300px]">
-                            <ChartContainer config={operatorChartConfig} className="mx-auto aspect-square h-full">
+                        <CardContent className="flex flex-col justify-center items-center h-[300px]">
+                            <ChartContainer config={operatorChartConfig} className="mx-auto aspect-square h-[180px] -mb-4">
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={dashboardStats.openFollowUpsOperatorChartData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                    <Pie data={dashboardStats.openFollowUpsOperatorChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
                                         {dashboardStats.openFollowUpsOperatorChartData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={cn(
                                                 `hsl(var(--chart-${(index % 5) + 1}))`
@@ -559,6 +565,15 @@ export default function RsiPage() {
                                     </Pie>
                                 </PieChart>
                             </ChartContainer>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground mt-4">
+                                {dashboardStats.openFollowUpsOperatorChartData.map((item, index) => (
+                                     <div key={item.name} className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: `hsl(var(--chart-${(index % 5) + 1}))` }} />
+                                        <span className="truncate">{item.name}:</span>
+                                        <span className="font-bold ml-auto">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                                     </div>
+                                ))}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
