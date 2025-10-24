@@ -50,6 +50,9 @@ export default function KegiatanPage() {
     const [filterMode, setFilterMode] = React.useState<'week' | 'month'>('week');
     const [selectedWeek, setSelectedWeek] = React.useState<string>(format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'));
     const [selectedMonth, setSelectedMonth] = React.useState<string>(format(new Date(), 'yyyy-MM'));
+    const weeklyRef = React.useRef<HTMLButtonElement>(null);
+    const monthlyRef = React.useRef<HTMLButtonElement>(null);
+    const [slider, setSlider] = React.useState({ left: 0, width: 0 });
 
     React.useEffect(() => {
         const q = query(collection(db, "kegiatanRecords"), orderBy("tanggalMulai", "desc"));
@@ -81,6 +84,15 @@ export default function KegiatanPage() {
         }
     }, [toast]);
     
+    React.useEffect(() => {
+        const targetRef = filterMode === 'week' ? weeklyRef : monthlyRef;
+        if (targetRef.current) {
+          const { offsetLeft, offsetWidth } = targetRef.current;
+          setSlider({ left: offsetLeft, width: offsetWidth });
+        }
+      }, [filterMode, weeklyRef, monthlyRef]);
+
+
     const handleDeleteRequest = (record: Kegiatan) => {
         setRecordToDelete(record);
     };
@@ -178,21 +190,22 @@ export default function KegiatanPage() {
                                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
                             </TabsList>
                              <div className="flex items-center gap-4">
-                                <ToggleGroup 
+                               <ToggleGroup 
                                     type="single" 
                                     value={filterMode} 
                                     onValueChange={(value: 'week' | 'month') => value && setFilterMode(value)} 
-                                    className="border rounded-full p-1 bg-muted/50 relative overflow-hidden"
+                                    className="border rounded-full p-1 bg-muted/50 relative"
                                 >
                                     <motion.div
-                                        className="absolute inset-0.5 bg-gradient-to-r from-green-400 to-blue-500 rounded-full z-0"
-                                        initial={false}
-                                        animate={{ x: filterMode === 'month' ? '100%' : '0%' }}
-                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                      className="absolute inset-0.5 bg-green-500 rounded-full z-0"
+                                      initial={false}
+                                      animate={slider}
+                                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                     />
-                                  <ToggleGroupItem value="week" className="px-3 py-1 text-xs rounded-full data-[state=on]:bg-transparent data-[state=on]:text-white">Weekly</ToggleGroupItem>
-                                  <ToggleGroupItem value="month" className="px-3 py-1 text-xs rounded-full data-[state=on]:bg-transparent data-[state=on]:text-white">Monthly</ToggleGroupItem>
+                                    <ToggleGroupItem ref={weeklyRef} value="week" className="px-3 py-1 text-xs rounded-full data-[state=on]:bg-transparent data-[state=on]:text-white">Weekly</ToggleGroupItem>
+                                    <ToggleGroupItem ref={monthlyRef} value="month" className="px-3 py-1 text-xs rounded-full data-[state=on]:bg-transparent data-[state=on]:text-white">Monthly</ToggleGroupItem>
                                 </ToggleGroup>
+
                                 <div className="flex items-center gap-2">
                                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                                     {filterMode === 'week' ? (
