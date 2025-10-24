@@ -29,6 +29,7 @@ import {
   Clock,
   Activity,
   CalendarDays,
+  Sparkles,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -364,7 +365,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroup>
               <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
               <div className="relative group/menu-item px-2 block">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover/menu-item:opacity-50 transition duration-1000 animate-gradient-move"></div>
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-75 transition duration-1000 animate-gradient-move"></div>
                   <div
                   className="relative p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors cursor-pointer"
                   onClick={() => setIsMyTasksDialogOpen(true)}
@@ -546,12 +547,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuGroup>
-                      <DropdownMenuItem asChild>
-                          <Link href="/profile">
-                          <Settings className="mr-2 h-4 w-4" />
-                          <span>Profile</span>
+                        <DropdownMenuItem asChild>
+                          <Link href="/whats-new">
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            <span>What's New</span>
                           </Link>
-                      </DropdownMenuItem>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/profile">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Profile</span>
+                            </Link>
+                        </DropdownMenuItem>
                       </DropdownMenuGroup>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
