@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 
 
@@ -313,6 +314,9 @@ export default function RsiPage() {
                 percentage: totalSanctionTypes > 0 ? (count / totalSanctionTypes) * 100 : 0
             }))
             .sort((a,b) => b.count - a.count);
+            
+        const operatorFollowUpCompleted = totalRekomendasiKnkt - openOperatorFollowUps.length;
+        const operatorFollowUpPercentage = totalRekomendasiKnkt > 0 ? (operatorFollowUpCompleted / totalRekomendasiKnkt) * 100 : 0;
 
 
         return {
@@ -326,7 +330,8 @@ export default function RsiPage() {
             totalRekomendasiDgca,
             incidentTrend: sortedTrendData,
             sanctionTypesBreakdown,
-            openOperatorFollowUps
+            openOperatorFollowUps,
+            operatorFollowUpPercentage
         }
     }, [data, yearFilter]);
 
@@ -469,22 +474,31 @@ export default function RsiPage() {
                 </div>
             </Card>
             
-            {dashboardStats.openOperatorFollowUps.length > 0 && (
+            {dashboardStats.totalRekomendasiKnkt > 0 && (
                 <Card className="mb-6 border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
-                            <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
+                            <Send /> Awaiting Operator Follow-Up
                         </CardTitle>
-                        <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
-                            These KNKT recommendations are waiting for a response or action from the related operator.
-                        </CardDescription>
+                         <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
+                            <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
+                                {dashboardStats.openOperatorFollowUps.length} of {dashboardStats.totalRekomendasiKnkt} recommendations require operator action.
+                            </CardDescription>
+                            <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
+                        </div>
+                        <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {dashboardStats.openOperatorFollowUps.slice(0, 3).map((record) => (
                             <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                 <div>
                                     <p className="font-semibold text-sm">{record.judulLaporan}</p>
-                                    <p className="text-xs text-muted-foreground">{record.nomorLaporan}</p>
+                                     <p className="text-xs text-muted-foreground">
+                                        {record.nomorLaporan}
+                                        <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
+                                            ({record.penerimaRekomendasi?.join(', ')})
+                                        </span>
+                                    </p>
                                 </div>
                                 <Button asChild variant="outline" size="sm">
                                     <Link href="/rsi/monitoring-rekomendasi">View Details</Link>
