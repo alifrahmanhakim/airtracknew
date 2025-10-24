@@ -28,6 +28,7 @@ import {
   ListTodo,
   Clock,
   Activity,
+  CalendarDays,
 } from 'lucide-react';
 import Image from 'next/image';
 
