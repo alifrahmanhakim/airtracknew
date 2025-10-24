@@ -146,6 +146,18 @@ const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
     }
 };
 
+const getStatusClass = (status: string) => {
+    switch (status) {
+      case 'Final': return 'bg-green-100 text-green-800 hover:bg-green-200';
+      case 'Draft': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      case 'Draft Final': return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+      case 'Preliminary': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      case 'Interim Statement': return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+      case 'Usulan': return 'bg-red-100 text-red-800 hover:bg-red-200';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
+
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
@@ -498,23 +510,38 @@ export default function RsiPage() {
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
                         <CardContent className="space-y-3 max-h-96 overflow-y-auto">
-                            {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => (
-                                <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
-                                    <div>
-                                        <p className="font-semibold text-sm">{record.judulLaporan}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {record.nomorLaporan}
-                                            <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                               ({(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ') || 'N/A'})
-                                            </span>
-                                        </p>
+                            {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => {
+                                const status = record.status || 'N/A';
+                                return (
+                                <div 
+                                    key={record.id} 
+                                    className="p-3 border-b border-orange-200 dark:border-orange-800/50 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-md cursor-pointer"
+                                    onClick={() => setRecordToEdit(record)}
+                                >
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <p className="font-semibold text-sm">{record.judulLaporan}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {record.nomorLaporan}
+                                                <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
+                                                ({(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ') || 'N/A'})
+                                                </span>
+                                            </p>
+                                        </div>
+                                         <Badge className={cn('text-xs', getStatusClass(status))}>{status}</Badge>
                                     </div>
-                                    <Button variant="outline" size="sm" onClick={() => setRecordToEdit(record)}>
-                                        <Pencil className="mr-2 h-3 w-3" />
-                                        Edit
-                                    </Button>
+                                    <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
+                                        <div className="text-muted-foreground">
+                                            <p><span className="font-semibold">Reg:</span> {record.registrasiPesawat || '-'}</p>
+                                            <p><span className="font-semibold">Loc:</span> {record.lokasiKejadian || '-'}</p>
+                                        </div>
+                                        <div className="text-muted-foreground text-right">
+                                            <p><span className="font-semibold">Incident:</span> {record.tanggalKejadian ? parseISO(record.tanggalKejadian).toLocaleDateString() : '-'}</p>
+                                            <p><span className="font-semibold">Published:</span> {record.tanggalTerbit ? parseISO(record.tanggalTerbit).toLocaleDateString() : '-'}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            ))}
+                            )})}
                         </CardContent>
                          {dashboardStats.openOperatorFollowUps.length > 4 && (
                             <CardFooter>
@@ -540,8 +567,8 @@ export default function RsiPage() {
                                         onClick={() => setSelectedOperator(item.name)}
                                     >
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                 <span className="truncate flex-1">{item.name}</span>
+                                            <TooltipTrigger className="truncate text-left flex-1">
+                                                 <span>{item.name}</span>
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 {item.name}
