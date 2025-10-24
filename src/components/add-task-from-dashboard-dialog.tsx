@@ -40,6 +40,7 @@ import { Separator } from './ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Label } from '@/components/ui/label';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
