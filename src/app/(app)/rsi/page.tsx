@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -22,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EditTindakLanjutRecordDialog } from '@/components/rsi/edit-tindak-lanjut-dialog';
-
+import { OperatorFollowUpDialog } from '@/components/rsi/operator-follow-up-dialog';
 
 
 type RsiModule = {
@@ -146,15 +147,6 @@ const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
     }
 };
 
-const CHART_COLORS = [
-    'hsl(var(--chart-1))',
-    'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))',
-    'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))',
-];
-
-
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
     const [isLoading, setIsLoading] = React.useState(true);
@@ -164,6 +156,7 @@ export default function RsiPage() {
     const [isAwaitingFollowUpExpanded, setIsAwaitingFollowUpExpanded] = React.useState(false);
     const [isOperatorBreakdownExpanded, setIsOperatorBreakdownExpanded] = React.useState(false);
     const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
+    const [selectedOperator, setSelectedOperator] = React.useState<string | null>(null);
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -389,40 +382,6 @@ export default function RsiPage() {
         const currentYear = new Date().getFullYear();
         return allTrendData.filter(d => d.year >= currentYear - scope + 1);
     }, [dashboardStats.incidentTrend, chartYearScope]);
-    
-    const ExpandableBreakdownList = ({ items, onToggle, isExpanded, itemClassName }: { items: {name: string, count: number, className: string, percentage: number}[], onToggle: () => void, isExpanded: boolean, itemClassName?: string }) => {
-        const itemsToShow = isExpanded ? items : items.slice(0, 5);
-    
-        return (
-            <div className="space-y-1">
-                {itemsToShow.map(({ name, count, className, percentage }) => (
-                    <div key={name} className="flex items-center gap-2">
-                        <Badge variant="secondary" className={cn(className, itemClassName, "whitespace-nowrap")}>
-                            {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
-                        </Badge>
-                    </div>
-                ))}
-                {items.length > 5 && (
-                    <Button
-                        variant="link"
-                        className="text-xs h-auto p-0"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onToggle();
-                        }}
-                    >
-                        {isExpanded ? 'Show less' : `Show ${items.length - 5} more`}
-                    </Button>
-                )}
-            </div>
-        );
-    };
-
-    const operatorChartConfig = dashboardStats.openFollowUpsOperatorChartData.reduce((acc, item) => {
-        acc[item.name] = { label: item.name };
-        return acc;
-    }, {} as any);
-
 
     return (
         <TooltipProvider>
@@ -576,7 +535,11 @@ export default function RsiPage() {
                                 const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
                                 const barPercentage = (item.value / maxVal) * 100;
                                 return (
-                                    <div key={item.name} className="flex items-center gap-3 text-sm">
+                                    <button 
+                                        key={item.name} 
+                                        className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40"
+                                        onClick={() => setSelectedOperator(item.name)}
+                                    >
                                         <Tooltip>
                                             <TooltipTrigger className="truncate text-left flex-1">
                                                 <span>{item.name}</span>
@@ -592,7 +555,7 @@ export default function RsiPage() {
                                             ></div>
                                         </div>
                                         <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
-                                    </div>
+                                    </button>
                                 )
                             })}
                         </CardContent>
@@ -783,21 +746,51 @@ export default function RsiPage() {
                                         )}
                                         {module.collectionName !== 'accidentIncidentRecords' && module.title === 'List of Law Enforcement' && dashboardStats.sanctionTypesBreakdown.length > 0 && (
                                             <>
-                                                <ExpandableBreakdownList
-                                                    items={dashboardStats.sanctionTypesBreakdown}
-                                                    onToggle={() => toggleCardExpansion(`${module.title}-sanction`)}
-                                                    isExpanded={expandedCards[`${module.title}-sanction`] || false}
-                                                    itemClassName={'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'}
-                                                />
+                                                <div className="space-y-1">
+                                                {(isExpanded ? dashboardStats.sanctionTypesBreakdown : dashboardStats.sanctionTypesBreakdown.slice(0, 5)).map(({ name, count, className, percentage }) => (
+                                                    <div key={name} className="flex items-center gap-2">
+                                                        <Badge variant="secondary" className={cn(className, 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', "whitespace-nowrap")}>
+                                                            {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
+                                                        </Badge>
+                                                    </div>
+                                                ))}
+                                                {dashboardStats.sanctionTypesBreakdown.length > 5 && (
+                                                    <Button
+                                                        variant="link"
+                                                        className="text-xs h-auto p-0"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            toggleCardExpansion(`${module.title}-sanction`);
+                                                        }}
+                                                    >
+                                                        {isExpanded ? 'Show less' : `Show ${dashboardStats.sanctionTypesBreakdown.length - 5} more`}
+                                                    </Button>
+                                                )}
+                                                </div>
                                                 <p className="text-xs uppercase text-muted-foreground font-semibold pt-2">By Entity</p>
                                             </>
                                         )}
-                                         <ExpandableBreakdownList
-                                            items={breakdownItems}
-                                            onToggle={() => toggleCardExpansion(module.title)}
-                                            isExpanded={isExpanded}
-                                            itemClassName={module.title === 'Monitoring Rekomendasi ke DGCA' ? 'bg-indigo-100 text-indigo-800' : ''}
-                                        />
+                                         <div className="space-y-1">
+                                            {(isExpanded ? breakdownItems : breakdownItems.slice(0, 5)).map(({ name, count, className, percentage }) => (
+                                                <div key={name} className="flex items-center gap-2">
+                                                    <Badge variant="secondary" className={cn(className, module.title === 'Monitoring Rekomendasi ke DGCA' ? 'bg-indigo-100 text-indigo-800' : '', "whitespace-nowrap")}>
+                                                        {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
+                                                    </Badge>
+                                                </div>
+                                            ))}
+                                            {breakdownItems.length > 5 && (
+                                                <Button
+                                                    variant="link"
+                                                    className="text-xs h-auto p-0"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        toggleCardExpansion(module.title);
+                                                    }}
+                                                >
+                                                    {isExpanded ? 'Show less' : `Show ${breakdownItems.length - 5} more`}
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                                 </CardContent>
@@ -823,9 +816,15 @@ export default function RsiPage() {
                     onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
                 />
             )}
+             {selectedOperator && (
+                <OperatorFollowUpDialog
+                    operatorName={selectedOperator}
+                    records={dashboardStats.openOperatorFollowUps}
+                    open={!!selectedOperator}
+                    onOpenChange={(isOpen) => !isOpen && setSelectedOperator(null)}
+                />
+            )}
             </main>
         </TooltipProvider>
     );
 }
-
-    
