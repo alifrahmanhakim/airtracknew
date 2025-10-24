@@ -25,6 +25,7 @@ import type { z } from 'zod';
 import { addKnktReport, deleteKnktReport } from '@/lib/actions/knkt';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import * as XLSX from 'xlsx';
+import { AppLayout } from '@/components/app-layout-component';
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
@@ -203,142 +204,140 @@ export default function LaporanInvestigasiKnktPage() {
     };
 
     return (
-        <main className="p-4 md:p-8">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <Card className="mb-4">
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                            <div className="flex items-center gap-4 flex-1">
-                                <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
-                                    <Link href="/rsi">
-                                        <ArrowLeft className="h-4 w-4" />
-                                    </Link>
-                                </Button>
-                                <div>
-                                    <h1 className="text-3xl font-bold">Laporan Investigasi dan Rekomendasi KNKT</h1>
-                                    <p className="text-muted-foreground mt-2">
-                                        Manage and view NTSC investigation reports.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <TabsList>
-                            <TabsTrigger value="form">Input Form</TabsTrigger>
-                            <TabsTrigger value="records">Records</TabsTrigger>
-                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                        </TabsList>
-                    </CardContent>
-                </Card>
-
-                <TabsContent value="form">
-                    <Card>
+        <AppLayout>
+            <main className="p-4 md:p-8">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Card className="mb-4">
                         <CardHeader>
-                            <CardTitle>Add New KNKT Report</CardTitle>
-                            <CardDescription>Fill out the form to add a new report.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <KnktReportForm form={form} />
-                        </CardContent>
-                        <CardFooter className="flex justify-end">
-                            <Button type="button" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Submit Record
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
-                
-                <TabsContent value="records">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle>Investigation Reports</CardTitle>
-                                    <CardDescription>
-                                        Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
-                                    </CardDescription>
-                                </div>
-                                <Button variant="outline" onClick={handleExportExcel}>
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                    Export to Excel
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? (
-                                <Skeleton className="h-[600px] w-full" />
-                            ) : (
-                                <>
-                                <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                                    <div className="relative flex-grow">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            placeholder="Search all fields..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-9"
-                                        />
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <div className="flex items-center gap-4 flex-1">
+                                    <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
+                                        <Link href="/rsi">
+                                            <ArrowLeft className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                    <div>
+                                        <h1 className="text-3xl font-bold">Laporan Investigasi dan Rekomendasi KNKT</h1>
+                                        <p className="text-muted-foreground mt-2">
+                                            Manage and view NTSC investigation reports.
+                                        </p>
                                     </div>
-                                    <Select value={operatorFilter} onValueChange={setOperatorFilter}>
-                                        <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by Operator..." /></SelectTrigger>
-                                        <SelectContent>{operatorOptions.map(op => <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                     <Select value={taxonomyFilter} onValueChange={setTaxonomyFilter}>
-                                        <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by Taxonomy..." /></SelectTrigger>
-                                        <SelectContent>{taxonomyOptions.map(tax => <SelectItem key={tax} value={tax}>{tax === 'all' ? 'All Taxonomies' : tax}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                        <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
-                                        <SelectContent>{statusOptions.map(s => <SelectItem key={s} value={s}>{s === 'all' ? 'All Statuses' : s}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                    <Select value={String(yearFilter)} onValueChange={setYearFilter}>
-                                        <SelectTrigger className="w-full sm:w-[120px]"><SelectValue placeholder="Filter by year..." /></SelectTrigger>
-                                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                    {(searchTerm || operatorFilter !== 'all' || yearFilter !== 'all' || statusFilter !== 'all' || taxonomyFilter !== 'all') && (
-                                        <Button variant="ghost" onClick={resetFilters}>
-                                            <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                                        </Button>
-                                    )}
                                 </div>
-                                <KnktReportsTable records={filteredRecords} onUpdate={handleRecordUpdate} onDelete={handleDeleteRequest} searchTerm={searchTerm} />
-                                </>
-                            )}
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <TabsList>
+                                <TabsTrigger value="form">Input Form</TabsTrigger>
+                                <TabsTrigger value="records">Records</TabsTrigger>
+                                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                            </TabsList>
                         </CardContent>
                     </Card>
-                </TabsContent>
-                
-                <TabsContent value="analytics">
-                    <KnktAnalytics allRecords={filteredRecords} />
-                </TabsContent>
-            </Tabs>
 
-            <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader className="text-center items-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
-                            <AlertTriangle className="h-6 w-6 text-red-600" />
-                        </div>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the report: <span className="font-semibold">{recordToDelete?.nomor_laporan}</span>.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
-                            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </main>
+                    <TabsContent value="form">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Add New KNKT Report</CardTitle>
+                                <CardDescription>Fill out the form to add a new report.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <KnktReportForm form={form} />
+                            </CardContent>
+                            <CardFooter className="flex justify-end">
+                                <Button type="button" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Submit Record
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="records">
+                        <Card>
+                            <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle>Investigation Reports</CardTitle>
+                                        <CardDescription>
+                                            Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
+                                        </CardDescription>
+                                    </div>
+                                    <Button variant="outline" onClick={handleExportExcel}>
+                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                        Export to Excel
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {isLoading ? (
+                                    <Skeleton className="h-[600px] w-full" />
+                                ) : (
+                                    <>
+                                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                                        <div className="relative flex-grow">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search all fields..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="pl-9"
+                                            />
+                                        </div>
+                                        <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+                                            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by Operator..." /></SelectTrigger>
+                                            <SelectContent>{operatorOptions.map(op => <SelectItem key={op} value={op}>{op === 'all' ? 'All Operators' : op}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                        <Select value={taxonomyFilter} onValueChange={setTaxonomyFilter}>
+                                            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by Taxonomy..." /></SelectTrigger>
+                                            <SelectContent>{taxonomyOptions.map(tax => <SelectItem key={tax} value={tax}>{tax === 'all' ? 'All Taxonomies' : tax}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                            <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger>
+                                            <SelectContent>{statusOptions.map(s => <SelectItem key={s} value={s}>{s === 'all' ? 'All Statuses' : s}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                        <Select value={String(yearFilter)} onValueChange={setYearFilter}>
+                                            <SelectTrigger className="w-full sm:w-[120px]"><SelectValue placeholder="Filter by year..." /></SelectTrigger>
+                                            <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                        {(searchTerm || operatorFilter !== 'all' || yearFilter !== 'all' || statusFilter !== 'all' || taxonomyFilter !== 'all') && (
+                                            <Button variant="ghost" onClick={resetFilters}>
+                                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <KnktReportsTable records={filteredRecords} onUpdate={handleRecordUpdate} onDelete={handleDeleteRequest} searchTerm={searchTerm} />
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="analytics">
+                        <KnktAnalytics allRecords={filteredRecords} />
+                    </TabsContent>
+                </Tabs>
+
+                <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader className="text-center items-center">
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                                <AlertTriangle className="h-6 w-6 text-red-600" />
+                            </div>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the report: <span className="font-semibold">{recordToDelete?.nomor_laporan}</span>.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
+                                {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </main>
+        </AppLayout>
     );
 }
-
-    
-
-    

@@ -25,6 +25,7 @@ import { aocOptions } from '@/lib/data';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
 import { EditAccidentIncidentRecordDialog } from '@/components/rsi/edit-accident-incident-dialog';
+import { AppLayout } from '@/components/app-layout-component';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -194,144 +195,146 @@ export default function DataAccidentIncidentPage() {
 
 
     return (
-        <main className="p-4 md:p-8">
-             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <Card className="mb-4">
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                            <div className="flex items-center gap-4 flex-1">
-                                <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
-                                    <Link href="/rsi">
-                                        <ArrowLeft className="h-4 w-4" />
-                                    </Link>
-                                </Button>
-                                <div>
-                                    <h1 className="text-3xl font-bold">Data Accident &amp; Serious Incident</h1>
-                                    <p className="text-muted-foreground mt-2">
-                                        Manage and view accident and serious incident records.
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="w-full sm:w-auto">
-                                <Select value={String(yearFilter)} onValueChange={setYearFilter}>
-                                    <SelectTrigger className="w-full sm:w-[180px]">
-                                        <SelectValue placeholder="Filter by year..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {yearOptions.map(year => (
-                                            <SelectItem key={String(year)} value={String(year)}>{year === 'all' ? 'All Years' : String(year)}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                         <div className="mt-4">
-                            <TabsList>
-                                <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
-                                <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
-                                <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
-                            </TabsList>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                <TabsContent value="form">
-                    <Card>
+        <AppLayout>
+            <main className="p-4 md:p-8">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Card className="mb-4">
                         <CardHeader>
-                            <CardTitle>Add New Record</CardTitle>
-                            <CardDescription>Fill out the form to add a new accident or serious incident record.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <AccidentIncidentForm form={form} />
-                        </CardContent>
-                        <CardFooter className="flex justify-end">
-                            <Button type="button" form="accident-incident-form" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Submit Record
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="records">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle>Records</CardTitle>
-                                    <CardDescription>List of all accident and serious incident records.</CardDescription>
-                                </div>
-                                <Button variant="outline" onClick={handleExportExcel}>
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                    Export to Excel
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? (
-                                <Skeleton className="h-[600px] w-full" />
-                            ) : (
-                                <>
-                                <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                                    <div className="relative flex-grow">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            placeholder="Search all fields..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-9"
-                                        />
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <div className="flex items-center gap-4 flex-1">
+                                    <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
+                                        <Link href="/rsi">
+                                            <ArrowLeft className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                    <div>
+                                        <h1 className="text-3xl font-bold">Data Accident &amp; Serious Incident</h1>
+                                        <p className="text-muted-foreground mt-2">
+                                            Manage and view accident and serious incident records.
+                                        </p>
                                     </div>
-                                    <Select value={aocFilter} onValueChange={setAocFilter}>
-                                        <SelectTrigger className="w-full sm:w-[200px]">
-                                            <SelectValue placeholder="Filter by AOC..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All AOCs</SelectItem>
-                                            {aocOptions.map(op => (
-                                                <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                        <SelectTrigger className="w-full sm:w-[200px]">
-                                            <SelectValue placeholder="Filter by Category..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {categoryOptions.map(cat => (
-                                                <SelectItem key={String(cat)} value={String(cat)}>{cat === 'all' ? 'All Categories' : cat}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {(searchTerm || aocFilter !== 'all' || categoryFilter !== 'all') && (
-                                         <Button variant="ghost" onClick={resetTableFilters}>
-                                            <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                                        </Button>
-                                    )}
                                 </div>
-                                <AccidentIncidentTable records={filteredRecords} onEdit={setRecordToEdit} searchTerm={searchTerm} />
-                                </>
-                            )}
-                        </CardContent>
+                                <div className="w-full sm:w-auto">
+                                    <Select value={String(yearFilter)} onValueChange={setYearFilter}>
+                                        <SelectTrigger className="w-full sm:w-[180px]">
+                                            <SelectValue placeholder="Filter by year..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {yearOptions.map(year => (
+                                                <SelectItem key={String(year)} value={String(year)}>{year === 'all' ? 'All Years' : String(year)}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <TabsList>
+                                    <TabsTrigger value="form" className="flex-1">Input Form</TabsTrigger>
+                                    <TabsTrigger value="records" className="flex-1">Records</TabsTrigger>
+                                    <TabsTrigger value="analytics" className="flex-1">Analytics</TabsTrigger>
+                                </TabsList>
+                            </div>
+                        </CardHeader>
                     </Card>
-                </TabsContent>
 
-                <TabsContent value="analytics">
-                    {isLoading ? (
-                        <Skeleton className="h-[800px] w-full" />
-                    ) : (
-                        <AccidentIncidentAnalytics allRecords={filteredRecords} />
-                    )}
-                </TabsContent>
-            </Tabs>
-             {recordToEdit && (
-                <EditAccidentIncidentRecordDialog
-                    record={recordToEdit}
-                    onRecordUpdate={handleRecordUpdate}
-                    open={!!recordToEdit}
-                    onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
-                />
-            )}
-        </main>
+                    <TabsContent value="form">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Add New Record</CardTitle>
+                                <CardDescription>Fill out the form to add a new accident or serious incident record.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <AccidentIncidentForm form={form} />
+                            </CardContent>
+                            <CardFooter className="flex justify-end">
+                                <Button type="button" form="accident-incident-form" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Submit Record
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="records">
+                        <Card>
+                            <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle>Records</CardTitle>
+                                        <CardDescription>List of all accident and serious incident records.</CardDescription>
+                                    </div>
+                                    <Button variant="outline" onClick={handleExportExcel}>
+                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                        Export to Excel
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {isLoading ? (
+                                    <Skeleton className="h-[600px] w-full" />
+                                ) : (
+                                    <>
+                                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                                        <div className="relative flex-grow">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search all fields..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="pl-9"
+                                            />
+                                        </div>
+                                        <Select value={aocFilter} onValueChange={setAocFilter}>
+                                            <SelectTrigger className="w-full sm:w-[200px]">
+                                                <SelectValue placeholder="Filter by AOC..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All AOCs</SelectItem>
+                                                {aocOptions.map(op => (
+                                                    <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                            <SelectTrigger className="w-full sm:w-[200px]">
+                                                <SelectValue placeholder="Filter by Category..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {categoryOptions.map(cat => (
+                                                    <SelectItem key={String(cat)} value={String(cat)}>{cat === 'all' ? 'All Categories' : cat}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {(searchTerm || aocFilter !== 'all' || categoryFilter !== 'all') && (
+                                            <Button variant="ghost" onClick={resetTableFilters}>
+                                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <AccidentIncidentTable records={filteredRecords} onEdit={setRecordToEdit} searchTerm={searchTerm} />
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="analytics">
+                        {isLoading ? (
+                            <Skeleton className="h-[800px] w-full" />
+                        ) : (
+                            <AccidentIncidentAnalytics allRecords={filteredRecords} />
+                        )}
+                    </TabsContent>
+                </Tabs>
+                {recordToEdit && (
+                    <EditAccidentIncidentRecordDialog
+                        record={recordToEdit}
+                        onRecordUpdate={handleRecordUpdate}
+                        open={!!recordToEdit}
+                        onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
+                    />
+                )}
+            </main>
+        </AppLayout>
     );
 }

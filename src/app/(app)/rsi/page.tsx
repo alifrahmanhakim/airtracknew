@@ -23,6 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EditTindakLanjutRecordDialog } from '@/components/rsi/edit-tindak-lanjut-dialog';
 import { OperatorFollowUpDialog } from '@/components/rsi/operator-follow-up-dialog';
+import { AppLayout } from '@/components/app-layout-component';
 
 
 type RsiModule = {
@@ -403,462 +404,466 @@ export default function RsiPage() {
     }, [dashboardStats.incidentTrend, chartYearScope]);
 
     return (
-        <TooltipProvider>
-            <main className="p-4 md:p-8">
-            <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                    <div className="flex-1">
-                        <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
-                        <p className="text-muted-foreground">
-                        A centralized hub for managing and monitoring safety incidents and recommendations.
-                        </p>
-                    </div>
-                    <div className="w-full sm:w-auto">
-                        <Select value={yearFilter} onValueChange={setYearFilter}>
-                            <SelectTrigger className="w-full sm:w-[180px]">
-                                <SelectValue placeholder="Filter by year..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {yearOptions.map(year => (
-                                    <SelectItem key={String(year)} value={String(year)}>
-                                        {year === 'all' ? 'All Years' : String(year)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-            </div>
-
-            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background overflow-hidden">
-                <div className="flex flex-col lg:flex-row">
-                    <div className="flex-1 p-6">
-                        <CardHeader className="p-0 mb-6">
-                            <CardTitle>Overall Summary</CardTitle>
-                            <CardDescription className="text-foreground">
-                                Key metrics from all records.
-                                {yearFilter !== 'all' ? ` (Period: ${yearFilter})` : ' (All Time)'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <AlertTriangle className="h-8 w-8 text-muted-foreground" />
-                                    <div>
-                                        <div className="flex items-baseline gap-2">
-                                            <p className="text-3xl font-bold text-red-500"><AnimatedCounter endValue={dashboardStats.totalAccidents} /></p>
-                                            <p className="text-xl font-bold text-yellow-500">/ <AnimatedCounter endValue={dashboardStats.totalSeriousIncidents} /></p>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">Accidents / Serious Incidents</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <FileSearch className="h-8 w-8 text-yellow-500" />
-                                    <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
-                                        <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <Gavel className="h-8 w-8 text-gray-500" />
-                                    <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
-                                        <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <Users className="h-8 w-8 text-red-500" />
-                                    <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
-                                        <p className="text-sm text-muted-foreground">Total Casualties</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <BookCheck className="h-8 w-8 text-green-500" />
-                                    <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalRekomendasiKnkt} /></p>
-                                        <p className="text-sm text-muted-foreground">Rekomendasi KNKT</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                                    <BookOpenCheck className="h-8 w-8 text-purple-500" />
-                                    <div>
-                                        <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalRekomendasiDgca} /></p>
-                                        <p className="text-sm text-muted-foreground">Rekomendasi ke DGCA</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </div>
-                    <div className="relative w-full lg:w-1/3 min-h-[200px] lg:min-h-0">
-                        <Image
-                            src="https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_4unr7i4unr7i4unr.png"
-                            alt="RSI Summary Illustration"
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 1024px) 100vw, 33vw"
-                        />
-                    </div>
-                </div>
-            </Card>
-            
-            {dashboardStats.totalRekomendasiKnkt > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                     <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 h-full flex flex-col">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
-                                <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
-                            </CardTitle>
-                            <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
-                                <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
-                                    These KNKT recommendations are waiting for a response or action from the related operator.
-                                </CardDescription>
-                                <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
-                            </div>
-                            <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
-                        </CardHeader>
-                        <CardContent className="space-y-3 overflow-y-auto flex-grow">
-                            {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => {
-                                const status = record.status || 'N/A';
-                                return (
-                                <div 
-                                    key={record.id} 
-                                    className="p-3 border-b border-orange-200 dark:border-orange-800/50 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-md cursor-pointer"
-                                    onClick={() => setRecordToEdit(record)}
-                                >
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div>
-                                            <p className="font-semibold text-sm">{record.judulLaporan}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {record.nomorLaporan}
-                                                <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                                ({(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ') || 'N/A'})
-                                                </span>
-                                            </p>
-                                        </div>
-                                         <Badge className={cn('text-xs', getStatusClass(status))}>{status}</Badge>
-                                    </div>
-                                    <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
-                                        <div className="text-muted-foreground">
-                                            <p><span className="font-semibold">Reg:</span> {record.registrasiPesawat || '-'}</p>
-                                            <p><span className="font-semibold">Loc:</span> {record.lokasiKejadian || '-'}</p>
-                                        </div>
-                                        <div className="text-muted-foreground text-right">
-                                            <p><span className="font-semibold">Incident:</span> {record.tanggalKejadian ? parseISO(record.tanggalKejadian).toLocaleDateString() : '-'}</p>
-                                            <p><span className="font-semibold">Published:</span> {record.tanggalTerbit ? parseISO(record.tanggalTerbit).toLocaleDateString() : '-'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )})}
-                        </CardContent>
-                         {dashboardStats.openOperatorFollowUps.length > 4 && (
-                            <CardFooter>
-                                <Button variant="link" className="w-full" onClick={() => setIsAwaitingFollowUpExpanded(!isAwaitingFollowUpExpanded)}>
-                                    {isAwaitingFollowUpExpanded ? 'Show less' : `Show all ${dashboardStats.openOperatorFollowUps.length} items`}
-                                </Button>
-                            </CardFooter>
-                        )}
-                    </Card>
-                     <Card className="h-full flex flex-col border-red-500 bg-red-50 dark:bg-red-950/80 dark:border-red-700/60">
-                        <CardHeader>
-                            <CardTitle className="text-red-800 dark:text-red-300">Pending Follow-Ups by Operator</CardTitle>
-                            <CardDescription className="text-red-700/80 dark:text-red-400/80">Breakdown of pending follow-ups by responsible operator.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-grow space-y-3 overflow-y-auto">
-                           {(isOperatorBreakdownExpanded ? dashboardStats.openFollowUpsOperatorChartData : dashboardStats.openFollowUpsOperatorChartData.slice(0, 10)).map((item) => {
-                                const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
-                                const barPercentage = (item.value / maxVal) * 100;
-                                return (
-                                    <div 
-                                        key={item.name} 
-                                        className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
-                                        onClick={() => setSelectedOperator(item.name)}
-                                    >
-                                        <Tooltip>
-                                            <TooltipTrigger className="truncate text-left flex-1">
-                                                <span>{item.name}</span>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                {item.name}
-                                            </TooltipContent>
-                                        </Tooltip>
-                                        <div className="w-1/3 bg-yellow-200 dark:bg-yellow-800/50 rounded-full h-2.5">
-                                            <div
-                                                className="bg-yellow-500 h-2.5 rounded-full"
-                                                style={{ width: `${barPercentage}%` }}
-                                            ></div>
-                                        </div>
-                                        <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
-                                    </div>
-                                )
-                            })}
-                        </CardContent>
-                        {dashboardStats.openFollowUpsOperatorChartData.length > 10 && (
-                            <CardFooter>
-                                <Button variant="link" className="w-full" onClick={() => setIsOperatorBreakdownExpanded(!isOperatorBreakdownExpanded)}>
-                                    {isOperatorBreakdownExpanded ? 'Show less' : 'Show all'}
-                                </Button>
-                            </CardFooter>
-                        )}
-                    </Card>
-                </div>
-            )}
-
-            <Card className="mb-6">
-                <CardHeader>
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                        <div>
-                            <CardTitle className="flex items-center gap-2"><LineChartIcon /> Incident Trends by Year</CardTitle>
-                            <CardDescription>Year-over-year trends for Accidents, Serious Incidents, and Casualties.</CardDescription>
+        <AppLayout>
+            <TooltipProvider>
+                <main className="p-4 md:p-8">
+                <div className="mb-8 p-4 rounded-lg bg-card/80 backdrop-blur-sm">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                        <div className="flex-1">
+                            <h1 className="text-3xl font-bold">Resolution Safety Issues (RSI) Dashboard</h1>
+                            <p className="text-muted-foreground">
+                            A centralized hub for managing and monitoring safety incidents and recommendations.
+                            </p>
                         </div>
-                        <Select value={chartYearScope} onValueChange={setChartYearScope}>
-                            <SelectTrigger className="w-full sm:w-[180px]">
-                                <SelectValue placeholder="Select date range..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="5">Last 5 Years</SelectItem>
-                                <SelectItem value="10">Last 10 Years</SelectItem>
-                                <SelectItem value="all">All Time</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="w-full sm:w-auto">
+                            <Select value={yearFilter} onValueChange={setYearFilter}>
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <SelectValue placeholder="Filter by year..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {yearOptions.map(year => (
+                                        <SelectItem key={String(year)} value={String(year)}>
+                                            {year === 'all' ? 'All Years' : String(year)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <ChartContainer
-                        config={{
-                            "Accident": { label: "Accident", color: "hsl(var(--chart-3))" },
-                            "S. Incident": { label: "S. Incident", color: "hsl(var(--chart-2))" },
-                            "Casualties": { label: "Casualties", color: "hsl(var(--chart-5))" },
-                        }}
-                        className="h-[300px] w-full"
-                    >
-                        <ResponsiveContainer>
-                            <LineChart data={filteredTrendData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="year" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Legend />
-                                <Line name="Accident" type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} activeDot={{ r: 8 }} />
-                                <Line name="S. Incident" type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
-                                <Line name="Casualties" type="monotone" dataKey="Casualties" stroke="hsl(var(--chart-5))" strokeWidth={2} activeDot={{ r: 8 }} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {rsiModules.map((module) => {
-                    const dateField = getDateFieldForCollection(module.collectionName);
-                    
-                    const filteredRecords = (data[module.collectionName] || []).filter((record: any) => {
-                        if (yearFilter === 'all') return true;
-                        
-                        let dateStrings: string[] = [];
-                        if (module.collectionName === 'lawEnforcementRecords') {
-                             dateStrings = (record.references || []).map((ref: any) => ref.dateLetter).filter(Boolean);
-                        } else {
-                            const dateString = record[dateField];
-                            if (dateString) dateStrings.push(dateString);
-                        }
-
-                       return dateStrings.some(dateString => {
-                             if (!dateString) return false;
-                             try {
-                                let recordYear;
-                                if (typeof dateString === 'string') {
-                                    const parsedDate = parseISO(dateString);
-                                    if(isValid(parsedDate)) {
-                                        recordYear = getYear(parsedDate);
-                                    } else {
-                                        return false;
-                                    }
-                                } else if ((dateString as any).toDate) { // For Firestore Timestamps
-                                    recordYear = getYear((dateString as any).toDate());
-                                }
-                                return recordYear === parseInt(yearFilter);
-                            } catch(e) {
-                                return false;
-                            }
-                        });
-                    });
-                    
-                    const totalCount = filteredRecords.length;
-                    
-                    const statusCounts = filteredRecords.reduce((acc, record) => {
-                        const status = (record as any)[module.statusField];
-                        if (status) {
-                            if (Array.isArray(status)) {
-                                status.forEach(s => {
-                                     acc[s] = (acc[s] || 0) + 1;
-                                });
-                            } else {
-                                acc[status] = (acc[status] || 0) + 1;
-                            }
-                        }
-                        return acc;
-                    }, {} as Record<string, number>);
-
-                    const statusArray = Object.entries(statusCounts)
-                        .map(([name, count]) => ({ 
-                            name, 
-                            count, 
-                            className: module.statusVariant(name),
-                            percentage: totalCount > 0 ? (count / totalCount) * 100 : 0
-                         }))
-                        .sort((a, b) => b.count - a.count);
-
-                    const isExpanded = expandedCards[module.title] || false;
-                    
-                    const totalAccidents = module.collectionName === 'accidentIncidentRecords'
-                        ? (filteredRecords as AccidentIncidentRecord[]).filter(r => r.kategori === 'Accident (A)').length
-                        : 0;
-                    
-                    const totalSeriousIncidents = module.collectionName === 'accidentIncidentRecords'
-                        ? totalCount - totalAccidents
-                        : 0;
-
-                    const totalCasualties = module.collectionName === 'accidentIncidentRecords'
-                        ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
-                        : null;
-                        
-                    const breakdownItems = module.title === 'Monitoring Rekomendasi ke DGCA'
-                        ? Object.entries(
-                            (filteredRecords as TindakLanjutDgcaRecord[]).reduce((acc, r) => {
-                                acc[r.operator] = (acc[r.operator] || 0) + 1;
-                                return acc;
-                            }, {} as Record<string, number>)
-                          )
-                          .map(([name, count]) => ({
-                              name,
-                              count,
-                              className: module.statusVariant(name),
-                              percentage: totalCount > 0 ? (count / totalCount) * 100 : 0,
-                          }))
-                          .sort((a,b) => b.count - a.count)
-                        : statusArray;
-
-                    return (
-                        <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
-                            <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20">
-                                <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
-                                {module.icon}
-                                <CardTitle>{module.title}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex-grow flex flex-col space-y-4">
-                                <p className="text-sm text-muted-foreground h-10 line-clamp-2">
-                                    {module.description}
-                                </p>
-                                <div className="pt-4">
-                                    <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
-                                    {isLoading ? (
-                                        <Skeleton className="h-10 w-20 mt-1" />
-                                    ) : (
-                                        module.collectionName === 'accidentIncidentRecords' ? (
+                <Card className="mb-6 bg-gradient-to-r from-primary/10 via-background to-background overflow-hidden">
+                    <div className="flex flex-col lg:flex-row">
+                        <div className="flex-1 p-6">
+                            <CardHeader className="p-0 mb-6">
+                                <CardTitle>Overall Summary</CardTitle>
+                                <CardDescription className="text-foreground">
+                                    Key metrics from all records.
+                                    {yearFilter !== 'all' ? ` (Period: ${yearFilter})` : ' (All Time)'}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                        <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+                                        <div>
                                             <div className="flex items-baseline gap-2">
-                                                <p className="text-4xl font-bold text-red-500"><AnimatedCounter endValue={totalAccidents} /></p>
-                                                <p className="text-2xl font-bold text-yellow-500">/ <AnimatedCounter endValue={totalSeriousIncidents} /></p>
+                                                <p className="text-3xl font-bold text-red-500"><AnimatedCounter endValue={dashboardStats.totalAccidents} /></p>
+                                                <p className="text-xl font-bold text-yellow-500">/ <AnimatedCounter endValue={dashboardStats.totalSeriousIncidents} /></p>
                                             </div>
-                                        ) : (
-                                            <p className="text-4xl font-bold">
-                                                <AnimatedCounter endValue={totalCount} />
-                                            </p>
-                                        )
-                                    )}
+                                            <p className="text-sm text-muted-foreground">Accidents / Serious Incidents</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                        <FileSearch className="h-8 w-8 text-yellow-500" />
+                                        <div>
+                                            <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalReports} /></p>
+                                            <p className="text-sm text-muted-foreground">Total KNKT Reports</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                        <Gavel className="h-8 w-8 text-gray-500" />
+                                        <div>
+                                            <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalSanctions} /></p>
+                                            <p className="text-sm text-muted-foreground">Total Law Enforcements</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                        <Users className="h-8 w-8 text-red-500" />
+                                        <div>
+                                            <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalCasualties} /></p>
+                                            <p className="text-sm text-muted-foreground">Total Casualties</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                        <BookCheck className="h-8 w-8 text-green-500" />
+                                        <div>
+                                            <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalRekomendasiKnkt} /></p>
+                                            <p className="text-sm text-muted-foreground">Rekomendasi KNKT</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
+                                        <BookOpenCheck className="h-8 w-8 text-purple-500" />
+                                        <div>
+                                            <p className="text-3xl font-bold"><AnimatedCounter endValue={dashboardStats.totalRekomendasiDgca} /></p>
+                                            <p className="text-sm text-muted-foreground">Rekomendasi ke DGCA</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                {(totalCount > 0) && (
-                                     <div className="pt-2 space-y-3">
-                                        <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
-                                        {module.collectionName === 'accidentIncidentRecords' && (
-                                             <div className="flex items-center gap-2">
-                                                <Users className="h-4 w-4 text-muted-foreground" />
-                                                <Badge variant="destructive">
-                                                    Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
-                                                </Badge>
+                            </CardContent>
+                        </div>
+                        <div className="relative w-full lg:w-1/3 min-h-[200px] lg:min-h-0">
+                            <Image
+                                src="https://ik.imagekit.io/avmxsiusm/Gemini_Generated_Image_4unr7i4unr7i4unr.png"
+                                alt="RSI Summary Illustration"
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 1024px) 100vw, 33vw"
+                            />
+                        </div>
+                    </div>
+                </Card>
+                
+                {dashboardStats.totalRekomendasiKnkt > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 h-full flex flex-col">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
+                                    <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
+                                </CardTitle>
+                                <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
+                                    <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
+                                        These KNKT recommendations are waiting for a response or action from the related operator.
+                                    </CardDescription>
+                                    <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
+                                </div>
+                                <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
+                            </CardHeader>
+                            <CardContent className="space-y-3 overflow-y-auto flex-grow">
+                                {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => {
+                                    const status = record.status || 'N/A';
+                                    return (
+                                    <div 
+                                        key={record.id} 
+                                        className="p-3 border-b border-orange-200 dark:border-orange-800/50 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-md cursor-pointer"
+                                        onClick={() => setRecordToEdit(record)}
+                                    >
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <p className="font-semibold text-sm">{record.judulLaporan}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {record.nomorLaporan}
+                                                    <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
+                                                    ({(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ') || 'N/A'})
+                                                    </span>
+                                                </p>
                                             </div>
+                                            <Badge className={cn('text-xs', getStatusClass(status))}>{status}</Badge>
+                                        </div>
+                                        <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
+                                            <div className="text-muted-foreground">
+                                                <p><span className="font-semibold">Reg:</span> {record.registrasiPesawat || '-'}</p>
+                                                <p><span className="font-semibold">Loc:</span> {record.lokasiKejadian || '-'}</p>
+                                            </div>
+                                            <div className="text-muted-foreground text-right">
+                                                <p><span className="font-semibold">Incident:</span> {record.tanggalKejadian ? parseISO(record.tanggalKejadian).toLocaleDateString() : '-'}</p>
+                                                <p><span className="font-semibold">Published:</span> {record.tanggalTerbit ? parseISO(record.tanggalTerbit).toLocaleDateString() : '-'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )})}
+                            </CardContent>
+                            {dashboardStats.openOperatorFollowUps.length > 4 && (
+                                <CardFooter>
+                                    <Button variant="link" className="w-full" onClick={() => setIsAwaitingFollowUpExpanded(!isAwaitingFollowUpExpanded)}>
+                                        {isAwaitingFollowUpExpanded ? 'Show less' : `Show all ${dashboardStats.openOperatorFollowUps.length} items`}
+                                    </Button>
+                                </CardFooter>
+                            )}
+                        </Card>
+                        <Card className="h-full flex flex-col border-red-500 bg-red-50 dark:bg-red-950/80 dark:border-red-700/60">
+                            <CardHeader>
+                                <CardTitle className="text-red-800 dark:text-red-300">Pending Follow-Ups by Operator</CardTitle>
+                                <CardDescription className="text-red-700/80 dark:text-red-400/80">Breakdown of pending follow-ups by responsible operator.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-grow space-y-3 overflow-y-auto">
+                            {(isOperatorBreakdownExpanded ? dashboardStats.openFollowUpsOperatorChartData : dashboardStats.openFollowUpsOperatorChartData.slice(0, 10)).map((item) => {
+                                    const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
+                                    const barPercentage = (item.value / maxVal) * 100;
+                                    return (
+                                        <div 
+                                            key={item.name} 
+                                            className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
+                                            onClick={() => setSelectedOperator(item.name)}
+                                        >
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <div className="truncate text-left flex-1">
+                                                    <span>{item.name}</span>
+                                                  </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    {item.name}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <div className="w-1/3 bg-yellow-200 dark:bg-yellow-800/50 rounded-full h-2.5">
+                                                <div
+                                                    className="bg-yellow-500 h-2.5 rounded-full"
+                                                    style={{ width: `${barPercentage}%` }}
+                                                ></div>
+                                            </div>
+                                            <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                                        </div>
+                                    )
+                                })}
+                            </CardContent>
+                            {dashboardStats.openFollowUpsOperatorChartData.length > 10 && (
+                                <CardFooter>
+                                    <Button variant="link" className="w-full" onClick={() => setIsOperatorBreakdownExpanded(!isOperatorBreakdownExpanded)}>
+                                        {isOperatorBreakdownExpanded ? 'Show less' : 'Show all'}
+                                    </Button>
+                                </CardFooter>
+                            )}
+                        </Card>
+                    </div>
+                )}
+
+                <Card className="mb-6">
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                            <div>
+                                <CardTitle className="flex items-center gap-2"><LineChartIcon /> Incident Trends by Year</CardTitle>
+                                <CardDescription>Year-over-year trends for Accidents, Serious Incidents, and Casualties.</CardDescription>
+                            </div>
+                            <Select value={chartYearScope} onValueChange={setChartYearScope}>
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <SelectValue placeholder="Select date range..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="5">Last 5 Years</SelectItem>
+                                    <SelectItem value="10">Last 10 Years</SelectItem>
+                                    <SelectItem value="all">All Time</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer
+                            config={{
+                                "Accident": { label: "Accident", color: "hsl(var(--chart-3))" },
+                                "S. Incident": { label: "S. Incident", color: "hsl(var(--chart-2))" },
+                                "Casualties": { label: "Casualties", color: "hsl(var(--chart-5))" },
+                            }}
+                            className="h-[300px] w-full"
+                        >
+                            <ResponsiveContainer>
+                                <LineChart data={filteredTrendData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="year" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Legend />
+                                    <Line name="Accident" type="monotone" dataKey="A" stroke="hsl(var(--chart-3))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                    <Line name="S. Incident" type="monotone" dataKey="SI" stroke="hsl(var(--chart-2))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                    <Line name="Casualties" type="monotone" dataKey="Casualties" stroke="hsl(var(--chart-5))" strokeWidth={2} activeDot={{ r: 8 }} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {rsiModules.map((module) => {
+                        const dateField = getDateFieldForCollection(module.collectionName);
+                        
+                        const filteredRecords = (data[module.collectionName] || []).filter((record: any) => {
+                            if (yearFilter === 'all') return true;
+                            
+                            let dateStrings: string[] = [];
+                            if (module.collectionName === 'lawEnforcementRecords') {
+                                dateStrings = (record.references || []).map((ref: any) => ref.dateLetter).filter(Boolean);
+                            } else {
+                                const dateString = record[dateField];
+                                if (dateString) dateStrings.push(dateString);
+                            }
+
+                        return dateStrings.some(dateString => {
+                                if (!dateString) return false;
+                                try {
+                                    let recordYear;
+                                    if (typeof dateString === 'string') {
+                                        const parsedDate = parseISO(dateString);
+                                        if(isValid(parsedDate)) {
+                                            recordYear = getYear(parsedDate);
+                                        } else {
+                                            return false;
+                                        }
+                                    } else if ((dateString as any).toDate) { // For Firestore Timestamps
+                                        recordYear = getYear((dateString as any).toDate());
+                                    }
+                                    return recordYear === parseInt(yearFilter);
+                                } catch(e) {
+                                    return false;
+                                }
+                            });
+                        });
+                        
+                        const totalCount = filteredRecords.length;
+                        
+                        const statusCounts = filteredRecords.reduce((acc, record) => {
+                            const status = (record as any)[module.statusField];
+                            if (status) {
+                                if (Array.isArray(status)) {
+                                    status.forEach(s => {
+                                        acc[s] = (acc[s] || 0) + 1;
+                                    });
+                                } else {
+                                    acc[status] = (acc[status] || 0) + 1;
+                                }
+                            }
+                            return acc;
+                        }, {} as Record<string, number>);
+
+                        const statusArray = Object.entries(statusCounts)
+                            .map(([name, count]) => ({ 
+                                name, 
+                                count, 
+                                className: module.statusVariant(name),
+                                percentage: totalCount > 0 ? (count / totalCount) * 100 : 0
+                            }))
+                            .sort((a, b) => b.count - a.count);
+
+                        const isExpanded = expandedCards[module.title] || false;
+                        
+                        const totalAccidents = module.collectionName === 'accidentIncidentRecords'
+                            ? (filteredRecords as AccidentIncidentRecord[]).filter(r => r.kategori === 'Accident (A)').length
+                            : 0;
+                        
+                        const totalSeriousIncidents = module.collectionName === 'accidentIncidentRecords'
+                            ? totalCount - totalAccidents
+                            : 0;
+
+                        const totalCasualties = module.collectionName === 'accidentIncidentRecords'
+                            ? (filteredRecords as AccidentIncidentRecord[]).reduce((sum, r) => sum + parseCasualties(r.korbanJiwa), 0)
+                            : null;
+                            
+                        const breakdownItems = module.title === 'Monitoring Rekomendasi ke DGCA'
+                            ? Object.entries(
+                                (filteredRecords as TindakLanjutDgcaRecord[]).reduce((acc, r) => {
+                                    acc[r.operator] = (acc[r.operator] || 0) + 1;
+                                    return acc;
+                                }, {} as Record<string, number>)
+                            )
+                            .map(([name, count]) => ({
+                                name,
+                                count,
+                                className: module.statusVariant(name),
+                                percentage: totalCount > 0 ? (count / totalCount) * 100 : 0,
+                            }))
+                            .sort((a,b) => b.count - a.count)
+                            : statusArray;
+
+                        return (
+                            <Link href={module.href} key={module.title} className="group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+                                <Card className="flex flex-col h-full hover:shadow-lg hover:border-primary transition-all group-hover:bg-gradient-to-b group-hover:from-primary/10 dark:group-hover:from-primary/20">
+                                    <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
+                                    {module.icon}
+                                    <CardTitle>{module.title}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow flex flex-col space-y-4">
+                                    <p className="text-sm text-muted-foreground h-10 line-clamp-2">
+                                        {module.description}
+                                    </p>
+                                    <div className="pt-4">
+                                        <p className="text-xs uppercase text-muted-foreground font-semibold">Total Records</p>
+                                        {isLoading ? (
+                                            <Skeleton className="h-10 w-20 mt-1" />
+                                        ) : (
+                                            module.collectionName === 'accidentIncidentRecords' ? (
+                                                <div className="flex items-baseline gap-2">
+                                                    <p className="text-4xl font-bold text-red-500"><AnimatedCounter endValue={totalAccidents} /></p>
+                                                    <p className="text-2xl font-bold text-yellow-500">/ <AnimatedCounter endValue={totalSeriousIncidents} /></p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-4xl font-bold">
+                                                    <AnimatedCounter endValue={totalCount} />
+                                                </p>
+                                            )
                                         )}
-                                        {module.collectionName !== 'accidentIncidentRecords' && module.title === 'List of Law Enforcement' && dashboardStats.sanctionTypesBreakdown.length > 0 && (
-                                            <>
-                                                <div className="space-y-1">
-                                                {(isExpanded ? dashboardStats.sanctionTypesBreakdown : dashboardStats.sanctionTypesBreakdown.slice(0, 5)).map(({ name, count, className, percentage }) => (
+                                    </div>
+                                    {(totalCount > 0) && (
+                                        <div className="pt-2 space-y-3">
+                                            <p className="text-xs uppercase text-muted-foreground font-semibold">Breakdown</p>
+                                            {module.collectionName === 'accidentIncidentRecords' && (
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                                    <Badge variant="destructive">
+                                                        Total Casualties: <span className="font-bold ml-1">{totalCasualties}</span>
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                            {module.collectionName !== 'accidentIncidentRecords' && module.title === 'List of Law Enforcement' && dashboardStats.sanctionTypesBreakdown.length > 0 && (
+                                                <>
+                                                    <div className="space-y-1">
+                                                    {(isExpanded ? dashboardStats.sanctionTypesBreakdown : dashboardStats.sanctionTypesBreakdown.slice(0, 5)).map(({ name, count, className, percentage }) => (
+                                                        <div key={name} className="flex items-center gap-2">
+                                                            <Badge variant="secondary" className={cn(className, 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', "whitespace-nowrap")}>
+                                                                {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
+                                                            </Badge>
+                                                        </div>
+                                                    ))}
+                                                    {dashboardStats.sanctionTypesBreakdown.length > 5 && (
+                                                        <Button
+                                                            variant="link"
+                                                            className="text-xs h-auto p-0"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                toggleCardExpansion(`${module.title}-sanction`);
+                                                            }}
+                                                        >
+                                                            {isExpanded ? 'Show less' : `Show ${dashboardStats.sanctionTypesBreakdown.length - 5} more`}
+                                                        </Button>
+                                                    )}
+                                                    </div>
+                                                    <p className="text-xs uppercase text-muted-foreground font-semibold pt-2">By Entity</p>
+                                                </>
+                                            )}
+                                            <div className="space-y-1">
+                                                {(isExpanded ? breakdownItems : breakdownItems.slice(0, 5)).map(({ name, count, className, percentage }) => (
                                                     <div key={name} className="flex items-center gap-2">
-                                                        <Badge variant="secondary" className={cn(className, 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', "whitespace-nowrap")}>
+                                                        <Badge variant="secondary" className={cn(className, module.title === 'Monitoring Rekomendasi ke DGCA' ? 'bg-indigo-100 text-indigo-800' : '', "whitespace-nowrap")}>
                                                             {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
                                                         </Badge>
                                                     </div>
                                                 ))}
-                                                {dashboardStats.sanctionTypesBreakdown.length > 5 && (
+                                                {breakdownItems.length > 5 && (
                                                     <Button
                                                         variant="link"
                                                         className="text-xs h-auto p-0"
                                                         onClick={(e) => {
                                                             e.preventDefault();
-                                                            toggleCardExpansion(`${module.title}-sanction`);
+                                                            toggleCardExpansion(module.title);
                                                         }}
                                                     >
-                                                        {isExpanded ? 'Show less' : `Show ${dashboardStats.sanctionTypesBreakdown.length - 5} more`}
+                                                        {isExpanded ? 'Show less' : `Show ${breakdownItems.length - 5} more`}
                                                     </Button>
                                                 )}
-                                                </div>
-                                                <p className="text-xs uppercase text-muted-foreground font-semibold pt-2">By Entity</p>
-                                            </>
-                                        )}
-                                         <div className="space-y-1">
-                                            {(isExpanded ? breakdownItems : breakdownItems.slice(0, 5)).map(({ name, count, className, percentage }) => (
-                                                <div key={name} className="flex items-center gap-2">
-                                                    <Badge variant="secondary" className={cn(className, module.title === 'Monitoring Rekomendasi ke DGCA' ? 'bg-indigo-100 text-indigo-800' : '', "whitespace-nowrap")}>
-                                                        {name}: <span className="font-bold ml-1">{count} ({percentage.toFixed(0)}%)</span>
-                                                    </Badge>
-                                                </div>
-                                            ))}
-                                            {breakdownItems.length > 5 && (
-                                                <Button
-                                                    variant="link"
-                                                    className="text-xs h-auto p-0"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        toggleCardExpansion(module.title);
-                                                    }}
-                                                >
-                                                    {isExpanded ? 'Show less' : `Show ${breakdownItems.length - 5} more`}
-                                                </Button>
-                                            )}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                                </CardContent>
-                                <CardFooter className="bg-muted/50 p-4 mt-auto">
-                                    <div className="relative text-sm font-semibold w-full flex items-center">
-                                        <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
-                                            Open Module
-                                        </span>
-                                        <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300 group-hover:w-full"></div>
-                                        <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
-                                    </div>
-                                </CardFooter>
-                            </Card>
-                        </Link>
-                    )
-                })}
-            </div>
-            {recordToEdit && (
-                <EditTindakLanjutRecordDialog
-                    record={recordToEdit}
-                    onRecordUpdate={handleRecordUpdate}
-                    open={!!recordToEdit}
-                    onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
-                />
-            )}
-             {selectedOperator && (
-                <OperatorFollowUpDialog
-                    operatorName={selectedOperator}
-                    records={dashboardStats.openOperatorFollowUps}
-                    open={!!selectedOperator}
-                    onOpenChange={(isOpen) => !isOpen && setSelectedOperator(null)}
-                />
-            )}
-            </main>
-        </TooltipProvider>
+                                    )}
+                                    </CardContent>
+                                    <CardFooter className="bg-muted/50 p-4 mt-auto">
+                                        <div className="relative text-sm font-semibold w-full flex items-center">
+                                            <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-colors group-hover:text-primary">
+                                                Open Module
+                                            </span>
+                                            <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300 group-hover:w-full"></div>
+                                            <ArrowRight className="ml-auto h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            </Link>
+                        )
+                    })}
+                </div>
+                {recordToEdit && (
+                    <EditTindakLanjutRecordDialog
+                        record={recordToEdit}
+                        onRecordUpdate={handleRecordUpdate}
+                        open={!!recordToEdit}
+                        onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
+                    />
+                )}
+                {selectedOperator && (
+                    <OperatorFollowUpDialog
+                        operatorName={selectedOperator}
+                        records={dashboardStats.openOperatorFollowUps}
+                        open={!!selectedOperator}
+                        onOpenChange={(isOpen) => !isOpen && setSelectedOperator(null)}
+                    />
+                )}
+                </main>
+            </TooltipProvider>
+        </AppLayout>
     );
 }

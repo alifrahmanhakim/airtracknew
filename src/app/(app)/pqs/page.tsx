@@ -29,6 +29,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { AppLayout } from '@/components/app-layout-component';
 
 
 // Dynamically import heavy components
@@ -436,50 +437,52 @@ export default function PqsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8" id="pqs-page">
-       {renderContent()}
+    <AppLayout>
+        <div className="p-4 md:p-8" id="pqs-page">
+        {renderContent()}
 
-       <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
-            <AlertDialogContent>
-                <AlertDialogHeader className="text-center items-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
-                        <AlertTriangle className="h-6 w-6 text-red-600" />
-                    </div>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the record with PQ Number <span className="font-semibold">{recordToDelete?.pqNumber}</span>.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
-                        {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Delete
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+        <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader className="text-center items-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                            <AlertTriangle className="h-6 w-6 text-red-600" />
+                        </div>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the record with PQ Number <span className="font-semibold">{recordToDelete?.pqNumber}</span>.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
+                            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
-        <AlertDialog open={showDeleteAllConfirm} onOpenChange={setShowDeleteAllConfirm}>
-            <AlertDialogContent>
-                <AlertDialogHeader className="text-center items-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
-                        <AlertTriangle className="h-6 w-6 text-red-600" />
-                    </div>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all <strong>{totalRecords}</strong> PQ records from the database.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeletingAll}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={confirmDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeletingAll}>
-                        {isDeletingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Yes, delete all records
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    </div>
+            <AlertDialog open={showDeleteAllConfirm} onOpenChange={setShowDeleteAllConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader className="text-center items-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+                            <AlertTriangle className="h-6 w-6 text-red-600" />
+                        </div>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete all <strong>{totalRecords}</strong> PQ records from the database.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeletingAll}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeletingAll}>
+                            {isDeletingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Yes, delete all records
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+    </AppLayout>
   );
 }

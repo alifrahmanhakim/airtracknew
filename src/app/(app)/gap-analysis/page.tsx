@@ -3,6 +3,7 @@ import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firesto
 import { db } from '@/lib/firebase';
 import type { GapAnalysisRecord, Project } from '@/lib/types';
 import { StateLetterClientPage } from '@/components/state-letter-client-page';
+import { AppLayout } from '@/components/app-layout-component';
 
 
 async function getGapAnalysisData() {
@@ -34,5 +35,9 @@ async function getGapAnalysisData() {
 export default async function StateLetterPage() {
     const { projects, records } = await getGapAnalysisData();
 
-    return <StateLetterClientPage initialRecords={records} initialRulemakingProjects={projects} />;
+    return (
+        <AppLayout>
+            <StateLetterClientPage initialRecords={records} initialRulemakingProjects={projects} />
+        </AppLayout>
+    );
 }

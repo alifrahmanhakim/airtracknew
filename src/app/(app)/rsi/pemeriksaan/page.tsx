@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -24,6 +25,7 @@ import Link from 'next/link';
 import { aocOptions } from '@/lib/data';
 import { Combobox, ComboboxOption } from '@/components/ui/combobox';
 import * as XLSX from 'xlsx';
+import { AppLayout } from '@/components/app-layout-component';
 
 const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form').then(mod => mod.PemeriksaanForm), { 
     ssr: false,
@@ -182,125 +184,127 @@ export default function PemeriksaanPage() {
 
 
     return (
-        <main className="p-4 md:p-8">
-             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <Card className="mb-4">
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                            <div className="flex items-center gap-4 flex-1">
-                                 <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
-                                    <Link href="/rsi">
-                                        <ArrowLeft className="h-4 w-4" />
-                                    </Link>
-                                </Button>
-                                <div>
-                                    <h1 className="text-3xl font-bold">Pemeriksaan DKPPU</h1>
-                                    <p className="text-muted-foreground mt-2">
-                                        Data Kecelakaan (Accident & Serious Incident) yang Dilaksanakan Pemeriksaan oleh DKPPU.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <TabsList>
-                            <TabsTrigger value="form">Input Form</TabsTrigger>
-                            <TabsTrigger value="records">Records</TabsTrigger>
-                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                        </TabsList>
-                    </CardContent>
-                </Card>
-
-                <TabsContent value="form">
-                    <Card>
+        <AppLayout>
+            <main className="p-4 md:p-8">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Card className="mb-4">
                         <CardHeader>
-                            <CardTitle>Add New Examination Record</CardTitle>
-                            <CardDescription>Fill out the form to add a new record.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <PemeriksaanForm form={form} />
-                        </CardContent>
-                        <CardFooter className="flex justify-end">
-                            <Button type="button" form="pemeriksaan-form" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Submit Record
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="records">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle>Examination Records</CardTitle>
-                                    <CardDescription>List of all examination records.</CardDescription>
-                                </div>
-                                <Button variant="outline" onClick={handleExportExcel}>
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                    Export to Excel
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? (
-                                <Skeleton className="h-[600px] w-full" />
-                            ) : (
-                                <div className="space-y-4">
-                                     <div className="flex flex-col sm:flex-row gap-4">
-                                        <div className="relative flex-grow">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                placeholder="Search records..."
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                                className="pl-9"
-                                            />
-                                        </div>
-                                        <Select value={String(yearFilter)} onValueChange={setYearFilter}>
-                                            <SelectTrigger className="w-full sm:w-[120px]">
-                                                <SelectValue placeholder="Filter by year..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {yearOptions.map(year => (
-                                                    <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <div className="w-full sm:w-[200px]">
-                                            <Combobox
-                                                options={[{ value: 'all', label: 'All Operators' }, ...operatorOptions]}
-                                                value={operatorFilter}
-                                                onChange={setOperatorFilter}
-                                                placeholder="Filter by operator..."
-                                            />
-                                        </div>
-                                        {(searchTerm || yearFilter !== 'all' || operatorFilter !== 'all') && (
-                                            <Button variant="ghost" onClick={resetFilters}>
-                                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                                            </Button>
-                                        )}
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <div className="flex items-center gap-4 flex-1">
+                                    <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
+                                        <Link href="/rsi">
+                                            <ArrowLeft className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                    <div>
+                                        <h1 className="text-3xl font-bold">Pemeriksaan DKPPU</h1>
+                                        <p className="text-muted-foreground mt-2">
+                                            Data Kecelakaan (Accident & Serious Incident) yang Dilaksanakan Pemeriksaan oleh DKPPU.
+                                        </p>
                                     </div>
-                                    <PemeriksaanTable 
-                                        records={filteredRecords} 
-                                        onUpdate={handleRecordUpdate}
-                                        searchTerm={searchTerm} 
-                                    />
                                 </div>
-                            )}
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <TabsList>
+                                <TabsTrigger value="form">Input Form</TabsTrigger>
+                                <TabsTrigger value="records">Records</TabsTrigger>
+                                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                            </TabsList>
                         </CardContent>
                     </Card>
-                </TabsContent>
 
-                <TabsContent value="analytics">
-                    {isLoading ? (
-                        <Skeleton className="h-[600px] w-full" />
-                    ) : (
-                        <PemeriksaanAnalytics allRecords={filteredRecords} />
-                    )}
-                </TabsContent>
-            </Tabs>
-        </main>
+                    <TabsContent value="form">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Add New Examination Record</CardTitle>
+                                <CardDescription>Fill out the form to add a new record.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <PemeriksaanForm form={form} />
+                            </CardContent>
+                            <CardFooter className="flex justify-end">
+                                <Button type="button" form="pemeriksaan-form" disabled={isSubmitting} onClick={form.handleSubmit(onFormSubmit)}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Submit Record
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="records">
+                        <Card>
+                            <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle>Examination Records</CardTitle>
+                                        <CardDescription>List of all examination records.</CardDescription>
+                                    </div>
+                                    <Button variant="outline" onClick={handleExportExcel}>
+                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                        Export to Excel
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                {isLoading ? (
+                                    <Skeleton className="h-[600px] w-full" />
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col sm:flex-row gap-4">
+                                            <div className="relative flex-grow">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input
+                                                    placeholder="Search records..."
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    className="pl-9"
+                                                />
+                                            </div>
+                                            <Select value={String(yearFilter)} onValueChange={setYearFilter}>
+                                                <SelectTrigger className="w-full sm:w-[120px]">
+                                                    <SelectValue placeholder="Filter by year..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {yearOptions.map(year => (
+                                                        <SelectItem key={year} value={String(year)}>{year === 'all' ? 'All Years' : year}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <div className="w-full sm:w-[200px]">
+                                                <Combobox
+                                                    options={[{ value: 'all', label: 'All Operators' }, ...operatorOptions]}
+                                                    value={operatorFilter}
+                                                    onChange={setOperatorFilter}
+                                                    placeholder="Filter by operator..."
+                                                />
+                                            </div>
+                                            {(searchTerm || yearFilter !== 'all' || operatorFilter !== 'all') && (
+                                                <Button variant="ghost" onClick={resetFilters}>
+                                                    <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <PemeriksaanTable 
+                                            records={filteredRecords} 
+                                            onUpdate={handleRecordUpdate}
+                                            searchTerm={searchTerm} 
+                                        />
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="analytics">
+                        {isLoading ? (
+                            <Skeleton className="h-[600px] w-full" />
+                        ) : (
+                            <PemeriksaanAnalytics allRecords={filteredRecords} />
+                        )}
+                    </TabsContent>
+                </Tabs>
+            </main>
+        </AppLayout>
     );
 }

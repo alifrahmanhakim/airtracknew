@@ -20,6 +20,7 @@ import { lawEnforcementFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
 import * as XLSX from 'xlsx';
+import { AppLayout } from '@/components/app-layout-component';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -147,92 +148,93 @@ export default function LawEnforcementPage() {
 
 
     return (
-        <main className="p-4 md:p-8">
-             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <Card className="mb-4">
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                            <div className="flex items-center gap-4 flex-1">
-                                <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
-                                    <Link href="/rsi">
-                                        <ArrowLeft className="h-4 w-4" />
-                                    </Link>
-                                </Button>
-                                <div>
-                                    <h1 className="text-3xl font-bold">List of Law Enforcement</h1>
-                                    <p className="text-muted-foreground mt-2">
-                                        Manage and monitor law enforcement sanctions.
-                                    </p>
+        <AppLayout>
+            <main className="p-4 md:p-8">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Card className="mb-4">
+                        <CardHeader>
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <div className="flex items-center gap-4 flex-1">
+                                    <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
+                                        <Link href="/rsi">
+                                            <ArrowLeft className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                    <div>
+                                        <h1 className="text-3xl font-bold">List of Law Enforcement</h1>
+                                        <p className="text-muted-foreground mt-2">
+                                            Manage and monitor law enforcement sanctions.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <TabsList>
-                            <TabsTrigger value="form">Input Form</TabsTrigger>
-                            <TabsTrigger value="records">Records</TabsTrigger>
-                            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                        </TabsList>
-                    </CardContent>
-                </Card>
+                        </CardHeader>
+                        <CardContent>
+                            <TabsList>
+                                <TabsTrigger value="form">Input Form</TabsTrigger>
+                                <TabsTrigger value="records">Records</TabsTrigger>
+                                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                            </TabsList>
+                        </CardContent>
+                    </Card>
 
-                <TabsContent value="form">
-                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <TabsContent value="form">
+                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Add New Sanction</CardTitle>
+                                    <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <LawEnforcementForm form={form} isSubmitting={isSubmitting} />
+                                </CardContent>
+                                <CardFooter>
+                                    <Button type="submit" disabled={isSubmitting}>
+                                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Submit Record
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </form>
+                    </TabsContent>
+
+                    <TabsContent value="records">
                         <Card>
-                             <CardHeader>
-                                <CardTitle>Add New Sanction</CardTitle>
-                                <CardDescription>Fill out the form to add a new law enforcement record.</CardDescription>
+                            <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle>Sanction Records</CardTitle>
+                                        <CardDescription>List of all law enforcement records.</CardDescription>
+                                    </div>
+                                    <Button variant="outline" onClick={handleExportExcel}>
+                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                        Export to Excel
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent>
-                                <LawEnforcementForm form={form} isSubmitting={isSubmitting} />
+                                {isLoading ? (
+                                    <Skeleton className="h-[600px] w-full" />
+                                ) : (
+                                    <LawEnforcementTable records={records} onUpdate={handleRecordUpdate} />
+                                )}
                             </CardContent>
-                            <CardFooter>
-                                <Button type="submit" disabled={isSubmitting}>
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Submit Record
-                                </Button>
-                            </CardFooter>
                         </Card>
-                    </form>
-                </TabsContent>
-
-                <TabsContent value="records">
-                    <Card>
-                        <CardHeader>
-                             <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle>Sanction Records</CardTitle>
-                                    <CardDescription>List of all law enforcement records.</CardDescription>
-                                </div>
-                                <Button variant="outline" onClick={handleExportExcel}>
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                    Export to Excel
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? (
-                                <Skeleton className="h-[600px] w-full" />
-                            ) : (
-                                <LawEnforcementTable records={records} onUpdate={handleRecordUpdate} />
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                
-                <TabsContent value="analytics">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Analytics</CardTitle>
-                            <CardDescription>Visualizations of the law enforcement data.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                           <LawEnforcementAnalytics allRecords={records} />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
-        </main>
+                    </TabsContent>
+                    
+                    <TabsContent value="analytics">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Analytics</CardTitle>
+                                <CardDescription>Visualizations of the law enforcement data.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                            <LawEnforcementAnalytics allRecords={records} />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+            </main>
+        </AppLayout>
     );
 }
-
