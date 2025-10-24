@@ -27,6 +27,7 @@ import { KegiatanForm } from '@/components/kegiatan-form';
 import { KegiatanTable } from '@/components/kegiatan-table';
 import { eachMonthOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isSameMonth, startOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics').then(mod => mod.KegiatanAnalytics), {
     ssr: false,
