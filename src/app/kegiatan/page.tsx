@@ -8,7 +8,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Kegiatan } from '@/lib/types';
+import { Kegiatan, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { deleteKegiatan } from '@/lib/actions/kegiatan';
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { KegiatanForm } from '@/components/kegiatan-form';
 import { KegiatanTable } from '@/components/kegiatan-table';
-import { eachMonthOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isSameMonth, startOfMonth } from 'date-fns';
+import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -37,6 +37,7 @@ const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics'
 
 export default function KegiatanPage() {
     const [records, setRecords] = React.useState<Kegiatan[]>([]);
+    const [users, setUsers] = React.useState<User[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
@@ -44,7 +45,7 @@ export default function KegiatanPage() {
     const [recordToDelete, setRecordToDelete] = React.useState<Kegiatan | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
     
-    const [selectedMonth, setSelectedMonth] = React.useState<Date>(startOfMonth(new Date()));
+    const [selectedWeek, setSelectedWeek] = React.useState<string>(format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'));
 
     React.useEffect(() => {
         const q = query(collection(db, "kegiatanRecords"), orderBy("tanggalMulai", "desc"));
@@ -70,7 +71,17 @@ export default function KegiatanPage() {
             setIsLoading(false);
         });
 
-        return () => unsubscribe();
+        const usersQuery = query(collection(db, "users"));
+        const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
+            const usersFromDb: User[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+            setUsers(usersFromDb);
+        });
+
+
+        return () => {
+            unsubscribe();
+            unsubscribeUsers();
+        }
     }, [toast]);
     
     const handleDeleteRequest = (record: Kegiatan) => {
@@ -107,18 +118,24 @@ export default function KegiatanPage() {
     };
     
     const currentYear = getYear(new Date());
-    const months = eachMonthOfInterval({
+    const weeks = eachWeekOfInterval({
         start: startOfYear(new Date(currentYear, 0, 1)),
         end: endOfYear(new Date(currentYear, 11, 31)),
-    });
+    }, { weekStartsOn: 1 });
 
     const filteredRecords = React.useMemo(() => {
-        if (!selectedMonth) return records;
-        return records.filter(record => 
-            isSameMonth(parseISO(record.tanggalMulai), selectedMonth) ||
-            isSameMonth(parseISO(record.tanggalSelesai), selectedMonth)
-        );
-    }, [records, selectedMonth]);
+        if (!selectedWeek) return records;
+        const weekStart = parseISO(selectedWeek);
+        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+
+        return records.filter(record => {
+            const recordStart = parseISO(record.tanggalMulai);
+            const recordEnd = parseISO(record.tanggalSelesai);
+            return isWithinInterval(recordStart, { start: weekStart, end: weekEnd }) ||
+                   isWithinInterval(recordEnd, { start: weekStart, end: weekEnd }) ||
+                   (recordStart < weekStart && recordEnd > weekEnd);
+        });
+    }, [records, selectedWeek]);
 
 
     return (
@@ -147,18 +164,22 @@ export default function KegiatanPage() {
                              <div className="flex items-center gap-2">
                                 <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                                 <Select
-                                    value={format(selectedMonth, 'yyyy-MM-dd')}
-                                    onValueChange={(value) => setSelectedMonth(parseISO(value))}
+                                    value={selectedWeek}
+                                    onValueChange={setSelectedWeek}
                                 >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Pilih Bulan" />
+                                    <SelectTrigger className="w-[280px]">
+                                        <SelectValue placeholder="Pilih Minggu" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {months.map(month => (
-                                            <SelectItem key={month.toISOString()} value={format(month, 'yyyy-MM-dd')}>
-                                                {format(month, 'MMMM yyyy', { locale: id })}
-                                            </SelectItem>
-                                        ))}
+                                        {weeks.map(weekStart => {
+                                            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                                            const weekLabel = `${format(weekStart, 'dd MMM')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                                            return (
+                                                <SelectItem key={weekStart.toISOString()} value={format(weekStart, 'yyyy-MM-dd')}>
+                                                    {weekLabel}
+                                                </SelectItem>
+                                            )
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -175,7 +196,7 @@ export default function KegiatanPage() {
                         </CardDescription>
                         </CardHeader>
                         <CardContent>
-                           <KegiatanForm onFormSubmit={handleRecordAddOrUpdate} />
+                           <KegiatanForm onFormSubmit={handleRecordAddOrUpdate} users={users} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -186,6 +207,7 @@ export default function KegiatanPage() {
                         onDelete={handleDeleteRequest}
                         onUpdate={handleRecordAddOrUpdate}
                         isLoading={isLoading}
+                        users={users}
                     />
                 </TabsContent>
 

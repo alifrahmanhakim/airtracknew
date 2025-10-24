@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Kegiatan } from '@/lib/types';
+import type { Kegiatan, User } from '@/lib/types';
 import {
   Table,
   TableBody,
@@ -31,9 +31,10 @@ type KegiatanTableProps = {
   onDelete: (record: Kegiatan) => void;
   onUpdate: (record: Kegiatan) => void;
   isLoading: boolean;
+  users: User[];
 };
 
-function EditKegiatanDialog({ record, onUpdate }: { record: Kegiatan; onUpdate: (record: Kegiatan) => void }) {
+function EditKegiatanDialog({ record, onUpdate, users }: { record: Kegiatan; onUpdate: (record: Kegiatan) => void; users: User[] }) {
     const [open, setOpen] = React.useState(false);
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -55,6 +56,7 @@ function EditKegiatanDialog({ record, onUpdate }: { record: Kegiatan; onUpdate: 
                         onUpdate(updatedRecord);
                         setOpen(false);
                     }}
+                    users={users}
                 />
             </DialogContent>
         </Dialog>
@@ -62,7 +64,7 @@ function EditKegiatanDialog({ record, onUpdate }: { record: Kegiatan; onUpdate: 
 }
 
 
-export function KegiatanTable({ records, onDelete, onUpdate, isLoading }: KegiatanTableProps) {
+export function KegiatanTable({ records, onDelete, onUpdate, isLoading, users }: KegiatanTableProps) {
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
@@ -73,7 +75,7 @@ export function KegiatanTable({ records, onDelete, onUpdate, isLoading }: Kegiat
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
         <p className="font-semibold">No Activities Found</p>
-        <p className="text-sm">There are no activities for the selected month.</p>
+        <p className="text-sm">There are no activities for the selected week.</p>
       </div>
     );
   }
@@ -107,7 +109,7 @@ export function KegiatanTable({ records, onDelete, onUpdate, isLoading }: Kegiat
               <TableCell className="align-top whitespace-pre-wrap">{record.catatan || '-'}</TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">
-                    <EditKegiatanDialog record={record} onUpdate={onUpdate} />
+                    <EditKegiatanDialog record={record} onUpdate={onUpdate} users={users} />
                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
                         <Trash2 className="h-4 w-4" />
                     </Button>

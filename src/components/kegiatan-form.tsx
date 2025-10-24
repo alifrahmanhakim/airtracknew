@@ -20,11 +20,11 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { TagInput } from './ui/tag-input';
+import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import * as React from 'react';
 import { addKegiatan } from '@/lib/actions/kegiatan';
 import { useToast } from '@/hooks/use-toast';
-import type { Kegiatan } from '@/lib/types';
+import type { Kegiatan, User } from '@/lib/types';
 
 const kegiatanFormSchema = z.object({
     subjek: z.string().min(1, 'Subjek is required.'),
@@ -43,11 +43,17 @@ type KegiatanFormValues = z.infer<typeof kegiatanFormSchema>;
 type KegiatanFormProps = {
     onFormSubmit: (data: Kegiatan) => void;
     kegiatan?: Kegiatan;
+    users: User[];
 };
 
-export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
+export function KegiatanForm({ onFormSubmit, kegiatan, users }: KegiatanFormProps) {
     const [isLoading, setIsLoading] = React.useState(false);
     const { toast } = useToast();
+
+    const userOptions: MultiSelectOption[] = React.useMemo(() => users.map(user => ({
+        value: user.name,
+        label: user.name
+    })), [users]);
 
     const form = useForm<KegiatanFormValues>({
         resolver: zodResolver(kegiatanFormSchema),
@@ -174,13 +180,11 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
                         <FormItem>
                             <FormLabel>Nama yang Terlibat</FormLabel>
                             <FormControl>
-                                <TagInput
-                                    {...field}
-                                    placeholder="Enter names..."
-                                    tags={field.value || []}
-                                    setTags={(newTags) => {
-                                        form.setValue("nama", newTags, { shouldValidate: true });
-                                    }}
+                                <MultiSelect
+                                    options={userOptions}
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    placeholder="Select team members..."
                                 />
                             </FormControl>
                             <FormMessage />
