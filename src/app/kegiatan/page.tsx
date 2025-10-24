@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { KegiatanForm } from '@/components/kegiatan-form';
 import { KegiatanTable } from '@/components/kegiatan-table';
-import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
+import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isWithinInterval, startOfWeek, endOfWeek, getISOWeek } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -165,7 +165,8 @@ export default function KegiatanPage() {
                                     <SelectContent>
                                         {weeks.map(weekStart => {
                                             const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                                            const weekLabel = `${format(weekStart, 'dd MMM')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                                            const weekNumber = getISOWeek(weekStart);
+                                            const weekLabel = `Week ${weekNumber}: ${format(weekStart, 'dd MMM')} - ${format(weekEnd, 'dd MMM yyyy')}`;
                                             return (
                                                 <SelectItem key={weekStart.toISOString()} value={format(weekStart, 'yyyy-MM-dd')}>
                                                     {weekLabel}
