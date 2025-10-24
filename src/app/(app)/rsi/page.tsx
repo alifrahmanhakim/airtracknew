@@ -566,10 +566,10 @@ export default function RsiPage() {
                             </CardFooter>
                         )}
                     </Card>
-                     <Card className="h-full flex flex-col">
+                     <Card className="h-full flex flex-col border-red-500 bg-red-50 dark:bg-red-950/80 dark:border-red-700/60">
                         <CardHeader>
-                            <CardTitle>Pending Follow-Ups by Operator</CardTitle>
-                            <CardDescription>Breakdown of pending follow-ups by responsible operator.</CardDescription>
+                            <CardTitle className="text-red-800 dark:text-red-300">Pending Follow-Ups by Operator</CardTitle>
+                            <CardDescription className="text-red-700/80 dark:text-red-400/80">Breakdown of pending follow-ups by responsible operator.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3 overflow-y-auto">
                            {(isOperatorBreakdownExpanded ? dashboardStats.openFollowUpsOperatorChartData : dashboardStats.openFollowUpsOperatorChartData.slice(0, 10)).map((item) => {
@@ -585,9 +585,9 @@ export default function RsiPage() {
                                                 {item.name}
                                             </TooltipContent>
                                         </Tooltip>
-                                        <div className="w-1/3 bg-muted rounded-full h-2.5">
+                                        <div className="w-1/3 bg-yellow-200 dark:bg-yellow-800/50 rounded-full h-2.5">
                                             <div
-                                                className="bg-primary h-2.5 rounded-full"
+                                                className="bg-yellow-500 h-2.5 rounded-full"
                                                 style={{ width: `${barPercentage}%` }}
                                             ></div>
                                         </div>
@@ -827,3 +827,5 @@ export default function RsiPage() {
         </TooltipProvider>
     );
 }
+
+    
