@@ -8,7 +8,7 @@ import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/fire
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Kegiatan, User } from '@/lib/types';
+import { Kegiatan } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { deleteKegiatan } from '@/lib/actions/kegiatan';
@@ -177,9 +177,9 @@ export default function KegiatanPage() {
                                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
                             </TabsList>
                              <div className="flex items-center gap-4">
-                                <ToggleGroup type="single" value={filterMode} onValueChange={(value: 'week' | 'month') => value && setFilterMode(value)}>
-                                  <ToggleGroupItem value="week">Weekly</ToggleGroupItem>
-                                  <ToggleGroupItem value="month">Monthly</ToggleGroupItem>
+                                <ToggleGroup type="single" value={filterMode} onValueChange={(value: 'week' | 'month') => value && setFilterMode(value)} className="border rounded-md p-1 bg-muted/50">
+                                  <ToggleGroupItem value="week" className="px-3 py-1 text-xs data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">Weekly</ToggleGroupItem>
+                                  <ToggleGroupItem value="month" className="px-3 py-1 text-xs data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">Monthly</ToggleGroupItem>
                                 </ToggleGroup>
                                 <div className="flex items-center gap-2">
                                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
