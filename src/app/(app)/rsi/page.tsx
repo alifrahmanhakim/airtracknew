@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -498,7 +497,7 @@ export default function RsiPage() {
                             </div>
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
-                        <CardContent className="space-y-3 overflow-y-auto flex-grow">
+                        <CardContent className="space-y-3 max-h-96 overflow-y-auto">
                             {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => (
                                 <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                     <div>
@@ -535,14 +534,14 @@ export default function RsiPage() {
                                 const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
                                 const barPercentage = (item.value / maxVal) * 100;
                                 return (
-                                    <button 
+                                    <div 
                                         key={item.name} 
-                                        className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40"
+                                        className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
                                         onClick={() => setSelectedOperator(item.name)}
                                     >
                                         <Tooltip>
-                                            <TooltipTrigger className="truncate text-left flex-1">
-                                                <span>{item.name}</span>
+                                            <TooltipTrigger asChild>
+                                                 <span className="truncate flex-1">{item.name}</span>
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 {item.name}
@@ -555,7 +554,7 @@ export default function RsiPage() {
                                             ></div>
                                         </div>
                                         <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
-                                    </button>
+                                    </div>
                                 )
                             })}
                         </CardContent>
