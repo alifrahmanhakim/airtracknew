@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { AnimatedCounter } from './ui/animated-counter';
 import { ProjectTimeline } from './project-timeline';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { AddTaskFromDashboardDialog } from './add-task-from-dashboard-dialog';
 
 type AssignedTask = Task & {
   projectId: string;
@@ -78,10 +79,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                         <DialogTitle className="text-2xl">My Tasks Overview</DialogTitle>
                         <DialogDescription>A summary of your workload, pace, and schedule.</DialogDescription>
                     </div>
-                    <Button disabled>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Task
-                    </Button>
+                     <AddTaskFromDashboardDialog teamMembers={[user]} />
                 </DialogHeader>
                 <TooltipProvider>
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 p-6 pt-0 overflow-y-auto">
