@@ -517,7 +517,7 @@ export default function RsiPage() {
                             </div>
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
-                        <CardContent className="space-y-3 flex-grow overflow-y-auto">
+                        <CardContent className="space-y-3 overflow-y-auto flex-grow">
                             {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => {
                                 const status = record.status || 'N/A';
                                 return (
@@ -575,8 +575,8 @@ export default function RsiPage() {
                                         onClick={() => setSelectedOperator(item.name)}
                                     >
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <span className="truncate flex-1">{item.name}</span>
+                                            <TooltipTrigger className="truncate text-left flex-1">
+                                                <span>{item.name}</span>
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 {item.name}
