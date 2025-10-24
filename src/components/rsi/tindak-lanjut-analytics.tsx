@@ -130,8 +130,8 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                 <CardContent>
                      <ChartContainer config={chartConfig(analyticsData.penerimaData)} className="h-[400px] w-full">
                         <ResponsiveContainer>
-                            <BarChart data={analyticsData.penerimaData} layout="vertical" margin={{ left: 50, right: 30 }}>
-                                <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                            <BarChart data={analyticsData.penerimaData} layout="vertical" margin={{ left: 100, right: 30 }}>
+                                <YAxis dataKey="name" type="category" width={200} interval={0} tick={{ fontSize: 12, width: 200, }} />
                                 <XAxis type="number" allowDecimals={false} />
                                 <Tooltip content={<ChartTooltipContent />} />
                                 <Bar dataKey="value" radius={[0, 4, 4, 0]}>
