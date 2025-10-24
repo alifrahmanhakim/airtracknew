@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import type { Task, User, Project } from '@/lib/types';
-import { CalendarIcon, Loader2, Plus, GanttChartSquare, FolderKanban } from 'lucide-react';
+import { CalendarIcon, Loader2, Plus, GanttChartSquare, FolderKanban, ChevronsUpDown, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
@@ -41,6 +41,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Label } from '@/components/ui/label';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Task name is required.'),
@@ -68,6 +76,7 @@ export function AddTaskFromDashboardDialog({ teamMembers }: AddTaskFromDashboard
 
   const [allProjects, setAllProjects] = React.useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
+  const [isProjectPopoverOpen, setIsProjectPopoverOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return; // Only fetch when dialog is open
@@ -163,18 +172,49 @@ export function AddTaskFromDashboardDialog({ teamMembers }: AddTaskFromDashboard
                 <Label className="flex items-center gap-2 font-semibold">
                     <FolderKanban className="h-4 w-4" /> Step 1: Select Project
                 </Label>
-                 <Select onValueChange={(projectId) => setSelectedProject(allProjects.find(p => p.id === projectId) || null)}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Choose a project to add the task to..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {allProjects.map(project => (
-                            <SelectItem key={project.id} value={project.id}>
-                                {project.name} ({project.projectType})
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                 <Popover open={isProjectPopoverOpen} onOpenChange={setIsProjectPopoverOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={isProjectPopoverOpen}
+                            className="w-full justify-between"
+                        >
+                            {selectedProject
+                                ? `${selectedProject.name} (${selectedProject.projectType})`
+                                : "Choose a project..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                        <Command>
+                            <CommandInput placeholder="Search project..." />
+                            <CommandList>
+                                <CommandEmpty>No project found.</CommandEmpty>
+                                <CommandGroup>
+                                    {allProjects.map((project) => (
+                                        <CommandItem
+                                            key={project.id}
+                                            value={`${project.name} ${project.projectType}`}
+                                            onSelect={() => {
+                                                setSelectedProject(project);
+                                                setIsProjectPopoverOpen(false);
+                                            }}
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    selectedProject?.id === project.id ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            {project.name} ({project.projectType})
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </div>
            
             {selectedProject && (
