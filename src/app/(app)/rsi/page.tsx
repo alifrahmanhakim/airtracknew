@@ -540,7 +540,7 @@ export default function RsiPage() {
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
                         <CardContent className="space-y-3 overflow-y-auto flex-grow">
-                            {dashboardStats.openOperatorFollowUps.map((record) => (
+                            {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => (
                                 <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                     <div>
                                         <p className="font-semibold text-sm">{record.judulLaporan}</p>
@@ -558,6 +558,13 @@ export default function RsiPage() {
                                 </div>
                             ))}
                         </CardContent>
+                         {dashboardStats.openOperatorFollowUps.length > 4 && (
+                            <CardFooter>
+                                <Button variant="link" className="w-full" onClick={() => setIsAwaitingFollowUpExpanded(!isAwaitingFollowUpExpanded)}>
+                                    {isAwaitingFollowUpExpanded ? 'Show less' : `Show all ${dashboardStats.openOperatorFollowUps.length} items`}
+                                </Button>
+                            </CardFooter>
+                        )}
                     </Card>
                      <Card className="h-full flex flex-col">
                         <CardHeader>
