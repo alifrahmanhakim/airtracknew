@@ -25,6 +25,7 @@ import * as React from 'react';
 import { addKegiatan } from '@/lib/actions/kegiatan';
 import { useToast } from '@/hooks/use-toast';
 import type { Kegiatan, User } from '@/lib/types';
+import { kegiatanSubditUsers } from '@/lib/data';
 
 const kegiatanFormSchema = z.object({
     subjek: z.string().min(1, 'Subjek is required.'),
@@ -43,17 +44,13 @@ type KegiatanFormValues = z.infer<typeof kegiatanFormSchema>;
 type KegiatanFormProps = {
     onFormSubmit: (data: Kegiatan) => void;
     kegiatan?: Kegiatan;
-    users: User[];
 };
 
-export function KegiatanForm({ onFormSubmit, kegiatan, users }: KegiatanFormProps) {
+export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
     const [isLoading, setIsLoading] = React.useState(false);
     const { toast } = useToast();
 
-    const userOptions: MultiSelectOption[] = React.useMemo(() => users.map(user => ({
-        value: user.name,
-        label: user.name
-    })), [users]);
+    const userOptions: MultiSelectOption[] = kegiatanSubditUsers;
 
     const form = useForm<KegiatanFormValues>({
         resolver: zodResolver(kegiatanFormSchema),

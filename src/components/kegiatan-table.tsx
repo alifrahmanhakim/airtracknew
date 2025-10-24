@@ -31,10 +31,9 @@ type KegiatanTableProps = {
   onDelete: (record: Kegiatan) => void;
   onUpdate: (record: Kegiatan) => void;
   isLoading: boolean;
-  users: User[];
 };
 
-function EditKegiatanDialog({ record, onUpdate, users }: { record: Kegiatan; onUpdate: (record: Kegiatan) => void; users: User[] }) {
+function EditKegiatanDialog({ record, onUpdate }: { record: Kegiatan; onUpdate: (record: Kegiatan) => void; }) {
     const [open, setOpen] = React.useState(false);
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -56,7 +55,6 @@ function EditKegiatanDialog({ record, onUpdate, users }: { record: Kegiatan; onU
                         onUpdate(updatedRecord);
                         setOpen(false);
                     }}
-                    users={users}
                 />
             </DialogContent>
         </Dialog>
@@ -64,7 +62,7 @@ function EditKegiatanDialog({ record, onUpdate, users }: { record: Kegiatan; onU
 }
 
 
-export function KegiatanTable({ records, onDelete, onUpdate, isLoading, users }: KegiatanTableProps) {
+export function KegiatanTable({ records, onDelete, onUpdate, isLoading }: KegiatanTableProps) {
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
@@ -109,7 +107,7 @@ export function KegiatanTable({ records, onDelete, onUpdate, isLoading, users }:
               <TableCell className="align-top whitespace-pre-wrap">{record.catatan || '-'}</TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">
-                    <EditKegiatanDialog record={record} onUpdate={onUpdate} users={users} />
+                    <EditKegiatanDialog record={record} onUpdate={onUpdate} />
                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
                         <Trash2 className="h-4 w-4" />
                     </Button>

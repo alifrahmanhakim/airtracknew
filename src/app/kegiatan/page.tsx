@@ -37,7 +37,6 @@ const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics'
 
 export default function KegiatanPage() {
     const [records, setRecords] = React.useState<Kegiatan[]>([]);
-    const [users, setUsers] = React.useState<User[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
@@ -71,16 +70,9 @@ export default function KegiatanPage() {
             setIsLoading(false);
         });
 
-        const usersQuery = query(collection(db, "users"));
-        const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
-            const usersFromDb: User[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-            setUsers(usersFromDb);
-        });
-
 
         return () => {
             unsubscribe();
-            unsubscribeUsers();
         }
     }, [toast]);
     
@@ -196,7 +188,7 @@ export default function KegiatanPage() {
                         </CardDescription>
                         </CardHeader>
                         <CardContent>
-                           <KegiatanForm onFormSubmit={handleRecordAddOrUpdate} users={users} />
+                           <KegiatanForm onFormSubmit={handleRecordAddOrUpdate} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -207,7 +199,6 @@ export default function KegiatanPage() {
                         onDelete={handleDeleteRequest}
                         onUpdate={handleRecordAddOrUpdate}
                         isLoading={isLoading}
-                        users={users}
                     />
                 </TabsContent>
 
@@ -240,4 +231,3 @@ export default function KegiatanPage() {
         </div>
     );
 }
-
