@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail } from "lucide-react";
+import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail, Sparkles } from "lucide-react";
 import { useState, useEffect } from 'react';
 import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -358,7 +359,13 @@ export default function LoginPage() {
 
           {/* Right Side */}
           <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/60 backdrop-blur-sm rounded-3xl md:rounded-l-none">
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+                <Button asChild variant="ghost" size="icon" className="relative animate-pulse">
+                    <Link href="/whats-new">
+                        <Sparkles className="h-5 w-5 text-yellow-500" />
+                        <span className="sr-only">What's New</span>
+                    </Link>
+                </Button>
                 <ThemeToggle />
             </div>
             <div className='flex-grow flex flex-col justify-center'>
