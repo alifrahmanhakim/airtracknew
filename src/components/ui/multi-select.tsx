@@ -131,7 +131,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                   const isSelected = selectedValues.includes(option.value);
                   return (
                     <CommandItem
-                      key={option.value}
+                      key={`${option.value}-${option.label}`}
                       onSelect={() => handleSelect(option.value)}
                       disabled={!isSelected && isMaxCountReached}
                       className={cn("flex items-center justify-between", isMaxCountReached && !isSelected ? "opacity-50 cursor-not-allowed" : "")}
