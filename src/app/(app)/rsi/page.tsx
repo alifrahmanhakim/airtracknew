@@ -24,6 +24,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { EditTindakLanjutRecordDialog } from '@/components/rsi/edit-tindak-lanjut-dialog';
 import { OperatorFollowUpDialog } from '@/components/rsi/operator-follow-up-dialog';
 import { AppLayout } from '@/components/app-layout-component';
+import { Input } from '@/components/ui/input';
 
 
 type RsiModule = {
@@ -177,6 +178,7 @@ export default function RsiPage() {
     const [isOperatorBreakdownExpanded, setIsOperatorBreakdownExpanded] = React.useState(false);
     const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
     const [selectedOperator, setSelectedOperator] = React.useState<string | null>(null);
+    const [awaitingFollowUpSearch, setAwaitingFollowUpSearch] = React.useState('');
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -392,6 +394,23 @@ export default function RsiPage() {
             openFollowUpsOperatorChartData
         }
     }, [data, yearFilter]);
+    
+    const filteredOpenOperatorFollowUps = React.useMemo(() => {
+        if (!awaitingFollowUpSearch) {
+            return dashboardStats.openOperatorFollowUps;
+        }
+        const lowercasedSearch = awaitingFollowUpSearch.toLowerCase();
+        return dashboardStats.openOperatorFollowUps.filter(record => {
+            const recipientText = (Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi.join(' ') : record.penerimaRekomendasi) || '';
+            return (
+                record.judulLaporan?.toLowerCase().includes(lowercasedSearch) ||
+                record.nomorLaporan?.toLowerCase().includes(lowercasedSearch) ||
+                recipientText.toLowerCase().includes(lowercasedSearch) ||
+                record.registrasiPesawat?.toLowerCase().includes(lowercasedSearch) ||
+                record.lokasiKejadian?.toLowerCase().includes(lowercasedSearch)
+            );
+        });
+    }, [dashboardStats.openOperatorFollowUps, awaitingFollowUpSearch]);
 
     const filteredTrendData = React.useMemo(() => {
         const allTrendData = dashboardStats.incidentTrend;
@@ -518,9 +537,18 @@ export default function RsiPage() {
                                     <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
                                 </div>
                                 <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
+                                 <div className="relative pt-2">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search pending follow-ups..."
+                                        className="pl-9 bg-background/50"
+                                        value={awaitingFollowUpSearch}
+                                        onChange={(e) => setAwaitingFollowUpSearch(e.target.value)}
+                                    />
+                                </div>
                             </CardHeader>
                             <CardContent className="space-y-3 overflow-y-auto flex-grow">
-                                {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => {
+                                {(isAwaitingFollowUpExpanded ? filteredOpenOperatorFollowUps : filteredOpenOperatorFollowUps.slice(0, 4)).map((record) => {
                                     const status = record.status || 'N/A';
                                     return (
                                     <div 
@@ -553,10 +581,10 @@ export default function RsiPage() {
                                     </div>
                                 )})}
                             </CardContent>
-                            {dashboardStats.openOperatorFollowUps.length > 4 && (
+                            {filteredOpenOperatorFollowUps.length > 4 && (
                                 <CardFooter>
                                     <Button variant="link" className="w-full" onClick={() => setIsAwaitingFollowUpExpanded(!isAwaitingFollowUpExpanded)}>
-                                        {isAwaitingFollowUpExpanded ? 'Show less' : `Show all ${dashboardStats.openOperatorFollowUps.length} items`}
+                                        {isAwaitingFollowUpExpanded ? 'Show less' : `Show all ${filteredOpenOperatorFollowUps.length} items`}
                                     </Button>
                                 </CardFooter>
                             )}
