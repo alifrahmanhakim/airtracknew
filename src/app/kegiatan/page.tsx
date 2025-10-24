@@ -25,9 +25,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { KegiatanForm } from '@/components/kegiatan-form';
 import { KegiatanTable } from '@/components/kegiatan-table';
-import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isWithinInterval, startOfWeek, endOfWeek, getISOWeek } from 'date-fns';
+import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isWithinInterval, startOfWeek, endOfWeek, getISOWeek, eachMonthOfInterval, startOfMonth, endOfMonth, isSameMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
 
 const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics').then(mod => mod.KegiatanAnalytics), {
     ssr: false,
@@ -44,7 +46,9 @@ export default function KegiatanPage() {
     const [recordToDelete, setRecordToDelete] = React.useState<Kegiatan | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
     
+    const [filterMode, setFilterMode] = React.useState<'week' | 'month'>('week');
     const [selectedWeek, setSelectedWeek] = React.useState<string>(format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'));
+    const [selectedMonth, setSelectedMonth] = React.useState<string>(format(new Date(), 'yyyy-MM'));
 
     React.useEffect(() => {
         const q = query(collection(db, "kegiatanRecords"), orderBy("tanggalMulai", "desc"));
@@ -114,20 +118,39 @@ export default function KegiatanPage() {
         start: startOfYear(new Date(currentYear, 0, 1)),
         end: endOfYear(new Date(currentYear, 11, 31)),
     }, { weekStartsOn: 1 });
+    
+    const months = eachMonthOfInterval({
+        start: startOfYear(new Date(currentYear, 0, 1)),
+        end: endOfYear(new Date(currentYear, 11, 31)),
+    });
 
     const filteredRecords = React.useMemo(() => {
-        if (!selectedWeek) return records;
-        const weekStart = parseISO(selectedWeek);
-        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+        if (filterMode === 'week') {
+            if (!selectedWeek) return records;
+            const weekStart = parseISO(selectedWeek);
+            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
 
-        return records.filter(record => {
-            const recordStart = parseISO(record.tanggalMulai);
-            const recordEnd = parseISO(record.tanggalSelesai);
-            return isWithinInterval(recordStart, { start: weekStart, end: weekEnd }) ||
-                   isWithinInterval(recordEnd, { start: weekStart, end: weekEnd }) ||
-                   (recordStart < weekStart && recordEnd > weekEnd);
-        });
-    }, [records, selectedWeek]);
+            return records.filter(record => {
+                const recordStart = parseISO(record.tanggalMulai);
+                const recordEnd = parseISO(record.tanggalSelesai);
+                return isWithinInterval(recordStart, { start: weekStart, end: weekEnd }) ||
+                       isWithinInterval(recordEnd, { start: weekStart, end: weekEnd }) ||
+                       (recordStart < weekStart && recordEnd > weekEnd);
+            });
+        } else { // filterMode === 'month'
+             if (!selectedMonth) return records;
+             const monthStart = parseISO(selectedMonth);
+             const monthEnd = endOfMonth(monthStart);
+
+             return records.filter(record => {
+                const recordStart = parseISO(record.tanggalMulai);
+                const recordEnd = parseISO(record.tanggalSelesai);
+                return isWithinInterval(recordStart, { start: monthStart, end: monthEnd }) ||
+                       isWithinInterval(recordEnd, { start: monthStart, end: monthEnd }) ||
+                       (recordStart < monthStart && recordEnd > monthEnd);
+            });
+        }
+    }, [records, selectedWeek, selectedMonth, filterMode]);
 
 
     return (
@@ -153,28 +176,52 @@ export default function KegiatanPage() {
                                 <TabsTrigger value="records">Jadwal Kegiatan</TabsTrigger>
                                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
                             </TabsList>
-                             <div className="flex items-center gap-2">
-                                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                                <Select
-                                    value={selectedWeek}
-                                    onValueChange={setSelectedWeek}
-                                >
-                                    <SelectTrigger className="w-[280px]">
-                                        <SelectValue placeholder="Pilih Minggu" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {weeks.map(weekStart => {
-                                            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                                            const weekNumber = getISOWeek(weekStart);
-                                            const weekLabel = `Week ${weekNumber}: ${format(weekStart, 'dd MMM')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-                                            return (
-                                                <SelectItem key={weekStart.toISOString()} value={format(weekStart, 'yyyy-MM-dd')}>
-                                                    {weekLabel}
-                                                </SelectItem>
-                                            )
-                                        })}
-                                    </SelectContent>
-                                </Select>
+                             <div className="flex items-center gap-4">
+                                <ToggleGroup type="single" value={filterMode} onValueChange={(value: 'week' | 'month') => value && setFilterMode(value)}>
+                                  <ToggleGroupItem value="week">Weekly</ToggleGroupItem>
+                                  <ToggleGroupItem value="month">Monthly</ToggleGroupItem>
+                                </ToggleGroup>
+                                <div className="flex items-center gap-2">
+                                    <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                                    {filterMode === 'week' ? (
+                                        <Select
+                                            value={selectedWeek}
+                                            onValueChange={setSelectedWeek}
+                                        >
+                                            <SelectTrigger className="w-[280px]">
+                                                <SelectValue placeholder="Pilih Minggu" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {weeks.map(weekStart => {
+                                                    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                                                    const weekNumber = getISOWeek(weekStart);
+                                                    const weekLabel = `Week ${weekNumber}: ${format(weekStart, 'dd MMM')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                                                    return (
+                                                        <SelectItem key={weekStart.toISOString()} value={format(weekStart, 'yyyy-MM-dd')}>
+                                                            {weekLabel}
+                                                        </SelectItem>
+                                                    )
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <Select
+                                            value={selectedMonth}
+                                            onValueChange={setSelectedMonth}
+                                        >
+                                            <SelectTrigger className="w-[280px]">
+                                                <SelectValue placeholder="Pilih Bulan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {months.map(monthStart => (
+                                                    <SelectItem key={monthStart.toISOString()} value={format(monthStart, 'yyyy-MM')}>
+                                                        {format(monthStart, 'MMMM yyyy')}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </CardHeader>
