@@ -361,8 +361,8 @@ export default function LoginPage() {
           <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/60 backdrop-blur-sm rounded-3xl md:rounded-l-none">
             <div className="absolute top-4 right-4 flex items-center gap-2">
                 <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 rounded-full blur-sm opacity-50 group-hover:opacity-100 transition duration-1000 animate-pulse"></div>
-                    <Button asChild variant="ghost" size="icon" className="relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 rounded-full blur-sm opacity-50 group-hover:opacity-100 transition duration-1000 animate-pulse"></div>
+                    <Button asChild variant="ghost" size="icon" className="relative animate-pulse">
                         <Link href="/whats-new">
                             <Sparkles className="h-5 w-5 text-yellow-500" />
                             <span className="sr-only">What's New</span>

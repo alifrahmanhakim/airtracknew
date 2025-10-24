@@ -44,8 +44,8 @@ export default function WhatsNewPage() {
                     <p><strong>Ask STD.Ai</strong>: Sebuah asisten AI baru yang terintegrasi di sidebar untuk membantu menjawab pertanyaan terkait regulasi dan standar keselamatan, dengan widget akses cepat di pojok kanan bawah.</p>
                 </div>
                  <div>
-                    <h3 className="font-bold text-foreground">Menu Lingkungan (Environment)</h3>
-                    <p>Menambahkan tautan eksternal baru di sidebar menuju dasbor dgcaems untuk pemantauan isu-isu lingkungan.</p>
+                    <h3 className="font-bold text-foreground">Menu Environment</h3>
+                    <p>Menambahkan tautan eksternal baru di sidebar menuju dasbor dgcaems.</p>
                 </div>
             </UpdateSection>
 
