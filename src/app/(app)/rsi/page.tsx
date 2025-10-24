@@ -153,6 +153,7 @@ export default function RsiPage() {
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
     const [isAwaitingFollowUpExpanded, setIsAwaitingFollowUpExpanded] = React.useState(false);
+    const [isOperatorBreakdownExpanded, setIsOperatorBreakdownExpanded] = React.useState(false);
 
 
     const toggleCardExpansion = (cardTitle: string) => {
@@ -504,7 +505,7 @@ export default function RsiPage() {
             </Card>
             
             {dashboardStats.totalRekomendasiKnkt > 0 && (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 flex flex-col">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
@@ -518,8 +519,8 @@ export default function RsiPage() {
                             </div>
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
-                        <CardContent className="space-y-3 overflow-y-auto flex-grow">
-                            {dashboardStats.openOperatorFollowUps.map((record) => (
+                         <CardContent className="space-y-3">
+                            {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => (
                                 <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                     <div>
                                         <p className="font-semibold text-sm">{record.judulLaporan}</p>
@@ -536,6 +537,13 @@ export default function RsiPage() {
                                 </div>
                             ))}
                         </CardContent>
+                        {dashboardStats.openOperatorFollowUps.length > 4 && (
+                            <CardFooter>
+                                <Button variant="link" className="w-full" onClick={() => setIsAwaitingFollowUpExpanded(!isAwaitingFollowUpExpanded)}>
+                                    {isAwaitingFollowUpExpanded ? 'Show less' : `View all ${dashboardStats.openOperatorFollowUps.length} items`}
+                                </Button>
+                            </CardFooter>
+                        )}
                     </Card>
                    <Card className="flex flex-col">
                         <CardHeader>
@@ -543,9 +551,8 @@ export default function RsiPage() {
                             <CardDescription>Breakdown of pending follow-ups by responsible operator.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-grow">
-                            <ScrollArea className="h-full max-h-[400px]">
-                                <div className="space-y-3 pr-4">
-                                {dashboardStats.openFollowUpsOperatorChartData.slice(0, 10).map((item, index) => {
+                             <div className="space-y-3">
+                                {(isOperatorBreakdownExpanded ? dashboardStats.openFollowUpsOperatorChartData : dashboardStats.openFollowUpsOperatorChartData.slice(0, 10)).map((item) => {
                                     const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
                                     const barPercentage = (item.value / maxVal) * 100;
                                     return (
@@ -568,9 +575,15 @@ export default function RsiPage() {
                                         </div>
                                     )
                                 })}
-                                </div>
-                            </ScrollArea>
+                             </div>
                         </CardContent>
+                        {dashboardStats.openFollowUpsOperatorChartData.length > 10 && (
+                            <CardFooter>
+                                <Button variant="link" className="w-full" onClick={() => setIsOperatorBreakdownExpanded(!isOperatorBreakdownExpanded)}>
+                                    {isOperatorBreakdownExpanded ? 'Show less' : 'Show all'}
+                                </Button>
+                            </CardFooter>
+                        )}
                     </Card>
                 </div>
             )}
