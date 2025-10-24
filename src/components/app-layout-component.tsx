@@ -521,53 +521,59 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <GlobalSearch onViewProfile={() => {}} />
               </div>
               <div className="flex items-center gap-2">
-              <LiveClock />
-              <StatusIndicator variant="server-icon" />
-              <NotificationBell userId={userId} />
-              <ThemeToggle />
-              <div className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
-                  <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                      <Avatar className="h-9 w-9 aspect-square" online={isCurrentUserOnline}>
-                          <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                          <AvatarFallback>
-                          <UserIcon className="h-5 w-5" />
-                          </AvatarFallback>
-                      </Avatar>
-                      </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                      <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{currentUser.name}</p>
-                          <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
-                      </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem asChild>
-                          <Link href="/whats-new">
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            <span>What's New</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link href="/profile">
-                            <Settings className="mr-2 h-4 w-4" />
-                            <span>Profile</span>
+                <LiveClock />
+                <StatusIndicator variant="server-icon" />
+                <NotificationBell userId={userId} />
+                <Button asChild variant="ghost" size="icon" className="relative animate-pulse">
+                    <Link href="/whats-new">
+                        <Sparkles className="h-5 w-5 text-yellow-500" />
+                        <span className="sr-only">What's New</span>
+                    </Link>
+                </Button>
+                <ThemeToggle />
+                <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                        <Avatar className="h-9 w-9 aspect-square" online={isCurrentUserOnline}>
+                            <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                            <AvatarFallback>
+                            <UserIcon className="h-5 w-5" />
+                            </AvatarFallback>
+                        </Avatar>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+                            <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
+                        </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem asChild>
+                            <Link href="/whats-new">
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                <span>What's New</span>
                             </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/profile">
+                                <Settings className="mr-2 h-4 w-4" />
+                                <span>Profile</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
                         </DropdownMenuItem>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
-                      </DropdownMenuItem>
-                  </DropdownMenuContent>
-                  </DropdownMenu>
-              </div>
+                    </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
               </div>
           </header>
           <main className="flex-1 overflow-auto">

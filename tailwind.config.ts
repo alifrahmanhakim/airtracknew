@@ -103,6 +103,9 @@ export default {
         'progress-stripes': {
           '0%': { backgroundPosition: '1rem 0' },
           '100%': { backgroundPosition: '0 0' },
+        },
+        'pulse': {
+          '50%': { opacity: '.5' }
         }
       },
       animation: {
@@ -110,6 +113,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'gradient-move': 'gradient-move 15s ease infinite',
         'progress-stripes': 'progress-stripes 1s linear infinite',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
        backgroundSize: {
         '400%': '400% 400%',
