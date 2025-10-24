@@ -25,6 +25,7 @@ import { EditTindakLanjutRecordDialog } from '@/components/rsi/edit-tindak-lanju
 import { OperatorFollowUpDialog } from '@/components/rsi/operator-follow-up-dialog';
 import { AppLayout } from '@/components/app-layout-component';
 import { Input } from '@/components/ui/input';
+import { Highlight } from '@/components/ui/highlight';
 
 
 type RsiModule = {
@@ -558,11 +559,11 @@ export default function RsiPage() {
                                     >
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <p className="font-semibold text-sm">{record.judulLaporan}</p>
+                                                <p className="font-semibold text-sm"><Highlight text={record.judulLaporan} query={awaitingFollowUpSearch} /></p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {record.nomorLaporan}
+                                                    <Highlight text={record.nomorLaporan} query={awaitingFollowUpSearch} />
                                                     <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                                    ({(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ') || 'N/A'})
+                                                    (<Highlight text={(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ')} query={awaitingFollowUpSearch} />)
                                                     </span>
                                                 </p>
                                             </div>
@@ -570,8 +571,8 @@ export default function RsiPage() {
                                         </div>
                                         <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
                                             <div className="text-muted-foreground">
-                                                <p><span className="font-semibold">Reg:</span> {record.registrasiPesawat || '-'}</p>
-                                                <p><span className="font-semibold">Loc:</span> {record.lokasiKejadian || '-'}</p>
+                                                <p><span className="font-semibold">Reg:</span> <Highlight text={record.registrasiPesawat || '-'} query={awaitingFollowUpSearch} /></p>
+                                                <p><span className="font-semibold">Loc:</span> <Highlight text={record.lokasiKejadian || '-'} query={awaitingFollowUpSearch} /></p>
                                             </div>
                                             <div className="text-muted-foreground text-right">
                                                 <p><span className="font-semibold">Incident:</span> {record.tanggalKejadian ? parseISO(record.tanggalKejadian).toLocaleDateString() : '-'}</p>
