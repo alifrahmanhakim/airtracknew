@@ -529,7 +529,7 @@ export default function RsiPage() {
                                         <p className="text-xs text-muted-foreground">
                                             {record.nomorLaporan}
                                             <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                                ({(record.penerimaRekomendasi || ['N/A']).join(', ')})
+                                               ({(record.penerimaRekomendasi || ['N/A']).join(', ')})
                                             </span>
                                         </p>
                                     </div>
@@ -565,10 +565,10 @@ export default function RsiPage() {
                                     </Pie>
                                 </PieChart>
                             </ChartContainer>
-                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground mt-4 w-full">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-xs text-muted-foreground mt-4 w-full">
                                 {dashboardStats.openFollowUpsOperatorChartData.map((item, index) => (
                                     <div key={item.name} className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: `hsl(var(--chart-${(index % 5) + 1}))` }} />
+                                        <div className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: `hsl(var(--chart-${(index % 5) + 1}))` }} />
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <span className="truncate">{item.name}</span>
