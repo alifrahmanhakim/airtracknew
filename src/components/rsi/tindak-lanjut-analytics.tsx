@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { TindakLanjutRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Info } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '../ui/chart';
 import { AnimatedCounter } from '../ui/animated-counter';
 
@@ -21,16 +21,32 @@ const CHART_COLORS = [
     'hsl(var(--chart-5))',
 ];
 
+const STATUS_COLORS: Record<string, string> = {
+    'Final': 'hsl(142.1, 76.2%, 42.2%)',       // Green
+    'Draft': 'hsl(47.9, 95.8%, 53.1%)',        // Yellow
+    'Preliminary': 'hsl(221.2, 83.2%, 53.3%)', // Blue
+    'Draft Final': 'hsl(24.6, 95%, 53.1%)',   // Orange
+    'Interim Statement': 'hsl(262.1, 83.3%, 57.8%)', // Purple
+    'Usulan': 'hsl(0, 84.2%, 60.2%)', // Red
+};
+
+
 export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
 
     const analyticsData = React.useMemo(() => {
         const recordsByYear = allRecords.reduce((acc, record) => {
             const year = record.tahun;
-            acc[year] = (acc[year] || 0) + 1;
+            const status = record.status || 'Usulan';
+            if (!acc[year]) {
+                acc[year] = { name: String(year), Draft: 0, Final: 0, Usulan: 0, Preliminary: 0, 'Interim Statement': 0, 'Draft Final': 0 };
+            }
+            if (status in acc[year]) {
+                (acc[year] as any)[status]++;
+            }
             return acc;
-        }, {} as Record<number, number>);
-
-        const yearData = Object.entries(recordsByYear).map(([name, value]) => ({ name, value })).sort((a,b) => parseInt(a.name) - parseInt(b.name));
+        }, {} as Record<number, { name: string; Draft: number; Final: number; Usulan: number, Preliminary: number, 'Interim Statement': number, 'Draft Final': number }>);
+        
+        const yearData = Object.values(recordsByYear).sort((a, b) => parseInt(a.name) - parseInt(b.name));
         
         const recordsByPenerima = allRecords.reduce((acc, record) => {
             const penerimaList = Array.isArray(record.penerimaRekomendasi)
@@ -52,7 +68,7 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
             return acc;
         }, {} as Record<string, number>);
 
-        const statusData = Object.entries(recordsByStatus).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
+        const statusData = Object.entries(recordsByStatus).map(([name, value]) => ({ name, value, fill: STATUS_COLORS[name] || CHART_COLORS[4] })).sort((a,b) => b.value - a.value);
 
 
         return { yearData, penerimaData, statusData, totalRecords: allRecords.length };
@@ -68,13 +84,16 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
         );
     }
     
-    const chartConfig = (data: {name: string, value: number}[]) => ({
+    const chartConfig = (data: {name: string, value: number, fill?: string}[]) => ({
         value: { label: 'Count' },
         ...data.reduce((acc, item, index) => {
-            acc[item.name] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
+            acc[item.name] = { label: item.name, color: item.fill || CHART_COLORS[index % CHART_COLORS.length]};
             return acc;
         }, {} as any)
     });
+
+    const yearChartConfig = chartConfig(analyticsData.statusData);
+
 
     return (
         <div className="space-y-6">
@@ -92,13 +111,17 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                         <CardTitle>Records by Year</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ChartContainer config={chartConfig(analyticsData.yearData)} className="h-[300px] w-full">
+                        <ChartContainer config={yearChartConfig} className="h-[300px] w-full">
                             <ResponsiveContainer>
                                 <BarChart data={analyticsData.yearData}>
+                                    <CartesianGrid vertical={false} />
                                     <XAxis dataKey="name" />
-                                    <YAxis />
+                                    <YAxis allowDecimals={false}/>
                                     <Tooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4} />
+                                    <Legend />
+                                    {Object.keys(STATUS_COLORS).map(status => (
+                                        <Bar key={status} dataKey={status} stackId="a" fill={STATUS_COLORS[status]} radius={status === 'Final' ? [4, 4, 0, 0] : [0,0,0,0]} />
+                                    ))}
                                 </BarChart>
                             </ResponsiveContainer>
                         </ChartContainer>
@@ -114,7 +137,7 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                 <Pie data={analyticsData.statusData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
                                     {analyticsData.statusData.map((entry) => (
-                                        <Cell key={`cell-${entry.name}`} fill={chartConfig(analyticsData.statusData)[entry.name].color} />
+                                        <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                                     ))}
                                 </Pie>
                                 <ChartLegend content={<ChartLegendContent nameKey="name" />} className="[&>*]:justify-center" />
