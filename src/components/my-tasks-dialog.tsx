@@ -84,7 +84,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                         <div className="md:col-span-1 space-y-6">
                             <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800">
                                  <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
+                                    <CardTitle className="text-base flex items-center gap-2">
                                         <BarChart2 className="h-5 w-5"/>
                                         Statistics
                                     </CardTitle>
@@ -101,14 +101,14 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                         <Zap className="h-6 w-6 text-primary"/>
                                         <div>
                                             <p className="text-sm text-muted-foreground">Pace (Tasks This Week)</p>
-                                            <p className="text-lg font-bold"><AnimatedCounter endValue={pace} /></p>
+                                            <p className="text-base font-bold"><AnimatedCounter endValue={pace} /></p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 p-3 rounded-lg bg-muted">
                                         <Activity className="h-6 w-6 text-primary"/>
                                         <div>
                                             <p className="text-sm text-muted-foreground">Workload</p>
-                                            <p className="text-lg font-bold">{workloadLabel} ({workloadScore})</p>
+                                            <p className="text-base font-bold">{workloadLabel} ({workloadScore})</p>
                                         </div>
                                     </div>
                                  </CardContent>
