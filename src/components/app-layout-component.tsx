@@ -365,7 +365,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroup>
               <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
               <div className="relative group/menu-item px-2 block">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-75 transition duration-1000 animate-gradient-move"></div>
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-75 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-25"></div>
                   <div
                   className="relative p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors cursor-pointer"
                   onClick={() => setIsMyTasksDialogOpen(true)}
@@ -524,12 +524,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <LiveClock />
                 <StatusIndicator variant="server-icon" />
                 <NotificationBell userId={userId} />
-                <Button asChild variant="ghost" size="icon" className="relative animate-pulse">
-                    <Link href="/whats-new">
-                        <Sparkles className="h-5 w-5 text-yellow-500" />
-                        <span className="sr-only">What's New</span>
-                    </Link>
-                </Button>
+                <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 rounded-full blur-sm opacity-50 group-hover:opacity-100 transition duration-1000 animate-pulse"></div>
+                    <Button asChild variant="ghost" size="icon" className="relative">
+                        <Link href="/whats-new">
+                            <Sparkles className="h-5 w-5 text-yellow-500" />
+                            <span className="sr-only">What's New</span>
+                        </Link>
+                    </Button>
+                </div>
                 <ThemeToggle />
                 <div className="relative group">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
