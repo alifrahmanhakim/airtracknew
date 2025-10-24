@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -17,7 +18,7 @@ import { getYear, parseISO, isToday, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis } from 'recharts';
+import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAxis, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
@@ -318,6 +319,20 @@ export default function RsiPage() {
             
         const operatorFollowUpCompleted = totalRekomendasiKnkt - openOperatorFollowUps.length;
         const operatorFollowUpPercentage = totalRekomendasiKnkt > 0 ? (operatorFollowUpCompleted / totalRekomendasiKnkt) * 100 : 0;
+        
+        const openFollowUpsByOperator = openOperatorFollowUps.reduce((acc, record) => {
+            const operators = record.penerimaRekomendasi || [];
+            operators.forEach(op => {
+                if (op.trim() !== '' && op.trim() !== '-') {
+                     acc[op] = (acc[op] || 0) + 1;
+                }
+            });
+            return acc;
+        }, {} as Record<string, number>);
+
+        const openFollowUpsOperatorChartData = Object.entries(openFollowUpsByOperator)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a,b) => b.value - a.value);
 
 
         return {
@@ -332,7 +347,8 @@ export default function RsiPage() {
             incidentTrend: sortedTrendData,
             sanctionTypesBreakdown,
             openOperatorFollowUps,
-            operatorFollowUpPercentage
+            operatorFollowUpPercentage,
+            openFollowUpsOperatorChartData
         }
     }, [data, yearFilter]);
 
@@ -377,6 +393,11 @@ export default function RsiPage() {
     const followUpItemsToShow = isFollowUpExpanded
         ? dashboardStats.openOperatorFollowUps
         : dashboardStats.openOperatorFollowUps.slice(0, 3);
+        
+    const operatorChartConfig = dashboardStats.openFollowUpsOperatorChartData.reduce((acc, item) => {
+        acc[item.name] = { label: item.name };
+        return acc;
+    }, {} as any);
 
 
     return (
@@ -480,45 +501,67 @@ export default function RsiPage() {
             </Card>
             
             {dashboardStats.totalRekomendasiKnkt > 0 && (
-                <Card className="mb-6 border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
-                            <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
-                        </CardTitle>
-                         <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
-                            <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
-                                These KNKT recommendations are waiting for a response or action from the related operator.
-                            </CardDescription>
-                            <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
-                        </div>
-                        <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
-                    </CardHeader>
-                     <CardContent className="space-y-3">
-                        {followUpItemsToShow.map((record) => (
-                            <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
-                                <div>
-                                    <p className="font-semibold text-sm">{record.judulLaporan}</p>
-                                     <p className="text-xs text-muted-foreground">
-                                        {record.nomorLaporan}
-                                        <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                            ({(record.penerimaRekomendasi || []).join(', ') || 'N/A'})
-                                        </span>
-                                    </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
+                                <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
+                            </CardTitle>
+                            <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
+                                <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
+                                    These KNKT recommendations are waiting for a response or action from the related operator.
+                                </CardDescription>
+                                <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
+                            </div>
+                            <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {followUpItemsToShow.map((record) => (
+                                <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
+                                    <div>
+                                        <p className="font-semibold text-sm">{record.judulLaporan}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {record.nomorLaporan}
+                                            <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
+                                               ({(record.penerimaRekomendasi || []).join(', ') || 'N/A'})
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <Button asChild variant="outline" size="sm">
+                                        <Link href="/rsi/monitoring-rekomendasi">View Details</Link>
+                                    </Button>
                                 </div>
-                                <Button asChild variant="outline" size="sm">
-                                    <Link href="/rsi/monitoring-rekomendasi">View Details</Link>
-                                </Button>
-                            </div>
-                        ))}
-                        {dashboardStats.openOperatorFollowUps.length > 3 && (
-                            <div className="text-center pt-2">
-                                <Button variant="link" onClick={() => setIsFollowUpExpanded(!isFollowUpExpanded)}>
-                                    {isFollowUpExpanded ? 'Show less' : `View all ${dashboardStats.openOperatorFollowUps.length} items`}
-                                </Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            ))}
+                            {dashboardStats.openOperatorFollowUps.length > 3 && (
+                                <div className="text-center pt-2">
+                                    <Button variant="link" onClick={() => setIsFollowUpExpanded(!isFollowUpExpanded)}>
+                                        {isFollowUpExpanded ? 'Show less' : `View all ${dashboardStats.openOperatorFollowUps.length} items`}
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Pending Follow-Ups by Operator</CardTitle>
+                            <CardDescription>Breakdown of pending follow-ups by responsible operator.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex justify-center items-center h-[300px]">
+                            <ChartContainer config={operatorChartConfig} className="mx-auto aspect-square h-full">
+                                <PieChart>
+                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={dashboardStats.openFollowUpsOperatorChartData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+                                        {dashboardStats.openFollowUpsOperatorChartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={cn(
+                                                `hsl(var(--chart-${(index % 5) + 1}))`
+                                            )} />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                </div>
             )}
 
             <Card className="mb-6">
