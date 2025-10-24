@@ -35,6 +35,14 @@ type RsiModule = {
   statusVariant: (status: string) => string;
 };
 
+const CHART_COLORS = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+];
+
 const rsiModules: RsiModule[] = [
   {
     title: 'Data Accident & Serious Incident',
@@ -509,7 +517,7 @@ export default function RsiPage() {
                             </div>
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
-                        <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+                        <CardContent className="space-y-3 flex-grow overflow-y-auto">
                             {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => {
                                 const status = record.status || 'N/A';
                                 return (
@@ -567,8 +575,8 @@ export default function RsiPage() {
                                         onClick={() => setSelectedOperator(item.name)}
                                     >
                                         <Tooltip>
-                                            <TooltipTrigger className="truncate text-left flex-1">
-                                                 <span>{item.name}</span>
+                                            <TooltipTrigger asChild>
+                                                <span className="truncate flex-1">{item.name}</span>
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 {item.name}
