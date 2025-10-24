@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -14,7 +15,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/20 p-1 text-green-800 dark:text-green-200",
+      "inline-flex h-10 items-center justify-center rounded-lg bg-primary/10 p-1 text-primary dark:bg-primary/20",
       className
     )}
     {...props}
@@ -29,7 +30,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-md",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-md",
       className
     )}
     {...props}
