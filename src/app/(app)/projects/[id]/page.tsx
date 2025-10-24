@@ -72,14 +72,13 @@ async function ProjectData({ projectId, projectType }: { projectId: string, proj
 }
 
 
-export default function ProjectPage({ params, searchParams }: ProjectPageProps) {
-  const projectId = params.id;
+export default function ProjectPage({ params: { id }, searchParams }: ProjectPageProps) {
   const projectType = searchParams.type || 'timkerja';
 
   return (
     <AppLayout>
         <Suspense fallback={<ProjectDetailsPageLoader />}>
-        <ProjectData projectId={projectId} projectType={projectType} />
+        <ProjectData projectId={id} projectType={projectType} />
         </Suspense>
     </AppLayout>
   );
