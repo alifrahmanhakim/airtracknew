@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -30,10 +29,11 @@ type TindakLanjutFormValues = z.infer<typeof tindakLanjutFormSchema>;
 type EditTindakLanjutRecordDialogProps = {
   record: TindakLanjutRecord;
   onRecordUpdate: (record: TindakLanjutRecord) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
-export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTindakLanjutRecordDialogProps) {
-  const [open, setOpen] = React.useState(false);
+export function EditTindakLanjutRecordDialog({ record, onRecordUpdate, open, onOpenChange }: EditTindakLanjutRecordDialogProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
 
@@ -53,6 +53,16 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
       tindakLanjutOperator: record.tindakLanjutOperator || '',
     },
   });
+  
+  React.useEffect(() => {
+    if (record) {
+      form.reset({
+        ...record,
+        tanggalKejadian: record.tanggalKejadian && isValid(parseISO(record.tanggalKejadian)) ? format(parseISO(record.tanggalKejadian), 'yyyy-MM-dd') : '',
+        tanggalTerbit: record.tanggalTerbit && isValid(parseISO(record.tanggalTerbit)) ? format(parseISO(record.tanggalTerbit), 'yyyy-MM-dd') : '',
+      });
+    }
+  }, [record, form]);
 
   const onSubmit = async (data: TindakLanjutFormValues) => {
     setIsSubmitting(true);
@@ -63,7 +73,7 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
     if (result.success && result.data) {
       onRecordUpdate(result.data as TindakLanjutRecord);
       toast({ title: 'Record Updated', description: 'The record has been successfully updated.' });
-      setOpen(false);
+      onOpenChange(false);
     } else {
       toast({
         variant: 'destructive',
@@ -74,7 +84,7 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon">
           <Pencil className="h-4 w-4" />
@@ -91,7 +101,7 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate }: EditTin
           <TindakLanjutForm form={form} />
         </ScrollArea>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes

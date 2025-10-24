@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon, ChevronsUpDown, Send } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon, ChevronsUpDown, Send, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -21,6 +21,7 @@ import { LineChart, Line, CartesianGrid, XAxis, ResponsiveContainer, Legend, YAx
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { EditTindakLanjutRecordDialog } from '@/components/rsi/edit-tindak-lanjut-dialog';
 
 
 
@@ -145,6 +146,14 @@ const getDateFieldForCollection = (collectionName: keyof RsiData): string => {
     }
 };
 
+const CHART_COLORS = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+];
+
 
 export default function RsiPage() {
     const [data, setData] = React.useState<Partial<RsiData>>({});
@@ -154,7 +163,7 @@ export default function RsiPage() {
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
     const [isAwaitingFollowUpExpanded, setIsAwaitingFollowUpExpanded] = React.useState(false);
     const [isOperatorBreakdownExpanded, setIsOperatorBreakdownExpanded] = React.useState(false);
-
+    const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -179,6 +188,17 @@ export default function RsiPage() {
 
         return () => unsubscribes.forEach(unsub => unsub());
     }, []);
+    
+     const handleRecordUpdate = (updatedRecord: TindakLanjutRecord) => {
+        setData(prevData => {
+            if (!prevData.tindakLanjutRecords) return prevData;
+            const newRecords = prevData.tindakLanjutRecords.map(r => 
+                r.id === updatedRecord.id ? updatedRecord : r
+            );
+            return { ...prevData, tindakLanjutRecords: newRecords };
+        });
+        setRecordToEdit(null);
+    };
 
     const yearOptions = React.useMemo(() => {
         const allYears = new Set<number>();
@@ -506,7 +526,7 @@ export default function RsiPage() {
             
             {dashboardStats.totalRekomendasiKnkt > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 flex flex-col">
+                     <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 h-full flex flex-col">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
                                 <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
@@ -519,8 +539,8 @@ export default function RsiPage() {
                             </div>
                             <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
                         </CardHeader>
-                         <CardContent className="space-y-3">
-                            {(isAwaitingFollowUpExpanded ? dashboardStats.openOperatorFollowUps : dashboardStats.openOperatorFollowUps.slice(0, 4)).map((record) => (
+                        <CardContent className="space-y-3 overflow-y-auto flex-grow">
+                            {dashboardStats.openOperatorFollowUps.map((record) => (
                                 <div key={record.id} className="flex items-center justify-between gap-4 p-2 border-b border-orange-200 dark:border-orange-800/50">
                                     <div>
                                         <p className="font-semibold text-sm">{record.judulLaporan}</p>
@@ -531,51 +551,43 @@ export default function RsiPage() {
                                             </span>
                                         </p>
                                     </div>
-                                    <Button asChild variant="outline" size="sm">
-                                        <Link href="/rsi/monitoring-rekomendasi">View Details</Link>
+                                    <Button variant="outline" size="sm" onClick={() => setRecordToEdit(record)}>
+                                        <Pencil className="mr-2 h-3 w-3" />
+                                        Edit
                                     </Button>
                                 </div>
                             ))}
                         </CardContent>
-                        {dashboardStats.openOperatorFollowUps.length > 4 && (
-                            <CardFooter>
-                                <Button variant="link" className="w-full" onClick={() => setIsAwaitingFollowUpExpanded(!isAwaitingFollowUpExpanded)}>
-                                    {isAwaitingFollowUpExpanded ? 'Show less' : `View all ${dashboardStats.openOperatorFollowUps.length} items`}
-                                </Button>
-                            </CardFooter>
-                        )}
                     </Card>
-                   <Card className="flex flex-col">
+                     <Card className="h-full flex flex-col">
                         <CardHeader>
                             <CardTitle>Pending Follow-Ups by Operator</CardTitle>
                             <CardDescription>Breakdown of pending follow-ups by responsible operator.</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-grow">
-                             <div className="space-y-3">
-                                {(isOperatorBreakdownExpanded ? dashboardStats.openFollowUpsOperatorChartData : dashboardStats.openFollowUpsOperatorChartData.slice(0, 10)).map((item) => {
-                                    const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
-                                    const barPercentage = (item.value / maxVal) * 100;
-                                    return (
-                                        <div key={item.name} className="flex items-center gap-3 text-sm">
-                                            <Tooltip>
-                                                <TooltipTrigger className="truncate text-left flex-1">
-                                                    <span>{item.name}</span>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {item.name}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                            <div className="w-1/3 bg-muted rounded-full h-2.5">
-                                                <div
-                                                    className="bg-primary h-2.5 rounded-full"
-                                                    style={{ width: `${barPercentage}%` }}
-                                                ></div>
-                                            </div>
-                                            <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                        <CardContent className="flex-grow space-y-3 overflow-y-auto">
+                           {(isOperatorBreakdownExpanded ? dashboardStats.openFollowUpsOperatorChartData : dashboardStats.openFollowUpsOperatorChartData.slice(0, 10)).map((item) => {
+                                const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
+                                const barPercentage = (item.value / maxVal) * 100;
+                                return (
+                                    <div key={item.name} className="flex items-center gap-3 text-sm">
+                                        <Tooltip>
+                                            <TooltipTrigger className="truncate text-left flex-1">
+                                                <span>{item.name}</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                {item.name}
+                                            </TooltipContent>
+                                        </Tooltip>
+                                        <div className="w-1/3 bg-muted rounded-full h-2.5">
+                                            <div
+                                                className="bg-primary h-2.5 rounded-full"
+                                                style={{ width: `${barPercentage}%` }}
+                                            ></div>
                                         </div>
-                                    )
-                                })}
-                             </div>
+                                        <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                                    </div>
+                                )
+                            })}
                         </CardContent>
                         {dashboardStats.openFollowUpsOperatorChartData.length > 10 && (
                             <CardFooter>
@@ -796,6 +808,14 @@ export default function RsiPage() {
                     )
                 })}
             </div>
+            {recordToEdit && (
+                <EditTindakLanjutRecordDialog
+                    record={recordToEdit}
+                    onRecordUpdate={handleRecordUpdate}
+                    open={!!recordToEdit}
+                    onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
+                />
+            )}
             </main>
         </TooltipProvider>
     );
