@@ -74,6 +74,7 @@ const navItems = {
       { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare, countId: 'overdueTasks' },
       { href: '/dashboard', label: 'Tim Kerja', icon: Home, countId: 'timKerja' },
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark, countId: 'rulemaking' },
+      { href: '/kegiatan', label: 'Kegiatan Subdit', icon: CalendarDays },
     ],
     workspace: [
       { href: '/chats', label: 'Chats', icon: MessageSquare, countId: 'unreadChats' },
@@ -84,7 +85,6 @@ const navItems = {
       { href: '/state-letter', label: 'State Letter', icon: Mail, countId: 'openStateLetters' },
       { href: '/glossary', label: 'Glossary', icon: BookType },
       { href: '/rsi', label: 'RSI', icon: Plane },
-      { href: '/kegiatan', label: 'Kegiatan Subdit', icon: CalendarDays },
       { href: 'https://dgcaems.vercel.app/', label: 'Environment', icon: Leaf, isExternal: true },
     ],
     tools: [
