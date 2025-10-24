@@ -120,7 +120,7 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                                     <Tooltip content={<ChartTooltipContent />} />
                                     <Legend />
                                     {Object.keys(STATUS_COLORS).map(status => (
-                                        <Bar key={status} dataKey={status} stackId="a" fill={STATUS_COLORS[status]} radius={status === 'Final' ? [4, 4, 0, 0] : [0,0,0,0]} />
+                                        <Bar key={status} dataKey={status} stackId="a" fill={STATUS_COLORS[status]} />
                                     ))}
                                 </BarChart>
                             </ResponsiveContainer>
@@ -151,7 +151,7 @@ export function TindakLanjutAnalytics({ allRecords }: AnalyticsProps) {
                     <CardTitle>Top 10 Penerima Rekomendasi</CardTitle>
                 </CardHeader>
                 <CardContent>
-                     <ChartContainer config={chartConfig(analyticsData.penerimaData)} className="h-[400px] w-full">
+                     <ChartContainer config={chartConfig(analyticsData.penerimaData)} className="h-auto w-full" style={{ height: `${Math.max(200, analyticsData.penerimaData.length * 40)}px` }}>
                         <ResponsiveContainer>
                             <BarChart data={analyticsData.penerimaData} layout="vertical" margin={{ left: 100, right: 30 }}>
                                 <YAxis dataKey="name" type="category" width={200} interval={0} tick={{ fontSize: 12, width: 200, }} />
