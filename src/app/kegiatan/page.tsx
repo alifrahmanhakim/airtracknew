@@ -29,6 +29,7 @@ import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, 
 import { id } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { motion } from 'framer-motion';
 
 
 const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics').then(mod => mod.KegiatanAnalytics), {
@@ -177,9 +178,20 @@ export default function KegiatanPage() {
                                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
                             </TabsList>
                              <div className="flex items-center gap-4">
-                                <ToggleGroup type="single" value={filterMode} onValueChange={(value: 'week' | 'month') => value && setFilterMode(value)} className="border rounded-md p-1 bg-muted/50">
-                                  <ToggleGroupItem value="week" className="px-3 py-1 text-xs data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">Weekly</ToggleGroupItem>
-                                  <ToggleGroupItem value="month" className="px-3 py-1 text-xs data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">Monthly</ToggleGroupItem>
+                                <ToggleGroup 
+                                    type="single" 
+                                    value={filterMode} 
+                                    onValueChange={(value: 'week' | 'month') => value && setFilterMode(value)} 
+                                    className="border rounded-full p-1 bg-muted/50 relative overflow-hidden"
+                                >
+                                    <motion.div
+                                        className="absolute inset-0.5 bg-gradient-to-r from-green-400 to-blue-500 rounded-full z-0"
+                                        initial={false}
+                                        animate={{ x: filterMode === 'month' ? '100%' : '0%' }}
+                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                    />
+                                  <ToggleGroupItem value="week" className="px-3 py-1 text-xs rounded-full data-[state=on]:bg-transparent data-[state=on]:text-white">Weekly</ToggleGroupItem>
+                                  <ToggleGroupItem value="month" className="px-3 py-1 text-xs rounded-full data-[state=on]:bg-transparent data-[state=on]:text-white">Monthly</ToggleGroupItem>
                                 </ToggleGroup>
                                 <div className="flex items-center gap-2">
                                     <CalendarIcon className="h-5 w-5 text-muted-foreground" />
