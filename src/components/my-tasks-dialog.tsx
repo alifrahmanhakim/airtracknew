@@ -83,7 +83,7 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                 </DialogHeader>
                 <TooltipProvider>
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 p-6 pt-0 overflow-y-auto">
-                        <div className="md:col-span-1 space-y-6">
+                        <div className="md:col-span-1 flex flex-col space-y-6">
                             <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800">
                                  <CardHeader>
                                     <CardTitle className="text-base flex items-center gap-2">
@@ -115,11 +115,11 @@ export function MyTasksDialog({ open, onOpenChange, user, tasks }: MyTasksDialog
                                     </div>
                                  </CardContent>
                             </Card>
-                             <Card className="bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800">
+                             <Card className="bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800 flex-grow flex flex-col">
                                 <CardHeader>
                                     <CardTitle className="text-base flex items-center gap-2"><ListTodo className="h-5 w-5" /> All Open Tasks</CardTitle>
                                 </CardHeader>
-                                <CardContent className="max-h-60 overflow-y-auto">
+                                <CardContent className="flex-grow max-h-60 overflow-y-auto">
                                     <div className="space-y-2">
                                         {tasks.filter(t => t.status !== 'Done').map(task => {
                                             const isOverdue = isBefore(parseISO(task.dueDate), startOfDay(new Date()));
