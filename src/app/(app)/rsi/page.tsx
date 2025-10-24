@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -552,35 +551,30 @@ export default function RsiPage() {
                             <CardTitle>Pending Follow-Ups by Operator</CardTitle>
                             <CardDescription>Breakdown of pending follow-ups by responsible operator.</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-col justify-center items-center h-[300px]">
-                            <ChartContainer config={operatorChartConfig} className="mx-auto aspect-square h-[180px] -mb-4">
-                                <PieChart>
-                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={dashboardStats.openFollowUpsOperatorChartData} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5}>
-                                        {dashboardStats.openFollowUpsOperatorChartData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={cn(
-                                                `hsl(var(--chart-${(index % 5) + 1}))`
-                                            )} />
-                                        ))}
-                                    </Pie>
-                                </PieChart>
-                            </ChartContainer>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-xs text-muted-foreground mt-4 w-full">
-                                {dashboardStats.openFollowUpsOperatorChartData.map((item, index) => (
-                                    <div key={item.name} className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: `hsl(var(--chart-${(index % 5) + 1}))` }} />
+                        <CardContent className="space-y-3">
+                            {dashboardStats.openFollowUpsOperatorChartData.map((item, index) => {
+                                const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
+                                const barPercentage = (item.value / maxVal) * 100;
+                                return (
+                                    <div key={item.name} className="flex items-center gap-3 text-sm">
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <span className="truncate">{item.name}</span>
+                                            <TooltipTrigger className="truncate text-left flex-1">
+                                                <span>{item.name}</span>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>{item.name}</p>
+                                                {item.name}
                                             </TooltipContent>
                                         </Tooltip>
-                                        <span className="font-bold ml-auto">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                                        <div className="w-1/3 bg-muted rounded-full h-2.5">
+                                            <div
+                                                className="bg-primary h-2.5 rounded-full"
+                                                style={{ width: `${barPercentage}%` }}
+                                            ></div>
+                                        </div>
+                                        <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
                                     </div>
-                                ))}
-                            </div>
+                                )
+                            })}
                         </CardContent>
                     </Card>
                 </div>
