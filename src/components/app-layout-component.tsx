@@ -69,6 +69,7 @@ import { PrivacyDialog } from '@/components/privacy-dialog';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
 import { MyTasksDialog } from '@/components/my-tasks-dialog';
+import { WhatsNewDialog } from './whats-new-dialog';
 
 const navItems = {
     dashboards: [
@@ -365,7 +366,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroup>
               <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
               <div className="relative group/menu-item px-2 block">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-25"></div>
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-25"></div>
                   <div
                   className="relative p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors cursor-pointer"
                   onClick={() => setIsMyTasksDialogOpen(true)}
@@ -393,7 +394,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   const isActive = pathname.startsWith(item.href);
                   return (
                       <SidebarMenuItem key={item.href} isActive={isActive}>
-                      <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                      <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                       <SidebarMenuButton
                           asChild
                           isActive={isActive}
@@ -443,7 +444,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   
                   return (
                       <SidebarMenuItem key={item.href} isActive={isActive}>
-                      <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 animate-gradient-move group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                      <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
                       <SidebarMenuButton
                           asChild
                           isActive={isActive}
@@ -524,16 +525,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <LiveClock />
                 <StatusIndicator variant="server-icon" />
                 <NotificationBell userId={userId} />
-                <Button asChild variant="ghost" size="icon" className="relative">
-                  <Link href="/whats-new">
-                    <Sparkles className="h-5 w-5 text-yellow-500" />
-                    <span className="sr-only">What's New</span>
-                    <span className="absolute top-1 right-1 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                    </span>
-                  </Link>
-                </Button>
+                <WhatsNewDialog
+                    trigger={
+                        <Button asChild variant="ghost" size="icon" className="relative">
+                            <div>
+                                <Sparkles className="h-5 w-5 text-yellow-500" />
+                                <span className="sr-only">What's New</span>
+                                <span className="absolute top-1 right-1 flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                            </div>
+                        </Button>
+                    }
+                />
                 <ThemeToggle />
                 <div className="relative group">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-1000 animate-gradient-move"></div>
@@ -557,11 +562,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem asChild>
-                            <Link href="/whats-new">
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                <span>What's New</span>
-                            </Link>
+                             <DropdownMenuItem asChild>
+                                <Link href="/whats-new">
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    <span>What's New</span>
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                                 <Link href="/profile">

@@ -30,6 +30,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { WhatsNewDialog } from '@/components/whats-new-dialog';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -360,16 +361,20 @@ export default function LoginPage() {
           {/* Right Side */}
           <div className="relative flex flex-col justify-center p-8 sm:p-12 bg-card/60 backdrop-blur-sm rounded-3xl md:rounded-l-none">
             <div className="absolute top-4 right-4 flex items-center gap-2">
-                <Button asChild variant="ghost" size="icon" className="relative">
-                    <Link href="/whats-new">
-                        <Sparkles className="h-5 w-5 text-yellow-500" />
-                        <span className="sr-only">What's New</span>
-                         <span className="absolute top-1 right-1 flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                        </span>
-                    </Link>
-                </Button>
+                <WhatsNewDialog
+                    trigger={
+                        <Button asChild variant="ghost" size="icon" className="relative">
+                            <div>
+                                <Sparkles className="h-5 w-5 text-yellow-500" />
+                                <span className="sr-only">What's New</span>
+                                <span className="absolute top-1 right-1 flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                            </div>
+                        </Button>
+                    }
+                />
                 <ThemeToggle />
             </div>
             <div className='flex-grow flex flex-col justify-center'>
