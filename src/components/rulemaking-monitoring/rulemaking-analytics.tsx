@@ -130,33 +130,35 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
           <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.kategoriCounts['AC']} /></div>
         </CardContent>
       </Card>
+    </div>
+     <div className="mb-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
        <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Proses Evaluasi</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
+          <Clock className="h-4 w-4 text-yellow-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.prosesEvaluasi} /></div>
+          <div className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={stats.prosesEvaluasi} /></div>
           <p className="text-xs text-muted-foreground">Usulan dalam tahap evaluasi</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Perlu Revisi</CardTitle>
-          <FileDiff className="h-4 w-4 text-muted-foreground" />
+          <FileDiff className="h-4 w-4 text-red-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.pengembalian} /></div>
+          <div className="text-2xl font-bold text-red-500"><AnimatedCounter endValue={stats.pengembalian} /></div>
            <p className="text-xs text-muted-foreground">Usulan dikembalikan untuk direvisi</p>
         </CardContent>
       </Card>
        <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Selesai</CardTitle>
-          <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <CheckCircle className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.selesai} /></div>
+          <div className="text-2xl font-bold text-green-500"><AnimatedCounter endValue={stats.selesai} /></div>
           <p className="text-xs text-muted-foreground">Usulan yang telah selesai diproses</p>
         </CardContent>
       </Card>
