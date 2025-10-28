@@ -14,6 +14,7 @@ import type { TindakLanjutRecord } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface OperatorFollowUpDialogProps {
   operatorName: string;
@@ -21,6 +22,18 @@ interface OperatorFollowUpDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const getStatusClass = (status: string) => {
+    switch (status) {
+      case 'Final': return 'bg-green-100 text-green-800 hover:bg-green-200';
+      case 'Draft': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      case 'Draft Final': return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+      case 'Preliminary': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      case 'Interim Statement': return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+      case 'Usulan': return 'bg-red-100 text-red-800 hover:bg-red-200';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
 
 export function OperatorFollowUpDialog({
   operatorName,
@@ -56,7 +69,11 @@ export function OperatorFollowUpDialog({
                              <dl className="text-xs space-y-2">
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Status</dt>
-                                    <dd><Badge variant="outline">{record.status}</Badge></dd>
+                                    <dd>
+                                      <Badge className={cn(getStatusClass(record.status))}>
+                                        {record.status}
+                                      </Badge>
+                                    </dd>
                                 </div>
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Incident Date</dt>
