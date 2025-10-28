@@ -6,7 +6,7 @@ import type { RulemakingRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { FileText, Clock, FileDiff, CheckCircle, BookOpen, Book, BookMarked } from 'lucide-react';
-import { LineChart, Line, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, CartesianGrid } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -187,7 +187,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
         <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
                  <ResponsiveContainer>
-                    <LineChart data={stats.monthlyCreationData}>
+                    <AreaChart data={stats.monthlyCreationData}>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="month"
@@ -199,10 +199,24 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                         <YAxis allowDecimals={false}/>
                         <Tooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent />} />
-                        <Line type="monotone" dataKey="Proses Evaluasi" stroke="var(--color-Proses Evaluasi)" strokeWidth={2} dot={false} connectNulls />
-                        <Line type="monotone" dataKey="Perlu Revisi" stroke="var(--color-Perlu Revisi)" strokeWidth={2} dot={false} connectNulls />
-                        <Line type="monotone" dataKey="Selesai" stroke="var(--color-Selesai)" strokeWidth={2} dot={false} connectNulls />
-                    </LineChart>
+                        <defs>
+                            <linearGradient id="fillSelesai" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="var(--color-Selesai)" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="var(--color-Selesai)" stopOpacity={0.1}/>
+                            </linearGradient>
+                            <linearGradient id="fillPerluRevisi" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="var(--color-Perlu Revisi)" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="var(--color-Perlu Revisi)" stopOpacity={0.1}/>
+                            </linearGradient>
+                            <linearGradient id="fillProsesEvaluasi" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="var(--color-Proses Evaluasi)" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="var(--color-Proses Evaluasi)" stopOpacity={0.1}/>
+                            </linearGradient>
+                        </defs>
+                        <Area type="monotone" dataKey="Selesai" stroke="var(--color-Selesai)" fill="url(#fillSelesai)" stackId="1" />
+                        <Area type="monotone" dataKey="Perlu Revisi" stroke="var(--color-Perlu Revisi)" fill="url(#fillPerluRevisi)" stackId="1" />
+                        <Area type="monotone" dataKey="Proses Evaluasi" stroke="var(--color-Proses Evaluasi)" fill="url(#fillProsesEvaluasi)" stackId="1" />
+                    </AreaChart>
                 </ResponsiveContainer>
             </ChartContainer>
         </CardContent>
