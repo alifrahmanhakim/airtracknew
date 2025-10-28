@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { rulemakingRecordSchema } from '../schemas';
 import type { RulemakingRecord } from '../types';
 
@@ -52,7 +52,21 @@ export async function updateRulemakingRecord(id: string, data: z.infer<typeof ru
         const docRef = doc(db, 'rulemakingRecords', id);
         const dataToSubmit = transformDatesForStorage(parsed.data);
         await updateDoc(docRef, dataToSubmit);
-        return { success: true };
+        
+        const updatedDocSnap = await getDoc(docRef);
+        const serverData = updatedDocSnap.data();
+
+        if (!serverData) {
+            return { success: false, error: 'Failed to retrieve updated record.' };
+        }
+
+        const updatedRecord: RulemakingRecord = {
+            id: updatedDocSnap.id,
+            ...serverData,
+            createdAt: (serverData.createdAt as Timestamp).toDate().toISOString(),
+        } as RulemakingRecord;
+
+        return { success: true, data: updatedRecord };
     } catch (error) {
         console.error('Update rulemaking error:', error);
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };

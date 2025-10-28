@@ -18,10 +18,16 @@ import { RulemakingForm } from './rulemaking-form';
 
 interface EditRulemakingRecordDialogProps {
   record: RulemakingRecord;
+  onRecordUpdate: (updatedRecord: RulemakingRecord) => void;
 }
 
-export function EditRulemakingRecordDialog({ record }: EditRulemakingRecordDialogProps) {
+export function EditRulemakingRecordDialog({ record, onRecordUpdate }: EditRulemakingRecordDialogProps) {
     const [open, setOpen] = React.useState(false);
+
+    const handleFormSubmit = (updatedRecord: RulemakingRecord) => {
+        onRecordUpdate(updatedRecord);
+        setOpen(false);
+    }
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -38,7 +44,7 @@ export function EditRulemakingRecordDialog({ record }: EditRulemakingRecordDialo
                 </DialogHeader>
                 <ScrollArea className="h-[65vh] pr-6 -mr-6">
                     <div className="py-4">
-                      <RulemakingForm record={record} onFormSubmit={() => setOpen(false)} />
+                      <RulemakingForm record={record} onFormSubmit={handleFormSubmit} />
                     </div>
                 </ScrollArea>
             </DialogContent>

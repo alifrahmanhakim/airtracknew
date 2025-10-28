@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -22,13 +21,14 @@ type RulemakingTableProps = {
   records: RulemakingRecord[];
   onDelete: (record: RulemakingRecord) => void;
   isLoading: boolean;
+  onUpdate: (record: RulemakingRecord) => void;
 };
 
 const BulletList = ({ text }: { text: string }) => {
     if (!text) return null;
     // Split by two or more newlines, which can be followed by whitespace.
     const items = text.split(/\n\s*\n/).filter(item => item.trim() !== '');
-    if (items.length <= 1) {
+    if (items.length <= 1 && !text.includes('\n\n')) {
         return <p className="whitespace-pre-wrap">{text}</p>;
     }
     
@@ -41,7 +41,7 @@ const BulletList = ({ text }: { text: string }) => {
     );
 };
 
-export function RulemakingTable({ records, onDelete, isLoading }: RulemakingTableProps) {
+export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: RulemakingTableProps) {
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -57,7 +57,7 @@ export function RulemakingTable({ records, onDelete, isLoading }: RulemakingTabl
   }
 
   const renderStage = (stage: Stage, index: number) => (
-    <div key={index} className="border-b last:border-b-0 py-2">
+    <div key={`${stage.pengajuan?.nomor}-${index}`} className="border-b last:border-b-0 py-2">
        <div className="font-semibold mb-1">
           {stage.pengajuan.tanggal && (
             <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
@@ -109,7 +109,7 @@ export function RulemakingTable({ records, onDelete, isLoading }: RulemakingTabl
               </TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">
-                  <EditRulemakingRecordDialog record={record} />
+                  <EditRulemakingRecordDialog record={record} onRecordUpdate={onUpdate} />
                   <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>

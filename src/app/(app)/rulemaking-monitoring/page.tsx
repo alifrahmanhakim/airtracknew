@@ -93,6 +93,10 @@ export default function RulemakingMonitoringPage() {
         }
         setRecordToDelete(null);
     };
+    
+    const handleRecordUpdate = (updatedRecord: RulemakingRecord) => {
+        setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    };
 
     return (
         <AppLayout>
@@ -139,6 +143,7 @@ export default function RulemakingMonitoringPage() {
                                 <RulemakingTable 
                                     records={records}
                                     onDelete={handleDeleteRequest}
+                                    onUpdate={handleRecordUpdate}
                                     isLoading={isLoading}
                                 />
                             </CardContent>
