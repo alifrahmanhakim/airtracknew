@@ -74,6 +74,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
 import { MyTasksDialog } from '@/components/my-tasks-dialog';
 import { WhatsNewDialog } from './whats-new-dialog';
+import { useTheme } from 'next-themes';
 
 const navItems = {
     dashboards: [
@@ -162,6 +163,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const [myTasks, setMyTasks] = React.useState<AssignedTask[]>([]);
   const [isMyTasksDialogOpen, setIsMyTasksDialogOpen] = React.useState(false);
+  const { theme } = useTheme();
   
   const [myTaskStats, setMyTaskStats] = React.useState({
     todo: 0,
@@ -389,13 +391,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       openStateLetters: openStateLettersCount,
   }
 
+  const logoSrc = theme === 'light' 
+    ? 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png' 
+    : 'https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png';
+
   return (
     <>
       <SidebarProvider>
           <Sidebar variant="inset" collapsible="icon">
           <SidebarHeader>
               <div className="flex items-center justify-center gap-2 py-4">
-              <Image src="https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png" alt="AirTrack Logo" width={97} height={24} style={{ width: 'auto', height: 'auto' }} />
+                <Image src={logoSrc} alt="AirTrack Logo" width={97} height={24} style={{ width: 'auto', height: 'auto' }} priority />
               </div>
           </SidebarHeader>
           <SidebarContent>
@@ -459,24 +465,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                             </SidebarMenuButton>
                             {hasChildren && (
                                 <SidebarMenuSub>
-                                    {item.children?.map(child => {
-                                        const isChildActive = pathname.startsWith(child.href);
-                                        const evaluasiCount = rulemakingEvaluasiCount;
-                                        const revisiCount = rulemakingRevisiCount;
-
-                                        return (
-                                            <SidebarMenuSubItem key={child.href} className={cn(isChildActive && "bg-gradient-to-r from-blue-500 to-green-500 rounded-lg p-0.5")}>
-                                              <div className={cn(isChildActive && "bg-sidebar rounded-md")}>
-                                                <SidebarMenuSubButton asChild isActive={isChildActive}>
-                                                    <Link href={child.href}>
-                                                        <child.icon />
-                                                        <span className="flex-grow">{child.label}</span>
-                                                    </Link>
-                                                </SidebarMenuSubButton>
-                                              </div>
-                                            </SidebarMenuSubItem>
-                                        )
-                                    })}
+                                    <SidebarMenuSubItem className={cn(pathname.startsWith('/rulemaking-monitoring') && "bg-gradient-to-r from-blue-500 to-green-500 rounded-lg p-0.5")}>
+                                        <div className={cn(pathname.startsWith('/rulemaking-monitoring') && "bg-sidebar rounded-md")}>
+                                            <SidebarMenuSubButton asChild isActive={pathname.startsWith('/rulemaking-monitoring')}>
+                                                <Link href="/rulemaking-monitoring">
+                                                    <ListChecks />
+                                                    <span className="flex-grow">Monitoring</span>
+                                                </Link>
+                                            </SidebarMenuSubButton>
+                                        </div>
+                                    </SidebarMenuSubItem>
                                 </SidebarMenuSub>
                             )}
                         </SidebarMenuItem>
