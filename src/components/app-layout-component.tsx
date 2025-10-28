@@ -305,58 +305,50 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         return;
     };
     
-    let overdueCount = 0;
-    const criticalProjectIds = new Set<string>();
     const today = new Date();
-    const tasksForUser: AssignedTask[] = [];
     
+    const myProjects = allProjects.filter(p => p.team.some(member => member.id === userId));
+
+    const tasksForUser: AssignedTask[] = [];
+    const criticalProjectIds = new Set<string>();
+
     let myTodo = 0;
     let myInProgress = 0;
     let myDone = 0;
-    let myTotal = 0;
-  
-    const processTasksRecursively = (tasks: Task[], project: Project) => {
-      for (const task of tasks) {
-        // Count tasks for the current user
-        if (task.assigneeIds?.includes(userId)) {
-          tasksForUser.push({
-            ...task,
-            projectId: project.id,
-            projectName: project.name,
-            projectType: project.projectType,
-          });
-          myTotal++;
-          if(task.status === 'To Do') myTodo++;
-          if(task.status === 'In Progress') myInProgress++;
-          if(task.status === 'Done') myDone++;
-          
-          if (task.status !== 'Done') {
-            try {
-              if (isAfter(today, parseISO(task.dueDate))) {
-                overdueCount++;
-              }
-            } catch (e) {
-              // Ignore invalid date formats
+    
+    myProjects.forEach(project => {
+        const processTasksRecursively = (tasks: Task[]) => {
+            for (const task of tasks) {
+                if (task.assigneeIds?.includes(userId)) {
+                    tasksForUser.push({
+                        ...task,
+                        projectId: project.id,
+                        projectName: project.name,
+                        projectType: project.projectType,
+                    });
+                    if (task.status === 'To Do') myTodo++;
+                    if (task.status === 'In Progress') myInProgress++;
+                    if (task.status === 'Done') myDone++;
+                }
+
+                if (task.criticalIssue) {
+                    criticalProjectIds.add(project.id);
+                }
+
+                if (task.subTasks) {
+                    processTasksRecursively(task.subTasks);
+                }
             }
-          }
-        }
-        
-        // Check for any critical issue in the task
-        if (task.criticalIssue) {
-          criticalProjectIds.add(project.id);
-        }
-  
-        // Recurse into subtasks
-        if (task.subTasks) {
-          processTasksRecursively(task.subTasks, project);
-        }
-      }
-    };
-  
-    allProjects.forEach(project => {
-        processTasksRecursively(project.tasks || [], project);
+        };
+        processTasksRecursively(project.tasks || []);
     });
-  
+
+    const overdueCount = tasksForUser.filter(task => 
+        task.status !== 'Done' && isAfter(today, parseISO(task.dueDate))
+    ).length;
+
+    const myTotal = tasksForUser.length;
+
     setOverdueTasksCount(overdueCount);
     setCriticalProjectsCount(criticalProjectIds.size);
     setMyTasks(tasksForUser.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
@@ -440,7 +432,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                     <item.icon />
                                     <span>{item.label}</span>
                                     <div className="flex items-center gap-1 ml-auto">
-                                        {item.countId && dynamicCounts[item.countId as keyof typeof dynamicCounts] > 0 && (
+                                        {item.countId && dynamicCounts[item.countId as keyof typeof dynamicCounts] > 0 && item.countId !== 'overdueTasks' && (
                                             <SidebarMenuBadge className="bg-primary text-primary-foreground !relative">
                                                 {dynamicCounts[item.countId as keyof typeof dynamicCounts]}
                                             </SidebarMenuBadge>
