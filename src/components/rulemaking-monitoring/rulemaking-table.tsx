@@ -14,19 +14,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, Info } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { RulemakingForm } from './rulemaking-form';
 import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
-import { ScrollArea } from '../ui/scroll-area';
+import { EditRulemakingRecordDialog } from './edit-rulemaking-record-dialog';
+
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
@@ -34,32 +25,6 @@ type RulemakingTableProps = {
   onUpdate: (record: RulemakingRecord) => void;
   isLoading: boolean;
 };
-
-function EditRecordDialog({ record, onUpdate }: { record: RulemakingRecord, onUpdate: (record: RulemakingRecord) => void }) {
-    const [open, setOpen] = React.useState(false);
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <Pencil className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle>Edit Record</DialogTitle>
-                    <DialogDescription>
-                        Update the details for "{record.perihal.substring(0, 50)}...".
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="flex-grow overflow-hidden">
-                    <ScrollArea className="h-full pr-6 -mr-6">
-                        <RulemakingForm record={record} onFormSubmit={() => { onUpdate(record); setOpen(false); }} />
-                    </ScrollArea>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
 
 export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: RulemakingTableProps) {
   if (isLoading) {
@@ -119,7 +84,7 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
               </TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">
-                  <EditRecordDialog record={record} onUpdate={onUpdate} />
+                  <EditRulemakingRecordDialog record={record} onUpdate={onUpdate} />
                   <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
