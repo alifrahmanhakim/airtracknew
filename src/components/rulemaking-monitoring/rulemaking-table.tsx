@@ -18,18 +18,19 @@ import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
 import { EditRulemakingRecordDialog } from './edit-rulemaking-record-dialog';
 import { cn } from '@/lib/utils';
+import { Highlight } from '../ui/highlight';
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
   onDelete: (record: RulemakingRecord) => void;
   isLoading: boolean;
   onUpdate: (record: RulemakingRecord) => void;
+  searchTerm: string;
 };
 
-const BulletList = ({ text }: { text: string }) => {
+const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) => {
     if (!text) return null;
     
-    // Split by two or more newlines, which can be followed by whitespace.
     const items = text.split(/\n\s*\n/).filter(item => item.trim() !== '');
 
     const renderItemWithPercentage = (itemText: string) => {
@@ -37,7 +38,7 @@ const BulletList = ({ text }: { text: string }) => {
         const match = itemText.match(regex);
 
         if (!match) {
-            return itemText.trim();
+            return <Highlight text={itemText.trim()} query={searchTerm} />;
         }
 
         const percentage = parseInt(match[1], 10);
@@ -54,18 +55,18 @@ const BulletList = ({ text }: { text: string }) => {
 
         return (
             <>
-                {textWithoutPercentage}{' '}
+                <Highlight text={textWithoutPercentage} query={searchTerm} />{' '}
                 <span className={cn('font-bold', colorClass)}>
                     ({percentage}%)
                 </span>
             </>
         );
     };
-
+    
     if (items.length <= 1 && !/\n\s*\n/.test(text)) {
         return <p className="whitespace-pre-wrap">{renderItemWithPercentage(text)}</p>;
     }
-    
+
     return (
       <ul className="list-disc list-inside space-y-1">
         {items.map((item, index) => (
@@ -75,7 +76,7 @@ const BulletList = ({ text }: { text: string }) => {
     );
 };
 
-export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: RulemakingTableProps) {
+export function RulemakingTable({ records, onDelete, isLoading, onUpdate, searchTerm }: RulemakingTableProps) {
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -85,7 +86,7 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: Rule
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
         <p className="font-semibold">No Records Found</p>
-        <p className="text-sm">Use the form to add a new rulemaking record.</p>
+        <p className="text-sm">Use the form to add a new rulemaking record, or adjust your filters.</p>
       </div>
     );
   }
@@ -108,20 +109,20 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: Rule
           {stage.pengajuan.tanggal && (
             <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
           )}
-          {stage.pengajuan.nomor && <p className="text-sm mt-1">{stage.pengajuan.nomor}</p>}
-          {stage.pengajuan.keteranganPengajuan && <p className={cn("text-sm mt-1", getKeteranganColor(stage.pengajuan.keteranganPengajuan))}>{stage.pengajuan.keteranganPengajuan}</p>}
+          {stage.pengajuan.nomor && <p className="text-sm mt-1"><Highlight text={stage.pengajuan.nomor} query={searchTerm} /></p>}
+          {stage.pengajuan.keteranganPengajuan && <p className={cn("text-sm mt-1", getKeteranganColor(stage.pengajuan.keteranganPengajuan))}><Highlight text={stage.pengajuan.keteranganPengajuan} query={searchTerm} /></p>}
       </div>
       <div className="text-sm mt-2">
         <strong className="text-muted-foreground">Status:</strong>
         <div className="pl-2">
-          <BulletList text={stage.status.deskripsi} />
+          <BulletList text={stage.status.deskripsi} searchTerm={searchTerm} />
         </div>
       </div>
       {stage.keterangan?.text && (
         <div className="text-sm mt-1">
             <strong className="text-muted-foreground">Keterangan:</strong>
             <div className="pl-2">
-                <BulletList text={stage.keterangan.text} />
+                <BulletList text={stage.keterangan.text} searchTerm={searchTerm} />
             </div>
         </div>
       )}
@@ -144,7 +145,7 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: Rule
           {records.map((record, index) => (
             <TableRow key={record.id}>
               <TableCell className="align-top">{index + 1}</TableCell>
-              <TableCell className="align-top font-medium">{record.perihal}</TableCell>
+              <TableCell className="align-top font-medium"><Highlight text={record.perihal} query={searchTerm} /></TableCell>
               <TableCell className="align-top">
                 <Badge
                   className={cn({
@@ -153,7 +154,7 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: Rule
                     'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300 border-pink-200': record.kategori === 'AC',
                   })}
                 >
-                  {record.kategori}
+                  <Highlight text={record.kategori} query={searchTerm} />
                 </Badge>
               </TableCell>
               <TableCell className="align-top">

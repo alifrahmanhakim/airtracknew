@@ -20,9 +20,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle, ListChecks } from 'lucide-react';
+import { Loader2, AlertTriangle, ListChecks, Search } from 'lucide-react';
 import { deleteRulemakingRecord } from '@/lib/actions/rulemaking';
 import { AppLayout } from '@/components/app-layout-component';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const RulemakingForm = dynamic(() => import('@/components/rulemaking-monitoring/rulemaking-form').then(mod => mod.RulemakingForm), { 
     ssr: false,
@@ -46,6 +48,10 @@ export default function RulemakingMonitoringPage() {
     
     const [recordToDelete, setRecordToDelete] = React.useState<RulemakingRecord | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
+
+    // Filter and search states
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const [kategoriFilter, setKategoriFilter] = React.useState('all');
 
     React.useEffect(() => {
         const q = query(collection(db, "rulemakingRecords"), orderBy("createdAt", "desc"));
@@ -74,8 +80,30 @@ export default function RulemakingMonitoringPage() {
         return () => unsubscribe();
     }, [toast]);
     
+    const filteredRecords = React.useMemo(() => {
+        return records.filter(record => {
+            const kategoriMatch = kategoriFilter === 'all' || record.kategori === kategoriFilter;
+
+            const searchTermMatch = searchTerm === '' ||
+                record.perihal.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                record.kategori.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (record.stages || []).some(stage => 
+                    stage.pengajuan?.keteranganPengajuan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    stage.pengajuan?.nomor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    stage.status.deskripsi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    stage.keterangan?.text?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            
+            return kategoriMatch && searchTermMatch;
+        });
+    }, [records, searchTerm, kategoriFilter]);
+    
     const handleDeleteRequest = (record: RulemakingRecord) => {
         setRecordToDelete(record);
+    };
+
+    const handleRecordUpdate = (updatedRecord: RulemakingRecord) => {
+        setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
     };
 
     const confirmDelete = async () => {
@@ -87,15 +115,11 @@ export default function RulemakingMonitoringPage() {
 
         if (result.success) {
             toast({ title: "Record Deleted", description: "The record has been removed." });
-            // onSnapshot will handle UI update
+            setRecords(prevRecords => prevRecords.filter(r => r.id !== recordToDelete.id));
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         }
         setRecordToDelete(null);
-    };
-    
-    const handleRecordUpdate = (updatedRecord: RulemakingRecord) => {
-        setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
     };
 
     return (
@@ -117,7 +141,7 @@ export default function RulemakingMonitoringPage() {
                         </CardHeader>
                     </Card>
 
-                    <RulemakingAnalytics records={records} />
+                    <RulemakingAnalytics records={filteredRecords} />
 
                     <TabsContent value="form">
                         <Card>
@@ -138,13 +162,36 @@ export default function RulemakingMonitoringPage() {
                             <CardHeader>
                                 <CardTitle>All Records</CardTitle>
                                 <CardDescription>A list of all rulemaking monitoring records.</CardDescription>
+                                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                    <div className="relative flex-grow">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search records..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="pl-9 w-full"
+                                        />
+                                    </div>
+                                    <Select value={kategoriFilter} onValueChange={setKategoriFilter}>
+                                        <SelectTrigger className="w-full sm:w-[180px]">
+                                            <SelectValue placeholder="Filter by Kategori" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Kategori</SelectItem>
+                                            <SelectItem value="PKPS/CASR">PKPS/CASR</SelectItem>
+                                            <SelectItem value="SI">SI</SelectItem>
+                                            <SelectItem value="AC">AC</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <RulemakingTable 
-                                    records={records}
+                                    records={filteredRecords}
                                     onDelete={handleDeleteRequest}
                                     onUpdate={handleRecordUpdate}
                                     isLoading={isLoading}
+                                    searchTerm={searchTerm}
                                 />
                             </CardContent>
                         </Card>
