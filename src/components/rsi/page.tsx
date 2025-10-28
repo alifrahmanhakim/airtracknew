@@ -175,6 +175,8 @@ export default function RsiPage() {
     const [yearFilter, setYearFilter] = React.useState<string>('all');
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
+    const [isAwaitingFollowUpExpanded, setIsAwaitingFollowUpExpanded] = React.useState(false);
+    const [isOperatorBreakdownExpanded, setIsOperatorBreakdownExpanded] = React.useState(false);
     const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
     const [selectedOperator, setSelectedOperator] = React.useState<string | null>(null);
     const [awaitingFollowUpSearch, setAwaitingFollowUpSearch] = React.useState('');
@@ -523,7 +525,7 @@ export default function RsiPage() {
                 </Card>
                 
                 {dashboardStats.totalRekomendasiKnkt > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 flex flex-col">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
@@ -536,7 +538,7 @@ export default function RsiPage() {
                                     <span className="text-sm font-bold">{dashboardStats.operatorFollowUpPercentage.toFixed(0)}% Completed</span>
                                 </div>
                                 <Progress value={dashboardStats.operatorFollowUpPercentage} className="h-2 mt-2 bg-orange-200" indicatorClassName="bg-orange-500" />
-                                 <div className="relative pt-2">
+                                <div className="relative pt-2">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Search pending follow-ups..."
@@ -546,7 +548,7 @@ export default function RsiPage() {
                                     />
                                 </div>
                             </CardHeader>
-                             <CardContent className="flex-grow min-h-0">
+                            <CardContent className="flex-grow min-h-0">
                                 <ScrollArea className="h-full max-h-[400px]">
                                     <div className="space-y-3 pr-6">
                                         {filteredOpenOperatorFollowUps.slice(0, 5).map((record) => {
@@ -585,43 +587,43 @@ export default function RsiPage() {
                                 </ScrollArea>
                             </CardContent>
                         </Card>
-                         <Card className="h-full flex flex-col border-red-500 bg-red-50 dark:bg-red-950/80 dark:border-red-700/60">
+                        <Card className="h-full flex flex-col border-red-500 bg-red-50 dark:bg-red-950/80 dark:border-red-700/60">
                             <CardHeader>
                                 <CardTitle className="text-red-800 dark:text-red-300">Pending Follow-Ups by Operator</CardTitle>
                                 <CardDescription className="text-red-700/80 dark:text-red-400/80">Breakdown of pending follow-ups by responsible operator.</CardDescription>
                             </CardHeader>
-                            <CardContent className="flex-grow min-h-0">
+                             <CardContent className="flex-grow min-h-0">
                                 <ScrollArea className="h-full max-h-[400px]">
                                     <div className="space-y-3 pr-6">
-                                        {dashboardStats.openFollowUpsOperatorChartData.map((item) => {
-                                            const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
-                                            const barPercentage = (item.value / maxVal) * 100;
-                                            return (
-                                                <div 
-                                                    key={item.name} 
-                                                    className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
-                                                    onClick={() => setSelectedOperator(item.name)}
-                                                >
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                          <div className="truncate text-left flex-1">
-                                                            <span>{item.name}</span>
-                                                          </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            {item.name}
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                    <div className="w-1/3 bg-yellow-200 dark:bg-yellow-800/50 rounded-full h-2.5">
-                                                        <div
-                                                            className="bg-yellow-500 h-2.5 rounded-full"
-                                                            style={{ width: `${barPercentage}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                                    {dashboardStats.openFollowUpsOperatorChartData.map((item) => {
+                                        const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
+                                        const barPercentage = (item.value / maxVal) * 100;
+                                        return (
+                                            <div 
+                                                key={item.name} 
+                                                className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
+                                                onClick={() => setSelectedOperator(item.name)}
+                                            >
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                      <div className="truncate text-left flex-1">
+                                                        <span>{item.name}</span>
+                                                      </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {item.name}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                                <div className="w-1/3 bg-yellow-200 dark:bg-yellow-800/50 rounded-full h-2.5">
+                                                    <div
+                                                        className="bg-yellow-500 h-2.5 rounded-full"
+                                                        style={{ width: `${barPercentage}%` }}
+                                                    ></div>
                                                 </div>
-                                            )
-                                        })}
+                                                <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                                            </div>
+                                        )
+                                    })}
                                     </div>
                                 </ScrollArea>
                             </CardContent>
@@ -887,5 +889,4 @@ export default function RsiPage() {
             </TooltipProvider>
         </AppLayout>
     );
-
-    
+}

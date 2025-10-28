@@ -175,8 +175,6 @@ export default function RsiPage() {
     const [yearFilter, setYearFilter] = React.useState<string>('all');
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
-    const [isAwaitingFollowUpExpanded, setIsAwaitingFollowUpExpanded] = React.useState(false);
-    const [isOperatorBreakdownExpanded, setIsOperatorBreakdownExpanded] = React.useState(false);
     const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
     const [selectedOperator, setSelectedOperator] = React.useState<string | null>(null);
     const [awaitingFollowUpSearch, setAwaitingFollowUpSearch] = React.useState('');
@@ -526,7 +524,7 @@ export default function RsiPage() {
                 
                 {dashboardStats.totalRekomendasiKnkt > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 h-full flex flex-col">
+                        <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 flex flex-col">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
                                     <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
@@ -548,91 +546,85 @@ export default function RsiPage() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="space-y-3 overflow-y-auto flex-grow">
-                                {(isAwaitingFollowUpExpanded ? filteredOpenOperatorFollowUps : filteredOpenOperatorFollowUps.slice(0, 4)).map((record) => {
-                                    const status = record.status || 'N/A';
-                                    return (
-                                    <div 
-                                        key={record.id} 
-                                        className="p-3 border-b border-orange-200 dark:border-orange-800/50 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-md cursor-pointer"
-                                        onClick={() => setRecordToEdit(record)}
-                                    >
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div>
-                                                <p className="font-semibold text-sm"><Highlight text={record.judulLaporan} query={awaitingFollowUpSearch} /></p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    <Highlight text={record.nomorLaporan} query={awaitingFollowUpSearch} />
-                                                    <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
-                                                    (<Highlight text={(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ')} query={awaitingFollowUpSearch} />)
-                                                    </span>
-                                                </p>
+                            <CardContent className="flex-grow min-h-0">
+                                <ScrollArea className="h-full max-h-[400px]">
+                                    <div className="space-y-3 pr-6">
+                                        {filteredOpenOperatorFollowUps.slice(0, 5).map((record) => {
+                                            const status = record.status || 'N/A';
+                                            return (
+                                            <div 
+                                                key={record.id} 
+                                                className="p-3 border-b border-orange-200 dark:border-orange-800/50 hover:bg-orange-100/50 dark:hover:bg-orange-900/20 rounded-md cursor-pointer"
+                                                onClick={() => setRecordToEdit(record)}
+                                            >
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <p className="font-semibold text-sm"><Highlight text={record.judulLaporan} query={awaitingFollowUpSearch} /></p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            <Highlight text={record.nomorLaporan} query={awaitingFollowUpSearch} />
+                                                            <span className="font-semibold mx-2 text-orange-600 dark:text-orange-400">
+                                                            (<Highlight text={(Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).filter(Boolean).join(', ')} query={awaitingFollowUpSearch} />)
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                    <Badge className={cn('text-xs', getStatusClass(status))}>{status}</Badge>
+                                                </div>
+                                                <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
+                                                    <div className="text-muted-foreground">
+                                                        <p><span className="font-semibold">Reg:</span> <Highlight text={record.registrasiPesawat || '-'} query={awaitingFollowUpSearch} /></p>
+                                                        <p><span className="font-semibold">Loc:</span> <Highlight text={record.lokasiKejadian || '-'} query={awaitingFollowUpSearch} /></p>
+                                                    </div>
+                                                    <div className="text-muted-foreground text-right">
+                                                        <p><span className="font-semibold">Incident:</span> {record.tanggalKejadian ? parseISO(record.tanggalKejadian).toLocaleDateString() : '-'}</p>
+                                                        <p><span className="font-semibold">Published:</span> {record.tanggalTerbit ? parseISO(record.tanggalTerbit).toLocaleDateString() : '-'}</p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <Badge className={cn('text-xs', getStatusClass(status))}>{status}</Badge>
-                                        </div>
-                                        <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
-                                            <div className="text-muted-foreground">
-                                                <p><span className="font-semibold">Reg:</span> <Highlight text={record.registrasiPesawat || '-'} query={awaitingFollowUpSearch} /></p>
-                                                <p><span className="font-semibold">Loc:</span> <Highlight text={record.lokasiKejadian || '-'} query={awaitingFollowUpSearch} /></p>
-                                            </div>
-                                            <div className="text-muted-foreground text-right">
-                                                <p><span className="font-semibold">Incident:</span> {record.tanggalKejadian ? parseISO(record.tanggalKejadian).toLocaleDateString() : '-'}</p>
-                                                <p><span className="font-semibold">Published:</span> {record.tanggalTerbit ? parseISO(record.tanggalTerbit).toLocaleDateString() : '-'}</p>
-                                            </div>
-                                        </div>
+                                        )})}
                                     </div>
-                                )})}
+                                </ScrollArea>
                             </CardContent>
-                            {filteredOpenOperatorFollowUps.length > 4 && (
-                                <CardFooter>
-                                    <Button variant="link" className="w-full" onClick={() => setIsAwaitingFollowUpExpanded(!isAwaitingFollowUpExpanded)}>
-                                        {isAwaitingFollowUpExpanded ? 'Show less' : `Show all ${filteredOpenOperatorFollowUps.length} items`}
-                                    </Button>
-                                </CardFooter>
-                            )}
                         </Card>
                         <Card className="h-full flex flex-col border-red-500 bg-red-50 dark:bg-red-950/80 dark:border-red-700/60">
                             <CardHeader>
                                 <CardTitle className="text-red-800 dark:text-red-300">Pending Follow-Ups by Operator</CardTitle>
                                 <CardDescription className="text-red-700/80 dark:text-red-400/80">Breakdown of pending follow-ups by responsible operator.</CardDescription>
                             </CardHeader>
-                            <CardContent className="flex-grow space-y-3 overflow-y-auto">
-                            {(isOperatorBreakdownExpanded ? dashboardStats.openFollowUpsOperatorChartData : dashboardStats.openFollowUpsOperatorChartData.slice(0, 10)).map((item) => {
-                                    const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
-                                    const barPercentage = (item.value / maxVal) * 100;
-                                    return (
-                                        <div 
-                                            key={item.name} 
-                                            className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
-                                            onClick={() => setSelectedOperator(item.name)}
-                                        >
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                  <div className="truncate text-left flex-1">
-                                                    <span>{item.name}</span>
-                                                  </div>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {item.name}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                            <div className="w-1/3 bg-yellow-200 dark:bg-yellow-800/50 rounded-full h-2.5">
-                                                <div
-                                                    className="bg-yellow-500 h-2.5 rounded-full"
-                                                    style={{ width: `${barPercentage}%` }}
-                                                ></div>
-                                            </div>
-                                            <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
-                                        </div>
-                                    )
-                                })}
+                            <CardContent className="flex-grow min-h-0">
+                                <ScrollArea className="h-full max-h-[400px]">
+                                    <div className="space-y-3 pr-6">
+                                        {dashboardStats.openFollowUpsOperatorChartData.map((item) => {
+                                            const maxVal = dashboardStats.openFollowUpsOperatorChartData[0]?.value || 1;
+                                            const barPercentage = (item.value / maxVal) * 100;
+                                            return (
+                                                <div 
+                                                    key={item.name} 
+                                                    className="w-full flex items-center gap-3 text-sm text-left p-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
+                                                    onClick={() => setSelectedOperator(item.name)}
+                                                >
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                          <div className="truncate text-left flex-1">
+                                                            <span>{item.name}</span>
+                                                          </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            {item.name}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    <div className="w-1/3 bg-yellow-200 dark:bg-yellow-800/50 rounded-full h-2.5">
+                                                        <div
+                                                            className="bg-yellow-500 h-2.5 rounded-full"
+                                                            style={{ width: `${barPercentage}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="font-bold w-12 text-right">{item.value} ({item.percentage.toFixed(0)}%)</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </ScrollArea>
                             </CardContent>
-                            {dashboardStats.openFollowUpsOperatorChartData.length > 10 && (
-                                <CardFooter>
-                                    <Button variant="link" className="w-full" onClick={() => setIsOperatorBreakdownExpanded(!isOperatorBreakdownExpanded)}>
-                                        {isOperatorBreakdownExpanded ? 'Show less' : 'Show all'}
-                                    </Button>
-                                </CardFooter>
-                            )}
                         </Card>
                     </div>
                 )}
@@ -896,3 +888,4 @@ export default function RsiPage() {
         </AppLayout>
     );
 }
+
