@@ -77,7 +77,7 @@ const navItems = {
       { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare, countId: 'overdueTasks' },
       { href: '/dashboard', label: 'Tim Kerja', icon: Home, countId: 'timKerja' },
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark, countId: 'rulemaking' },
-      { href: '/rulemaking-monitoring', label: 'Rulemaking Monitoring', icon: ListChecks, countId: 'rulemakingMonitoring' },
+      { href: '/rulemaking-monitoring', label: 'Monitoring', icon: ListChecks, countId: 'rulemakingMonitoring' },
       { href: '/kegiatan', label: 'Kegiatan Subdit', icon: CalendarDays },
     ],
     workspace: [

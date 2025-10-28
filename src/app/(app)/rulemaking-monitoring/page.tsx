@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -206,7 +207,7 @@ export default function RulemakingMonitoringPage() {
                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <Card className="mb-4">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold flex items-center gap-2"><ListChecks /> Rulemaking Monitoring</CardTitle>
+                            <CardTitle className="text-3xl font-bold flex items-center gap-2"><ListChecks /> Monitoring</CardTitle>
                             <CardDescription className="mt-2">
                                 Ringkasan status usulan dan perubahan keputusan terkait CASR/PKPS, petunjuk teknis (SI) dan petunjuk pelaksanaan (AC).
                             </CardDescription>
