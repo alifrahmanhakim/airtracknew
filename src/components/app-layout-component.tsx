@@ -49,6 +49,9 @@ import {
   SidebarSeparator,
   SidebarInset,
   SidebarMenuBadge,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Project, Task, User, Notification, GapAnalysisRecord, RulemakingRecord } from '@/lib/types';
@@ -76,8 +79,15 @@ const navItems = {
     dashboards: [
       { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare, countId: 'overdueTasks' },
       { href: '/dashboard', label: 'Tim Kerja', icon: Home, countId: 'timKerja' },
-      { href: '/rulemaking', label: 'Rulemaking', icon: Landmark, countId: 'rulemaking' },
-      { href: '/rulemaking-monitoring', label: 'Monitoring', icon: ListChecks, countId: 'rulemakingMonitoring' },
+      { 
+        href: '/rulemaking', 
+        label: 'Rulemaking', 
+        icon: Landmark, 
+        countId: 'rulemaking',
+        children: [
+          { href: '/rulemaking-monitoring', label: 'Monitoring', icon: ListChecks }
+        ]
+      },
       { href: '/kegiatan', label: 'Kegiatan Subdit', icon: CalendarDays },
     ],
     workspace: [
@@ -233,14 +243,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     unsubs.push(unsubRulemaking);
     
     const unsubRulemakingRecords = onSnapshot(collection(db, 'rulemakingRecords'), (snapshot) => {
-        const records: RulemakingRecord[] = [];
         let evaluasiCount = 0;
         let revisiCount = 0;
 
         snapshot.forEach(doc => {
             const record = { id: doc.id, ...doc.data() } as RulemakingRecord;
-            records.push(record);
-            
             const lastStage = record.stages && record.stages.length > 0 ? record.stages[record.stages.length - 1] : null;
             if (lastStage) {
                 const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
@@ -253,7 +260,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 }
             }
         });
-        setRulemakingRecords(records);
         setRulemakingEvaluasiCount(evaluasiCount);
         setRulemakingRevisiCount(revisiCount);
     });
@@ -423,57 +429,68 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
               <SidebarMenu>
                   {navItems.dashboards.map((item) => {
-                  const isActive = pathname.startsWith(item.href);
-                  return (
-                      <SidebarMenuItem key={item.href} isActive={isActive}>
-                      <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
-                      <SidebarMenuButton
-                          asChild
-                          isActive={isActive}
-                          className="transition-colors"
-                      >
-                          <Link href={item.href}>
-                          <item.icon />
-                          <span>{item.label}</span>
-                           <div className="flex items-center gap-1 ml-auto">
-                            {item.href === '/rulemaking-monitoring' ? (
-                                <>
-                                    {rulemakingEvaluasiCount > 0 && (
-                                        <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
-                                            {rulemakingEvaluasiCount}
-                                        </SidebarMenuBadge>
-                                    )}
-                                    {rulemakingRevisiCount > 0 && (
-                                        <SidebarMenuBadge className="bg-red-500 text-white !relative">
-                                            {rulemakingRevisiCount}
-                                        </SidebarMenuBadge>
-                                    )}
-                                </>
-                            ) : item.href === '/my-dashboard' ? (
-                              <>
-                              {dynamicCounts.criticalProjects > 0 && (
-                                  <SidebarMenuBadge className="bg-red-500 text-white !relative">
-                                  <AlertTriangle className="h-3 w-3 mr-1" />
-                                  {dynamicCounts.criticalProjects}
-                                  </SidebarMenuBadge>
-                              )}
-                              {dynamicCounts.overdueTasks > 0 && (
-                                  <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
-                                  <AlertTriangle className="h-3 w-3 mr-1" />
-                                  {dynamicCounts.overdueTasks}
-                                  </SidebarMenuBadge>
-                              )}
-                              </>
-                            ) : (item.countId && dynamicCounts[item.countId as keyof typeof dynamicCounts] > 0) ? (
-                              <SidebarMenuBadge className="bg-primary text-primary-foreground !relative">
-                                {dynamicCounts[item.countId as keyof typeof dynamicCounts]}
-                              </SidebarMenuBadge>
-                          ) : null}
-                          </div>
-                          </Link>
-                      </SidebarMenuButton>
-                      </SidebarMenuItem>
-                  )
+                      const isActive = pathname.startsWith(item.href);
+                      const hasChildren = item.children && item.children.length > 0;
+                      
+                      return (
+                        <SidebarMenuItem key={item.href} isActive={isActive}>
+                            <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isActive}></div>
+                            <SidebarMenuButton asChild isActive={isActive} className="transition-colors">
+                                <Link href={item.href}>
+                                    <item.icon />
+                                    <span>{item.label}</span>
+                                    <div className="flex items-center gap-1 ml-auto">
+                                        {item.countId && dynamicCounts[item.countId as keyof typeof dynamicCounts] > 0 && (
+                                            <SidebarMenuBadge className="bg-primary text-primary-foreground !relative">
+                                                {dynamicCounts[item.countId as keyof typeof dynamicCounts]}
+                                            </SidebarMenuBadge>
+                                        )}
+                                        {item.href === '/my-dashboard' && dynamicCounts.criticalProjects > 0 && (
+                                            <SidebarMenuBadge className="bg-red-500 text-white !relative">
+                                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                                {dynamicCounts.criticalProjects}
+                                            </SidebarMenuBadge>
+                                        )}
+                                         {item.href === '/my-dashboard' && dynamicCounts.overdueTasks > 0 && (
+                                            <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
+                                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                                {dynamicCounts.overdueTasks}
+                                            </SidebarMenuBadge>
+                                        )}
+                                    </div>
+                                </Link>
+                            </SidebarMenuButton>
+                            {hasChildren && (
+                                <SidebarMenuSub>
+                                    {item.children?.map(child => {
+                                        const isChildActive = pathname.startsWith(child.href);
+                                        return (
+                                            <SidebarMenuSubItem key={child.href}>
+                                                <SidebarMenuSubButton asChild isActive={isChildActive}>
+                                                    <Link href={child.href}>
+                                                        <child.icon />
+                                                        <span>{child.label}</span>
+                                                        <div className="flex items-center gap-1 ml-auto">
+                                                          {rulemakingEvaluasiCount > 0 && (
+                                                              <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
+                                                                  {rulemakingEvaluasiCount}
+                                                              </SidebarMenuBadge>
+                                                          )}
+                                                          {rulemakingRevisiCount > 0 && (
+                                                              <SidebarMenuBadge className="bg-red-500 text-white !relative">
+                                                                  {rulemakingRevisiCount}
+                                                              </SidebarMenuBadge>
+                                                          )}
+                                                        </div>
+                                                    </Link>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        )
+                                    })}
+                                </SidebarMenuSub>
+                            )}
+                        </SidebarMenuItem>
+                      )
                   })}
               </SidebarMenu>
               </SidebarGroup>
