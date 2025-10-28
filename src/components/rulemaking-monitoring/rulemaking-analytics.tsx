@@ -199,9 +199,9 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                         <YAxis allowDecimals={false}/>
                         <Tooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent />} />
-                        <Line type="monotone" dataKey="Proses Evaluasi" stroke="var(--color-Proses Evaluasi)" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="Perlu Revisi" stroke="var(--color-Perlu Revisi)" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="Selesai" stroke="var(--color-Selesai)" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="Proses Evaluasi" stroke="var(--color-Proses Evaluasi)" strokeWidth={2} dot={false} connectNulls />
+                        <Line type="monotone" dataKey="Perlu Revisi" stroke="var(--color-Perlu Revisi)" strokeWidth={2} dot={false} connectNulls />
+                        <Line type="monotone" dataKey="Selesai" stroke="var(--color-Selesai)" strokeWidth={2} dot={false} connectNulls />
                     </LineChart>
                 </ResponsiveContainer>
             </ChartContainer>
