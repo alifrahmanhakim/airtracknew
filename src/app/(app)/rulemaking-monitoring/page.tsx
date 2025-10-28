@@ -237,6 +237,17 @@ export default function RulemakingMonitoringPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                <Select value={kategoriFilter} onValueChange={setKategoriFilter}>
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder="Filter by Kategori" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Kategori</SelectItem>
+                                        <SelectItem value="PKPS/CASR">PKPS/CASR</SelectItem>
+                                        <SelectItem value="SI">SI</SelectItem>
+                                        <SelectItem value="AC">AC</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <RulemakingAnalytics records={filteredAndSortedRecords} />
                         </CardContent>
