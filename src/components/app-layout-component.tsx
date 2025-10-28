@@ -435,39 +435,41 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                           <Link href={item.href}>
                           <item.icon />
                           <span>{item.label}</span>
-                          {item.href === '/my-dashboard' ? (
+                           <div className="flex items-center gap-1 ml-auto">
+                            {item.href === '/rulemaking-monitoring' ? (
+                                <>
+                                    {rulemakingEvaluasiCount > 0 && (
+                                        <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
+                                            {rulemakingEvaluasiCount}
+                                        </SidebarMenuBadge>
+                                    )}
+                                    {rulemakingRevisiCount > 0 && (
+                                        <SidebarMenuBadge className="bg-red-500 text-white !relative">
+                                            {rulemakingRevisiCount}
+                                        </SidebarMenuBadge>
+                                    )}
+                                </>
+                            ) : item.href === '/my-dashboard' ? (
                               <>
                               {dynamicCounts.criticalProjects > 0 && (
-                                  <SidebarMenuBadge className="bg-red-500 text-white">
+                                  <SidebarMenuBadge className="bg-red-500 text-white !relative">
                                   <AlertTriangle className="h-3 w-3 mr-1" />
                                   {dynamicCounts.criticalProjects}
                                   </SidebarMenuBadge>
                               )}
                               {dynamicCounts.overdueTasks > 0 && (
-                                  <SidebarMenuBadge className="bg-yellow-400 text-yellow-900">
+                                  <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
                                   <AlertTriangle className="h-3 w-3 mr-1" />
                                   {dynamicCounts.overdueTasks}
                                   </SidebarMenuBadge>
                               )}
                               </>
-                          ) : item.href === '/rulemaking-monitoring' ? (
-                            <>
-                                {rulemakingEvaluasiCount > 0 && (
-                                    <SidebarMenuBadge className="bg-yellow-400 text-yellow-900">
-                                        {rulemakingEvaluasiCount}
-                                    </SidebarMenuBadge>
-                                )}
-                                {rulemakingRevisiCount > 0 && (
-                                    <SidebarMenuBadge className="bg-red-500 text-white">
-                                        {rulemakingRevisiCount}
-                                    </SidebarMenuBadge>
-                                )}
-                            </>
-                          ) : (item.countId && dynamicCounts[item.countId as keyof typeof dynamicCounts] > 0) ? (
-                              <SidebarMenuBadge className="bg-primary text-primary-foreground">
+                            ) : (item.countId && dynamicCounts[item.countId as keyof typeof dynamicCounts] > 0) ? (
+                              <SidebarMenuBadge className="bg-primary text-primary-foreground !relative">
                                 {dynamicCounts[item.countId as keyof typeof dynamicCounts]}
                               </SidebarMenuBadge>
                           ) : null}
+                          </div>
                           </Link>
                       </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -498,18 +500,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                           <Link href={item.href} {...linkProps}>
                           <item.icon />
                           <span>{item.label}</span>
+                           <div className="flex items-center gap-1 ml-auto">
                           {count > 0 && item.countId === 'openStateLetters' ? (
-                              <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
+                              <SidebarMenuBadge className="bg-destructive text-destructive-foreground !relative">
                               <AlertTriangle className="h-3 w-3 mr-1" />
                               {count}
                               </SidebarMenuBadge>
                           ) : count > 0 ? (
                               <SidebarMenuBadge className={cn(
-                              'bg-destructive text-destructive-foreground'
+                              'bg-destructive text-destructive-foreground !relative'
                               )}>
                               {count}
                               </SidebarMenuBadge>
                           ) : null}
+                          </div>
                           </Link>
                       </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -536,7 +540,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                               <span>{item.label}</span>
                               {item.isBeta && (
                               <SidebarMenuBadge 
-                                  className="bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg animate-gradient-move"
+                                  className="bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg animate-gradient-move !relative"
                                   style={{ backgroundSize: '200% 200%' }}
                               >
                                   Beta
