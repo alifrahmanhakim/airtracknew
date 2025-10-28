@@ -78,10 +78,6 @@ export default function RulemakingMonitoringPage() {
         setRecordToDelete(record);
     };
 
-    const handleRecordUpdate = (updatedRecord: RulemakingRecord) => {
-      setRecords(prev => prev.map(r => r.id === updatedRecord.id ? updatedRecord : r));
-    }
-
     const confirmDelete = async () => {
         if (!recordToDelete) return;
 
@@ -91,6 +87,7 @@ export default function RulemakingMonitoringPage() {
 
         if (result.success) {
             toast({ title: "Record Deleted", description: "The record has been removed." });
+            // onSnapshot will handle UI update
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         }
@@ -142,7 +139,6 @@ export default function RulemakingMonitoringPage() {
                                 <RulemakingTable 
                                     records={records}
                                     onDelete={handleDeleteRequest}
-                                    onUpdate={handleRecordUpdate}
                                     isLoading={isLoading}
                                 />
                             </CardContent>

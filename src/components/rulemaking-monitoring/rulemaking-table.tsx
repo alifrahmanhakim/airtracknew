@@ -21,14 +21,12 @@ import { EditRulemakingRecordDialog } from './edit-rulemaking-record-dialog';
 type RulemakingTableProps = {
   records: RulemakingRecord[];
   onDelete: (record: RulemakingRecord) => void;
-  onUpdate: (record: RulemakingRecord) => void;
   isLoading: boolean;
 };
 
 const BulletList = ({ text }: { text: string }) => {
     if (!text) return null;
-    // Split by one or more newlines, which can be followed by whitespace, then another newline.
-    // This effectively splits by blank lines (double enter).
+    // Split by two or more newlines, which can be followed by whitespace.
     const items = text.split(/\n\s*\n/).filter(item => item.trim() !== '');
     if (items.length <= 1) {
         return <p className="whitespace-pre-wrap">{text}</p>;
@@ -43,7 +41,7 @@ const BulletList = ({ text }: { text: string }) => {
     );
 };
 
-export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: RulemakingTableProps) {
+export function RulemakingTable({ records, onDelete, isLoading }: RulemakingTableProps) {
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -106,7 +104,7 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
               </TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">
-                  <EditRulemakingRecordDialog record={record} onUpdate={onUpdate} />
+                  <EditRulemakingRecordDialog record={record} />
                   <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
