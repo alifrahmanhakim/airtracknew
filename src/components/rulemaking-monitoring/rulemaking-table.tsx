@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { RulemakingRecord } from '@/lib/types';
+import type { RulemakingRecord, Stage } from '@/lib/types';
 import {
   Table,
   TableBody,
@@ -20,9 +20,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogTrigger
 } from '@/components/ui/dialog';
 import { RulemakingForm } from './rulemaking-form';
 import { Badge } from '../ui/badge';
+import { format, parseISO } from 'date-fns';
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
@@ -68,16 +70,25 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
     );
   }
 
+  const renderStage = (stage: Stage) => (
+    <div className="border-b last:border-b-0 py-2">
+      <div className="font-semibold mb-1">
+          <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
+          <p className="text-sm mt-1">{stage.pengajuan.nomor}</p>
+      </div>
+      <p className="text-sm mt-2"><strong className="text-muted-foreground">Status:</strong> {stage.status.deskripsi}</p>
+      {stage.keterangan?.text && <p className="text-sm mt-1"><strong className="text-muted-foreground">Keterangan:</strong> {stage.keterangan.text}</p>}
+    </div>
+  );
+
   return (
     <div className="border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[5%]">No</TableHead>
-            <TableHead className="w-[20%]">Perihal</TableHead>
-            <TableHead className="w-[20%]">Pengajuan</TableHead>
-            <TableHead className="w-[30%]">Status</TableHead>
-            <TableHead className="w-[15%]">Keterangan</TableHead>
+            <TableHead className="w-[25%]">Perihal</TableHead>
+            <TableHead className="w-[60%]">Stages</TableHead>
             <TableHead className="text-right w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -87,22 +98,9 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
               <TableCell className="align-top">{index + 1}</TableCell>
               <TableCell className="align-top font-medium">{record.perihal}</TableCell>
               <TableCell className="align-top">
-                {record.pengajuan.map((p, i) => (
-                    <div key={i} className="mb-2 last:mb-0">
-                        <Badge variant="secondary" className="mb-1">{p.tanggal}</Badge>
-                        <p className="text-sm">{p.nomor}</p>
-                    </div>
-                ))}
-              </TableCell>
-              <TableCell className="align-top">
-                {record.status.map((s, i) => (
-                    <p key={i} className="mb-1 last:mb-0">{s.deskripsi}</p>
-                ))}
-              </TableCell>
-              <TableCell className="align-top">
-                {(record.keterangan || []).map((k, i) => (
-                     <p key={i} className="mb-1 last:mb-0">{k.text}</p>
-                ))}
+                <div className="space-y-2">
+                  {(record.stages || []).map((stage, i) => renderStage(stage))}
+                </div>
               </TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">

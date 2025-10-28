@@ -58,15 +58,18 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
         ...record,
     } : {
       perihal: '',
-      pengajuan: [{ tanggal: '', nomor: '' }],
-      status: [{ deskripsi: '' }],
-      keterangan: [],
+      stages: [{
+          pengajuan: { tanggal: '', nomor: '' },
+          status: { deskripsi: '' },
+          keterangan: { text: '' }
+      }],
     },
   });
 
-  const { fields: pengajuanFields, append: appendPengajuan, remove: removePengajuan } = useFieldArray({ control: form.control, name: 'pengajuan' });
-  const { fields: statusFields, append: appendStatus, remove: removeStatus } = useFieldArray({ control: form.control, name: 'status' });
-  const { fields: keteranganFields, append: appendKeterangan, remove: removeKeterangan } = useFieldArray({ control: form.control, name: 'keterangan' });
+  const { fields: stageFields, append: appendStage, remove: removeStage } = useFieldArray({
+    control: form.control,
+    name: 'stages',
+  });
 
   const onSubmit = async (data: RulemakingFormValues) => {
     setIsLoading(true);
@@ -114,51 +117,24 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
         
         <Card>
             <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Pengajuan</CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={() => appendPengajuan({ tanggal: '', nomor: '' })}>
-                    <Plus className="mr-2 h-4 w-4" /> Add Pengajuan
+                <CardTitle>Stages</CardTitle>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendStage({ pengajuan: { tanggal: '', nomor: '' }, status: { deskripsi: '' }, keterangan: { text: '' }})}>
+                    <Plus className="mr-2 h-4 w-4" /> Add Stage
                 </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-                {pengajuanFields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-4 p-4 border rounded-md relative">
-                        <FormField control={form.control} name={`pengajuan.${index}.tanggal`} render={({ field }) => (<FormItem className="flex-1"><FormLabel>Tanggal</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`pengajuan.${index}.nomor`} render={({ field }) => (<FormItem className="flex-1"><FormLabel>Nomor</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        {pengajuanFields.length > 1 && <Button type="button" variant="destructive" size="icon" onClick={() => removePengajuan(index)}><Trash2 className="h-4 w-4" /></Button>}
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Status</CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={() => appendStatus({ deskripsi: '' })}>
-                    <Plus className="mr-2 h-4 w-4" /> Add Status
-                </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {statusFields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-4 p-4 border rounded-md relative">
-                        <FormField control={form.control} name={`status.${index}.deskripsi`} render={({ field }) => (<FormItem className="flex-1"><FormLabel>Deskripsi Status</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        {statusFields.length > 1 && <Button type="button" variant="destructive" size="icon" onClick={() => removeStatus(index)}><Trash2 className="h-4 w-4" /></Button>}
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Keterangan</CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={() => appendKeterangan({ text: '' })}>
-                    <Plus className="mr-2 h-4 w-4" /> Add Keterangan
-                </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {keteranganFields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-4 p-4 border rounded-md relative">
-                        <FormField control={form.control} name={`keterangan.${index}.text`} render={({ field }) => (<FormItem className="flex-1"><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        {keteranganFields.length > 1 && <Button type="button" variant="destructive" size="icon" onClick={() => removeKeterangan(index)}><Trash2 className="h-4 w-4" /></Button>}
+                {stageFields.map((field, index) => (
+                    <div key={field.id} className="border p-4 rounded-lg relative">
+                        <h4 className="font-semibold mb-2">Stage {index + 1}</h4>
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField control={form.control} name={`stages.${index}.pengajuan.tanggal`} render={({ field }) => (<FormItem><FormLabel>Tanggal Pengajuan</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name={`stages.${index}.pengajuan.nomor`} render={({ field }) => (<FormItem><FormLabel>Nomor Pengajuan</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            </div>
+                            <FormField control={form.control} name={`stages.${index}.status.deskripsi`} render={({ field }) => (<FormItem><FormLabel>Deskripsi Status</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`stages.${index}.keterangan.text`} render={({ field }) => (<FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        </div>
+                        {stageFields.length > 1 && <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeStage(index)}><Trash2 className="h-4 w-4" /></Button>}
                     </div>
                 ))}
             </CardContent>

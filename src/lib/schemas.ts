@@ -272,14 +272,16 @@ export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export const rulemakingRecordSchema = z.object({
     perihal: z.string().min(1, "Perihal is required."),
-    pengajuan: z.array(z.object({
-        tanggal: z.string().min(1, "Tanggal pengajuan is required."),
-        nomor: z.string().min(1, "Nomor pengajuan is required."),
-    })).min(1, 'At least one pengajuan is required'),
-    status: z.array(z.object({
-        deskripsi: z.string().min(1, "Deskripsi status is required."),
-    })).min(1, 'At least one status is required'),
-    keterangan: z.array(z.object({
-        text: z.string().min(1, "Keterangan is required"),
-    })).optional(),
+    stages: z.array(z.object({
+        pengajuan: z.object({
+            tanggal: z.string().min(1, "Tanggal pengajuan is required."),
+            nomor: z.string().min(1, "Nomor pengajuan is required."),
+        }),
+        status: z.object({
+            deskripsi: z.string().min(1, "Deskripsi status is required."),
+        }),
+        keterangan: z.object({
+            text: z.string().optional(),
+        }).optional(),
+    })).min(1, 'At least one stage is required'),
 });

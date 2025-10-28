@@ -336,20 +336,22 @@ export type Kegiatan = {
     updatedAt?: string;
 };
 
-export type Pengajuan = {
-    tanggal: string;
-    nomor: string;
-};
-
-export type Status = {
-    deskripsi: string;
+export type Stage = {
+    pengajuan: {
+        tanggal: string;
+        nomor: string;
+    };
+    status: {
+        deskripsi: string;
+    };
+    keterangan?: {
+        text: string;
+    };
 };
 
 export type RulemakingRecord = {
     id: string;
     perihal: string;
-    pengajuan: Pengajuan[];
-    status: Status[];
-    keterangan: { text: string }[];
+    stages: Stage[];
     createdAt: string;
 };

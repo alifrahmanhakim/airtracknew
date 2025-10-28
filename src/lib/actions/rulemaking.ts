@@ -10,9 +10,12 @@ import type { RulemakingRecord } from '../types';
 const transformDatesForStorage = (data: z.infer<typeof rulemakingRecordSchema>) => {
     return {
         ...data,
-        pengajuan: data.pengajuan.map(p => ({
-            ...p,
-            tanggal: p.tanggal, // Dates are already strings from form
+        stages: data.stages.map(stage => ({
+            ...stage,
+            pengajuan: {
+                ...stage.pengajuan,
+                tanggal: stage.pengajuan.tanggal, // Dates are already strings from form
+            }
         }))
     };
 };
@@ -21,7 +24,7 @@ export async function addRulemakingRecord(data: z.infer<typeof rulemakingRecordS
     const parsed = rulemakingRecordSchema.safeParse(data);
     if (!parsed.success) {
         console.error('Validation failed:', parsed.error.flatten());
-        return { success: false, error: "Invalid data provided. " + parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided. " + JSON.stringify(parsed.error.flatten().fieldErrors) };
     }
 
     try {
@@ -41,7 +44,7 @@ export async function updateRulemakingRecord(id: string, data: z.infer<typeof ru
     const parsed = rulemakingRecordSchema.safeParse(data);
     if (!parsed.success) {
          console.error('Validation failed:', parsed.error.flatten());
-        return { success: false, error: "Invalid data provided." + parsed.error.flatten().fieldErrors };
+        return { success: false, error: "Invalid data provided." + JSON.stringify(parsed.error.flatten().fieldErrors) };
     }
 
     try {
