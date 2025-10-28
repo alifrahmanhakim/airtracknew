@@ -28,6 +28,7 @@ type RulemakingTableProps = {
 
 const BulletList = ({ text }: { text: string }) => {
     if (!text) return null;
+    
     // Split by two or more newlines, which can be followed by whitespace.
     const items = text.split(/\n\s*\n/).filter(item => item.trim() !== '');
 
@@ -145,7 +146,15 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: Rule
               <TableCell className="align-top">{index + 1}</TableCell>
               <TableCell className="align-top font-medium">{record.perihal}</TableCell>
               <TableCell className="align-top">
-                <Badge variant="outline">{record.kategori}</Badge>
+                <Badge
+                  className={cn({
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200': record.kategori === 'PKPS/CASR',
+                    'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 border-purple-200': record.kategori === 'SI',
+                    'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300 border-pink-200': record.kategori === 'AC',
+                  })}
+                >
+                  {record.kategori}
+                </Badge>
               </TableCell>
               <TableCell className="align-top">
                 <div className="space-y-2">
