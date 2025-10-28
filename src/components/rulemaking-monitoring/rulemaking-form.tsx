@@ -169,7 +169,7 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
         </Card>
 
 
-        <div className="flex justify-end">
+        <div className="flex justify-end sticky bottom-0 bg-background py-4">
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {record ? 'Save Changes' : 'Submit Record'}

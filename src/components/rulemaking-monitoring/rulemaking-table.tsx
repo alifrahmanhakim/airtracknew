@@ -20,11 +20,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger
+  DialogTrigger,
+  DialogFooter
 } from '@/components/ui/dialog';
 import { RulemakingForm } from './rulemaking-form';
 import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
+import { ScrollArea } from '../ui/scroll-area';
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
@@ -42,14 +44,17 @@ function EditRecordDialog({ record, onUpdate }: { record: RulemakingRecord, onUp
                     <Pencil className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-4xl">
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Edit Record</DialogTitle>
                     <DialogDescription>
                         Update the details for "{record.perihal.substring(0, 50)}...".
                     </DialogDescription>
                 </DialogHeader>
-                <RulemakingForm record={record} onFormSubmit={() => { onUpdate(record); setOpen(false); }} />
+                <ScrollArea className="flex-grow pr-6 -mr-6">
+                    <RulemakingForm record={record} onFormSubmit={() => { onUpdate(record); setOpen(false); }} />
+                </ScrollArea>
+                 {/* Footer is handled within the form now to be part of the scroll */}
             </DialogContent>
         </Dialog>
     );
