@@ -401,7 +401,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Sidebar variant="inset" collapsible="icon">
           <SidebarHeader>
               <div className="flex items-center justify-center gap-2 py-4">
-                <Image src={logoSrc} alt="AirTrack Logo" width={120} height={30} priority />
+                <Image src={logoSrc} alt="AirTrack Logo" width={140} height={35} priority />
               </div>
           </SidebarHeader>
           <SidebarContent>
@@ -465,16 +465,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                             </SidebarMenuButton>
                             {hasChildren && (
                                 <SidebarMenuSub>
-                                    <SidebarMenuSubItem className={cn(pathname.startsWith('/rulemaking-monitoring') && "bg-gradient-to-r from-blue-500 to-green-500 rounded-lg p-0.5")}>
-                                        <div className={cn(pathname.startsWith('/rulemaking-monitoring') && "bg-sidebar rounded-md")}>
-                                            <SidebarMenuSubButton asChild isActive={pathname.startsWith('/rulemaking-monitoring')}>
-                                                <Link href="/rulemaking-monitoring">
-                                                    <ListChecks />
-                                                    <span className="flex-grow">Monitoring</span>
-                                                </Link>
-                                            </SidebarMenuSubButton>
-                                        </div>
-                                    </SidebarMenuSubItem>
+                                    <SidebarMenuItem isActive={pathname.startsWith('/rulemaking-monitoring')}>
+                                         <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={pathname.startsWith('/rulemaking-monitoring')}></div>
+                                        <SidebarMenuSubButton asChild isActive={pathname.startsWith('/rulemaking-monitoring')} className="w-full">
+                                            <Link href="/rulemaking-monitoring">
+                                                <ListChecks />
+                                                <span className="flex-grow">Monitoring</span>
+                                            </Link>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuItem>
                                 </SidebarMenuSub>
                             )}
                         </SidebarMenuItem>
