@@ -38,6 +38,8 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
     control: form.control,
     name: 'rekomendasi',
   });
+  
+  const inputStyles = "bg-background/70 dark:bg-black/50 border-white/30 placeholder:text-muted-foreground/80 focus:border-primary focus:ring-primary";
 
   return (
     <Form {...form}>
@@ -50,7 +52,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Judul Laporan</FormLabel>
                     <FormControl>
-                    <Input placeholder="Judul laporan KNKT..." {...field} />
+                    <Input placeholder="Judul laporan KNKT..." {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -63,7 +65,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Nomor Laporan</FormLabel>
                     <FormControl>
-                    <Input placeholder="Nomor laporan KNKT..." {...field} />
+                    <Input placeholder="Nomor laporan KNKT..." {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -76,7 +78,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Tanggal Kejadian</FormLabel>
                     <FormControl>
-                      <Input placeholder="YYYY-MM-DD" {...field} />
+                      <Input placeholder="YYYY-MM-DD" {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -89,7 +91,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Tanggal Terbit</FormLabel>
                      <FormControl>
-                      <Input placeholder="YYYY-MM-DD" {...field} />
+                      <Input placeholder="YYYY-MM-DD" {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -102,7 +104,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Registrasi Pesawat</FormLabel>
                     <FormControl>
-                    <Input placeholder="eg: PK-ABC" {...field} />
+                    <Input placeholder="eg: PK-ABC" {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -119,6 +121,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                         value={field.value || ''}
                         onChange={field.onChange}
                         placeholder="Pilih atau ketik tipe pesawat..."
+                        className={inputStyles}
                     />
                     <FormMessage />
                 </FormItem>
@@ -131,7 +134,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Lokasi Kejadian</FormLabel>
                     <FormControl>
-                    <Input placeholder="eg: Bandara Soekarno-Hatta" {...field} />
+                    <Input placeholder="eg: Bandara Soekarno-Hatta" {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -143,7 +146,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Embedded Link (File)</FormLabel>
-                        <FormControl><Input type="url" placeholder="https://example.com/file.pdf" {...field} /></FormControl>
+                        <FormControl><Input type="url" placeholder="https://example.com/file.pdf" {...field} className={inputStyles} /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )}
@@ -165,6 +168,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                                     form.setValue("penerimaRekomendasi", newTags, { shouldValidate: true });
                                 }}
                                 options={aocOptions.map(o => o.value)}
+                                className={inputStyles}
                             />
                         </FormControl>
                         <FormMessage />
@@ -179,7 +183,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                     <FormLabel>Status Report</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                            <SelectTrigger><SelectValue placeholder="Pilih status..." /></SelectTrigger>
+                            <SelectTrigger className={inputStyles}><SelectValue placeholder="Pilih status..." /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                             <SelectItem value="Draft">Draft</SelectItem>
@@ -194,7 +198,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
             )}/>
         </div>
 
-        <Card>
+        <Card className="bg-transparent border-white/30">
           <CardHeader className='flex-row items-center justify-between'>
             <CardTitle>Rekomendasi Keselamatan</CardTitle>
             <Button
@@ -208,7 +212,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_3fr_auto] gap-4 border p-4 rounded-lg">
+              <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_3fr_auto] gap-4 border-t border-white/20 pt-4 first:pt-0 first:border-t-0">
                 <FormField
                   control={form.control}
                   name={`rekomendasi.${index}.nomor`}
@@ -216,7 +220,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                     <FormItem>
                       <FormLabel>Nomor</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., 04.O-2024-02.03" {...field} />
+                        <Input placeholder="e.g., 04.O-2024-02.03" {...field} className={inputStyles} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -229,7 +233,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                     <FormItem>
                       <FormLabel>Deskripsi</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Deskripsi rekomendasi..." {...field} />
+                        <Textarea placeholder="Deskripsi rekomendasi..." {...field} className={inputStyles} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -257,7 +261,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Tindak Lanjut / Respon DKPPU</FormLabel>
                     <FormControl>
-                    <Textarea placeholder="Gunakan 'a.' dan 'b.' untuk membuat daftar..." rows={8} {...field} />
+                    <Textarea placeholder="Gunakan 'a.' dan 'b.' untuk membuat daftar..." rows={8} {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -270,7 +274,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
                 <FormItem>
                     <FormLabel>Tindak Lanjut Operator / Pihak Terkait</FormLabel>
                     <FormControl>
-                    <Textarea placeholder="Gunakan 'a.' dan 'b.' untuk membuat daftar..." rows={8} {...field} />
+                    <Textarea placeholder="Gunakan 'a.' dan 'b.' untuk membuat daftar..." rows={8} {...field} className={inputStyles} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
