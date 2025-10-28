@@ -23,6 +23,7 @@ import { tindakLanjutFormSchema } from '@/lib/schemas';
 import { parseISO, format, isValid } from 'date-fns';
 import type { z } from 'zod';
 import { ScrollArea } from '../ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 type TindakLanjutFormValues = z.infer<typeof tindakLanjutFormSchema>;
 
@@ -32,6 +33,18 @@ type EditTindakLanjutRecordDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
+
+const getDialogBgClass = (status: string) => {
+    switch (status) {
+        case 'Final': return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/50';
+        case 'Draft': return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800/50';
+        case 'Draft Final': return 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50';
+        case 'Preliminary': return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50';
+        case 'Interim Statement': return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50';
+        case 'Usulan': return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50';
+        default: return 'bg-card';
+    }
+}
 
 export function EditTindakLanjutRecordDialog({ record, onRecordUpdate, open, onOpenChange }: EditTindakLanjutRecordDialogProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -90,7 +103,7 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate, open, onO
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className={cn("max-w-4xl", getDialogBgClass(record.status))}>
         <DialogHeader>
           <DialogTitle>Edit Tindak Lanjut Record</DialogTitle>
           <DialogDescription>
