@@ -20,11 +20,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle, ListChecks, Search } from 'lucide-react';
+import { Loader2, AlertTriangle, ListChecks, Search, FileSpreadsheet } from 'lucide-react';
 import { deleteRulemakingRecord } from '@/lib/actions/rulemaking';
 import { AppLayout } from '@/components/app-layout-component';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import * as XLSX from 'xlsx';
+import { format, parseISO } from 'date-fns';
 
 const RulemakingForm = dynamic(() => import('@/components/rulemaking-monitoring/rulemaking-form').then(mod => mod.RulemakingForm), { 
     ssr: false,
@@ -122,6 +125,41 @@ export default function RulemakingMonitoringPage() {
         setRecordToDelete(null);
     };
 
+    const handleExport = () => {
+        if (filteredRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
+            return;
+        }
+
+        const dataToExport = filteredRecords.flatMap(record => {
+            if (record.stages && record.stages.length > 0) {
+                return record.stages.map(stage => ({
+                    'Perihal': record.perihal,
+                    'Kategori': record.kategori,
+                    'Tanggal Pengajuan': stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'yyyy-MM-dd') : 'N/A',
+                    'Nomor Surat': stage.pengajuan.nomor || 'N/A',
+                    'Keterangan Pengajuan': stage.pengajuan.keteranganPengajuan || 'N/A',
+                    'Deskripsi Status': stage.status.deskripsi.replace(/\(\d+%\)/g, '').trim(),
+                    'Keterangan': stage.keterangan?.text || 'N/A',
+                }));
+            }
+            return [{
+                'Perihal': record.perihal,
+                'Kategori': record.kategori,
+                'Tanggal Pengajuan': 'N/A',
+                'Nomor Surat': 'N/A',
+                'Keterangan Pengajuan': 'N/A',
+                'Deskripsi Status': 'No stages available',
+                'Keterangan': 'N/A',
+            }];
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Rulemaking Monitoring");
+        XLSX.writeFile(workbook, "rulemaking_monitoring_export.xlsx");
+    };
+
     return (
         <AppLayout>
             <main className="p-4 md:p-8">
@@ -160,8 +198,16 @@ export default function RulemakingMonitoringPage() {
                     <TabsContent value="records">
                         <Card>
                             <CardHeader>
-                                <CardTitle>All Records</CardTitle>
-                                <CardDescription>A list of all rulemaking monitoring records.</CardDescription>
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <div className='flex-1'>
+                                        <CardTitle>All Records</CardTitle>
+                                        <CardDescription>A list of all rulemaking monitoring records.</CardDescription>
+                                    </div>
+                                    <Button variant="outline" onClick={handleExport}>
+                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                        Export to Excel
+                                    </Button>
+                                </div>
                                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                     <div className="relative flex-grow">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
