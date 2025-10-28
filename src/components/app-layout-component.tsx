@@ -401,7 +401,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Sidebar variant="inset" collapsible="icon">
           <SidebarHeader>
               <div className="flex items-center justify-center gap-2 py-4">
-                <Image src={logoSrc} alt="AirTrack Logo" width={97} height={24} style={{ width: 'auto', height: 'auto' }} priority />
+                <Image src={logoSrc} alt="AirTrack Logo" width={120} height={30} style={{ width: 'auto', height: 'auto' }} priority />
               </div>
           </SidebarHeader>
           <SidebarContent>
