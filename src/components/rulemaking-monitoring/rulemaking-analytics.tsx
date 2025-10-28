@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -60,7 +61,6 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                     acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0, 'Pengajuan Awal': 0 };
                 }
 
-                // Increment 'Pengajuan Awal'
                 if (firstStage.pengajuan.keteranganPengajuan?.toLowerCase().includes('pengajuan awal')) {
                     acc[month]['Pengajuan Awal']++;
                 }
