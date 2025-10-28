@@ -10,6 +10,7 @@ import { LineChart, Line, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { ChartLegend, ChartLegendContent } from './ui/chart';
 
 type RulemakingAnalyticsProps = {
   records: RulemakingRecord[];
@@ -168,20 +169,14 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
     </div>
     <Card className="mb-4">
         <CardHeader>
-            <CardTitle>Timeline Pengajuan Usulan</CardTitle>
-            <CardDescription>Jumlah usulan baru yang dibuat setiap bulan.</CardDescription>
+            <CardTitle>Timeline Pengajuan Usulan by Status</CardTitle>
+            <CardDescription>Jumlah usulan baru yang dibuat setiap bulan, dipecah berdasarkan status.</CardDescription>
         </CardHeader>
         <CardContent>
             <ChartContainer config={yearChartConfig} className="h-[300px] w-full">
                  <ResponsiveContainer>
-                    <LineChart data={stats.monthlyCreationData}>
-                        <defs>
-                            <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <BarChart data={stats.monthlyCreationData}>
+                        <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="month"
                             tickLine={false}
@@ -191,9 +186,11 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                         />
                         <YAxis allowDecimals={false}/>
                         <Tooltip content={<ChartTooltipContent />} />
-                        <Area type="monotone" dataKey="Total" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorTotal)" />
-                        <Line type="monotone" dataKey="Total" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                    </LineChart>
+                        <ChartLegend content={<ChartLegendContent />} />
+                        <Bar dataKey="Proses Evaluasi" stackId="a" fill="var(--color-Proses Evaluasi)" radius={[0, 0, 4, 4]} />
+                        <Bar dataKey="Perlu Revisi" stackId="a" fill="var(--color-Perlu Revisi)" />
+                        <Bar dataKey="Selesai" stackId="a" fill="var(--color-Selesai)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
                 </ResponsiveContainer>
             </ChartContainer>
         </CardContent>
