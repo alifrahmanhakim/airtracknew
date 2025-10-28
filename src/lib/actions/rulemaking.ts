@@ -6,19 +6,14 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { rulemakingRecordSchema } from '../schemas';
 import type { RulemakingRecord } from '../types';
-import { format, parseISO } from 'date-fns';
 
 const transformDatesForStorage = (data: z.infer<typeof rulemakingRecordSchema>) => {
     return {
         ...data,
-        pengajuan: {
-            ...data.pengajuan,
-            tanggal: data.pengajuan.tanggal ? format(parseISO(data.pengajuan.tanggal), 'd MMMM yyyy') : '',
-        },
-        status: {
-            ...data.status,
-            tanggalSurat: data.status.tanggalSurat ? format(parseISO(data.status.tanggalSurat), 'd MMMM yyyy') : '',
-        }
+        pengajuan: data.pengajuan.map(p => ({
+            ...p,
+            tanggal: p.tanggal, // Dates are already strings from form
+        }))
     };
 };
 

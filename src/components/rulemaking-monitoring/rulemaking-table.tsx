@@ -22,6 +22,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { RulemakingForm } from './rulemaking-form';
+import { Badge } from '../ui/badge';
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
@@ -39,7 +40,7 @@ function EditRecordDialog({ record, onUpdate }: { record: RulemakingRecord, onUp
                     <Pencil className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>Edit Record</DialogTitle>
                     <DialogDescription>
@@ -86,15 +87,23 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
               <TableCell className="align-top">{index + 1}</TableCell>
               <TableCell className="align-top font-medium">{record.perihal}</TableCell>
               <TableCell className="align-top">
-                <p><strong>Tanggal:</strong> {record.pengajuan.tanggal}</p>
-                <p><strong>Nomor:</strong> {record.pengajuan.nomor}</p>
+                {record.pengajuan.map((p, i) => (
+                    <div key={i} className="mb-2 last:mb-0">
+                        <Badge variant="secondary" className="mb-1">{p.tanggal}</Badge>
+                        <p className="text-sm">{p.nomor}</p>
+                    </div>
+                ))}
               </TableCell>
               <TableCell className="align-top">
-                <p>{record.status.deskripsi}</p>
-                {record.status.nomorSurat && <p className="text-sm text-muted-foreground">No. Surat: {record.status.nomorSurat}</p>}
-                {record.status.tanggalSurat && <p className="text-sm text-muted-foreground">Tgl. Surat: {record.status.tanggalSurat}</p>}
+                {record.status.map((s, i) => (
+                    <p key={i} className="mb-1 last:mb-0">{s.deskripsi}</p>
+                ))}
               </TableCell>
-              <TableCell className="align-top">{record.keterangan || '-'}</TableCell>
+              <TableCell className="align-top">
+                {(record.keterangan || []).map((k, i) => (
+                     <p key={i} className="mb-1 last:mb-0">{k.text}</p>
+                ))}
+              </TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">
                   <EditRecordDialog record={record} onUpdate={onUpdate} />
