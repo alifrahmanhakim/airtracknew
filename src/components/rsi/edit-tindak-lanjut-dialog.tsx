@@ -35,7 +35,7 @@ type EditTindakLanjutRecordDialogProps = {
 };
 
 const getDialogBgClass = (status: string) => {
-    const baseClass = "bg-opacity-30 dark:bg-opacity-20 backdrop-blur-lg";
+    const baseClass = "bg-opacity-80 dark:bg-opacity-60 backdrop-blur-lg";
     switch (status) {
         case 'Final': return `bg-green-100 dark:bg-green-900 ${baseClass}`;
         case 'Draft': return `bg-yellow-100 dark:bg-yellow-900 ${baseClass}`;
