@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info } from 'lucide-react';
+import { Pencil, Trash2, Info, ArrowUpDown } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
@@ -26,7 +26,14 @@ type RulemakingTableProps = {
   isLoading: boolean;
   onUpdate: (record: RulemakingRecord) => void;
   searchTerm: string;
+  sort: SortDescriptor;
+  setSort: (sort: SortDescriptor) => void;
 };
+
+type SortDescriptor = {
+    column: keyof RulemakingRecord | 'firstSubmissionDate';
+    direction: 'asc' | 'desc';
+} | null;
 
 const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) => {
     if (!text) return null;
@@ -76,7 +83,7 @@ const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) 
     );
 };
 
-export function RulemakingTable({ records, onDelete, isLoading, onUpdate, searchTerm }: RulemakingTableProps) {
+export function RulemakingTable({ records, onDelete, isLoading, onUpdate, searchTerm, sort, setSort }: RulemakingTableProps) {
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -91,6 +98,20 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
     );
   }
   
+  const handleSort = (column: keyof RulemakingRecord | 'firstSubmissionDate') => {
+    setSort(prevSort => {
+        if (prevSort?.column === column) {
+            return { column, direction: prevSort.direction === 'asc' ? 'desc' : 'asc' };
+        }
+        return { column, direction: 'asc' };
+    });
+  };
+
+  const renderSortIcon = (column: keyof RulemakingRecord | 'firstSubmissionDate') => {
+      if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
+      return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
+  };
+
   const getKeteranganColor = (text: string | undefined) => {
     if (!text) return '';
     const lowerText = text.toLowerCase();
@@ -135,9 +156,15 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
         <TableHeader>
           <TableRow>
             <TableHead className="w-[5%]">No</TableHead>
-            <TableHead className="w-[20%]">Perihal</TableHead>
-            <TableHead className="w-[15%]">Kategori</TableHead>
-            <TableHead className="w-[50%]">Pengajuan</TableHead>
+            <TableHead className="w-[20%] cursor-pointer" onClick={() => handleSort('perihal')}>
+                <div className="flex items-center">Perihal {renderSortIcon('perihal')}</div>
+            </TableHead>
+            <TableHead className="w-[15%] cursor-pointer" onClick={() => handleSort('kategori')}>
+                <div className="flex items-center">Kategori {renderSortIcon('kategori')}</div>
+            </TableHead>
+            <TableHead className="w-[50%] cursor-pointer" onClick={() => handleSort('firstSubmissionDate')}>
+                <div className="flex items-center">Pengajuan {renderSortIcon('firstSubmissionDate')}</div>
+            </TableHead>
             <TableHead className="text-right w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>

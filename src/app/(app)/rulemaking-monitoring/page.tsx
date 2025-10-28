@@ -42,6 +42,11 @@ const RulemakingAnalytics = dynamic(() => import('@/components/rulemaking-monito
     loading: () => <Skeleton className="h-[300px] w-full" /> 
 });
 
+type SortDescriptor = {
+    column: keyof RulemakingRecord | 'firstSubmissionDate';
+    direction: 'asc' | 'desc';
+} | null;
+
 
 export default function RulemakingMonitoringPage() {
     const [records, setRecords] = React.useState<RulemakingRecord[]>([]);
@@ -55,6 +60,7 @@ export default function RulemakingMonitoringPage() {
     // Filter and search states
     const [searchTerm, setSearchTerm] = React.useState('');
     const [kategoriFilter, setKategoriFilter] = React.useState('all');
+    const [sort, setSort] = React.useState<SortDescriptor>({ column: 'perihal', direction: 'asc' });
 
     React.useEffect(() => {
         const q = query(collection(db, "rulemakingRecords"), orderBy("createdAt", "desc"));
@@ -83,23 +89,47 @@ export default function RulemakingMonitoringPage() {
         return () => unsubscribe();
     }, [toast]);
     
-    const filteredRecords = React.useMemo(() => {
-        return records.filter(record => {
-            const kategoriMatch = kategoriFilter === 'all' || record.kategori === kategoriFilter;
+    const filteredAndSortedRecords = React.useMemo(() => {
+        let filtered = [...records];
+        
+        if (kategoriFilter !== 'all') {
+            filtered = filtered.filter(record => record.kategori === kategoriFilter);
+        }
 
-            const searchTermMatch = searchTerm === '' ||
-                record.perihal.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                record.kategori.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        if (searchTerm) {
+            const lowercasedFilter = searchTerm.toLowerCase();
+            filtered = filtered.filter(record => 
+                record.perihal.toLowerCase().includes(lowercasedFilter) ||
+                record.kategori.toLowerCase().includes(lowercasedFilter) ||
                 (record.stages || []).some(stage => 
-                    stage.pengajuan?.keteranganPengajuan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    stage.pengajuan?.nomor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    stage.status.deskripsi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    stage.keterangan?.text?.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-            
-            return kategoriMatch && searchTermMatch;
-        });
-    }, [records, searchTerm, kategoriFilter]);
+                    stage.pengajuan?.keteranganPengajuan?.toLowerCase().includes(lowercasedFilter) ||
+                    stage.pengajuan?.nomor?.toLowerCase().includes(lowercasedFilter) ||
+                    stage.status.deskripsi.toLowerCase().includes(lowercasedFilter) ||
+                    stage.keterangan?.text?.toLowerCase().includes(lowercasedFilter)
+                )
+            );
+        }
+        
+        if (sort) {
+            filtered.sort((a, b) => {
+                if (sort.column === 'firstSubmissionDate') {
+                    const dateA = a.stages?.[0]?.pengajuan?.tanggal ? parseISO(a.stages[0].pengajuan.tanggal).getTime() : 0;
+                    const dateB = b.stages?.[0]?.pengajuan?.tanggal ? parseISO(b.stages[0].pengajuan.tanggal).getTime() : 0;
+                    return sort.direction === 'asc' ? dateA - dateB : dateB - dateA;
+                }
+
+                const aVal = a[sort.column as keyof RulemakingRecord] ?? '';
+                const bVal = b[sort.column as keyof RulemakingRecord] ?? '';
+
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    return sort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                }
+                return 0;
+            });
+        }
+        
+        return filtered;
+    }, [records, searchTerm, kategoriFilter, sort]);
     
     const handleDeleteRequest = (record: RulemakingRecord) => {
         setRecordToDelete(record);
@@ -126,12 +156,12 @@ export default function RulemakingMonitoringPage() {
     };
 
     const handleExport = () => {
-        if (filteredRecords.length === 0) {
+        if (filteredAndSortedRecords.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
             return;
         }
 
-        const dataToExport = filteredRecords.flatMap(record => {
+        const dataToExport = filteredAndSortedRecords.flatMap(record => {
             if (record.stages && record.stages.length > 0) {
                 return record.stages.map(stage => ({
                     'Perihal': record.perihal,
@@ -179,7 +209,7 @@ export default function RulemakingMonitoringPage() {
                         </CardHeader>
                     </Card>
 
-                    <RulemakingAnalytics records={filteredRecords} />
+                    <RulemakingAnalytics records={filteredAndSortedRecords} />
 
                     <TabsContent value="form">
                         <div className="max-w-7xl mx-auto">
@@ -191,7 +221,10 @@ export default function RulemakingMonitoringPage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                   <RulemakingForm onFormSubmit={() => setActiveTab('records')} />
+                                   <RulemakingForm onFormSubmit={(newRecord) => { 
+                                       setRecords(prev => [newRecord, ...prev]);
+                                       setActiveTab('records');
+                                    }} />
                                 </CardContent>
                             </Card>
                         </div>
@@ -236,11 +269,13 @@ export default function RulemakingMonitoringPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <RulemakingTable 
-                                        records={filteredRecords}
+                                        records={filteredAndSortedRecords}
                                         onDelete={handleDeleteRequest}
                                         onUpdate={handleRecordUpdate}
                                         isLoading={isLoading}
                                         searchTerm={searchTerm}
+                                        sort={sort}
+                                        setSort={setSort}
                                     />
                                 </CardContent>
                             </Card>
