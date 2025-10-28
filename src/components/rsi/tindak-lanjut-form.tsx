@@ -2,6 +2,8 @@
 'use client';
 
 import { useForm, type UseFormReturn, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Form,
   FormControl,
@@ -15,7 +17,7 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { aocOptions, indonesianAircraftTypes } from '@/lib/data';
-import type { z } from 'zod';
+import type { TindakLanjutRecord } from '@/lib/types';
 import { tindakLanjutFormSchema } from '@/lib/schemas';
 import { Combobox } from '../ui/combobox';
 import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
@@ -39,7 +41,7 @@ export function TindakLanjutForm({ form }: TindakLanjutFormProps) {
     name: 'rekomendasi',
   });
   
-  const inputStyles = "bg-background/70 dark:bg-black/50 border-white/30 placeholder:text-muted-foreground/80 focus:border-primary focus:ring-primary";
+  const inputStyles = "bg-background/70 dark:bg-black/50 border-white/30 placeholder:text-muted-foreground/80 focus:border-primary focus:ring-primary text-foreground";
 
   return (
     <Form {...form}>
