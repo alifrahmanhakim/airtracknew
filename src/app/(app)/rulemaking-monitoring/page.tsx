@@ -106,7 +106,7 @@ export default function RulemakingMonitoringPage() {
                         <CardHeader>
                             <CardTitle className="text-3xl font-bold flex items-center gap-2"><ListChecks /> Rulemaking Monitoring</CardTitle>
                             <CardDescription className="mt-2">
-                                Ringkasan status usulan dan perubahan keputusan terkait petunjuk teknis (SI) dan petunjuk pelaksanaan (AC).
+                                Ringkasan status usulan dan perubahan keputusan terkait CASR/PKPS, petunjuk teknis (SI) dan petunjuk pelaksanaan (AC).
                             </CardDescription>
                             <div className="pt-4">
                                 <TabsList>
