@@ -31,7 +31,7 @@ type RulemakingFormValues = z.infer<typeof rulemakingRecordSchema>;
 
 type RulemakingFormProps = {
   record?: RulemakingRecord;
-  onFormSubmit: () => void;
+  onFormSubmit: (data: RulemakingRecord) => void;
 };
 
 export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
@@ -86,7 +86,9 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
         title: `Record ${record ? 'Updated' : 'Added'}`,
         description: `The record for "${data.perihal}" has been saved.`,
       });
-      onFormSubmit();
+      if (result.data) {
+        onFormSubmit(result.data);
+      }
       if (!record) form.reset();
     } else {
       toast({
