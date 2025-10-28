@@ -182,65 +182,69 @@ export default function RulemakingMonitoringPage() {
                     <RulemakingAnalytics records={filteredRecords} />
 
                     <TabsContent value="form">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Add New Rulemaking Record</CardTitle>
-                                <CardDescription>
-                                    Fill out the form to add a new record.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                               <RulemakingForm onFormSubmit={() => setActiveTab('records')} />
-                            </CardContent>
-                        </Card>
+                        <div className="max-w-7xl mx-auto">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Add New Rulemaking Record</CardTitle>
+                                    <CardDescription>
+                                        Fill out the form to add a new record.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                   <RulemakingForm onFormSubmit={() => setActiveTab('records')} />
+                                </CardContent>
+                            </Card>
+                        </div>
                     </TabsContent>
 
                     <TabsContent value="records">
-                        <Card>
-                            <CardHeader>
-                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                    <div className='flex-1'>
-                                        <CardTitle>All Records</CardTitle>
-                                        <CardDescription>A list of all rulemaking monitoring records.</CardDescription>
+                        <div className="max-w-7xl mx-auto">
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div className='flex-1'>
+                                            <CardTitle>All Records</CardTitle>
+                                            <CardDescription>A list of all rulemaking monitoring records.</CardDescription>
+                                        </div>
+                                        <Button variant="outline" onClick={handleExport}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to Excel
+                                        </Button>
                                     </div>
-                                    <Button variant="outline" onClick={handleExport}>
-                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                        Export to Excel
-                                    </Button>
-                                </div>
-                                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                    <div className="relative flex-grow">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            placeholder="Search records..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-9 w-full"
-                                        />
+                                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                        <div className="relative flex-grow">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                placeholder="Search records..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="pl-9 w-full"
+                                            />
+                                        </div>
+                                        <Select value={kategoriFilter} onValueChange={setKategoriFilter}>
+                                            <SelectTrigger className="w-full sm:w-[180px]">
+                                                <SelectValue placeholder="Filter by Kategori" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Kategori</SelectItem>
+                                                <SelectItem value="PKPS/CASR">PKPS/CASR</SelectItem>
+                                                <SelectItem value="SI">SI</SelectItem>
+                                                <SelectItem value="AC">AC</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                    <Select value={kategoriFilter} onValueChange={setKategoriFilter}>
-                                        <SelectTrigger className="w-full sm:w-[180px]">
-                                            <SelectValue placeholder="Filter by Kategori" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Kategori</SelectItem>
-                                            <SelectItem value="PKPS/CASR">PKPS/CASR</SelectItem>
-                                            <SelectItem value="SI">SI</SelectItem>
-                                            <SelectItem value="AC">AC</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <RulemakingTable 
-                                    records={filteredRecords}
-                                    onDelete={handleDeleteRequest}
-                                    onUpdate={handleRecordUpdate}
-                                    isLoading={isLoading}
-                                    searchTerm={searchTerm}
-                                />
-                            </CardContent>
-                        </Card>
+                                </CardHeader>
+                                <CardContent>
+                                    <RulemakingTable 
+                                        records={filteredRecords}
+                                        onDelete={handleDeleteRequest}
+                                        onUpdate={handleRecordUpdate}
+                                        isLoading={isLoading}
+                                        searchTerm={searchTerm}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </div>
                     </TabsContent>
                  </Tabs>
 
