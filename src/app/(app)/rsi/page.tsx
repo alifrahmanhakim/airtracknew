@@ -212,6 +212,7 @@ export default function RsiPage() {
             return { ...prevData, tindakLanjutRecords: newRecords };
         });
         setRecordToEdit(null);
+        setSelectedOperator(null); // Close operator dialog if it was open for this record
     };
 
     const yearOptions = React.useMemo(() => {
@@ -881,6 +882,7 @@ export default function RsiPage() {
                         records={dashboardStats.openOperatorFollowUps}
                         open={!!selectedOperator}
                         onOpenChange={(isOpen) => !isOpen && setSelectedOperator(null)}
+                        onRecordUpdate={handleRecordUpdate}
                     />
                 )}
                 </main>

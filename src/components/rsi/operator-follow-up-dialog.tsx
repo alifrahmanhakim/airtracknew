@@ -15,12 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { EditTindakLanjutRecordDialog } from './edit-tindak-lanjut-dialog';
 
 interface OperatorFollowUpDialogProps {
   operatorName: string;
   records: TindakLanjutRecord[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onRecordUpdate: (record: TindakLanjutRecord) => void;
 }
 
 const getStatusClass = (status: string) => {
@@ -52,7 +54,10 @@ export function OperatorFollowUpDialog({
   records,
   open,
   onOpenChange,
+  onRecordUpdate
 }: OperatorFollowUpDialogProps) {
+  const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
+
   const filteredRecords = React.useMemo(() => {
     return records.filter(record => 
         (Array.isArray(record.penerimaRekomendasi) && record.penerimaRekomendasi.includes(operatorName)) ||
@@ -60,7 +65,13 @@ export function OperatorFollowUpDialog({
     );
   }, [records, operatorName]);
 
+  const handleRecordUpdate = (updatedRecord: TindakLanjutRecord) => {
+    onRecordUpdate(updatedRecord);
+    setRecordToEdit(null);
+  };
+
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
@@ -72,7 +83,11 @@ export function OperatorFollowUpDialog({
         <ScrollArea className="max-h-[60vh] p-1">
             <div className="space-y-4 pr-4">
                 {filteredRecords.map(record => (
-                    <Card key={record.id} className={cn("bg-card", getCardBgClass(record.status))}>
+                    <Card 
+                        key={record.id} 
+                        className={cn("bg-card cursor-pointer transition-all hover:shadow-md hover:-translate-y-1", getCardBgClass(record.status))}
+                        onClick={() => setRecordToEdit(record)}
+                    >
                         <CardHeader>
                             <CardTitle className="text-base">{record.judulLaporan}</CardTitle>
                             <p className="text-xs text-muted-foreground">{record.nomorLaporan}</p>
@@ -103,5 +118,14 @@ export function OperatorFollowUpDialog({
         </ScrollArea>
       </DialogContent>
     </Dialog>
+    {recordToEdit && (
+        <EditTindakLanjutRecordDialog
+            record={recordToEdit}
+            onRecordUpdate={handleRecordUpdate}
+            open={!!recordToEdit}
+            onOpenChange={(isOpen) => !isOpen && setRecordToEdit(null)}
+        />
+    )}
+    </>
   );
 }
