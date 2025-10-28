@@ -84,6 +84,8 @@ const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) 
 };
 
 export function RulemakingTable({ records, onDelete, isLoading, onUpdate, searchTerm, sort, setSort }: RulemakingTableProps) {
+  const [recordToEdit, setRecordToEdit] = React.useState<RulemakingRecord | null>(null);
+
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -151,26 +153,26 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
   );
 
   return (
+    <>
     <div className="border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[5%]">No</TableHead>
-            <TableHead className="w-[20%] cursor-pointer" onClick={() => handleSort('perihal')}>
+            <TableHead className="w-[25%] cursor-pointer" onClick={() => handleSort('perihal')}>
                 <div className="flex items-center">Perihal {renderSortIcon('perihal')}</div>
             </TableHead>
             <TableHead className="w-[15%] cursor-pointer" onClick={() => handleSort('kategori')}>
                 <div className="flex items-center">Kategori {renderSortIcon('kategori')}</div>
             </TableHead>
-            <TableHead className="w-[50%] cursor-pointer" onClick={() => handleSort('firstSubmissionDate')}>
+            <TableHead className="w-[55%] cursor-pointer" onClick={() => handleSort('firstSubmissionDate')}>
                 <div className="flex items-center">Pengajuan {renderSortIcon('firstSubmissionDate')}</div>
             </TableHead>
-            <TableHead className="text-right w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {records.map((record, index) => (
-            <TableRow key={record.id}>
+            <TableRow key={record.id} className="cursor-pointer" onClick={() => setRecordToEdit(record)}>
               <TableCell className="align-top">{index + 1}</TableCell>
               <TableCell className="align-top font-medium"><Highlight text={record.perihal} query={searchTerm} /></TableCell>
               <TableCell className="align-top">
@@ -189,18 +191,20 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
                   {(record.stages || []).map((stage, i) => renderStage(stage, i))}
                 </div>
               </TableCell>
-              <TableCell className="text-right align-top">
-                <div className="flex justify-end gap-1">
-                  <EditRulemakingRecordDialog record={record} onRecordUpdate={onUpdate} />
-                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(record)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
+     {recordToEdit && (
+        <EditRulemakingRecordDialog 
+            record={recordToEdit}
+            onRecordUpdate={onUpdate}
+            onDelete={onDelete}
+            open={!!recordToEdit}
+            onOpenChange={(open) => !open && setRecordToEdit(null)}
+        />
+      )}
+    </>
   );
 }
