@@ -175,8 +175,6 @@ export default function RsiPage() {
     const [yearFilter, setYearFilter] = React.useState<string>('all');
     const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
     const [chartYearScope, setChartYearScope] = React.useState<string>('all');
-    const [isAwaitingFollowUpExpanded, setIsAwaitingFollowUpExpanded] = React.useState(false);
-    const [isOperatorBreakdownExpanded, setIsOperatorBreakdownExpanded] = React.useState(false);
     const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
     const [selectedOperator, setSelectedOperator] = React.useState<string | null>(null);
     const [awaitingFollowUpSearch, setAwaitingFollowUpSearch] = React.useState('');
@@ -526,7 +524,7 @@ export default function RsiPage() {
                 
                 {dashboardStats.totalRekomendasiKnkt > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 h-full flex flex-col">
+                        <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 flex flex-col">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
                                     <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
@@ -548,10 +546,10 @@ export default function RsiPage() {
                                     />
                                 </div>
                             </CardHeader>
-                            <CardContent className="flex-grow min-h-0">
+                             <CardContent className="flex-grow min-h-0">
                                 <ScrollArea className="h-full max-h-[400px]">
                                     <div className="space-y-3 pr-6">
-                                        {filteredOpenOperatorFollowUps.map((record) => {
+                                        {filteredOpenOperatorFollowUps.slice(0, 5).map((record) => {
                                             const status = record.status || 'N/A';
                                             return (
                                             <div 
@@ -889,4 +887,5 @@ export default function RsiPage() {
             </TooltipProvider>
         </AppLayout>
     );
-}
+
+    
