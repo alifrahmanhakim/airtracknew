@@ -148,16 +148,14 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
             </CardHeader>
             <CardContent className="space-y-4">
                 {stageFields.map((field, index) => (
-                    <div key={field.id} className="border p-4 rounded-lg relative">
+                    <div key={field.id} className="border p-4 rounded-lg relative space-y-4">
                         <h4 className="font-semibold mb-2">Pengajuan {index + 1}</h4>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField control={form.control} name={`stages.${index}.pengajuan.tanggal`} render={({ field }) => (<FormItem><FormLabel>Tanggal Pengajuan</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name={`stages.${index}.pengajuan.nomor`} render={({ field }) => (<FormItem><FormLabel>Nomor Pengajuan</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <FormField control={form.control} name={`stages.${index}.status.deskripsi`} render={({ field }) => (<FormItem><FormLabel>Deskripsi Status</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name={`stages.${index}.keterangan.text`} render={({ field }) => (<FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name={`stages.${index}.pengajuan.tanggal`} render={({ field }) => (<FormItem><FormLabel>Tanggal Pengajuan</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`stages.${index}.pengajuan.nomor`} render={({ field }) => (<FormItem><FormLabel>Nomor Pengajuan</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </div>
+                        <FormField control={form.control} name={`stages.${index}.status.deskripsi`} render={({ field }) => (<FormItem><FormLabel>Deskripsi Status</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`stages.${index}.keterangan.text`} render={({ field }) => (<FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
                         {stageFields.length > 1 && <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeStage(index)}><Trash2 className="h-4 w-4" /></Button>}
                     </div>
                 ))}
