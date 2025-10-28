@@ -57,14 +57,12 @@ export function RulemakingTable({ records, onDelete, isLoading }: RulemakingTabl
   }
 
   const renderStage = (stage: Stage, index: number) => (
-    <div key={`${stage.pengajuan?.nomor}-${index}`} className="border-b last:border-b-0 py-2">
+    <div key={index} className="border-b last:border-b-0 py-2">
        <div className="font-semibold mb-1">
-          {stage.pengajuan.tanggal && stage.pengajuan.nomor && (
-            <>
-                <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
-                <p className="text-sm mt-1">{stage.pengajuan.nomor}</p>
-            </>
+          {stage.pengajuan.tanggal && (
+            <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
           )}
+          {stage.pengajuan.nomor && <p className="text-sm mt-1">{stage.pengajuan.nomor}</p>}
           {stage.pengajuan.keteranganPengajuan && <p className="text-sm mt-1 text-muted-foreground">{stage.pengajuan.keteranganPengajuan}</p>}
       </div>
       <div className="text-sm mt-2">
@@ -73,7 +71,14 @@ export function RulemakingTable({ records, onDelete, isLoading }: RulemakingTabl
           <BulletList text={stage.status.deskripsi} />
         </div>
       </div>
-      {stage.keterangan?.text && <p className="text-sm mt-1"><strong className="text-muted-foreground">Keterangan:</strong> {stage.keterangan.text}</p>}
+      {stage.keterangan?.text && (
+        <div className="text-sm mt-1">
+            <strong className="text-muted-foreground">Keterangan:</strong>
+            <div className="pl-2">
+                <BulletList text={stage.keterangan.text} />
+            </div>
+        </div>
+      )}
     </div>
   );
 
