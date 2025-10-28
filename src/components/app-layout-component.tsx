@@ -470,20 +470,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                                     <Link href={child.href}>
                                                         <child.icon />
                                                         <span className="flex-grow">{child.label}</span>
-                                                        {(evaluasiCount > 0 || revisiCount > 0) && (
-                                                            <div className="flex items-center gap-1">
-                                                                {evaluasiCount > 0 && (
-                                                                    <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
-                                                                        {evaluasiCount}
-                                                                    </SidebarMenuBadge>
-                                                                )}
-                                                                {revisiCount > 0 && (
-                                                                    <SidebarMenuBadge className="bg-red-500 text-white !relative">
-                                                                        {revisiCount}
-                                                                    </SidebarMenuBadge>
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                        <div className="flex items-center gap-1 ml-auto">
+                                                            {evaluasiCount > 0 && (
+                                                                <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
+                                                                    {evaluasiCount}
+                                                                </SidebarMenuBadge>
+                                                            )}
+                                                            {revisiCount > 0 && (
+                                                                <SidebarMenuBadge className="bg-red-500 text-white !relative">
+                                                                    {revisiCount}
+                                                                </SidebarMenuBadge>
+                                                            )}
+                                                        </div>
                                                     </Link>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>
