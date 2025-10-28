@@ -26,7 +26,6 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { DialogFooter } from '../ui/dialog';
 
 type RulemakingFormValues = z.infer<typeof rulemakingRecordSchema>;
 
@@ -169,13 +168,13 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
             </CardContent>
         </Card>
 
-        <DialogFooter className="pt-4 border-t sticky bottom-[-24px] bg-background">
+        <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={() => form.reset()}>Close</Button>
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {record ? 'Save Changes' : 'Submit Record'}
           </Button>
-        </DialogFooter>
+        </div>
       </form>
     </Form>
   );
