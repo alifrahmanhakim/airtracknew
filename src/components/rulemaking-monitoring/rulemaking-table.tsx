@@ -18,12 +18,27 @@ import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
 import { EditRulemakingRecordDialog } from './edit-rulemaking-record-dialog';
 
-
 type RulemakingTableProps = {
   records: RulemakingRecord[];
   onDelete: (record: RulemakingRecord) => void;
   onUpdate: (record: RulemakingRecord) => void;
   isLoading: boolean;
+};
+
+const BulletList = ({ text }: { text: string }) => {
+    if (!text) return null;
+    const items = text.split('\n').filter(item => item.trim() !== '');
+    if (items.length <= 1) {
+        return <p className="whitespace-pre-wrap">{text}</p>;
+    }
+    
+    return (
+      <ul className="list-disc list-inside space-y-1">
+        {items.map((item, index) => (
+          <li key={index}>{item.trim()}</li>
+        ))}
+      </ul>
+    );
 };
 
 export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: RulemakingTableProps) {
@@ -52,7 +67,12 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
           )}
           {stage.pengajuan.keteranganPengajuan && <p className="text-sm mt-1 text-muted-foreground">{stage.pengajuan.keteranganPengajuan}</p>}
       </div>
-      <p className="text-sm mt-2"><strong className="text-muted-foreground">Status:</strong> {stage.status.deskripsi}</p>
+      <div className="text-sm mt-2">
+        <strong className="text-muted-foreground">Status:</strong>
+        <div className="pl-2">
+          <BulletList text={stage.status.deskripsi} />
+        </div>
+      </div>
       {stage.keterangan?.text && <p className="text-sm mt-1"><strong className="text-muted-foreground">Keterangan:</strong> {stage.keterangan.text}</p>}
     </div>
   );
