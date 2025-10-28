@@ -35,14 +35,14 @@ type EditTindakLanjutRecordDialogProps = {
 };
 
 const getDialogBgClass = (status: string) => {
-    const baseClass = "bg-opacity-80 dark:bg-opacity-60 backdrop-blur-lg";
+    const baseClass = "backdrop-blur-lg";
     switch (status) {
-        case 'Final': return `bg-green-100 dark:bg-green-900 ${baseClass}`;
-        case 'Draft': return `bg-yellow-100 dark:bg-yellow-900 ${baseClass}`;
-        case 'Draft Final': return `bg-orange-100 dark:bg-orange-900 ${baseClass}`;
-        case 'Preliminary': return `bg-blue-100 dark:bg-blue-900 ${baseClass}`;
-        case 'Interim Statement': return `bg-purple-100 dark:bg-purple-900 ${baseClass}`;
-        case 'Usulan': return `bg-red-100 dark:bg-red-900 ${baseClass}`;
+        case 'Final': return `bg-green-200/80 dark:bg-green-900/60 ${baseClass}`;
+        case 'Draft': return `bg-yellow-200/80 dark:bg-yellow-900/60 ${baseClass}`;
+        case 'Draft Final': return `bg-orange-200/80 dark:bg-orange-900/60 ${baseClass}`;
+        case 'Preliminary': return `bg-blue-200/80 dark:bg-blue-900/60 ${baseClass}`;
+        case 'Interim Statement': return `bg-purple-200/80 dark:bg-purple-900/60 ${baseClass}`;
+        case 'Usulan': return `bg-red-200/80 dark:bg-red-900/60 ${baseClass}`;
         default: return 'bg-card';
     }
 }
