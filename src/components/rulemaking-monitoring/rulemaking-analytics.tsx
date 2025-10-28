@@ -6,7 +6,7 @@ import type { RulemakingRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { FileText, Clock, FileDiff, CheckCircle, BookOpen, Book, BookMarked } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
+import { LineChart, Line, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -65,12 +65,13 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
             }
 
             if (!acc[month]) {
-                acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0 };
+                acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0, 'Total': 0 };
             }
             acc[month][status]++;
+            acc[month]['Total']++;
         }
         return acc;
-    }, {} as Record<string, { month: string; 'Proses Evaluasi': number; 'Perlu Revisi': number; 'Selesai': number }>);
+    }, {} as Record<string, { month: string; 'Proses Evaluasi': number; 'Perlu Revisi': number; 'Selesai': number; 'Total': number }>);
     
     const monthlyCreationData = Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
 
@@ -89,6 +90,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
       'Proses Evaluasi': { label: `Proses Evaluasi`, color: STATUS_COLORS['Proses Evaluasi'] },
       'Perlu Revisi': { label: `Perlu Revisi`, color: STATUS_COLORS['Perlu Revisi'] },
       'Selesai': { label: `Selesai`, color: STATUS_COLORS['Selesai'] },
+      'Total': { label: `Total`, color: 'hsl(var(--primary))' }
   }
 
   return (
@@ -167,12 +169,19 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
     <Card className="mb-4">
         <CardHeader>
             <CardTitle>Timeline Pengajuan Usulan</CardTitle>
-            <CardDescription>Jumlah usulan baru yang dibuat setiap bulan berdasarkan status terakhirnya.</CardDescription>
+            <CardDescription>Jumlah usulan baru yang dibuat setiap bulan.</CardDescription>
         </CardHeader>
         <CardContent>
             <ChartContainer config={yearChartConfig} className="h-[300px] w-full">
                  <ResponsiveContainer>
-                    <BarChart data={stats.monthlyCreationData}>
+                    <LineChart data={stats.monthlyCreationData}>
+                        <defs>
+                            <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
                         <XAxis
                             dataKey="month"
                             tickLine={false}
@@ -182,10 +191,9 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                         />
                         <YAxis allowDecimals={false}/>
                         <Tooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="Proses Evaluasi" stackId="a" fill="var(--color-Proses Evaluasi)" radius={[0, 0, 4, 4]}/>
-                        <Bar dataKey="Perlu Revisi" stackId="a" fill="var(--color-Perlu Revisi)" />
-                        <Bar dataKey="Selesai" stackId="a" fill="var(--color-Selesai)" radius={[4, 4, 0, 0]} />
-                    </BarChart>
+                        <Area type="monotone" dataKey="Total" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorTotal)" />
+                        <Line type="monotone" dataKey="Total" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                    </LineChart>
                 </ResponsiveContainer>
             </ChartContainer>
         </CardContent>
