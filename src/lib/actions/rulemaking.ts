@@ -15,7 +15,7 @@ const transformDatesForStorage = (data: z.infer<typeof rulemakingRecordSchema>) 
             ...stage,
             pengajuan: {
                 ...stage.pengajuan,
-                tanggal: stage.pengajuan.tanggal, // Dates are already strings from form
+                tanggal: stage.pengajuan.tanggal || null, // Store as null if empty
             }
         }))
     };

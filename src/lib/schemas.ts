@@ -275,8 +275,9 @@ export const rulemakingRecordSchema = z.object({
     kategori: z.enum(['PKPS/CASR', 'SI', 'AC']),
     stages: z.array(z.object({
         pengajuan: z.object({
-            tanggal: z.string().min(1, "Tanggal pengajuan is required."),
-            nomor: z.string().min(1, "Nomor pengajuan is required."),
+            tanggal: z.string().optional(),
+            nomor: z.string().optional(),
+            keteranganPengajuan: z.string().optional(),
         }),
         status: z.object({
             deskripsi: z.string().min(1, "Deskripsi status is required."),

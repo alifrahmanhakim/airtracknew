@@ -73,8 +73,13 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
   const renderStage = (stage: Stage) => (
     <div className="border-b last:border-b-0 py-2">
       <div className="font-semibold mb-1">
-          <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
-          <p className="text-sm mt-1">{stage.pengajuan.nomor}</p>
+          {stage.pengajuan.tanggal && stage.pengajuan.nomor && (
+            <>
+                <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
+                <p className="text-sm mt-1">{stage.pengajuan.nomor}</p>
+            </>
+          )}
+          {stage.pengajuan.keteranganPengajuan && <p className="text-sm mt-1 text-muted-foreground">{stage.pengajuan.keteranganPengajuan}</p>}
       </div>
       <p className="text-sm mt-2"><strong className="text-muted-foreground">Status:</strong> {stage.status.deskripsi}</p>
       {stage.keterangan?.text && <p className="text-sm mt-1"><strong className="text-muted-foreground">Keterangan:</strong> {stage.keterangan.text}</p>}
