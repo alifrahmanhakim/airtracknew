@@ -465,8 +465,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                         const revisiCount = rulemakingRevisiCount;
 
                                         return (
-                                            <SidebarMenuSubItem key={child.href} className={cn("relative group/sub-item", isChildActive && "group-data-[collapsible=icon]:bg-sidebar-accent/50")}>
-                                              {isChildActive && <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/sub-item:opacity-75 data-[active=true]:opacity-75" data-active={isChildActive}></div>}
+                                            <SidebarMenuItem key={child.href} isActive={isChildActive}>
+                                                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isChildActive}></div>
                                                 <SidebarMenuSubButton asChild isActive={isChildActive}>
                                                     <Link href={child.href}>
                                                         <child.icon />
@@ -485,7 +485,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                                         </div>
                                                     </Link>
                                                 </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
+                                            </SidebarMenuItem>
                                         )
                                     })}
                                 </SidebarMenuSub>
