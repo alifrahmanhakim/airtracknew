@@ -51,7 +51,7 @@ import {
   SidebarMenuBadge,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Project, Task, User, Notification, GapAnalysisRecord } from '@/lib/types';
+import type { Project, Task, User, Notification, GapAnalysisRecord, RulemakingRecord } from '@/lib/types';
 import { doc, onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -77,7 +77,7 @@ const navItems = {
       { href: '/my-dashboard', label: 'My Dashboard', icon: UserSquare, countId: 'overdueTasks' },
       { href: '/dashboard', label: 'Tim Kerja', icon: Home, countId: 'timKerja' },
       { href: '/rulemaking', label: 'Rulemaking', icon: Landmark, countId: 'rulemaking' },
-      { href: '/rulemaking-monitoring', label: 'Rulemaking Monitoring', icon: ListChecks },
+      { href: '/rulemaking-monitoring', label: 'Rulemaking Monitoring', icon: ListChecks, countId: 'rulemakingMonitoring' },
       { href: '/kegiatan', label: 'Kegiatan Subdit', icon: CalendarDays },
     ],
     workspace: [
@@ -141,6 +141,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = React.useState<string | null>(null);
   
   const [allProjects, setAllProjects] = React.useState<Project[]>([]);
+  const [rulemakingRecords, setRulemakingRecords] = React.useState<RulemakingRecord[]>([]);
   const [projectCounts, setProjectCounts] = React.useState({ timKerja: 0, rulemaking: 0 });
   const [overdueTasksCount, setOverdueTasksCount] = React.useState(0);
   const [criticalProjectsCount, setCriticalProjectsCount] = React.useState(0);
@@ -227,6 +228,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         updateAllProjects();
     });
     unsubs.push(unsubRulemaking);
+    
+    const unsubRulemakingRecords = onSnapshot(collection(db, 'rulemakingRecords'), (snapshot) => {
+        const records: RulemakingRecord[] = [];
+        snapshot.forEach(doc => {
+            records.push({ id: doc.id, ...doc.data() } as RulemakingRecord);
+        });
+        setRulemakingRecords(records);
+    });
+    unsubs.push(unsubRulemakingRecords);
 
     const notifsQuery = query(
       collection(db, 'users', userId, 'notifications'),
@@ -347,12 +357,25 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isCurrentUserOnline = currentUser.lastOnline ? (new Date().getTime() - new Date(currentUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
 
+  const rulemakingMonitoringCount = React.useMemo(() => {
+    return rulemakingRecords.filter(r => {
+        const lastStage = r.stages && r.stages.length > 0 ? r.stages[r.stages.length - 1] : null;
+        if (lastStage) {
+            const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
+            return !lastStatusDesc.includes('selesai');
+        }
+        return true; // Count if no stages exist
+    }).length;
+  }, [rulemakingRecords]);
+
+
   const dynamicCounts = {
       ...projectCounts,
       overdueTasks: overdueTasksCount,
       criticalProjects: criticalProjectsCount,
       unreadChats: unreadChatsCount,
       openStateLetters: openStateLettersCount,
+      rulemakingMonitoring: rulemakingMonitoringCount,
   }
 
   return (
@@ -421,8 +444,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                               )}
                               </>
                           ) : count > 0 ? (
-                              <SidebarMenuBadge className="bg-primary text-primary-foreground">
-                              {count}
+                              <SidebarMenuBadge className={cn("bg-primary text-primary-foreground", item.href === '/rulemaking-monitoring' && "bg-yellow-400 text-yellow-900")}>
+                                {count}
                               </SidebarMenuBadge>
                           ) : null}
                           </Link>
