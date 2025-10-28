@@ -37,13 +37,13 @@ type EditTindakLanjutRecordDialogProps = {
 const getDialogBgClass = (status: string) => {
     const baseClass = "backdrop-blur-lg"; // Frosted glass effect
     switch (status) {
-        case 'Final': return `bg-green-500/10 dark:bg-green-900/30 ${baseClass}`;
-        case 'Draft': return `bg-yellow-500/10 dark:bg-yellow-900/30 ${baseClass}`;
-        case 'Draft Final': return `bg-orange-500/10 dark:bg-orange-900/30 ${baseClass}`;
-        case 'Preliminary': return `bg-blue-500/10 dark:bg-blue-900/30 ${baseClass}`;
-        case 'Interim Statement': return `bg-purple-500/10 dark:bg-purple-900/30 ${baseClass}`;
-        case 'Usulan': return `bg-red-500/10 dark:bg-red-900/30 ${baseClass}`;
-        default: return 'bg-card';
+        case 'Final': return `bg-green-500/30 dark:bg-green-900/50 ${baseClass}`;
+        case 'Draft': return `bg-yellow-500/30 dark:bg-yellow-900/50 ${baseClass}`;
+        case 'Draft Final': return `bg-orange-500/30 dark:bg-orange-900/50 ${baseClass}`;
+        case 'Preliminary': return `bg-blue-500/30 dark:bg-blue-900/50 ${baseClass}`;
+        case 'Interim Statement': return `bg-purple-500/30 dark:bg-purple-900/50 ${baseClass}`;
+        case 'Usulan': return `bg-red-500/30 dark:bg-red-900/50 ${baseClass}`;
+        default: return `bg-card/80 ${baseClass}`;
     }
 }
 
@@ -105,10 +105,10 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate, open, onO
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn("max-w-4xl text-foreground", getDialogBgClass(record.status))}>
+      <DialogContent className={cn("max-w-4xl text-primary-foreground", getDialogBgClass(record.status))}>
         <DialogHeader>
           <DialogTitle>Edit Tindak Lanjut Record</DialogTitle>
-          <DialogDescription className="text-foreground/80">
+          <DialogDescription className="text-primary-foreground/80">
             Make changes to the record for report: <span className="font-semibold">{record.nomorLaporan}</span>
           </DialogDescription>
         </DialogHeader>
