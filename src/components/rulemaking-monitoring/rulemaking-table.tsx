@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -88,7 +87,7 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
           <TableRow>
             <TableHead className="w-[5%]">No</TableHead>
             <TableHead className="w-[25%]">Perihal</TableHead>
-            <TableHead className="w-[60%]">Stages</TableHead>
+            <TableHead className="w-[60%]">Pengajuan</TableHead>
             <TableHead className="text-right w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>

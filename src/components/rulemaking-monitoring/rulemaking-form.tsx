@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -117,15 +116,15 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
         
         <Card>
             <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Stages</CardTitle>
+                <CardTitle>Pengajuan</CardTitle>
                 <Button type="button" variant="outline" size="sm" onClick={() => appendStage({ pengajuan: { tanggal: '', nomor: '' }, status: { deskripsi: '' }, keterangan: { text: '' }})}>
-                    <Plus className="mr-2 h-4 w-4" /> Add Stage
+                    <Plus className="mr-2 h-4 w-4" /> Add Pengajuan
                 </Button>
             </CardHeader>
             <CardContent className="space-y-4">
                 {stageFields.map((field, index) => (
                     <div key={field.id} className="border p-4 rounded-lg relative">
-                        <h4 className="font-semibold mb-2">Stage {index + 1}</h4>
+                        <h4 className="font-semibold mb-2">Pengajuan {index + 1}</h4>
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField control={form.control} name={`stages.${index}.pengajuan.tanggal`} render={({ field }) => (<FormItem><FormLabel>Tanggal Pengajuan</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
