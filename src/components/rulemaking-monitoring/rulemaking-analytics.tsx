@@ -17,9 +17,9 @@ type RulemakingAnalyticsProps = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
+    'Selesai': 'hsl(var(--chart-1))', // Green
     'Proses Evaluasi': 'hsl(var(--chart-2))', // Yellow
     'Perlu Revisi': 'hsl(var(--chart-3))', // Red
-    'Selesai': 'hsl(var(--chart-1))', // Green
 };
 
 
@@ -91,9 +91,9 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
   }, [records]);
 
   const chartConfig = {
-      'Proses Evaluasi': { label: `Proses Evaluasi`, color: STATUS_COLORS['Proses Evaluasi'] },
-      'Perlu Revisi': { label: `Perlu Revisi`, color: STATUS_COLORS['Perlu Revisi'] },
-      'Selesai': { label: `Selesai`, color: STATUS_COLORS['Selesai'] },
+      'Selesai': { label: `Selesai (${stats.selesai})`, color: STATUS_COLORS['Selesai'] },
+      'Proses Evaluasi': { label: `Proses Evaluasi (${stats.prosesEvaluasi})`, color: STATUS_COLORS['Proses Evaluasi'] },
+      'Perlu Revisi': { label: `Perlu Revisi (${stats.pengembalian})`, color: STATUS_COLORS['Perlu Revisi'] },
   };
 
   if (records.length === 0) {
@@ -201,21 +201,21 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                         <ChartLegend content={<ChartLegendContent />} />
                         <defs>
                             <linearGradient id="fillSelesai" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--color-Selesai)" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="var(--color-Selesai)" stopOpacity={0.1}/>
+                                <stop offset="5%" stopColor={STATUS_COLORS['Selesai']} stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor={STATUS_COLORS['Selesai']} stopOpacity={0.1}/>
                             </linearGradient>
                             <linearGradient id="fillPerluRevisi" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--color-Perlu Revisi)" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="var(--color-Perlu Revisi)" stopOpacity={0.1}/>
+                                <stop offset="5%" stopColor={STATUS_COLORS['Perlu Revisi']} stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor={STATUS_COLORS['Perlu Revisi']} stopOpacity={0.1}/>
                             </linearGradient>
                             <linearGradient id="fillProsesEvaluasi" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--color-Proses Evaluasi)" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="var(--color-Proses Evaluasi)" stopOpacity={0.1}/>
+                                <stop offset="5%" stopColor={STATUS_COLORS['Proses Evaluasi']} stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor={STATUS_COLORS['Proses Evaluasi']} stopOpacity={0.1}/>
                             </linearGradient>
                         </defs>
-                        <Area type="monotone" dataKey="Selesai" stroke="var(--color-Selesai)" fill="url(#fillSelesai)" stackId="1" />
-                        <Area type="monotone" dataKey="Perlu Revisi" stroke="var(--color-Perlu Revisi)" fill="url(#fillPerluRevisi)" stackId="1" />
-                        <Area type="monotone" dataKey="Proses Evaluasi" stroke="var(--color-Proses Evaluasi)" fill="url(#fillProsesEvaluasi)" stackId="1" />
+                        <Area type="monotone" dataKey="Selesai" stroke={STATUS_COLORS['Selesai']} fill="url(#fillSelesai)" stackId="1" />
+                        <Area type="monotone" dataKey="Perlu Revisi" stroke={STATUS_COLORS['Perlu Revisi']} fill="url(#fillPerluRevisi)" stackId="1" />
+                        <Area type="monotone" dataKey="Proses Evaluasi" stroke={STATUS_COLORS['Proses Evaluasi']} fill="url(#fillProsesEvaluasi)" stackId="1" />
                     </AreaChart>
                 </ResponsiveContainer>
             </ChartContainer>
