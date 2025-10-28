@@ -107,7 +107,7 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
     <div key={index} className="border-b last:border-b-0 py-2">
        <div className="font-semibold mb-1">
           {stage.pengajuan.tanggal && (
-            <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
+            <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
           )}
           {stage.pengajuan.nomor && <p className="text-sm mt-1"><Highlight text={stage.pengajuan.nomor} query={searchTerm} /></p>}
           {stage.pengajuan.keteranganPengajuan && <p className={cn("text-sm mt-1", getKeteranganColor(stage.pengajuan.keteranganPengajuan))}><Highlight text={stage.pengajuan.keteranganPengajuan} query={searchTerm} /></p>}
