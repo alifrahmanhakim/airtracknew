@@ -30,14 +30,45 @@ const BulletList = ({ text }: { text: string }) => {
     if (!text) return null;
     // Split by two or more newlines, which can be followed by whitespace.
     const items = text.split(/\n\s*\n/).filter(item => item.trim() !== '');
-    if (items.length <= 1 && !text.includes('\n\n')) {
-        return <p className="whitespace-pre-wrap">{text}</p>;
+
+    const renderItemWithPercentage = (itemText: string) => {
+        const regex = /\((\d{1,3})%\)/;
+        const match = itemText.match(regex);
+
+        if (!match) {
+            return itemText.trim();
+        }
+
+        const percentage = parseInt(match[1], 10);
+        const textWithoutPercentage = itemText.replace(regex, '').trim();
+
+        let colorClass = '';
+        if (percentage <= 30) {
+            colorClass = 'text-red-600 dark:text-red-400';
+        } else if (percentage <= 50) {
+            colorClass = 'text-yellow-600 dark:text-yellow-400';
+        } else {
+            colorClass = 'text-green-600 dark:text-green-400';
+        }
+
+        return (
+            <>
+                {textWithoutPercentage}{' '}
+                <span className={cn('font-bold', colorClass)}>
+                    ({percentage}%)
+                </span>
+            </>
+        );
+    };
+
+    if (items.length <= 1 && !/\n\s*\n/.test(text)) {
+        return <p className="whitespace-pre-wrap">{renderItemWithPercentage(text)}</p>;
     }
     
     return (
       <ul className="list-disc list-inside space-y-1">
         {items.map((item, index) => (
-          <li key={index}>{item.trim()}</li>
+          <li key={index}>{renderItemWithPercentage(item)}</li>
         ))}
       </ul>
     );
