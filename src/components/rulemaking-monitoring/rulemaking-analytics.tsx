@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { FileText, Clock, FileDiff, CheckCircle, BookOpen, Book, BookMarked } from 'lucide-react';
 import { LineChart, Line, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, CartesianGrid } from 'recharts';
-import { ChartContainer, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -86,12 +86,11 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
     };
   }, [records]);
 
-  const yearChartConfig = {
+  const chartConfig = {
       'Proses Evaluasi': { label: `Proses Evaluasi`, color: STATUS_COLORS['Proses Evaluasi'] },
       'Perlu Revisi': { label: `Perlu Revisi`, color: STATUS_COLORS['Perlu Revisi'] },
       'Selesai': { label: `Selesai`, color: STATUS_COLORS['Selesai'] },
-      'Total': { label: `Total`, color: 'hsl(var(--primary))' }
-  }
+  };
 
   return (
     <>
@@ -142,7 +141,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-yellow-500"><AnimatedCounter endValue={stats.prosesEvaluasi} /></div>
-          <p className="text-xs text-muted-foreground">Usulan dalam tahap evaluasi</p>
+           <p className="text-xs text-muted-foreground">Usulan dalam tahap evaluasi</p>
         </CardContent>
       </Card>
       <Card>
@@ -172,9 +171,9 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
             <CardDescription>Jumlah usulan baru yang dibuat setiap bulan, dipecah berdasarkan status.</CardDescription>
         </CardHeader>
         <CardContent>
-            <ChartContainer config={yearChartConfig} className="h-[300px] w-full">
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
                  <ResponsiveContainer>
-                    <BarChart data={stats.monthlyCreationData}>
+                    <LineChart data={stats.monthlyCreationData}>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="month"
@@ -186,10 +185,10 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                         <YAxis allowDecimals={false}/>
                         <Tooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent />} />
-                        <Bar dataKey="Proses Evaluasi" stackId="a" fill="var(--color-Proses Evaluasi)" radius={[0, 0, 4, 4]} />
-                        <Bar dataKey="Perlu Revisi" stackId="a" fill="var(--color-Perlu Revisi)" />
-                        <Bar dataKey="Selesai" stackId="a" fill="var(--color-Selesai)" radius={[4, 4, 0, 0]} />
-                    </BarChart>
+                        <Line type="monotone" dataKey="Proses Evaluasi" stroke="var(--color-Proses Evaluasi)" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="Perlu Revisi" stroke="var(--color-Perlu Revisi)" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="Selesai" stroke="var(--color-Selesai)" strokeWidth={2} dot={false} />
+                    </LineChart>
                 </ResponsiveContainer>
             </ChartContainer>
         </CardContent>
