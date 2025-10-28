@@ -70,8 +70,8 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
     );
   }
 
-  const renderStage = (stage: Stage) => (
-    <div className="border-b last:border-b-0 py-2">
+  const renderStage = (stage: Stage, index: number) => (
+    <div key={index} className="border-b last:border-b-0 py-2">
       <div className="font-semibold mb-1">
           {stage.pengajuan.tanggal && stage.pengajuan.nomor && (
             <>
@@ -108,7 +108,7 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
               </TableCell>
               <TableCell className="align-top">
                 <div className="space-y-2">
-                  {(record.stages || []).map((stage, i) => renderStage(stage))}
+                  {(record.stages || []).map((stage, i) => renderStage(stage, i))}
                 </div>
               </TableCell>
               <TableCell className="text-right align-top">
