@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -60,7 +59,8 @@ export default function RulemakingMonitoringPage() {
     // Filter and search states
     const [searchTerm, setSearchTerm] = React.useState('');
     const [kategoriFilter, setKategoriFilter] = React.useState('all');
-    const [sort, setSort] = React.useState<SortDescriptor>({ column: 'perihal', direction: 'asc' });
+    const [perihalFilter, setPerihalFilter] = React.useState('all');
+    const [sort, setSort] = React.useState<SortDescriptor>({ column: 'firstSubmissionDate', direction: 'desc' });
 
     React.useEffect(() => {
         const q = query(collection(db, "rulemakingRecords"), orderBy("createdAt", "desc"));
@@ -96,6 +96,10 @@ export default function RulemakingMonitoringPage() {
             filtered = filtered.filter(record => record.kategori === kategoriFilter);
         }
 
+        if (perihalFilter !== 'all') {
+            filtered = filtered.filter(record => record.perihal === perihalFilter);
+        }
+
         if (searchTerm) {
             const lowercasedFilter = searchTerm.toLowerCase();
             filtered = filtered.filter(record => 
@@ -129,7 +133,12 @@ export default function RulemakingMonitoringPage() {
         }
         
         return filtered;
-    }, [records, searchTerm, kategoriFilter, sort]);
+    }, [records, searchTerm, kategoriFilter, perihalFilter, sort]);
+
+    const perihalOptions = React.useMemo(() => {
+        const uniquePerihals = Array.from(new Set(records.map(r => r.perihal)));
+        return ['all', ...uniquePerihals];
+    }, [records]);
     
     const handleDeleteRequest = (record: RulemakingRecord) => {
         setRecordToDelete(record);
@@ -210,7 +219,29 @@ export default function RulemakingMonitoringPage() {
                         </CardHeader>
                     </Card>
 
-                    <RulemakingAnalytics records={filteredAndSortedRecords} />
+                    <Card className="mb-4">
+                         <CardHeader>
+                            <CardTitle>Analytics</CardTitle>
+                            <CardDescription>Visualisasi data berdasarkan filter yang dipilih.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                                <Select value={perihalFilter} onValueChange={setPerihalFilter}>
+                                    <SelectTrigger className="w-full sm:w-[300px]">
+                                        <SelectValue placeholder="Filter by Perihal" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Perihal</SelectItem>
+                                        {perihalOptions.filter(o => o !== 'all').map((option) => (
+                                            <SelectItem key={option} value={option}>{option}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <RulemakingAnalytics records={filteredAndSortedRecords} />
+                        </CardContent>
+                    </Card>
+
 
                     <TabsContent value="form">
                         <div className="max-w-7xl mx-auto">

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,7 +5,7 @@ import type { RulemakingRecord } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { FileText, Clock, FileDiff, CheckCircle, BookOpen, Book, BookMarked } from 'lucide-react';
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -56,28 +55,26 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
         if (firstStage?.pengajuan.tanggal) {
             try {
                 const month = format(parseISO(firstStage.pengajuan.tanggal), 'yyyy-MM');
-                const lastStage = record.stages[record.stages.length - 1];
-                let status: 'Proses Evaluasi' | 'Perlu Revisi' | 'Selesai' = 'Proses Evaluasi';
                 
-                if (lastStage) {
-                    const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
-                    if (lastStatusDesc.includes('selesai')) {
-                        status = 'Selesai';
-                    } else if (lastStatusDesc.includes('dikembalikan')) {
-                        status = 'Perlu Revisi';
-                    }
-                }
-
                 if (!acc[month]) {
                     acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0, 'Pengajuan Awal': 0 };
                 }
-                
-                // Increment status
-                acc[month][status]++;
 
-                // Increment 'Pengajuan Awal' if applicable for the first stage
+                // Increment 'Pengajuan Awal'
                 if (firstStage.pengajuan.keteranganPengajuan?.toLowerCase().includes('pengajuan awal')) {
                     acc[month]['Pengajuan Awal']++;
+                }
+
+                const lastStage = record.stages[record.stages.length - 1];
+                if (lastStage) {
+                    const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
+                    if (lastStatusDesc.includes('selesai')) {
+                         acc[month]['Selesai']++;
+                    } else if (lastStatusDesc.includes('dikembalikan')) {
+                        acc[month]['Perlu Revisi']++;
+                    } else {
+                       acc[month]['Proses Evaluasi']++;
+                    }
                 }
 
             } catch (e) {
