@@ -105,10 +105,10 @@ export function EditTindakLanjutRecordDialog({ record, onRecordUpdate, open, onO
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn("max-w-4xl", getDialogBgClass(record.status))}>
+      <DialogContent className={cn("max-w-4xl text-foreground", getDialogBgClass(record.status))}>
         <DialogHeader>
           <DialogTitle>Edit Tindak Lanjut Record</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-foreground/80">
             Make changes to the record for report: <span className="font-semibold">{record.nomorLaporan}</span>
           </DialogDescription>
         </DialogHeader>
