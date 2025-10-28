@@ -139,7 +139,7 @@ export default function RulemakingMonitoringPage() {
                     'Tanggal Pengajuan': stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'yyyy-MM-dd') : 'N/A',
                     'Nomor Surat': stage.pengajuan.nomor || 'N/A',
                     'Keterangan Pengajuan': stage.pengajuan.keteranganPengajuan || 'N/A',
-                    'Deskripsi Status': stage.status.deskripsi.replace(/\(\d+%\)/g, '').trim(),
+                    'Deskripsi Status': stage.status.deskripsi.trim(),
                     'Keterangan': stage.keterangan?.text || 'N/A',
                 }));
             }
