@@ -14,18 +14,23 @@ type RulemakingAnalyticsProps = {
 export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
   const stats = React.useMemo(() => {
     const total = records.length;
-    const prosesEvaluasi = records.filter(r => {
+    let prosesEvaluasi = 0;
+    let pengembalian = 0;
+    let selesai = 0;
+
+    records.forEach(r => {
         const lastStage = r.stages && r.stages.length > 0 ? r.stages[r.stages.length - 1] : null;
-        return lastStage && lastStage.status.deskripsi.toLowerCase().includes('proses evaluasi');
-    }).length;
-    const pengembalian = records.filter(r => {
-        const lastStage = r.stages && r.stages.length > 0 ? r.stages[r.stages.length - 1] : null;
-        return lastStage && lastStage.status.deskripsi.toLowerCase().includes('pengembalian');
-    }).length;
-    const selesai = records.filter(r => {
-        const lastStage = r.stages && r.stages.length > 0 ? r.stages[r.stages.length - 1] : null;
-        return lastStage && lastStage.status.deskripsi.toLowerCase().includes('selesai');
-    }).length;
+        if (lastStage) {
+            const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
+            if (lastStatusDesc.includes('selesai')) {
+                selesai++;
+            } else if (lastStatusDesc.includes('dikembalikan')) {
+                pengembalian++;
+            } else {
+                prosesEvaluasi++;
+            }
+        }
+    });
     
     return { total, prosesEvaluasi, pengembalian, selesai };
   }, [records]);
