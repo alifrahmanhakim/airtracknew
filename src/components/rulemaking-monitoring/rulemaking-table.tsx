@@ -27,7 +27,9 @@ type RulemakingTableProps = {
 
 const BulletList = ({ text }: { text: string }) => {
     if (!text) return null;
-    const items = text.split('\n').filter(item => item.trim() !== '');
+    // Split by one or more newlines, which can be followed by whitespace, then another newline.
+    // This effectively splits by blank lines (double enter).
+    const items = text.split(/\n\s*\n/).filter(item => item.trim() !== '');
     if (items.length <= 1) {
         return <p className="whitespace-pre-wrap">{text}</p>;
     }
@@ -57,7 +59,7 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
   }
 
   const renderStage = (stage: Stage, index: number) => (
-    <div key={index} className="border-b last:border-b-0 py-2">
+    <div key={`${stage.pengajuan?.nomor}-${index}`} className="border-b last:border-b-0 py-2">
        <div className="font-semibold mb-1">
           {stage.pengajuan.tanggal && stage.pengajuan.nomor && (
             <>
