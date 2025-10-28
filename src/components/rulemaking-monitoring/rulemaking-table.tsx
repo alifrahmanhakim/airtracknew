@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -16,6 +17,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
 import { EditRulemakingRecordDialog } from './edit-rulemaking-record-dialog';
+import { cn } from '@/lib/utils';
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
@@ -55,15 +57,27 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate }: Rule
       </div>
     );
   }
+  
+  const getKeteranganColor = (text: string | undefined) => {
+    if (!text) return '';
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('pengajuan kembali')) {
+        return 'text-yellow-600 dark:text-yellow-400 font-semibold';
+    }
+    if (lowerText.includes('pengajuan awal')) {
+        return 'text-blue-600 dark:text-blue-400 font-semibold';
+    }
+    return 'text-muted-foreground';
+  }
 
   const renderStage = (stage: Stage, index: number) => (
-    <div key={`${stage.pengajuan?.nomor}-${index}`} className="border-b last:border-b-0 py-2">
+    <div key={index} className="border-b last:border-b-0 py-2">
        <div className="font-semibold mb-1">
           {stage.pengajuan.tanggal && (
             <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
           )}
           {stage.pengajuan.nomor && <p className="text-sm mt-1">{stage.pengajuan.nomor}</p>}
-          {stage.pengajuan.keteranganPengajuan && <p className="text-sm mt-1 text-muted-foreground">{stage.pengajuan.keteranganPengajuan}</p>}
+          {stage.pengajuan.keteranganPengajuan && <p className={cn("text-sm mt-1", getKeteranganColor(stage.pengajuan.keteranganPengajuan))}>{stage.pengajuan.keteranganPengajuan}</p>}
       </div>
       <div className="text-sm mt-2">
         <strong className="text-muted-foreground">Status:</strong>
