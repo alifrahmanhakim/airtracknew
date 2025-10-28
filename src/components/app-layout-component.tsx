@@ -147,7 +147,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [criticalProjectsCount, setCriticalProjectsCount] = React.useState(0);
   const [unreadChatsCount, setUnreadChatsCount] = React.useState(0);
   const [openStateLettersCount, setOpenStateLettersCount] = React.useState(0);
-  const [rulemakingMonitoringCount, setRulemakingMonitoringCount] = React.useState(0);
+  const [rulemakingEvaluasiCount, setRulemakingEvaluasiCount] = React.useState(0);
+  const [rulemakingRevisiCount, setRulemakingRevisiCount] = React.useState(0);
+
   const [myTasks, setMyTasks] = React.useState<AssignedTask[]>([]);
   const [isMyTasksDialogOpen, setIsMyTasksDialogOpen] = React.useState(false);
   
@@ -232,18 +234,28 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     
     const unsubRulemakingRecords = onSnapshot(collection(db, 'rulemakingRecords'), (snapshot) => {
         const records: RulemakingRecord[] = [];
+        let evaluasiCount = 0;
+        let revisiCount = 0;
+
         snapshot.forEach(doc => {
-            records.push({ id: doc.id, ...doc.data() } as RulemakingRecord);
+            const record = { id: doc.id, ...doc.data() } as RulemakingRecord;
+            records.push(record);
+            
+            const lastStage = record.stages && record.stages.length > 0 ? record.stages[record.stages.length - 1] : null;
+            if (lastStage) {
+                const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
+                if (!lastStatusDesc.includes('selesai')) {
+                    if (lastStatusDesc.includes('dikembalikan')) {
+                        revisiCount++;
+                    } else {
+                        evaluasiCount++;
+                    }
+                }
+            }
         });
         setRulemakingRecords(records);
-        
-        const count = records.filter(r => {
-            const lastStage = r.stages && r.stages.length > 0 ? r.stages[r.stages.length - 1] : null;
-            if (!lastStage) return true; // Count if no stages exist, as it's pending
-            const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
-            return !lastStatusDesc.includes('selesai');
-        }).length;
-        setRulemakingMonitoringCount(count);
+        setRulemakingEvaluasiCount(evaluasiCount);
+        setRulemakingRevisiCount(revisiCount);
     });
     unsubs.push(unsubRulemakingRecords);
 
@@ -372,7 +384,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       criticalProjects: criticalProjectsCount,
       unreadChats: unreadChatsCount,
       openStateLetters: openStateLettersCount,
-      rulemakingMonitoring: rulemakingMonitoringCount,
   }
 
   return (
@@ -412,7 +423,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
               <SidebarMenu>
                   {navItems.dashboards.map((item) => {
-                  const count = item.countId ? dynamicCounts[item.countId as keyof typeof dynamicCounts] : 0;
                   const isActive = pathname.startsWith(item.href);
                   return (
                       <SidebarMenuItem key={item.href} isActive={isActive}>
@@ -440,9 +450,22 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                   </SidebarMenuBadge>
                               )}
                               </>
-                          ) : count > 0 ? (
-                              <SidebarMenuBadge className={cn("bg-primary text-primary-foreground", item.href === '/rulemaking-monitoring' && "bg-yellow-400 text-yellow-900")}>
-                                {count}
+                          ) : item.href === '/rulemaking-monitoring' ? (
+                            <>
+                                {rulemakingEvaluasiCount > 0 && (
+                                    <SidebarMenuBadge className="bg-yellow-400 text-yellow-900">
+                                        {rulemakingEvaluasiCount}
+                                    </SidebarMenuBadge>
+                                )}
+                                {rulemakingRevisiCount > 0 && (
+                                    <SidebarMenuBadge className="bg-red-500 text-white">
+                                        {rulemakingRevisiCount}
+                                    </SidebarMenuBadge>
+                                )}
+                            </>
+                          ) : (item.countId && dynamicCounts[item.countId as keyof typeof dynamicCounts] > 0) ? (
+                              <SidebarMenuBadge className="bg-primary text-primary-foreground">
+                                {dynamicCounts[item.countId as keyof typeof dynamicCounts]}
                               </SidebarMenuBadge>
                           ) : null}
                           </Link>
