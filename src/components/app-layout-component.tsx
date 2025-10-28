@@ -465,27 +465,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                         const revisiCount = rulemakingRevisiCount;
 
                                         return (
-                                            <SidebarMenuItem key={child.href} isActive={isChildActive}>
-                                                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-75 data-[active=true]:opacity-75" data-active={isChildActive}></div>
+                                            <SidebarMenuSubItem key={child.href} className={cn(isChildActive && "bg-gradient-to-r from-blue-500 to-green-500 rounded-lg p-0.5")}>
+                                              <div className={cn(isChildActive && "bg-sidebar rounded-md")}>
                                                 <SidebarMenuSubButton asChild isActive={isChildActive}>
                                                     <Link href={child.href}>
                                                         <child.icon />
                                                         <span className="flex-grow">{child.label}</span>
-                                                        <div className="flex items-center gap-1 ml-auto">
-                                                            {evaluasiCount > 0 && (
-                                                                <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
-                                                                    {evaluasiCount}
-                                                                </SidebarMenuBadge>
-                                                            )}
-                                                            {revisiCount > 0 && (
-                                                                <SidebarMenuBadge className="bg-red-500 text-white !relative">
-                                                                    {revisiCount}
-                                                                </SidebarMenuBadge>
-                                                            )}
-                                                        </div>
                                                     </Link>
                                                 </SidebarMenuSubButton>
-                                            </SidebarMenuItem>
+                                              </div>
+                                            </SidebarMenuSubItem>
                                         )
                                     })}
                                 </SidebarMenuSub>
