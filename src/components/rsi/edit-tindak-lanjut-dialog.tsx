@@ -35,17 +35,18 @@ type EditTindakLanjutRecordDialogProps = {
 };
 
 const getDialogBgClass = (status: string) => {
-    const baseClass = "backdrop-blur-lg";
+    const baseClass = "backdrop-blur-lg"; // Frosted glass effect
     switch (status) {
-        case 'Final': return `bg-green-200/80 dark:bg-green-900/60 ${baseClass}`;
-        case 'Draft': return `bg-yellow-200/80 dark:bg-yellow-900/60 ${baseClass}`;
-        case 'Draft Final': return `bg-orange-200/80 dark:bg-orange-900/60 ${baseClass}`;
-        case 'Preliminary': return `bg-blue-200/80 dark:bg-blue-900/60 ${baseClass}`;
-        case 'Interim Statement': return `bg-purple-200/80 dark:bg-purple-900/60 ${baseClass}`;
-        case 'Usulan': return `bg-red-200/80 dark:bg-red-900/60 ${baseClass}`;
+        case 'Final': return `bg-green-500/10 dark:bg-green-900/30 ${baseClass}`;
+        case 'Draft': return `bg-yellow-500/10 dark:bg-yellow-900/30 ${baseClass}`;
+        case 'Draft Final': return `bg-orange-500/10 dark:bg-orange-900/30 ${baseClass}`;
+        case 'Preliminary': return `bg-blue-500/10 dark:bg-blue-900/30 ${baseClass}`;
+        case 'Interim Statement': return `bg-purple-500/10 dark:bg-purple-900/30 ${baseClass}`;
+        case 'Usulan': return `bg-red-500/10 dark:bg-red-900/30 ${baseClass}`;
         default: return 'bg-card';
     }
 }
+
 
 export function EditTindakLanjutRecordDialog({ record, onRecordUpdate, open, onOpenChange }: EditTindakLanjutRecordDialogProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
