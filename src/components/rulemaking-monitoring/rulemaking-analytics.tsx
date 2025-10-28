@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { FileText, Clock, FileDiff, CheckCircle, BookOpen, Book, BookMarked } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 type RulemakingAnalyticsProps = {
   records: RulemakingRecord[];
@@ -103,31 +104,31 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
           <p className="text-xs text-muted-foreground">Total semua usulan yang tercatat</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="border-blue-500/50 bg-blue-50 dark:bg-blue-900/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">PKPS/CASR</CardTitle>
-          <BookMarked className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-300">PKPS/CASR</CardTitle>
+          <BookMarked className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.kategoriCounts['PKPS/CASR']} /></div>
+          <div className="text-2xl font-bold text-blue-800 dark:text-blue-300"><AnimatedCounter endValue={stats.kategoriCounts['PKPS/CASR']} /></div>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="border-purple-500/50 bg-purple-50 dark:bg-purple-900/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">SI</CardTitle>
-          <Book className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium text-purple-800 dark:text-purple-300">SI</CardTitle>
+          <Book className="h-4 w-4 text-purple-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.kategoriCounts['SI']} /></div>
+          <div className="text-2xl font-bold text-purple-800 dark:text-purple-300"><AnimatedCounter endValue={stats.kategoriCounts['SI']} /></div>
         </CardContent>
       </Card>
-       <Card>
+       <Card className="border-pink-500/50 bg-pink-50 dark:bg-pink-900/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">AC</CardTitle>
-          <BookOpen className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium text-pink-800 dark:text-pink-300">AC</CardTitle>
+          <BookOpen className="h-4 w-4 text-pink-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><AnimatedCounter endValue={stats.kategoriCounts['AC']} /></div>
+          <div className="text-2xl font-bold text-pink-800 dark:text-pink-300"><AnimatedCounter endValue={stats.kategoriCounts['AC']} /></div>
         </CardContent>
       </Card>
     </div>
