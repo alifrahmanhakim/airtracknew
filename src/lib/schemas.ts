@@ -269,3 +269,17 @@ export const changePasswordSchema = z.object({
 });
 
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
+export const rulemakingRecordSchema = z.object({
+    perihal: z.string().min(1, "Perihal is required."),
+    pengajuan: z.object({
+        tanggal: z.string().min(1, "Tanggal pengajuan is required."),
+        nomor: z.string().min(1, "Nomor pengajuan is required."),
+    }),
+    status: z.object({
+        deskripsi: z.string().min(1, "Deskripsi status is required."),
+        nomorSurat: z.string().optional(),
+        tanggalSurat: z.string().optional(),
+    }),
+    keterangan: z.string().optional(),
+});

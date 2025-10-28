@@ -1,5 +1,4 @@
 
-
 export type Project = {
     id: string;
     name: string;
@@ -323,4 +322,32 @@ export type ChatMessage = {
     senderAvatarUrl?: string;
     createdAt: any; // Firestore Timestamp
     readBy: string[];
+};
+
+export type Kegiatan = {
+    id: string;
+    subjek: string;
+    tanggalMulai: string;
+    tanggalSelesai: string;
+    nama: string[];
+    lokasi: string;
+    catatan?: string;
+    createdAt: string;
+    updatedAt?: string;
+};
+
+export type RulemakingRecord = {
+    id: string;
+    perihal: string;
+    pengajuan: {
+        tanggal: string;
+        nomor: string;
+    };
+    status: {
+        deskripsi: string;
+        nomorSurat?: string;
+        tanggalSurat?: string;
+    };
+    keterangan?: string;
+    createdAt: string;
 };
