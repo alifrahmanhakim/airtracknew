@@ -19,6 +19,7 @@ const CHART_COLORS = [
     'hsl(var(--chart-3))',
     'hsl(var(--chart-4))',
     'hsl(var(--chart-5))',
+    'hsl(34.9, 91.6%, 52.9%)' // Orange for Draft
 ];
 
 export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboardProps) {
@@ -80,13 +81,16 @@ export function GlossaryAnalyticsDashboard({ records }: GlossaryAnalyticsDashboa
       value: { label: 'Count' },
       ...data.reduce((acc, item, index) => {
           const key = item.originalName || item.name;
-          acc[key] = { label: item.name, color: CHART_COLORS[index % CHART_COLORS.length]};
+          let color = CHART_COLORS[index % CHART_COLORS.length];
+          if(key === 'Draft') color = 'hsl(34.9, 91.6%, 52.9%)'; // Orange
+          if(key === 'Final') color = 'hsl(var(--chart-1))'; // Green
+          acc[key] = { label: item.name, color: color};
           return acc;
       }, {} as any)
   });
   
   const monthlyChartConfig = {
-      Draft: { label: `Draft (${analyticsData.statusCounts['Draft'] || 0})`, color: 'hsl(var(--chart-2))' },
+      Draft: { label: `Draft (${analyticsData.statusCounts['Draft'] || 0})`, color: 'hsl(34.9, 91.6%, 52.9%)' },
       Final: { label: `Final (${analyticsData.statusCounts['Final'] || 0})`, color: 'hsl(var(--chart-1))' },
       Usulan: { label: `Usulan (${analyticsData.statusCounts['Usulan'] || 0})`, color: 'hsl(var(--chart-3))' },
   }
