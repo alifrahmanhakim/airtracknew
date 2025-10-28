@@ -136,6 +136,7 @@ export default function RulemakingMonitoringPage() {
     };
 
     const handleRecordUpdate = (updatedRecord: RulemakingRecord) => {
+        if (!updatedRecord || !updatedRecord.id) return;
         setRecords(prevRecords => prevRecords.map(r => r.id === updatedRecord.id ? updatedRecord : r));
     };
 
