@@ -10,6 +10,7 @@ import { LineChart, Line, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Info } from 'lucide-react';
 
 type RulemakingAnalyticsProps = {
   records: RulemakingRecord[];
@@ -52,26 +53,29 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
     const monthlyData = records.reduce((acc, record) => {
         const firstStage = record.stages && record.stages.length > 0 ? record.stages[0] : null;
         if (firstStage?.pengajuan.tanggal) {
-            const month = format(parseISO(firstStage.pengajuan.tanggal), 'yyyy-MM');
-            const lastStage = record.stages[record.stages.length - 1];
-            let status: 'Proses Evaluasi' | 'Perlu Revisi' | 'Selesai' = 'Proses Evaluasi';
-            if (lastStage) {
-                const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
-                 if (lastStatusDesc.includes('selesai')) {
-                    status = 'Selesai';
-                } else if (lastStatusDesc.includes('dikembalikan')) {
-                    status = 'Perlu Revisi';
+            try {
+                const month = format(parseISO(firstStage.pengajuan.tanggal), 'yyyy-MM');
+                const lastStage = record.stages[record.stages.length - 1];
+                let status: 'Proses Evaluasi' | 'Perlu Revisi' | 'Selesai' = 'Proses Evaluasi';
+                if (lastStage) {
+                    const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
+                    if (lastStatusDesc.includes('selesai')) {
+                        status = 'Selesai';
+                    } else if (lastStatusDesc.includes('dikembalikan')) {
+                        status = 'Perlu Revisi';
+                    }
                 }
-            }
 
-            if (!acc[month]) {
-                acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0, 'Total': 0 };
+                if (!acc[month]) {
+                    acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0 };
+                }
+                acc[month][status]++;
+            } catch (e) {
+                // Ignore records with invalid date formats
             }
-            acc[month][status]++;
-            acc[month]['Total']++;
         }
         return acc;
-    }, {} as Record<string, { month: string; 'Proses Evaluasi': number; 'Perlu Revisi': number; 'Selesai': number; 'Total': number }>);
+    }, {} as Record<string, { month: string; 'Proses Evaluasi': number; 'Perlu Revisi': number; 'Selesai': number }>);
     
     const monthlyCreationData = Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
 
@@ -91,6 +95,16 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
       'Perlu Revisi': { label: `Perlu Revisi`, color: STATUS_COLORS['Perlu Revisi'] },
       'Selesai': { label: `Selesai`, color: STATUS_COLORS['Selesai'] },
   };
+
+  if (records.length === 0) {
+    return (
+      <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
+        <Info className="mx-auto h-8 w-8 mb-2" />
+        <p className="font-semibold">No Rulemaking Records Found</p>
+        <p className="text-sm">Add records to see analytics.</p>
+      </div>
+    );
+  }
 
   return (
     <>
