@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -49,12 +48,14 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
         return sort.direction === 'asc' ? <ArrowUpDown className="h-4 w-4 ml-2" /> : <ArrowUpDown className="h-4 w-4 ml-2" />;
     };
 
-    const getStatusVariant = (status: string) => {
-        if (status.toLowerCase().includes('final')) return 'default';
-        if (status.toLowerCase().includes('preliminary')) return 'secondary';
-        if (status.toLowerCase().includes('interim')) return 'outline';
-        return 'secondary';
-    }
+    const getStatusClass = (status: string) => {
+        const lowerStatus = status.toLowerCase();
+        if (lowerStatus.includes('draft final')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
+        if (lowerStatus.includes('final')) return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+        if (lowerStatus.includes('preliminary')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+        if (lowerStatus.includes('interim')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'; // Default for 'Draft' or other
+    };
 
     const sortedRecords = React.useMemo(() => {
         let sorted = [...records];
@@ -102,10 +103,7 @@ export function KnktReportsTable({ records, onUpdate, onDelete, searchTerm }: Kn
                             <TableCell className="align-top text-left break-words"><Highlight text={record.nomor_laporan} query={searchTerm}/></TableCell>
                             <TableCell className="align-top text-left break-words">
                                 <div className="flex justify-center">
-                                    <Badge variant={getStatusVariant(record.status)} className={cn(
-                                        'text-xs',
-                                        getStatusVariant(record.status) === 'default' && 'bg-blue-100 text-blue-800'
-                                    )}>
+                                    <Badge className={cn('text-xs', getStatusClass(record.status))}>
                                         <Highlight text={record.status} query={searchTerm}/>
                                     </Badge>
                                 </div>
