@@ -245,9 +245,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const unsubRulemakingRecords = onSnapshot(collection(db, 'rulemakingRecords'), (snapshot) => {
         let evaluasiCount = 0;
         let revisiCount = 0;
-
-        snapshot.forEach(doc => {
-            const record = { id: doc.id, ...doc.data() } as RulemakingRecord;
+        const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RulemakingRecord));
+        setRulemakingRecords(records);
+        
+        records.forEach(record => {
             const lastStage = record.stages && record.stages.length > 0 ? record.stages[record.stages.length - 1] : null;
             if (lastStage) {
                 const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
@@ -310,13 +311,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const myProjects = allProjects.filter(p => p.team.some(member => member.id === userId));
 
     const tasksForUser: AssignedTask[] = [];
-    const criticalProjectIds = new Set<string>();
+    let myCriticalProjectsCount = 0;
 
     let myTodo = 0;
     let myInProgress = 0;
     let myDone = 0;
     
     myProjects.forEach(project => {
+        let projectHasCritical = false;
         const processTasksRecursively = (tasks: Task[]) => {
             for (const task of tasks) {
                 if (task.assigneeIds?.includes(userId)) {
@@ -332,7 +334,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 }
 
                 if (task.criticalIssue) {
-                    criticalProjectIds.add(project.id);
+                    projectHasCritical = true;
                 }
 
                 if (task.subTasks) {
@@ -341,6 +343,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             }
         };
         processTasksRecursively(project.tasks || []);
+        if (projectHasCritical) {
+            myCriticalProjectsCount++;
+        }
     });
 
     const overdueCount = tasksForUser.filter(task => 
@@ -350,7 +355,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const myTotal = tasksForUser.length;
 
     setOverdueTasksCount(overdueCount);
-    setCriticalProjectsCount(criticalProjectIds.size);
+    setCriticalProjectsCount(myCriticalProjectsCount);
     setMyTasks(tasksForUser.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
     setMyTaskStats({
         todo: myTodo,
@@ -456,24 +461,29 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                 <SidebarMenuSub>
                                     {item.children?.map(child => {
                                         const isChildActive = pathname.startsWith(child.href);
+                                        const evaluasiCount = rulemakingEvaluasiCount;
+                                        const revisiCount = rulemakingRevisiCount;
+
                                         return (
                                             <SidebarMenuSubItem key={child.href}>
                                                 <SidebarMenuSubButton asChild isActive={isChildActive}>
                                                     <Link href={child.href}>
                                                         <child.icon />
-                                                        <span>{child.label}</span>
-                                                        <div className="flex items-center gap-1 ml-auto">
-                                                          {rulemakingEvaluasiCount > 0 && (
-                                                              <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
-                                                                  {rulemakingEvaluasiCount}
-                                                              </SidebarMenuBadge>
-                                                          )}
-                                                          {rulemakingRevisiCount > 0 && (
-                                                              <SidebarMenuBadge className="bg-red-500 text-white !relative">
-                                                                  {rulemakingRevisiCount}
-                                                              </SidebarMenuBadge>
-                                                          )}
-                                                        </div>
+                                                        <span className="flex-grow">{child.label}</span>
+                                                        {(evaluasiCount > 0 || revisiCount > 0) && (
+                                                            <div className="flex items-center gap-1">
+                                                                {evaluasiCount > 0 && (
+                                                                    <SidebarMenuBadge className="bg-yellow-400 text-yellow-900 !relative">
+                                                                        {evaluasiCount}
+                                                                    </SidebarMenuBadge>
+                                                                )}
+                                                                {revisiCount > 0 && (
+                                                                    <SidebarMenuBadge className="bg-red-500 text-white !relative">
+                                                                        {revisiCount}
+                                                                    </SidebarMenuBadge>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </Link>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>
