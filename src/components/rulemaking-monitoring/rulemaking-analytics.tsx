@@ -20,6 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
     'Selesai': 'hsl(var(--chart-1))', // Green
     'Proses Evaluasi': 'hsl(var(--chart-2))', // Yellow
     'Perlu Revisi': 'hsl(var(--chart-3))', // Red
+    'Pengajuan Awal': 'hsl(var(--chart-4))', // Blue
 };
 
 
@@ -57,6 +58,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                 const month = format(parseISO(firstStage.pengajuan.tanggal), 'yyyy-MM');
                 const lastStage = record.stages[record.stages.length - 1];
                 let status: 'Proses Evaluasi' | 'Perlu Revisi' | 'Selesai' = 'Proses Evaluasi';
+                
                 if (lastStage) {
                     const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
                     if (lastStatusDesc.includes('selesai')) {
@@ -67,18 +69,27 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                 }
 
                 if (!acc[month]) {
-                    acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0 };
+                    acc[month] = { month, 'Proses Evaluasi': 0, 'Perlu Revisi': 0, 'Selesai': 0, 'Pengajuan Awal': 0 };
                 }
+                
+                // Increment status
                 acc[month][status]++;
+
+                // Increment 'Pengajuan Awal' if applicable for the first stage
+                if (firstStage.pengajuan.keteranganPengajuan?.toLowerCase().includes('pengajuan awal')) {
+                    acc[month]['Pengajuan Awal']++;
+                }
+
             } catch (e) {
                 // Ignore records with invalid date formats
             }
         }
         return acc;
-    }, {} as Record<string, { month: string; 'Proses Evaluasi': number; 'Perlu Revisi': number; 'Selesai': number }>);
+    }, {} as Record<string, { month: string; 'Proses Evaluasi': number; 'Perlu Revisi': number; 'Selesai': number; 'Pengajuan Awal': number; }>);
     
     const monthlyCreationData = Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
 
+    const pengajuanAwalCount = records.filter(r => r.stages?.[0]?.pengajuan?.keteranganPengajuan?.toLowerCase().includes('pengajuan awal')).length;
 
     return { 
         total, 
@@ -87,6 +98,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
         selesai,
         monthlyCreationData,
         kategoriCounts,
+        pengajuanAwalCount,
     };
   }, [records]);
 
@@ -94,6 +106,7 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
       'Selesai': { label: `Selesai (${stats.selesai})`, color: STATUS_COLORS['Selesai'] },
       'Proses Evaluasi': { label: `Proses Evaluasi (${stats.prosesEvaluasi})`, color: STATUS_COLORS['Proses Evaluasi'] },
       'Perlu Revisi': { label: `Perlu Revisi (${stats.pengembalian})`, color: STATUS_COLORS['Perlu Revisi'] },
+      'Pengajuan Awal': { label: `Pengajuan Awal (${stats.pengajuanAwalCount})`, color: STATUS_COLORS['Pengajuan Awal'] },
   };
 
   if (records.length === 0) {
@@ -200,6 +213,10 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                         <Tooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent />} />
                         <defs>
+                             <linearGradient id="fillPengajuanAwal" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={STATUS_COLORS['Pengajuan Awal']} stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor={STATUS_COLORS['Pengajuan Awal']} stopOpacity={0.1}/>
+                            </linearGradient>
                             <linearGradient id="fillSelesai" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor={STATUS_COLORS['Selesai']} stopOpacity={0.8}/>
                                 <stop offset="95%" stopColor={STATUS_COLORS['Selesai']} stopOpacity={0.1}/>
@@ -213,9 +230,10 @@ export function RulemakingAnalytics({ records }: RulemakingAnalyticsProps) {
                                 <stop offset="95%" stopColor={STATUS_COLORS['Proses Evaluasi']} stopOpacity={0.1}/>
                             </linearGradient>
                         </defs>
-                        <Area type="monotone" dataKey="Selesai" stroke={STATUS_COLORS['Selesai']} fill="url(#fillSelesai)" stackId="1" />
-                        <Area type="monotone" dataKey="Perlu Revisi" stroke={STATUS_COLORS['Perlu Revisi']} fill="url(#fillPerluRevisi)" stackId="1" />
-                        <Area type="monotone" dataKey="Proses Evaluasi" stroke={STATUS_COLORS['Proses Evaluasi']} fill="url(#fillProsesEvaluasi)" stackId="1" />
+                        <Area type="monotone" dataKey="Pengajuan Awal" stroke={STATUS_COLORS['Pengajuan Awal']} fill="url(#fillPengajuanAwal)" />
+                        <Area type="monotone" dataKey="Selesai" stroke={STATUS_COLORS['Selesai']} fill="url(#fillSelesai)" />
+                        <Area type="monotone" dataKey="Perlu Revisi" stroke={STATUS_COLORS['Perlu Revisi']} fill="url(#fillPerluRevisi)" />
+                        <Area type="monotone" dataKey="Proses Evaluasi" stroke={STATUS_COLORS['Proses Evaluasi']} fill="url(#fillProsesEvaluasi)" />
                     </AreaChart>
                 </ResponsiveContainer>
             </ChartContainer>
