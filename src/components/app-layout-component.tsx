@@ -147,6 +147,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [criticalProjectsCount, setCriticalProjectsCount] = React.useState(0);
   const [unreadChatsCount, setUnreadChatsCount] = React.useState(0);
   const [openStateLettersCount, setOpenStateLettersCount] = React.useState(0);
+  const [rulemakingMonitoringCount, setRulemakingMonitoringCount] = React.useState(0);
   const [myTasks, setMyTasks] = React.useState<AssignedTask[]>([]);
   const [isMyTasksDialogOpen, setIsMyTasksDialogOpen] = React.useState(false);
   
@@ -235,6 +236,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             records.push({ id: doc.id, ...doc.data() } as RulemakingRecord);
         });
         setRulemakingRecords(records);
+        
+        const count = records.filter(r => {
+            const lastStage = r.stages && r.stages.length > 0 ? r.stages[r.stages.length - 1] : null;
+            if (!lastStage) return true; // Count if no stages exist, as it's pending
+            const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
+            return !lastStatusDesc.includes('selesai');
+        }).length;
+        setRulemakingMonitoringCount(count);
     });
     unsubs.push(unsubRulemakingRecords);
 
@@ -356,18 +365,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = currentUser?.role === 'Sub-Directorate Head' || currentUser?.email === 'admin@admin2023.com' || currentUser?.email === 'hakimalifrahman@gmail.com' || currentUser?.email === 'rizkywirapratama434@gmail.com';
 
   const isCurrentUserOnline = currentUser.lastOnline ? (new Date().getTime() - new Date(currentUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
-
-  const rulemakingMonitoringCount = React.useMemo(() => {
-    return rulemakingRecords.filter(r => {
-        const lastStage = r.stages && r.stages.length > 0 ? r.stages[r.stages.length - 1] : null;
-        if (lastStage) {
-            const lastStatusDesc = lastStage.status.deskripsi.toLowerCase();
-            return !lastStatusDesc.includes('selesai');
-        }
-        return true; // Count if no stages exist
-    }).length;
-  }, [rulemakingRecords]);
-
 
   const dynamicCounts = {
       ...projectCounts,
