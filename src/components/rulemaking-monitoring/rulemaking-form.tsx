@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -24,6 +25,7 @@ import { Combobox, type ComboboxOption } from '../ui/combobox';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 type RulemakingFormValues = z.infer<typeof rulemakingRecordSchema>;
 
@@ -57,6 +59,7 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
         ...record,
     } : {
       perihal: '',
+      kategori: 'PKPS/CASR',
       stages: [{
           pengajuan: { tanggal: '', nomor: '' },
           status: { deskripsi: '' },
@@ -97,22 +100,44 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="perihal"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Perihal</FormLabel>
-              <Combobox
-                options={perihalOptions}
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Select or type a Perihal..."
-              />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+            control={form.control}
+            name="perihal"
+            render={({ field }) => (
+                <FormItem className="flex flex-col">
+                <FormLabel>Perihal</FormLabel>
+                <Combobox
+                    options={perihalOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select or type a Perihal..."
+                />
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="kategori"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Kategori</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger><SelectValue placeholder="Pilih kategori..." /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="PKPS/CASR">PKPS/CASR</SelectItem>
+                            <SelectItem value="SI">SI</SelectItem>
+                            <SelectItem value="AC">AC</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+            )}
+            />
+        </div>
         
         <Card>
             <CardHeader className="flex-row items-center justify-between">

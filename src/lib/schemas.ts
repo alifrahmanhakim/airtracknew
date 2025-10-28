@@ -272,6 +272,7 @@ export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export const rulemakingRecordSchema = z.object({
     perihal: z.string().min(1, "Perihal is required."),
+    kategori: z.enum(['PKPS/CASR', 'SI', 'AC']),
     stages: z.array(z.object({
         pengajuan: z.object({
             tanggal: z.string().min(1, "Tanggal pengajuan is required."),

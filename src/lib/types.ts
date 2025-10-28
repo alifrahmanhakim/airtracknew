@@ -1,4 +1,5 @@
 
+
 export type Project = {
     id: string;
     name: string;
@@ -352,6 +353,7 @@ export type Stage = {
 export type RulemakingRecord = {
     id: string;
     perihal: string;
+    kategori: 'PKPS/CASR' | 'SI' | 'AC';
     stages: Stage[];
     createdAt: string;
 };

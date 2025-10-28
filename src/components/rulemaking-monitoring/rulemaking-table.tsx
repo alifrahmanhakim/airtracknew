@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -86,8 +87,9 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
         <TableHeader>
           <TableRow>
             <TableHead className="w-[5%]">No</TableHead>
-            <TableHead className="w-[25%]">Perihal</TableHead>
-            <TableHead className="w-[60%]">Pengajuan</TableHead>
+            <TableHead className="w-[20%]">Perihal</TableHead>
+            <TableHead className="w-[15%]">Kategori</TableHead>
+            <TableHead className="w-[50%]">Pengajuan</TableHead>
             <TableHead className="text-right w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -96,6 +98,9 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
             <TableRow key={record.id}>
               <TableCell className="align-top">{index + 1}</TableCell>
               <TableCell className="align-top font-medium">{record.perihal}</TableCell>
+              <TableCell className="align-top">
+                <Badge variant="outline">{record.kategori}</Badge>
+              </TableCell>
               <TableCell className="align-top">
                 <div className="space-y-2">
                   {(record.stages || []).map((stage, i) => renderStage(stage))}
