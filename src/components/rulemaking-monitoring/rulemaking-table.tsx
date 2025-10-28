@@ -51,10 +51,11 @@ function EditRecordDialog({ record, onUpdate }: { record: RulemakingRecord, onUp
                         Update the details for "{record.perihal.substring(0, 50)}...".
                     </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="flex-grow pr-6 -mr-6">
-                    <RulemakingForm record={record} onFormSubmit={() => { onUpdate(record); setOpen(false); }} />
-                </ScrollArea>
-                 {/* Footer is handled within the form now to be part of the scroll */}
+                <div className="flex-grow overflow-hidden">
+                    <ScrollArea className="h-full pr-6 -mr-6">
+                        <RulemakingForm record={record} onFormSubmit={() => { onUpdate(record); setOpen(false); }} />
+                    </ScrollArea>
+                </div>
             </DialogContent>
         </Dialog>
     );
@@ -77,7 +78,7 @@ export function RulemakingTable({ records, onDelete, onUpdate, isLoading }: Rule
 
   const renderStage = (stage: Stage, index: number) => (
     <div key={index} className="border-b last:border-b-0 py-2">
-      <div className="font-semibold mb-1">
+       <div className="font-semibold mb-1">
           {stage.pengajuan.tanggal && stage.pengajuan.nomor && (
             <>
                 <Badge variant="secondary">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
