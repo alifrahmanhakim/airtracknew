@@ -98,10 +98,8 @@
   }
   
   .dark body {
-    background-image: linear-gradient(to br, hsl(var(--background)), hsl(var(--card)));
-    background-size: 400% 400%;
-    animation: gradient-move 120s ease infinite;
-    background-attachment: fixed;
+    background-color: hsl(var(--background));
+    background-image: none;
   }
 
   .font-great-vibes {
