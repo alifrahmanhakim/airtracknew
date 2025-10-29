@@ -4,7 +4,6 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -13,87 +12,40 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Button } from './ui/button';
-import { Search, Home, Landmark, Users } from 'lucide-react';
+import { Search, Home, Landmark, Users, FileText, ClipboardCheck, CircleHelp, Mail, BookType, Plane, ListChecks } from 'lucide-react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { Project, User } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import type { Project, User, CcefodRecord, PqRecord, GapAnalysisRecord, GlossaryRecord, RulemakingRecord, AccidentIncidentRecord, KnktReport, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord, TindakLanjutDgcaRecord, Kegiatan } from '@/lib/types';
 
 interface GlobalSearchProps {
   onViewProfile: (user: User) => void;
 }
 
-// Jaro-Winkler similarity function for "Did you mean?" feature
-const jaroWinkler = (s1: string, s2: string): number => {
-    let m = 0;
-    
-    if (s1.length === 0 || s2.length === 0) {
-        return 0;
-    }
-
-    if (s1 === s2) {
-        return 1;
-    }
-    
-    const range = Math.floor(Math.max(s1.length, s2.length) / 2) - 1;
-    const s1Matches = new Array(s1.length).fill(false);
-    const s2Matches = new Array(s2.length).fill(false);
-
-    for (let i = 0; i < s1.length; i++) {
-        const start = Math.max(0, i - range);
-        const end = Math.min(i + range + 1, s2.length);
-        for (let j = start; j < end; j++) {
-            if (!s2Matches[j] && s1[i] === s2[j]) {
-                s1Matches[i] = true;
-                s2Matches[j] = true;
-                m++;
-                break;
-            }
-        }
-    }
-
-    if (m === 0) {
-        return 0;
-    }
-
-    let t = 0;
-    let k = 0;
-    for (let i = 0; i < s1.length; i++) {
-        if (s1Matches[i]) {
-            while (!s2Matches[k]) {
-                k++;
-            }
-            if (s1[i] !== s2[k]) {
-                t++;
-            }
-            k++;
-        }
-    }
-
-    const jaro = (m / s1.length + m / s2.length + (m - t / 2) / m) / 3;
-    
-    let l = 0;
-    const p = 0.1;
-    if (jaro > 0.7) {
-        while (s1[l] === s2[l] && l < 4) {
-            l++;
-        }
-    }
-    
-    return jaro + l * p * (1 - jaro);
-};
-
-
 export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   const [open, setOpen] = React.useState(false);
+  const router = useRouter();
+  const [modifierKey, setModifierKey] = React.useState('⌘');
+  
+  // State for all data sources
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
-  const [modifierKey, setModifierKey] = React.useState('⌘');
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const router = useRouter();
+  const [ccefodRecords, setCcefodRecords] = React.useState<CcefodRecord[]>([]);
+  const [pqsRecords, setPqsRecords] = React.useState<PqRecord[]>([]);
+  const [gapAnalysisRecords, setGapAnalysisRecords] = React.useState<GapAnalysisRecord[]>([]);
+  const [glossaryRecords, setGlossaryRecords] = React.useState<GlossaryRecord[]>([]);
+  const [rulemakingRecords, setRulemakingRecords] = React.useState<RulemakingRecord[]>([]);
+  
+  // RSI Data
+  const [accidentRecords, setAccidentRecords] = React.useState<AccidentIncidentRecord[]>([]);
+  const [knktReports, setKnktReports] = React.useState<KnktReport[]>([]);
+  const [tindakLanjutRecords, setTindakLanjutRecords] = React.useState<TindakLanjutRecord[]>([]);
+  const [tindakLanjutDgcaRecords, setTindakLanjutDgcaRecords] = React.useState<TindakLanjutDgcaRecord[]>([]);
+  const [lawEnforcementRecords, setLawEnforcementRecords] = React.useState<LawEnforcementRecord[]>([]);
+  const [pemeriksaanRecords, setPemeriksaanRecords] = React.useState<PemeriksaanRecord[]>([]);
+  const [kegiatanRecords, setKegiatanRecords] = React.useState<Kegiatan[]>([]);
+
 
   React.useEffect(() => {
-    // Detect OS to show correct modifier key.
     const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
     setModifierKey(isMac ? '⌘' : 'Ctrl');
 
@@ -109,66 +61,38 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
 
   React.useEffect(() => {
     if (open) {
-      const unsubProjects = onSnapshot(query(collection(db, 'timKerjaProjects')), (snapshot) => {
-        setProjects(prev => [
-            ...prev.filter(p => p.projectType !== 'Tim Kerja'), 
-            ...snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Tim Kerja' } as Project))
-        ]);
-      });
-      const unsubRulemaking = onSnapshot(query(collection(db, 'rulemakingProjects')), (snapshot) => {
-         setProjects(prev => [
-            ...prev.filter(p => p.projectType !== 'Rulemaking'), 
-            ...snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), projectType: 'Rulemaking' } as Project))
-        ]);
-      });
-      const unsubUsers = onSnapshot(query(collection(db, 'users')), (snapshot) => {
-        setUsers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User)));
+      const collections = {
+        timKerjaProjects: (data: any[]) => setProjects(prev => [...prev.filter(p => p.projectType !== 'Tim Kerja'), ...data.map(d => ({ ...d, projectType: 'Tim Kerja' } as Project))]),
+        rulemakingProjects: (data: any[]) => setProjects(prev => [...prev.filter(p => p.projectType !== 'Rulemaking'), ...data.map(d => ({ ...d, projectType: 'Rulemaking' } as Project))]),
+        users: setUsers,
+        ccefodRecords: setCcefodRecords,
+        pqsRecords: setPqsRecords,
+        gapAnalysisRecords: setGapAnalysisRecords,
+        glossaryRecords: setGlossaryRecords,
+        rulemakingRecords: setRulemakingRecords,
+        accidentIncidentRecords: setAccidentRecords,
+        knktReports: setKnktReports,
+        tindakLanjutRecords: setTindakLanjutRecords,
+        tindakLanjutDgcaRecords: setTindakLanjutDgcaRecords,
+        lawEnforcementRecords: setLawEnforcementRecords,
+        pemeriksaanRecords: setPemeriksaanRecords,
+        kegiatanRecords: setKegiatanRecords,
+      };
+
+      const unsubs = Object.entries(collections).map(([name, setter]) => {
+        return onSnapshot(query(collection(db, name)), (snapshot) => {
+          setter(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
       });
 
-      return () => {
-        unsubProjects();
-        unsubRulemaking();
-        unsubUsers();
-      };
+      return () => unsubs.forEach(unsub => unsub());
     }
   }, [open]);
 
-  const handleSelectProject = (href: string) => {
-    router.push(href);
-    setOpen(false);
-  };
-  
-  const handleSelectUser = (user: User) => {
-    router.push('/chats');
-    setOpen(false);
-  }
-  
-  const suggestion = React.useMemo(() => {
-    if (!searchQuery) return null;
-    
-    let bestMatch: { item: Project | User; score: number } | null = null;
-    
-    const allSearchableItems = [
-        ...projects.map(p => ({ ...p, type: 'project' })),
-        ...users.map(u => ({ ...u, type: 'user' }))
-    ];
-
-    for (const item of allSearchableItems) {
-        if (item.name && typeof item.name === 'string') {
-            const score = jaroWinkler(searchQuery.toLowerCase(), item.name.toLowerCase());
-            if (score > 0.8 && (!bestMatch || score > bestMatch.score)) {
-                bestMatch = { item: item as Project | User, score };
-            }
-        }
-    }
-    
-    return bestMatch;
-  }, [searchQuery, projects, users]);
-  
-  const runCommand = React.useCallback((command: () => unknown) => {
+  const runCommand = (command: () => unknown) => {
     setOpen(false)
     command()
-  }, [])
+  }
 
   return (
     <>
@@ -190,35 +114,14 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
             </Button>
       </div>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput 
-          placeholder="Type a command or search..."
-          value={searchQuery}
-          onValueChange={setSearchQuery}
-        />
+        <CommandInput placeholder="Type a command or search..." />
         <CommandList>
-            <CommandEmpty>
-                {suggestion ? (
-                     <div className="p-4 text-center text-sm">
-                        No results found. Did you mean:{" "}
-                        <Button
-                            variant="link"
-                            className="p-0 h-auto"
-                            onClick={() => {
-                                if(suggestion.item.name) {
-                                    setSearchQuery(suggestion.item.name);
-                                }
-                            }}
-                        >
-                            {suggestion.item.name}?
-                        </Button>
-                    </div>
-                ) : 'No results found.'}
-            </CommandEmpty>
+            <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Projects">
                 {projects.map((project) => (
                 <CommandItem
                     key={project.id}
-                    onSelect={() => runCommand(() => handleSelectProject(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`))}
+                    onSelect={() => runCommand(() => router.push(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`))}
                     value={`Project ${project.name} ${project.casr || ''} ${project.annex || ''}`}
                 >
                     {project.projectType === 'Tim Kerja' ? <Home className="mr-2 h-4 w-4" /> : <Landmark className="mr-2 h-4 w-4" />}
@@ -231,13 +134,82 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                 {users.map((user) => (
                 <CommandItem
                     key={user.id}
-                    onSelect={() => runCommand(() => handleSelectUser(user))}
+                    onSelect={() => runCommand(() => router.push('/chats'))}
                     value={`User ${user.name} ${user.email}`}
                 >
                     <Users className="mr-2 h-4 w-4" />
                     <span>{user.name}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">{user.role}</span>
+                     <span className="ml-2 text-xs text-muted-foreground">{user.role}</span>
                 </CommandItem>
+                ))}
+            </CommandGroup>
+            <CommandGroup heading="Workspace">
+                 {ccefodRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/ccefod'))} value={`CC/EFOD ${record.annexReference} ${record.annex}`}>
+                       <ClipboardCheck className="mr-2 h-4 w-4" />
+                       <span>{record.annexReference}</span>
+                       <span className="ml-2 text-xs text-muted-foreground">CC/EFOD</span>
+                    </CommandItem>
+                ))}
+                 {pqsRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/pqs'))} value={`PQ ${record.pqNumber} ${record.protocolQuestion}`}>
+                       <CircleHelp className="mr-2 h-4 w-4" />
+                       <span>PQ {record.pqNumber}</span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.protocolQuestion}</span>
+                    </CommandItem>
+                ))}
+                 {gapAnalysisRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/state-letter'))} value={`State Letter ${record.slReferenceNumber} ${record.subject}`}>
+                       <Mail className="mr-2 h-4 w-4" />
+                       <span>{record.slReferenceNumber}</span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.subject}</span>
+                    </CommandItem>
+                ))}
+                 {glossaryRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/glossary'))} value={`Glossary ${record.tsu} ${record.tsa}`}>
+                       <BookType className="mr-2 h-4 w-4" />
+                       <span>{record.tsu}</span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.tsa}</span>
+                    </CommandItem>
+                ))}
+            </CommandGroup>
+            <CommandGroup heading="Rulemaking Monitoring">
+                 {rulemakingRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rulemaking-monitoring'))} value={`Rulemaking ${record.perihal} ${record.kategori}`}>
+                       <ListChecks className="mr-2 h-4 w-4" />
+                       <span>{record.perihal}</span>
+                        <span className="ml-2 text-xs text-muted-foreground">{record.kategori}</span>
+                    </CommandItem>
+                ))}
+            </CommandGroup>
+            <CommandGroup heading="Resolution Safety Issues (RSI)">
+                 {accidentRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/data-accident-incident'))} value={`Accident ${record.registrasiPesawat} ${record.lokasi}`}>
+                       <Plane className="mr-2 h-4 w-4" />
+                       <span>{record.registrasiPesawat}</span>
+                       <span className="ml-2 text-xs text-muted-foreground">{record.kategori} at {record.lokasi}</span>
+                    </CommandItem>
+                ))}
+                {knktReports.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
+                       <FileText className="mr-2 h-4 w-4" />
+                       <span>{record.nomor_laporan}</span>
+                       <span className="ml-2 text-xs text-muted-foreground">{record.operator}</span>
+                    </CommandItem>
+                ))}
+                {pemeriksaanRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/pemeriksaan'))} value={`Pemeriksaan ${record.registrasi} ${record.operator}`}>
+                       <Search className="mr-2 h-4 w-4" />
+                       <span>{record.registrasi}</span>
+                       <span className="ml-2 text-xs text-muted-foreground">{record.operator}</span>
+                    </CommandItem>
+                ))}
+                 {tindakLanjutRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/monitoring-rekomendasi'))} value={`Tindak Lanjut ${record.nomorLaporan}`}>
+                       <FileText className="mr-2 h-4 w-4" />
+                       <span>{record.nomorLaporan}</span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.judulLaporan}</span>
+                    </CommandItem>
                 ))}
             </CommandGroup>
         </CommandList>
