@@ -5,32 +5,33 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Home,
-  Users,
-  FileText,
-  Landmark,
-  ClipboardCheck,
-  CircleHelp,
-  UserSquare,
-  BookType,
-  Settings,
-  LogOut,
-  MessageSquare,
-  ShieldAlert,
-  Mail,
-  User as UserIcon,
-  Leaf,
-  Plane,
-  Languages, // Import Languages icon
-  BotMessageSquare,
-  AlertTriangle,
-  BookCheck,
-  ListChecks,
-  ListTodo,
-  Clock,
-  Activity,
-  CalendarDays,
-  Sparkles,
+    Home,
+    Users,
+    FileText,
+    Landmark,
+    ClipboardCheck,
+    CircleHelp,
+    UserSquare,
+    BookType,
+    Settings,
+    LogOut,
+    MessageSquare,
+    ShieldAlert,
+    Mail,
+    User as UserIcon,
+    Leaf,
+    Plane,
+    Languages, // Import Languages icon
+    BotMessageSquare,
+    AlertTriangle,
+    BookCheck,
+    BookOpenCheck,
+    ListChecks,
+    ListTodo,
+    Clock,
+    Activity,
+    CalendarDays,
+    Sparkles,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -405,29 +406,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
           </SidebarHeader>
           <SidebarContent>
-              <SidebarGroup>
-              <SidebarGroupLabel>Quick Start</SidebarGroupLabel>
-              <div className="relative group/menu-item px-2 block">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 transition duration-1000 group-hover/menu-item:opacity-25"></div>
-                  <div
-                  className="relative p-3 rounded-lg bg-sidebar-accent/50 hover:bg-sidebar-accent/80 transition-colors cursor-pointer"
-                  onClick={() => setIsMyTasksDialogOpen(true)}
-                  >
-                  <div className="flex justify-between items-center text-xs font-semibold text-sidebar-foreground/80 mb-2 group-data-[collapsible=icon]:hidden">
-                      <span>My Tasks</span>
-                      <span>{myTaskStats.done}/{myTaskStats.total} Done</span>
-                  </div>
-                  <Progress value={myTaskStats.completionPercentage} className="h-2 group-data-[collapsible=icon]:hidden" />
-                  <div className="flex items-center gap-2 mt-2 text-sm text-sidebar-foreground">
-                      <Activity className="h-4 w-4 text-sidebar-primary" />
-                      <div className="group-data-[collapsible=icon]:hidden flex items-center gap-2">
-                          <span className="font-bold">{myTaskStats.todo + myTaskStats.inProgress}</span>
-                          <span>Active Tasks</span>
-                      </div>
-                  </div>
-                  </div>
-              </div>
-              </SidebarGroup>
               <SidebarGroup>
               <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
               <SidebarMenu>

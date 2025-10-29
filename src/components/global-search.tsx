@@ -12,7 +12,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Button } from './ui/button';
-import { Search, Home, Landmark, Users, FileText, ClipboardCheck, CircleHelp, Mail, BookType, Plane, ListChecks, Search as SearchIcon, FileWarning, BookCheck, BookOpenCheck, Gavel, Leaf, CalendarDays, BotMessageSquare, FileSearch } from 'lucide-react';
+import { Search, Home, Landmark, Users, FileText, ClipboardCheck, CircleHelp, Mail, BookType, Plane, ListChecks, Search as SearchIcon, FileWarning, BookCheck, BookOpenCheck, Gavel, Leaf, CalendarDays, BotMessageSquare } from 'lucide-react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User, CcefodRecord, PqRecord, GapAnalysisRecord, GlossaryRecord, RulemakingRecord, AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord, Kegiatan } from '@/lib/types';
@@ -104,6 +104,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       setSearch(inputValue);
     }
   };
@@ -217,11 +218,11 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.operator} query={search} /></span>
                     </CommandItem>
                 ))}
-                {knktReports.filter(r => search ? `${r.nomor_laporan} ${r.operator}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
+                {knktReports.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
                        <FileSearch className="mr-2 h-4 w-4" />
-                       <span className='whitespace-normal'><Highlight text={record.nomor_laporan} query={search} /></span>
-                       <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.operator} query={search} /></span>
+                       <span><Highlight text={record.nomor_laporan} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={search} /></span>
                     </CommandItem>
                 ))}
                 {tindakLanjutRecords.filter(r => search ? `${r.nomorLaporan} ${r.judulLaporan}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
@@ -270,5 +271,3 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
     </>
   );
 }
-
-    
