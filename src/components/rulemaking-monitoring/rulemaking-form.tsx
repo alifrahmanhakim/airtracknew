@@ -115,7 +115,7 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form id={record ? `rulemaking-form-${record.id}` : 'rulemaking-form'} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
             control={form.control}
@@ -162,7 +162,7 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
                     <Plus className="mr-2 h-4 w-4" /> Add Pengajuan
                 </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-0">
                 {stageFields.map((field, index) => (
                     <div key={field.id} className="border p-4 rounded-lg relative space-y-4 mb-4 last:mb-0">
                         <h4 className="font-semibold mb-2">Pengajuan {index + 1}</h4>
@@ -184,14 +184,16 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
                 ))}
             </CardContent>
         </Card>
-
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>Close</Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {record ? 'Save Changes' : 'Submit Record'}
-          </Button>
-        </div>
+        
+        {!record && (
+            <div className="flex justify-end gap-4">
+            <Button type="button" variant="outline" onClick={() => form.reset()}>Close</Button>
+            <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {record ? 'Save Changes' : 'Submit Record'}
+            </Button>
+            </div>
+        )}
       </form>
     </Form>
   );

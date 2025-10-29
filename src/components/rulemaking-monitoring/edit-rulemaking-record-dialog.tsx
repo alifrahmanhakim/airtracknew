@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -38,32 +39,37 @@ export function EditRulemakingRecordDialog({ record, onRecordUpdate, onDelete, o
                     <Pencil className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh]">
-                <DialogHeader className="flex-row items-start justify-between">
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+                <DialogHeader>
                     <div>
                         <DialogTitle>Edit Record</DialogTitle>
                         <DialogDescription>
                             Update the details for "{record.perihal.substring(0, 50)}...".
                         </DialogDescription>
                     </div>
-                     <Button
+                </DialogHeader>
+                <ScrollArea className="h-[65vh] pr-6 -mr-6 flex-grow">
+                    <div className="py-4">
+                      <RulemakingForm record={record} onFormSubmit={handleFormSubmit} />
+                    </div>
+                </ScrollArea>
+                <DialogFooter className="pt-4 border-t flex-shrink-0 justify-between">
+                    <Button
                         variant="destructive"
-                        size="icon"
                         onClick={(e) => {
                             e.stopPropagation();
                             onDelete(record);
                             onOpenChange(false);
                         }}
                     >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
                     </Button>
-                </DialogHeader>
-                <ScrollArea className="h-[65vh] pr-6 -mr-6">
-                    <div className="py-4">
-                      <RulemakingForm record={record} onFormSubmit={handleFormSubmit} />
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+                        <Button type="submit" form={`rulemaking-form-${record.id}`}>Save Changes</Button>
                     </div>
-                </ScrollArea>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
