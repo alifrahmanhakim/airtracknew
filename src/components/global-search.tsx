@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -90,9 +91,6 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
       });
 
       return () => unsubs.forEach(unsub => unsub());
-    } else {
-        setInputValue('');
-        setSearch('');
     }
   }, [open]);
 
@@ -139,7 +137,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
         <CommandList>
           {search ? (
             <>
-              <CommandEmpty></CommandEmpty>
+              <CommandEmpty>No results found.</CommandEmpty>
                 <CommandGroup heading="Projects">
                     {projects.filter(p => search ? p.name.toLowerCase().includes(search.toLowerCase()) || p.casr?.toLowerCase().includes(search.toLowerCase()) || p.annex?.toLowerCase().includes(search.toLowerCase()) : true).map((project) => (
                     <CommandItem
@@ -164,12 +162,12 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                     >
                         <Users className="mr-2 h-4 w-4" />
                         <span><Highlight text={user.name || ''} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground"><Highlight text={user.role} query={search} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground"><Highlight text={user.role || ''} query={search} /></span>
                     </CommandItem>
                     ))}
                 </CommandGroup>
                 <CommandGroup heading="Workspace">
-                    {ccefodRecords.filter(r => search ? `${r.annexReference} ${r.annex}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
+                    {ccefodRecords.filter(r => search ? `${r.annexReference} ${r.annex} ${r.standardPractice}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
                         <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/ccefod'))} value={`CC/EFOD ${record.annexReference} ${record.annex}`} className="flex-wrap h-auto">
                         <ClipboardCheck className="mr-2 h-4 w-4" />
                         <span className='whitespace-normal'><Highlight text={record.annexReference} query={search} /></span>
@@ -223,7 +221,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                         </CommandItem>
                     ))}
                     {knktReports.filter(r => search ? `${r.nomor_laporan} ${r.operator}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`} className="flex-wrap h-auto">
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
                        <FileSearch className="mr-2 h-4 w-4" />
                        <span className="whitespace-normal"><Highlight text={record.nomor_laporan} query={search} /></span>
                        <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={search} /></span>
