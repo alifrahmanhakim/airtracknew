@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -149,9 +148,9 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
                     <Plus className="mr-2 h-4 w-4" /> Add Pengajuan
                 </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
                 {stageFields.map((field, index) => (
-                    <div key={field.id} className="border p-4 rounded-lg relative space-y-4">
+                    <div key={field.id} className="border p-4 rounded-lg relative space-y-4 mb-4 last:mb-0">
                         <h4 className="font-semibold mb-2">Pengajuan {index + 1}</h4>
                         {stageFields.length > 1 && <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeStage(index)}><Trash2 className="h-4 w-4" /></Button>}
                         
