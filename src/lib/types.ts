@@ -116,7 +116,7 @@ export type EvaluationItem = {
     id: string;
     icaoSarp: string;
     review: string;
-    complianceStatus: 'No Differences' | 'More Exacting or Exceeds' | 'Different in character or other means of compliance' | 'Less protective or patially implemented or not implemented' | 'Not Applicable';
+    complianceStatus: 'No Differences' | 'More Exacting or Exceeds' | 'Different in character or other means of compliance' | 'Less protective or partially implemented or not implemented' | 'Not Applicable';
     casrAffected: string;
     followUp?: string;
     proposedAmendment?: string;
@@ -342,6 +342,7 @@ export type Stage = {
         tanggal?: string;
         nomor?: string;
         keteranganPengajuan?: string;
+        fileUrl?: string;
     };
     status: {
         deskripsi: string;

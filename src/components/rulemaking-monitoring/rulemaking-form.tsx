@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -61,7 +62,7 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
       perihal: '',
       kategori: 'PKPS/CASR',
       stages: [{
-          pengajuan: { tanggal: '', nomor: '', keteranganPengajuan: '' },
+          pengajuan: { tanggal: '', nomor: '', keteranganPengajuan: '', fileUrl: '' },
           status: { deskripsi: '' },
           keterangan: { text: '' }
       }],
@@ -144,7 +145,7 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
         <Card>
             <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Pengajuan</CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={() => appendStage({ pengajuan: { tanggal: '', nomor: '', keteranganPengajuan: '' }, status: { deskripsi: '' }, keterangan: { text: '' }})}>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendStage({ pengajuan: { tanggal: '', nomor: '', keteranganPengajuan: '', fileUrl: '' }, status: { deskripsi: '' }, keterangan: { text: '' }})}>
                     <Plus className="mr-2 h-4 w-4" /> Add Pengajuan
                 </Button>
             </CardHeader>
@@ -160,7 +161,8 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
                                 <FormField control={form.control} name={`stages.${index}.pengajuan.tanggal`} render={({ field }) => (<FormItem><FormLabel>Tanggal</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name={`stages.${index}.pengajuan.nomor`} render={({ field }) => (<FormItem><FormLabel>No. Surat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
-                             <FormField control={form.control} name={`stages.${index}.pengajuan.keteranganPengajuan`} render={({ field }) => (<FormItem className="mt-4"><FormLabel>Keterangan Pengajuan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`stages.${index}.pengajuan.keteranganPengajuan`} render={({ field }) => (<FormItem className="mt-4"><FormLabel>Keterangan Pengajuan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`stages.${index}.pengajuan.fileUrl`} render={({ field }) => (<FormItem className="mt-4"><FormLabel>Attachment Link</FormLabel><FormControl><Input type="url" placeholder="https://example.com/file.pdf" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         </fieldset>
 
                         <FormField control={form.control} name={`stages.${index}.status.deskripsi`} render={({ field }) => (<FormItem><FormLabel>Deskripsi Status</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
