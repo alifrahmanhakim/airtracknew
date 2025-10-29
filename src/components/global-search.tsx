@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -27,7 +26,7 @@ interface GlobalSearchProps {
 export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
-  const [search, setSearch] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const router = useRouter();
   const [modifierKey, setModifierKey] = React.useState('⌘');
   
@@ -102,9 +101,17 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      setSearch(inputValue);
+      setSearchQuery(inputValue);
     }
   };
+  
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+        setInputValue('');
+        setSearchQuery('');
+    }
+  }
 
 
   return (
@@ -112,7 +119,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
       <div className="relative group">
             <Button
                 variant="outline"
-                onClick={() => setOpen(true)}
+                onClick={() => handleOpenChange(true)}
                 className="h-9 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64 transition-transform duration-200"
             >
                  <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000"></div>
@@ -126,7 +133,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                 </kbd>
             </Button>
       </div>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={open} onOpenChange={handleOpenChange}>
         <DialogTitle className="sr-only">Global Search</DialogTitle>
         <CommandInput 
             placeholder="Type what you want to search and press Enter"
@@ -135,11 +142,13 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
             onKeyDown={handleKeyDown}
         />
         <CommandList>
-          {search ? (
+          {!searchQuery ? (
+             <div className="py-6 text-center text-sm text-muted-foreground">Type what you want to search and press Enter.</div>
+          ) : (
             <>
               <CommandEmpty>No results found.</CommandEmpty>
                 <CommandGroup heading="Projects">
-                    {projects.filter(p => search ? p.name.toLowerCase().includes(search.toLowerCase()) || p.casr?.toLowerCase().includes(search.toLowerCase()) || p.annex?.toLowerCase().includes(search.toLowerCase()) : true).map((project) => (
+                    {projects.filter(p => searchQuery ? p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.casr?.toLowerCase().includes(searchQuery.toLowerCase()) || p.annex?.toLowerCase().includes(searchQuery.toLowerCase()) : true).map((project) => (
                     <CommandItem
                         key={project.id}
                         onSelect={() => runCommand(() => router.push(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`))}
@@ -147,13 +156,13 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                         className="flex-wrap h-auto"
                     >
                         {project.projectType === 'Tim Kerja' ? <Home className="mr-2 h-4 w-4" /> : <Landmark className="mr-2 h-4 w-4" />}
-                        <span className='whitespace-normal'><Highlight text={project.name} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={project.name} query={searchQuery} /></span>
                         <span className="ml-2 text-xs text-muted-foreground">{project.projectType}</span>
                     </CommandItem>
                     ))}
                 </CommandGroup>
                 <CommandGroup heading="Users">
-                    {users.filter(u => search ? u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()) : true).map((user) => (
+                    {users.filter(u => searchQuery ? u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.email?.toLowerCase().includes(searchQuery.toLowerCase()) : true).map((user) => (
                     <CommandItem
                         key={user.id}
                         onSelect={() => runCommand(() => onViewProfile(user))}
@@ -161,100 +170,100 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                         className="flex-wrap h-auto"
                     >
                         <Users className="mr-2 h-4 w-4" />
-                        <span><Highlight text={user.name || ''} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground"><Highlight text={user.role || ''} query={search} /></span>
+                        <span><Highlight text={user.name || ''} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground"><Highlight text={user.role || ''} query={searchQuery} /></span>
                     </CommandItem>
                     ))}
                 </CommandGroup>
                 <CommandGroup heading="Workspace">
-                    {ccefodRecords.filter(r => search ? `${r.annexReference} ${r.annex} ${r.standardPractice}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/ccefod'))} value={`CC/EFOD ${record.annexReference} ${record.annex}`} className="flex-wrap h-auto">
+                    {ccefodRecords.filter(r => searchQuery ? `${r.annexReference} ${r.annex} ${r.standardPractice}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/ccefod?view=${record.id}`))} value={`CC/EFOD ${record.annexReference} ${record.annex}`} className="flex-wrap h-auto">
                         <ClipboardCheck className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.annexReference} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.annex} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.annexReference} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.annex} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {pqsRecords.filter(r => search ? `${r.pqNumber} ${r.protocolQuestion}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/pqs'))} value={`PQ ${record.pqNumber} ${record.protocolQuestion}`} className="flex-wrap h-auto">
+                    {pqsRecords.filter(r => searchQuery ? `${r.pqNumber} ${r.protocolQuestion}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/pqs?view=${record.id}`))} value={`PQ ${record.pqNumber} ${record.protocolQuestion}`} className="flex-wrap h-auto">
                         <CircleHelp className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'>PQ <Highlight text={record.pqNumber} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.protocolQuestion} query={search} /></span>
+                        <span className='whitespace-normal'>PQ <Highlight text={record.pqNumber} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.protocolQuestion} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {gapAnalysisRecords.filter(r => search ? `${r.slReferenceNumber} ${r.subject}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/state-letter'))} value={`State Letter ${record.slReferenceNumber} ${record.subject}`} className="flex-wrap h-auto">
+                    {gapAnalysisRecords.filter(r => searchQuery ? `${r.slReferenceNumber} ${r.subject}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/state-letter?view=${record.id}`))} value={`State Letter ${record.slReferenceNumber} ${record.subject}`} className="flex-wrap h-auto">
                         <Mail className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.slReferenceNumber} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.subject} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.slReferenceNumber} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.subject} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {glossaryRecords.filter(r => search ? `${r.tsu} ${r.tsa}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/glossary'))} value={`Glossary ${record.tsu} ${record.tsa}`} className="flex-wrap h-auto">
+                    {glossaryRecords.filter(r => searchQuery ? `${r.tsu} ${r.tsa}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/glossary?view=${record.id}`))} value={`Glossary ${record.tsu} ${record.tsa}`} className="flex-wrap h-auto">
                         <BookType className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.tsu} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.tsa} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.tsu} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.tsa} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
                 </CommandGroup>
                 <CommandGroup heading="Rulemaking Monitoring">
-                    {rulemakingRecords.filter(r => search ? `${r.perihal} ${r.kategori}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rulemaking-monitoring'))} value={`Rulemaking ${record.perihal} ${record.kategori}`} className="flex-wrap h-auto">
+                    {rulemakingRecords.filter(r => searchQuery ? `${r.perihal} ${r.kategori}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/rulemaking-monitoring?view=${record.id}`))} value={`Rulemaking ${record.perihal} ${record.kategori}`} className="flex-wrap h-auto">
                         <ListChecks className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.perihal} query={search} /></span>
-                            <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.kategori} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.perihal} query={searchQuery} /></span>
+                            <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.kategori} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
                 </CommandGroup>
                 <CommandGroup heading="Resolution Safety Issues (RSI)">
-                    {accidentRecords.filter(r => search ? `${r.registrasiPesawat} ${r.lokasi}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/data-accident-incident'))} value={`Accident ${record.registrasiPesawat} ${record.lokasi}`} className="flex-wrap h-auto">
+                    {accidentRecords.filter(r => searchQuery ? `${r.registrasiPesawat} ${r.lokasi}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/rsi/data-accident-incident?view=${record.id}`))} value={`Accident ${record.registrasiPesawat} ${record.lokasi}`} className="flex-wrap h-auto">
                         <FileWarning className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.registrasiPesawat} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.kategori} query={search} /> at <Highlight text={record.lokasi} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.registrasiPesawat} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.kategori} query={searchQuery} /> at <Highlight text={record.lokasi} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {pemeriksaanRecords.filter(r => search ? `${r.registrasi} ${r.operator}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/pemeriksaan'))} value={`Pemeriksaan ${record.registrasi} ${record.operator}`} className="flex-wrap h-auto">
+                    {pemeriksaanRecords.filter(r => searchQuery ? `${r.registrasi} ${r.operator}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/rsi/pemeriksaan?view=${record.id}`))} value={`Pemeriksaan ${record.registrasi} ${record.operator}`} className="flex-wrap h-auto">
                         <SearchIcon className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.registrasi} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.operator} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.registrasi} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.operator} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {knktReports.filter(r => search ? `${r.nomor_laporan} ${r.operator}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
+                    {knktReports.filter(r => searchQuery ? `${r.nomor_laporan} ${r.operator}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/rsi/laporan-investigasi-knkt?view=${record.id}`))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
                        <FileSearch className="mr-2 h-4 w-4" />
-                       <span className="whitespace-normal"><Highlight text={record.nomor_laporan} query={search} /></span>
-                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={search} /></span>
+                       <span className="whitespace-normal"><Highlight text={record.nomor_laporan} query={searchQuery} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {tindakLanjutRecords.filter(r => search ? `${r.nomorLaporan} ${r.judulLaporan}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/monitoring-rekomendasi'))} value={`Tindak Lanjut ${record.nomorLaporan} ${record.judulLaporan}`} className="flex-wrap h-auto">
+                    {tindakLanjutRecords.filter(r => searchQuery ? `${r.nomorLaporan} ${r.judulLaporan}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/rsi/monitoring-rekomendasi?view=${record.id}`))} value={`Tindak Lanjut ${record.nomorLaporan} ${record.judulLaporan}`} className="flex-wrap h-auto">
                         <BookCheck className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.nomorLaporan} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.judulLaporan} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.nomorLaporan} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.judulLaporan} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {tindakLanjutDgcaRecords.filter(r => search ? `${r.nomorLaporan} ${r.judulLaporan}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/monitoring-rekomendasi-dgca'))} value={`Tindak Lanjut DGCA ${record.nomorLaporan} ${record.judulLaporan}`} className="flex-wrap h-auto">
+                    {tindakLanjutDgcaRecords.filter(r => searchQuery ? `${r.nomorLaporan} ${r.judulLaporan}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/rsi/monitoring-rekomendasi-dgca?view=${record.id}`))} value={`Tindak Lanjut DGCA ${record.nomorLaporan} ${record.judulLaporan}`} className="flex-wrap h-auto">
                         <BookOpenCheck className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.nomorLaporan} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.judulLaporan} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.nomorLaporan} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.judulLaporan} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
-                    {lawEnforcementRecords.filter(r => search ? `${r.impositionType} ${r.references[0]?.sanctionType}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/law-enforcement'))} value={`Law Enforcement ${record.impositionType} ${record.references[0]?.sanctionType}`} className="flex-wrap h-auto">
+                    {lawEnforcementRecords.filter(r => searchQuery ? `${r.impositionType} ${r.references[0]?.sanctionType}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/rsi/law-enforcement?view=${record.id}`))} value={`Law Enforcement ${record.impositionType} ${record.references[0]?.sanctionType}`} className="flex-wrap h-auto">
                         <Gavel className="mr-2 h-4 w-4" />
-                        <span className="capitalize whitespace-normal"><Highlight text={record.impositionType} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.references[0]?.sanctionType || ''} query={search} /></span>
+                        <span className="capitalize whitespace-normal"><Highlight text={record.impositionType} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.references[0]?.sanctionType || ''} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
                 </CommandGroup>
                 <CommandGroup heading="Kegiatan">
-                    {kegiatanRecords.filter(r => search ? `${r.subjek} ${r.lokasi}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
-                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/kegiatan'))} value={`Kegiatan ${record.subjek} ${record.lokasi}`} className="flex-wrap h-auto">
+                    {kegiatanRecords.filter(r => searchQuery ? `${r.subjek} ${r.lokasi}`.toLowerCase().includes(searchQuery.toLowerCase()) : true).map(record => (
+                        <CommandItem key={record.id} onSelect={() => runCommand(() => router.push(`/kegiatan?view=${record.id}`))} value={`Kegiatan ${record.subjek} ${record.lokasi}`} className="flex-wrap h-auto">
                         <CalendarDays className="mr-2 h-4 w-4" />
-                        <span className='whitespace-normal'><Highlight text={record.subjek} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.lokasi} query={search} /></span>
+                        <span className='whitespace-normal'><Highlight text={record.subjek} query={searchQuery} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.lokasi} query={searchQuery} /></span>
                         </CommandItem>
                     ))}
                 </CommandGroup>
@@ -269,13 +278,11 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                     </CommandItem>
                 </CommandGroup>
             </>
-          ) : (
-            <div className="py-6 text-center text-sm">
-                Type what you want to search and press Enter.
-            </div>
           )}
         </CommandList>
       </CommandDialog>
     </>
   );
 }
+
+    
