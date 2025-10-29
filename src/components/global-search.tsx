@@ -220,7 +220,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.operator} query={search} /></span>
                     </CommandItem>
                 ))}
-                {knktReports.map(record => (
+                {knktReports.filter(r => search ? `${r.nomor_laporan} ${r.operator}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
                        <FileSearch className="mr-2 h-4 w-4" />
                        <span><Highlight text={record.nomor_laporan} query={search} /></span>
