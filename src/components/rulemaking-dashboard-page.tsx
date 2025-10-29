@@ -286,7 +286,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                 <div
                     className="relative mb-4 p-6 rounded-xl text-white overflow-hidden"
                     style={{
-                        backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Screenshot%202025-10-19%20at%2009.15.10.png')",
+                        backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/office_works_2.webp?updatedAt=1761700273779')",
                         backgroundSize: '50%',
                         backgroundPosition: 'right center',
                         backgroundRepeat: 'no-repeat',
