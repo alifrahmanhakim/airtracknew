@@ -11,7 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { DialogTitle } from '../ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
 import { Button } from './ui/button';
 import { Search, Home, Landmark, Users, FileText, ClipboardCheck, CircleHelp, Mail, BookType, Plane, ListChecks, Search as SearchIcon, FileWarning, BookCheck, BookOpenCheck, Gavel, Leaf, CalendarDays, BotMessageSquare, FileSearch } from 'lucide-react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
@@ -141,7 +141,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
         <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Projects">
-                {projects.filter(p => search ? p.name.toLowerCase().includes(search.toLowerCase()) : true).map((project) => (
+                {projects.filter(p => search ? p.name.toLowerCase().includes(search.toLowerCase()) || p.casr?.toLowerCase().includes(search.toLowerCase()) || p.annex?.toLowerCase().includes(search.toLowerCase()) : true).map((project) => (
                 <CommandItem
                     key={project.id}
                     onSelect={() => runCommand(() => router.push(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`))}
@@ -161,7 +161,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                     value={`User ${user.name} ${user.email}`}
                 >
                     <Users className="mr-2 h-4 w-4" />
-                    <span><Highlight text={user.name} query={search} /></span>
+                    <span><Highlight text={user.name || ''} query={search} /></span>
                      <span className="ml-2 text-xs text-muted-foreground"><Highlight text={user.role} query={search} /></span>
                 </CommandItem>
                 ))}
@@ -220,7 +220,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                        <span className="ml-2 text-xs text-muted-foreground whitespace-normal"><Highlight text={record.operator} query={search} /></span>
                     </CommandItem>
                 ))}
-                {knktReports.filter(r => search ? `${r.nomor_laporan} ${r.operator}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
+                {knktReports.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
                        <FileSearch className="mr-2 h-4 w-4" />
                        <span><Highlight text={record.nomor_laporan} query={search} /></span>
