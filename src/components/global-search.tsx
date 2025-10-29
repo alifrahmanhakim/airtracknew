@@ -12,10 +12,11 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Button } from './ui/button';
-import { Search, Home, Landmark, Users, FileText, ClipboardCheck, CircleHelp, Mail, BookType, Plane, ListChecks } from 'lucide-react';
+import { Search, Home, Landmark, Users, FileText, ClipboardCheck, CircleHelp, Mail, BookType, Plane, ListChecks, Search as SearchIcon, FileWarning, BookCheck, BookOpenCheck, Gavel, Leaf, CalendarDays, BotMessageSquare } from 'lucide-react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { Project, User, CcefodRecord, PqRecord, GapAnalysisRecord, GlossaryRecord, RulemakingRecord, AccidentIncidentRecord, KnktReport, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord, TindakLanjutDgcaRecord, Kegiatan } from '@/lib/types';
+import type { Project, User, CcefodRecord, PqRecord, GapAnalysisRecord, GlossaryRecord, RulemakingRecord, AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord, Kegiatan } from '@/lib/types';
+import { Highlight } from './ui/highlight';
 
 interface GlobalSearchProps {
   onViewProfile: (user: User) => void;
@@ -23,6 +24,7 @@ interface GlobalSearchProps {
 
 export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState('');
   const router = useRouter();
   const [modifierKey, setModifierKey] = React.useState('⌘');
   
@@ -114,7 +116,11 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
             </Button>
       </div>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput 
+            placeholder="Type a command or search..."
+            value={search}
+            onValueChange={setSearch}
+        />
         <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Projects">
@@ -125,7 +131,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                     value={`Project ${project.name} ${project.casr || ''} ${project.annex || ''}`}
                 >
                     {project.projectType === 'Tim Kerja' ? <Home className="mr-2 h-4 w-4" /> : <Landmark className="mr-2 h-4 w-4" />}
-                    <span>{project.name}</span>
+                    <span><Highlight text={project.name} query={search} /></span>
                     <span className="ml-2 text-xs text-muted-foreground">{project.projectType}</span>
                 </CommandItem>
                 ))}
@@ -134,12 +140,12 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                 {users.map((user) => (
                 <CommandItem
                     key={user.id}
-                    onSelect={() => runCommand(() => router.push('/chats'))}
+                    onSelect={() => runCommand(() => onViewProfile(user))}
                     value={`User ${user.name} ${user.email}`}
                 >
                     <Users className="mr-2 h-4 w-4" />
-                    <span>{user.name}</span>
-                     <span className="ml-2 text-xs text-muted-foreground">{user.role}</span>
+                    <span><Highlight text={user.name} query={search} /></span>
+                     <span className="ml-2 text-xs text-muted-foreground"><Highlight text={user.role} query={search} /></span>
                 </CommandItem>
                 ))}
             </CommandGroup>
@@ -147,29 +153,29 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                  {ccefodRecords.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/ccefod'))} value={`CC/EFOD ${record.annexReference} ${record.annex}`}>
                        <ClipboardCheck className="mr-2 h-4 w-4" />
-                       <span>{record.annexReference}</span>
+                       <span><Highlight text={record.annexReference} query={search} /></span>
                        <span className="ml-2 text-xs text-muted-foreground">CC/EFOD</span>
                     </CommandItem>
                 ))}
                  {pqsRecords.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/pqs'))} value={`PQ ${record.pqNumber} ${record.protocolQuestion}`}>
                        <CircleHelp className="mr-2 h-4 w-4" />
-                       <span>PQ {record.pqNumber}</span>
-                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.protocolQuestion}</span>
+                       <span>PQ <Highlight text={record.pqNumber} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate"><Highlight text={record.protocolQuestion} query={search} /></span>
                     </CommandItem>
                 ))}
                  {gapAnalysisRecords.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/state-letter'))} value={`State Letter ${record.slReferenceNumber} ${record.subject}`}>
                        <Mail className="mr-2 h-4 w-4" />
-                       <span>{record.slReferenceNumber}</span>
-                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.subject}</span>
+                       <span><Highlight text={record.slReferenceNumber} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate"><Highlight text={record.subject} query={search} /></span>
                     </CommandItem>
                 ))}
                  {glossaryRecords.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/glossary'))} value={`Glossary ${record.tsu} ${record.tsa}`}>
                        <BookType className="mr-2 h-4 w-4" />
-                       <span>{record.tsu}</span>
-                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.tsa}</span>
+                       <span><Highlight text={record.tsu} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate"><Highlight text={record.tsa} query={search} /></span>
                     </CommandItem>
                 ))}
             </CommandGroup>
@@ -177,40 +183,73 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                  {rulemakingRecords.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rulemaking-monitoring'))} value={`Rulemaking ${record.perihal} ${record.kategori}`}>
                        <ListChecks className="mr-2 h-4 w-4" />
-                       <span>{record.perihal}</span>
-                        <span className="ml-2 text-xs text-muted-foreground">{record.kategori}</span>
+                       <span><Highlight text={record.perihal} query={search} /></span>
+                        <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.kategori} query={search} /></span>
                     </CommandItem>
                 ))}
             </CommandGroup>
             <CommandGroup heading="Resolution Safety Issues (RSI)">
                  {accidentRecords.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/data-accident-incident'))} value={`Accident ${record.registrasiPesawat} ${record.lokasi}`}>
-                       <Plane className="mr-2 h-4 w-4" />
-                       <span>{record.registrasiPesawat}</span>
-                       <span className="ml-2 text-xs text-muted-foreground">{record.kategori} at {record.lokasi}</span>
+                       <FileWarning className="mr-2 h-4 w-4" />
+                       <span><Highlight text={record.registrasiPesawat} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.kategori} query={search} /> at <Highlight text={record.lokasi} query={search} /></span>
+                    </CommandItem>
+                ))}
+                 {pemeriksaanRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/pemeriksaan'))} value={`Pemeriksaan ${record.registrasi} ${record.operator}`}>
+                       <SearchIcon className="mr-2 h-4 w-4" />
+                       <span><Highlight text={record.registrasi} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={search} /></span>
                     </CommandItem>
                 ))}
                 {knktReports.map(record => (
                     <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`}>
-                       <FileText className="mr-2 h-4 w-4" />
-                       <span>{record.nomor_laporan}</span>
-                       <span className="ml-2 text-xs text-muted-foreground">{record.operator}</span>
+                       <FileSearch className="mr-2 h-4 w-4" />
+                       <span><Highlight text={record.nomor_laporan} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={search} /></span>
                     </CommandItem>
                 ))}
-                {pemeriksaanRecords.map(record => (
-                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/pemeriksaan'))} value={`Pemeriksaan ${record.registrasi} ${record.operator}`}>
-                       <Search className="mr-2 h-4 w-4" />
-                       <span>{record.registrasi}</span>
-                       <span className="ml-2 text-xs text-muted-foreground">{record.operator}</span>
+                {tindakLanjutRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/monitoring-rekomendasi'))} value={`Tindak Lanjut ${record.nomorLaporan} ${record.judulLaporan}`}>
+                       <BookCheck className="mr-2 h-4 w-4" />
+                       <span><Highlight text={record.nomorLaporan} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate"><Highlight text={record.judulLaporan} query={search} /></span>
                     </CommandItem>
                 ))}
-                 {tindakLanjutRecords.map(record => (
-                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/monitoring-rekomendasi'))} value={`Tindak Lanjut ${record.nomorLaporan}`}>
-                       <FileText className="mr-2 h-4 w-4" />
-                       <span>{record.nomorLaporan}</span>
-                       <span className="ml-2 text-xs text-muted-foreground truncate">{record.judulLaporan}</span>
+                 {tindakLanjutDgcaRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/monitoring-rekomendasi-dgca'))} value={`Tindak Lanjut DGCA ${record.nomorLaporan} ${record.judulLaporan}`}>
+                       <BookOpenCheck className="mr-2 h-4 w-4" />
+                       <span><Highlight text={record.nomorLaporan} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate"><Highlight text={record.judulLaporan} query={search} /></span>
                     </CommandItem>
                 ))}
+                {lawEnforcementRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/law-enforcement'))} value={`Law Enforcement ${record.impositionType} ${record.references[0]?.sanctionType}`}>
+                       <Gavel className="mr-2 h-4 w-4" />
+                       <span className="capitalize"><Highlight text={record.impositionType} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground truncate"><Highlight text={record.references[0]?.sanctionType || ''} query={search} /></span>
+                    </CommandItem>
+                ))}
+            </CommandGroup>
+             <CommandGroup heading="Kegiatan">
+                 {kegiatanRecords.map(record => (
+                    <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/kegiatan'))} value={`Kegiatan ${record.subjek} ${record.lokasi}`}>
+                       <CalendarDays className="mr-2 h-4 w-4" />
+                       <span><Highlight text={record.subjek} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.lokasi} query={search} /></span>
+                    </CommandItem>
+                ))}
+            </CommandGroup>
+            <CommandGroup heading="Tools">
+                 <CommandItem onSelect={() => runCommand(() => router.push('/tools/ask-std-ai'))}>
+                    <BotMessageSquare className="mr-2 h-4 w-4" />
+                    <span>Ask STD.Ai</span>
+                </CommandItem>
+                 <CommandItem onSelect={() => runCommand(() => router.push('https://dgcaems.vercel.app/'))}>
+                    <Leaf className="mr-2 h-4 w-4" />
+                    <span>Environment</span>
+                </CommandItem>
             </CommandGroup>
         </CommandList>
       </CommandDialog>
