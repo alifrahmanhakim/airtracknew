@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info, ArrowUpDown } from 'lucide-react';
+import { Pencil, Trash2, Info, ArrowUpDown, Link as LinkIcon } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { format, parseISO } from 'date-fns';
@@ -125,6 +125,14 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
     }
     return 'text-muted-foreground';
   }
+  
+  const formatUrl = (url: string) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return `https://${url}`;
+    }
+    return url;
+  };
+
 
   const renderStage = (stage: Stage, index: number) => (
     <div key={index} className="border-b last:border-b-0 py-2">
@@ -149,6 +157,15 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
             </div>
         </div>
       )}
+       {stage.pengajuan.fileUrl && (
+            <div className="text-sm mt-2">
+                <Button asChild variant="link" size="sm" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
+                    <a href={formatUrl(stage.pengajuan.fileUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                        <LinkIcon className="h-3 w-3" /> View Attachment
+                    </a>
+                </Button>
+            </div>
+        )}
     </div>
   );
 

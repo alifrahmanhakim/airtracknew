@@ -283,7 +283,7 @@ export const rulemakingRecordSchema = z.object({
             tanggal: z.string().optional(),
             nomor: z.string().optional(),
             keteranganPengajuan: z.string().optional(),
-            fileUrl: z.string().url().optional().or(z.literal('')),
+            fileUrl: z.string().optional().or(z.literal('')),
         }),
         status: z.object({
             deskripsi: z.string().min(1, "Deskripsi status is required."),
