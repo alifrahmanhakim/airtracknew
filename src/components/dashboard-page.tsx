@@ -379,7 +379,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
           style={{
             backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/CharacterBacktoschool_7_.webp?updatedAt=1761700273821')",
             backgroundSize: '50%',
-            backgroundPosition: 'right 20%',
+            backgroundPosition: 'right center',
             backgroundRepeat: 'no-repeat',
           }}
         >
