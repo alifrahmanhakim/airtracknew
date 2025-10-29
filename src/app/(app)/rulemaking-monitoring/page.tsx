@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { format, parseISO } from 'date-fns';
+import Image from 'next/image';
 
 const RulemakingForm = dynamic(() => import('@/components/rulemaking-monitoring/rulemaking-form').then(mod => mod.RulemakingForm), { 
     ssr: false,
@@ -205,19 +206,31 @@ export default function RulemakingMonitoringPage() {
         <AppLayout>
             <main className="p-4 md:p-8">
                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <Card className="mb-4">
-                        <CardHeader>
-                            <CardTitle className="text-3xl font-bold flex items-center gap-2"><ListChecks /> Monitoring</CardTitle>
-                            <CardDescription className="mt-2">
-                                Ringkasan status usulan dan perubahan keputusan terkait CASR/PKPS, petunjuk teknis (SI) dan petunjuk pelaksanaan (AC).
-                            </CardDescription>
-                            <div className="pt-4">
-                                <TabsList>
-                                    <TabsTrigger value="form">Input Form</TabsTrigger>
-                                    <TabsTrigger value="records">Records</TabsTrigger>
-                                </TabsList>
+                    <Card className="mb-4 overflow-hidden relative">
+                        <div className="flex flex-col md:flex-row">
+                            <div className="flex-1 p-6 z-10">
+                                <CardTitle className="text-3xl font-bold flex items-center gap-2"><ListChecks /> Monitoring</CardTitle>
+                                <CardDescription className="mt-2 text-foreground/80">
+                                    Ringkasan status usulan dan perubahan keputusan terkait CASR/PKPS, petunjuk teknis (SI) dan petunjuk pelaksanaan (AC).
+                                </CardDescription>
+                                <div className="pt-4">
+                                    <TabsList>
+                                        <TabsTrigger value="form">Input Form</TabsTrigger>
+                                        <TabsTrigger value="records">Records</TabsTrigger>
+                                    </TabsList>
+                                </div>
                             </div>
-                        </CardHeader>
+                            <div className="relative w-full md:w-1/3 min-h-[150px] md:min-h-0">
+                                <Image
+                                    src="https://ik.imagekit.io/avmxsiusm/cloud_storage_10.webp"
+                                    alt="Monitoring Illustration"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 100vw, 33vw"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/70 to-background"></div>
+                            </div>
+                        </div>
                     </Card>
 
                     <Card className="mb-4">
