@@ -219,8 +219,8 @@ export function MyDashboardPageComponent({ initialProjects, initialUsers }: MyDa
         className="relative p-6 rounded-xl text-white overflow-hidden"
         style={{
             backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/motherlode.png?updatedAt=1761699488970')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundSize: '50%',
+            backgroundPosition: 'right 20%',
             backgroundRepeat: 'no-repeat',
         }}
       >
