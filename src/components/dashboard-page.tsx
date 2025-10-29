@@ -377,7 +377,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
         <div
           className="relative mb-4 flex flex-col items-start justify-between gap-4 p-6 rounded-xl w-full text-white bg-no-repeat"
           style={{
-            backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/Screenshot%202025-10-19%20at%2008.40.28.png')",
+            backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/CharacterBacktoschool_7_.webp?updatedAt=1761700273821')",
             backgroundSize: '50%',
             backgroundPosition: 'right 20%',
             backgroundRepeat: 'no-repeat',
