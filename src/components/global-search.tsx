@@ -5,6 +5,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -12,8 +13,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Button } from './ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Search, Home, Landmark, Users, HelpCircle } from 'lucide-react';
+import { Search, Home, Landmark, Users } from 'lucide-react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Project, User } from '@/lib/types';
@@ -139,8 +139,6 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
   };
   
   const handleSelectUser = (user: User) => {
-    // This functionality is now handled on the chats page directly
-    // onViewProfile(user);
     router.push('/chats');
     setOpen(false);
   }
@@ -159,20 +157,25 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
         if (item.name && typeof item.name === 'string') {
             const score = jaroWinkler(searchQuery.toLowerCase(), item.name.toLowerCase());
             if (score > 0.8 && (!bestMatch || score > bestMatch.score)) {
-                bestMatch = { item, score };
+                bestMatch = { item: item as Project | User, score };
             }
         }
     }
     
     return bestMatch;
   }, [searchQuery, projects, users]);
+  
+  const runCommand = React.useCallback((command: () => unknown) => {
+    setOpen(false)
+    command()
+  }, [])
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <div className="relative group">
+    <>
+      <div className="relative group">
             <Button
                 variant="outline"
+                onClick={() => setOpen(true)}
                 className="h-9 w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64 transition-transform duration-200"
             >
                  <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-1000"></div>
@@ -185,63 +188,60 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                     <span className="text-xs">{modifierKey}</span>K
                 </kbd>
             </Button>
-        </div>
-      </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command>
-            <CommandInput 
-              placeholder="Type a command or search..."
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-            />
-            <CommandList>
-                <CommandEmpty>
-                    {suggestion ? (
-                         <div className="p-4 text-center text-sm">
-                            No results found. Did you mean:{" "}
-                            <Button
-                                variant="link"
-                                className="p-0 h-auto"
-                                onClick={() => {
-                                    if(suggestion.item.name) {
-                                        setSearchQuery(suggestion.item.name);
-                                    }
-                                }}
-                            >
-                                {suggestion.item.name}?
-                            </Button>
-                        </div>
-                    ) : 'No results found.'}
-                </CommandEmpty>
-                <CommandGroup heading="Projects">
-                    {projects.map((project) => (
-                    <CommandItem
-                        key={project.id}
-                        onSelect={() => handleSelectProject(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`)}
-                        value={`Project ${project.name} ${project.casr || ''} ${project.annex || ''}`}
-                    >
-                        {project.projectType === 'Tim Kerja' ? <Home className="mr-2 h-4 w-4" /> : <Landmark className="mr-2 h-4 w-4" />}
-                        <span>{project.name}</span>
-                        <span className="ml-2 text-xs text-muted-foreground">{project.projectType}</span>
-                    </CommandItem>
-                    ))}
-                </CommandGroup>
-                <CommandGroup heading="Users">
-                    {users.map((user) => (
-                    <CommandItem
-                        key={user.id}
-                        onSelect={() => handleSelectUser(user)}
-                        value={`User ${user.name} ${user.email}`}
-                    >
-                        <Users className="mr-2 h-4 w-4" />
-                        <span>{user.name}</span>
-                        <span className="ml-2 text-xs text-muted-foreground">{user.role}</span>
-                    </CommandItem>
-                    ))}
-                </CommandGroup>
-            </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </div>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput 
+          placeholder="Type a command or search..."
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+        />
+        <CommandList>
+            <CommandEmpty>
+                {suggestion ? (
+                     <div className="p-4 text-center text-sm">
+                        No results found. Did you mean:{" "}
+                        <Button
+                            variant="link"
+                            className="p-0 h-auto"
+                            onClick={() => {
+                                if(suggestion.item.name) {
+                                    setSearchQuery(suggestion.item.name);
+                                }
+                            }}
+                        >
+                            {suggestion.item.name}?
+                        </Button>
+                    </div>
+                ) : 'No results found.'}
+            </CommandEmpty>
+            <CommandGroup heading="Projects">
+                {projects.map((project) => (
+                <CommandItem
+                    key={project.id}
+                    onSelect={() => runCommand(() => handleSelectProject(`/projects/${project.id}?type=${project.projectType.toLowerCase().replace(' ', '')}`))}
+                    value={`Project ${project.name} ${project.casr || ''} ${project.annex || ''}`}
+                >
+                    {project.projectType === 'Tim Kerja' ? <Home className="mr-2 h-4 w-4" /> : <Landmark className="mr-2 h-4 w-4" />}
+                    <span>{project.name}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">{project.projectType}</span>
+                </CommandItem>
+                ))}
+            </CommandGroup>
+            <CommandGroup heading="Users">
+                {users.map((user) => (
+                <CommandItem
+                    key={user.id}
+                    onSelect={() => runCommand(() => handleSelectUser(user))}
+                    value={`User ${user.name} ${user.email}`}
+                >
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>{user.name}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">{user.role}</span>
+                </CommandItem>
+                ))}
+            </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </>
   );
 }
