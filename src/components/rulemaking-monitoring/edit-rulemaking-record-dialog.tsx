@@ -33,6 +33,11 @@ export function EditRulemakingRecordDialog({ record, onRecordUpdate, onDelete, o
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogTrigger asChild>
+                 <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onOpenChange(true); }}>
+                    <Pencil className="h-4 w-4" />
+                </Button>
+            </DialogTrigger>
             <DialogContent className="sm:max-w-4xl max-h-[90vh]">
                 <DialogHeader className="flex-row items-start justify-between">
                     <div>

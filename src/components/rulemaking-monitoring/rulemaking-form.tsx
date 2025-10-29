@@ -57,6 +57,20 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
     resolver: zodResolver(rulemakingRecordSchema),
     defaultValues: record ? {
         ...record,
+        stages: record.stages.map(stage => ({
+          pengajuan: {
+            tanggal: stage.pengajuan.tanggal || '',
+            nomor: stage.pengajuan.nomor || '',
+            keteranganPengajuan: stage.pengajuan.keteranganPengajuan || '',
+            fileUrl: stage.pengajuan.fileUrl || ''
+          },
+          status: {
+            deskripsi: stage.status.deskripsi || ''
+          },
+          keterangan: {
+            text: stage.keterangan?.text || ''
+          }
+        }))
     } : {
       perihal: '',
       kategori: 'PKPS/CASR',
@@ -148,7 +162,7 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
                     <Plus className="mr-2 h-4 w-4" /> Add Pengajuan
                 </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
                 {stageFields.map((field, index) => (
                     <div key={field.id} className="border p-4 rounded-lg relative space-y-4 mb-4 last:mb-0">
                         <h4 className="font-semibold mb-2">Pengajuan {index + 1}</h4>

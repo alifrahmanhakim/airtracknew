@@ -5,13 +5,18 @@ import { isValid, parse } from 'date-fns';
 
 const dateSchema = z.string().optional().nullable().refine(val => {
     if (!val || val.trim() === '') return true; // Allow empty strings
+    // Check for YYYY-MM-DD format (from <input type="date">)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+        const date = parse(val, 'yyyy-MM-dd', new Date());
+        return isValid(date);
+    }
     // Check for DD-MM-YYYY format
     if (!/^\d{2}-\d{2}-\d{4}$/.test(val)) return false;
     // Check if the date is actually valid
     const date = parse(val, 'dd-MM-yyyy', new Date());
     return isValid(date);
 }, {
-    message: "Date must be in DD-MM-YYYY format and be a valid date"
+    message: "Date must be in a valid format (YYYY-MM-DD or DD-MM-YYYY)"
 });
 
 
