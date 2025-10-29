@@ -228,7 +228,6 @@ export default function RulemakingMonitoringPage() {
                                     className="object-cover"
                                     sizes="(max-width: 768px) 100vw, 33vw"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-l from-background/10 via-background/70 to-background"></div>
                             </div>
                         </div>
                     </Card>
