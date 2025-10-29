@@ -288,7 +288,7 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                     style={{
                         backgroundImage: "url('https://ik.imagekit.io/avmxsiusm/office_works_2.webp?updatedAt=1761700273779')",
                         backgroundSize: '50%',
-                        backgroundPosition: 'right center',
+                        backgroundPosition: 'right 20%',
                         backgroundRepeat: 'no-repeat',
                     }}
                 >
