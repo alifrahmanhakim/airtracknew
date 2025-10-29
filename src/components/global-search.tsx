@@ -10,8 +10,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  DialogTitle,
 } from '@/components/ui/command';
+import { DialogTitle } from '@/components/ui/dialog';
 import { Button } from './ui/button';
 import { Search, Home, Landmark, Users, FileText, ClipboardCheck, CircleHelp, Mail, BookType, Plane, ListChecks, Search as SearchIcon, FileWarning, BookCheck, BookOpenCheck, Gavel, Leaf, CalendarDays, BotMessageSquare, FileSearch } from 'lucide-react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
@@ -91,7 +91,6 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
 
       return () => unsubs.forEach(unsub => unsub());
     } else {
-        // Clear search when dialog closes
         setInputValue('');
         setSearch('');
     }
@@ -132,7 +131,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
       <CommandDialog open={open} onOpenChange={setOpen}>
         <DialogTitle className="sr-only">Global Search</DialogTitle>
         <CommandInput 
-            placeholder="Type a command or search..."
+            placeholder="Type what you want to search and press Enter"
             value={inputValue}
             onValueChange={setInputValue}
             onKeyDown={handleKeyDown}
@@ -199,7 +198,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                         </CommandItem>
                     ))}
                 </CommandGroup>
-                    <CommandGroup heading="Rulemaking Monitoring">
+                <CommandGroup heading="Rulemaking Monitoring">
                     {rulemakingRecords.filter(r => search ? `${r.perihal} ${r.kategori}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
                         <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rulemaking-monitoring'))} value={`Rulemaking ${record.perihal} ${record.kategori}`} className="flex-wrap h-auto">
                         <ListChecks className="mr-2 h-4 w-4" />
@@ -225,9 +224,9 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
                     ))}
                     {knktReports.filter(r => search ? `${r.nomor_laporan} ${r.operator}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
                         <CommandItem key={record.id} onSelect={() => runCommand(() => router.push('/rsi/laporan-investigasi-knkt'))} value={`KNKT ${record.nomor_laporan} ${record.operator}`} className="flex-wrap h-auto">
-                        <FileSearch className="mr-2 h-4 w-4" />
-                        <span className="whitespace-normal"><Highlight text={record.nomor_laporan} query={search} /></span>
-                        <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={search} /></span>
+                       <FileSearch className="mr-2 h-4 w-4" />
+                       <span className="whitespace-normal"><Highlight text={record.nomor_laporan} query={search} /></span>
+                       <span className="ml-2 text-xs text-muted-foreground"><Highlight text={record.operator} query={search} /></span>
                         </CommandItem>
                     ))}
                     {tindakLanjutRecords.filter(r => search ? `${r.nomorLaporan} ${r.judulLaporan}`.toLowerCase().includes(search.toLowerCase()) : true).map(record => (
@@ -274,7 +273,7 @@ export function GlobalSearch({ onViewProfile }: GlobalSearchProps) {
             </>
           ) : (
             <div className="py-6 text-center text-sm">
-                Type what you're looking for and press Enter to search.
+                Type what you want to search and press Enter.
             </div>
           )}
         </CommandList>
