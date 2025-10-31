@@ -169,9 +169,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   
   const [myTaskStats, setMyTaskStats] = React.useState({
-    todo: 0,
-    inProgress: 0,
-    done: 0,
+    active: 0,
+    overdue: 0,
     total: 0,
     completionPercentage: 0,
   });
@@ -304,10 +303,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (!userId || allProjects.length === 0) {
+        setMyTasks([]);
+        setMyTaskStats({ active: 0, overdue: 0, total: 0, completionPercentage: 0 });
         setOverdueTasksCount(0);
         setCriticalProjectsCount(0);
-        setMyTaskStats({ todo: 0, inProgress: 0, done: 0, total: 0, completionPercentage: 0 });
-        setMyTasks([]);
         return;
     };
     
@@ -317,10 +316,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
     const tasksForUser: AssignedTask[] = [];
     let myCriticalProjectsCount = 0;
-
-    let myTodo = 0;
-    let myInProgress = 0;
-    let myDone = 0;
     
     myProjects.forEach(project => {
         let projectHasCritical = false;
@@ -333,9 +328,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         projectName: project.name,
                         projectType: project.projectType,
                     });
-                    if (task.status === 'To Do') myTodo++;
-                    if (task.status === 'In Progress') myInProgress++;
-                    if (task.status === 'Done') myDone++;
                 }
 
                 if (task.criticalIssue) {
@@ -356,18 +348,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const overdueCount = tasksForUser.filter(task => 
         task.status !== 'Done' && isAfter(today, parseISO(task.dueDate))
     ).length;
-
-    const myTotal = tasksForUser.length;
+    
+    const activeCount = tasksForUser.filter(t => t.status === 'To Do' || t.status === 'In Progress').length;
+    const completedCount = tasksForUser.filter(t => t.status === 'Done').length;
+    const totalCount = tasksForUser.length;
 
     setOverdueTasksCount(overdueCount);
     setCriticalProjectsCount(myCriticalProjectsCount);
     setMyTasks(tasksForUser.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
     setMyTaskStats({
-        todo: myTodo,
-        inProgress: myInProgress,
-        done: myDone,
-        total: myTotal,
-        completionPercentage: myTotal > 0 ? (myDone / myTotal) * 100 : 0
+        active: activeCount,
+        overdue: overdueCount,
+        total: totalCount,
+        completionPercentage: totalCount > 0 ? (completedCount / totalCount) * 100 : 0
     });
 
   }, [allProjects, userId]);
@@ -423,13 +416,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                             <div className="space-y-1.5 text-xs">
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Progress</span>
-                                    <span className="font-bold">{myTaskStats.done} / {myTaskStats.total}</span>
+                                    <span className="font-bold">{myTaskStats.total - myTaskStats.active - myTaskStats.overdue} / {myTaskStats.total}</span>
                                 </div>
                                 <Progress value={myTaskStats.completionPercentage} className="h-1.5" />
                                 <div className="flex justify-between pt-1">
-                                    <span className="flex items-center gap-1.5"><ListTodo className="h-3 w-3 text-gray-500" /> To Do: {myTaskStats.todo}</span>
-                                    <span className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-blue-500" /> In Progress: {myTaskStats.inProgress}</span>
-                                    <span className="flex items-center gap-1.5"><CheckSquare className="h-3 w-3 text-green-500" /> Done: {myTaskStats.done}</span>
+                                    <span className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-blue-500" /> Active: {myTaskStats.active}</span>
+                                    <span className="flex items-center gap-1.5"><CalendarX className="h-3 w-3 text-red-500" /> Overdue: {myTaskStats.overdue}</span>
                                 </div>
                             </div>
                         </CardContent>
