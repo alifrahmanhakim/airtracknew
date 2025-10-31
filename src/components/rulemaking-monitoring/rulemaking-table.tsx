@@ -12,13 +12,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info, ArrowUpDown, Link as LinkIcon } from 'lucide-react';
+import { Pencil, Trash2, Info, ArrowUpDown, Link as LinkIcon, FileText, Calendar, MessageSquare, ChevronDown } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { EditRulemakingRecordDialog } from './edit-rulemaking-record-dialog';
 import { cn } from '@/lib/utils';
 import { Highlight } from '../ui/highlight';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
@@ -132,42 +133,61 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
     }
     return url;
   };
-
-
-  const renderStage = (stage: Stage, index: number) => (
-    <div key={index} className="border-b last:border-b-0 py-2">
-       <div className="font-semibold mb-1">
-          {stage.pengajuan.tanggal && (
-            <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300">{format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy')}</Badge>
-          )}
-          {stage.pengajuan.nomor && <p className="text-sm mt-1"><Highlight text={stage.pengajuan.nomor} query={searchTerm} /></p>}
-          {stage.pengajuan.keteranganPengajuan && <p className={cn("text-sm mt-1", getKeteranganColor(stage.pengajuan.keteranganPengajuan))}><Highlight text={stage.pengajuan.keteranganPengajuan} query={searchTerm} /></p>}
-      </div>
-      <div className="text-sm mt-2">
-        <strong className="text-muted-foreground">Status:</strong>
-        <div className="pl-2">
-          <BulletList text={stage.status.deskripsi} searchTerm={searchTerm} />
-        </div>
-      </div>
-      {stage.keterangan?.text && (
-        <div className="text-sm mt-1">
-            <strong className="text-muted-foreground">Keterangan:</strong>
-            <div className="pl-2">
-                <BulletList text={stage.keterangan.text} searchTerm={searchTerm} />
-            </div>
-        </div>
-      )}
-       {stage.pengajuan.fileUrl && (
-            <div className="text-sm mt-2">
-                <Button asChild variant="link" size="sm" className="p-0 h-auto" onClick={(e) => e.stopPropagation()}>
-                    <a href={formatUrl(stage.pengajuan.fileUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                        <LinkIcon className="h-3 w-3" /> View Attachment
-                    </a>
-                </Button>
-            </div>
-        )}
-    </div>
-  );
+  
+  const renderStage = (stage: Stage, index: number, isLast: boolean) => {
+    const statusColor = stage.status.deskripsi.toLowerCase().includes('selesai') ? 'border-green-500 bg-green-50 dark:bg-green-950' : 
+                        stage.status.deskripsi.toLowerCase().includes('dikembalikan') ? 'border-red-500 bg-red-50 dark:bg-red-950' :
+                        'border-border';
+    return (
+        <Card key={index} className={cn("relative", isLast ? statusColor : '')}>
+            <CardHeader className="pb-4">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="text-base">
+                            {stage.pengajuan.tanggal && isValid(parseISO(stage.pengajuan.tanggal)) ? format(parseISO(stage.pengajuan.tanggal), 'dd MMM yyyy') : 'No Date'}
+                        </CardTitle>
+                        <CardDescription className={cn(getKeteranganColor(stage.pengajuan.keteranganPengajuan))}>
+                             <Highlight text={stage.pengajuan.keteranganPengajuan || 'No Submission Info'} query={searchTerm} />
+                        </CardDescription>
+                    </div>
+                    {stage.pengajuan.fileUrl && (
+                        <Button asChild variant="outline" size="sm" className="h-8" onClick={(e) => e.stopPropagation()}>
+                            <a href={formatUrl(stage.pengajuan.fileUrl)} target="_blank" rel="noopener noreferrer" >
+                                <LinkIcon className="mr-2 h-3.5 w-3.5" /> View
+                            </a>
+                        </Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent className="text-sm space-y-3">
+                 {stage.pengajuan.nomor && 
+                    <div className="flex items-start gap-2">
+                        <FileText className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                        <div>
+                            <p className="font-semibold text-muted-foreground">Nomor Surat</p>
+                            <p><Highlight text={stage.pengajuan.nomor} query={searchTerm} /></p>
+                        </div>
+                    </div>
+                 }
+                <div className="flex items-start gap-2">
+                    <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                        <p className="font-semibold text-muted-foreground">Deskripsi Status</p>
+                        <BulletList text={stage.status.deskripsi} searchTerm={searchTerm} />
+                    </div>
+                </div>
+                {stage.keterangan?.text && (
+                    <div className="flex items-start gap-2">
+                         <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                        <div>
+                             <p className="font-semibold text-muted-foreground">Keterangan</p>
+                             <BulletList text={stage.keterangan.text} searchTerm={searchTerm} />
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+  )};
 
   return (
     <>
@@ -183,16 +203,38 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
                 <div className="flex items-center">Kategori {renderSortIcon('kategori')}</div>
             </TableHead>
             <TableHead className="w-[55%] cursor-pointer" onClick={() => handleSort('firstSubmissionDate')}>
-                <div className="flex items-center">Pengajuan {renderSortIcon('firstSubmissionDate')}</div>
+                <div className="flex items-center">Status & Timeline {renderSortIcon('firstSubmissionDate')}</div>
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {records.map((record, index) => (
-            <TableRow key={record.id} className="cursor-pointer" onClick={() => setRecordToEdit(record)}>
-              <TableCell className="align-top">{index + 1}</TableCell>
-              <TableCell className="align-top font-medium"><Highlight text={record.perihal} query={searchTerm} /></TableCell>
-              <TableCell className="align-top">
+          {records.map((record, index) => {
+            const sortedStages = [...(record.stages || [])].sort((a,b) => {
+                const dateA = a.pengajuan.tanggal ? parseISO(a.pengajuan.tanggal).getTime() : 0;
+                const dateB = b.pengajuan.tanggal ? parseISO(b.pengajuan.tanggal).getTime() : 0;
+                return dateB - dateA;
+            });
+            return (
+            <TableRow key={record.id} className="align-top">
+              <TableCell>{index + 1}</TableCell>
+              <TableCell className="font-medium">
+                <div className="flex flex-col gap-2">
+                    <Highlight text={record.perihal} query={searchTerm} />
+                    <div className="flex items-center gap-2">
+                        <EditRulemakingRecordDialog
+                            record={record}
+                            onRecordUpdate={onUpdate}
+                            onDelete={onDelete}
+                            open={recordToEdit?.id === record.id}
+                            onOpenChange={(open) => setRecordToEdit(open ? record : null)}
+                        />
+                         <Button variant="destructive" size="sm" onClick={(e) => {e.stopPropagation(); onDelete(record);}}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </Button>
+                    </div>
+                </div>
+              </TableCell>
+              <TableCell>
                 <Badge
                   className={cn({
                     'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200': record.kategori === 'PKPS/CASR',
@@ -203,25 +245,26 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
                   <Highlight text={record.kategori} query={searchTerm} />
                 </Badge>
               </TableCell>
-              <TableCell className="align-top">
-                <div className="space-y-2">
-                  {(record.stages || []).map((stage, i) => renderStage(stage, i))}
+              <TableCell>
+                <div className="space-y-4 relative">
+                   {sortedStages.map((stage, i) => (
+                    <div key={stage.pengajuan.nomor || i} className="relative pl-6">
+                      {i < sortedStages.length -1 && <div className="absolute left-[7px] top-4 h-full border-l-2 border-dashed border-border" />}
+                       <div className="absolute left-0 top-3 h-4 w-4 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                       </div>
+                      <div className="ml-4">
+                        {renderStage(stage, i, i === 0)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+          )})}
         </TableBody>
       </Table>
     </div>
-     {recordToEdit && (
-        <EditRulemakingRecordDialog 
-            record={recordToEdit}
-            onRecordUpdate={onUpdate}
-            onDelete={onDelete}
-            open={!!recordToEdit}
-            onOpenChange={(open) => !open && setRecordToEdit(null)}
-        />
-      )}
     </>
   );
 }
