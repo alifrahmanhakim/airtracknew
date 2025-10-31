@@ -215,24 +215,10 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
                 return dateB - dateA;
             });
             return (
-            <TableRow key={record.id} className="align-top">
+            <TableRow key={record.id} className="align-top cursor-pointer" onClick={() => setRecordToEdit(record)}>
               <TableCell>{index + 1}</TableCell>
               <TableCell className="font-medium">
-                <div className="flex flex-col gap-2">
-                    <Highlight text={record.perihal} query={searchTerm} />
-                    <div className="flex items-center gap-2">
-                        <EditRulemakingRecordDialog
-                            record={record}
-                            onRecordUpdate={onUpdate}
-                            onDelete={onDelete}
-                            open={recordToEdit?.id === record.id}
-                            onOpenChange={(open) => setRecordToEdit(open ? record : null)}
-                        />
-                         <Button variant="destructive" size="sm" onClick={(e) => {e.stopPropagation(); onDelete(record);}}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                        </Button>
-                    </div>
-                </div>
+                <Highlight text={record.perihal} query={searchTerm} />
               </TableCell>
               <TableCell>
                 <Badge
@@ -249,7 +235,7 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
                 <div className="space-y-4 relative">
                    {sortedStages.map((stage, i) => (
                     <div key={stage.pengajuan.nomor || i} className="relative pl-6">
-                      {i < sortedStages.length -1 && <div className="absolute left-[7px] top-4 h-full border-l-2 border-dashed border-primary" />}
+                      {i < sortedStages.length -1 && <div className="absolute left-[7px] top-4 h-full border-l-2 border-primary/30" />}
                        <div className="absolute left-0 top-3 h-4 w-4 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
                           <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                        </div>
@@ -265,8 +251,16 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
         </TableBody>
       </Table>
     </div>
+    
+    {recordToEdit && (
+        <EditRulemakingRecordDialog
+            record={recordToEdit}
+            onRecordUpdate={onUpdate}
+            onDelete={onDelete}
+            open={!!recordToEdit}
+            onOpenChange={(open) => setRecordToEdit(open ? recordToEdit : null)}
+        />
+    )}
     </>
   );
 }
-
-    
