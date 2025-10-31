@@ -67,14 +67,15 @@ export default function KegiatanPage() {
 
         const kegiatanQuery = query(collection(db, "kegiatanRecords"));
         const unsubKegiatan = onSnapshot(kegiatanQuery, (snapshot) => {
-            const records = snapshot.docs.map(doc => {
+            const records: Kegiatan[] = [];
+            snapshot.forEach(doc => {
                 const data = doc.data();
-                return { 
+                records.push({ 
                     id: doc.id,
                     ...data,
                     tanggalMulai: data.tanggalMulai?.toDate ? data.tanggalMulai.toDate().toISOString() : data.tanggalMulai,
                     tanggalSelesai: data.tanggalSelesai?.toDate ? data.tanggalSelesai.toDate().toISOString() : data.tanggalSelesai,
-                } as Kegiatan;
+                } as Kegiatan);
             });
             setKegiatanRecords(records);
             setIsLoading(false);
@@ -145,6 +146,7 @@ export default function KegiatanPage() {
             const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
 
             return kegiatanRecords.filter(record => {
+                if (!record.tanggalMulai || !record.tanggalSelesai) return false;
                 const recordStart = parseISO(record.tanggalMulai);
                 const recordEnd = parseISO(record.tanggalSelesai);
                 return isWithinInterval(recordStart, { start: weekStart, end: weekEnd }) ||
@@ -157,6 +159,7 @@ export default function KegiatanPage() {
              const monthEnd = endOfMonth(monthStart);
 
              return kegiatanRecords.filter(record => {
+                if (!record.tanggalMulai || !record.tanggalSelesai) return false;
                 const recordStart = parseISO(record.tanggalMulai);
                 const recordEnd = parseISO(record.tanggalSelesai);
                 return isWithinInterval(recordStart, { start: monthStart, end: monthEnd }) ||
@@ -179,7 +182,6 @@ export default function KegiatanPage() {
 
     const generatePdfWithLogo = (logoDataUrl?: string) => {
         const doc = new jsPDF({ orientation: 'landscape' });
-        let finalY = 0;
 
         const addPageContent = (data: { pageNumber: number }) => {
             if (logoDataUrl && data.pageNumber === 1) {
@@ -211,8 +213,8 @@ export default function KegiatanPage() {
             const textX = (doc.internal.pageSize.width - textWidth) / 2;
             doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
             
-            const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            // This will be replaced by the loop below
+            doc.text(`Page ${data.pageNumber}`, 14, doc.internal.pageSize.height - 10);
         };
         
         const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
@@ -231,21 +233,15 @@ export default function KegiatanPage() {
             startY: 32,
             theme: 'grid',
             headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: (data) => {
-                addPageContent({ pageNumber: data.pageNumber });
-            }
+            didDrawPage: addPageContent,
         });
         
         const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 2; i <= pageCount; i++) {
+        for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             const pageText = `Page ${i} of ${pageCount}`;
             doc.setFontSize(8);
             doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(text, textX, doc.internal.pageSize.height - 10);
         }
         
         doc.save("jadwal_kegiatan.pdf");
@@ -386,7 +382,7 @@ export default function KegiatanPage() {
                 </TabsContent>
 
                 <TabsContent value="analytics">
-                    <KegiatanAnalytics tasks={kegiatanRecords.map(k => ({...k, title: k.subjek, startDate: k.tanggalMulai, dueDate: k.tanggalSelesai, assigneeIds: k.nama} as unknown as Task))} users={allUsers}/>
+                    <KegiatanAnalytics tasks={kegiatanRecords} users={allUsers}/>
                 </TabsContent>
             </Tabs>
 
