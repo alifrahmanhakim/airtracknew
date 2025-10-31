@@ -20,6 +20,8 @@ import { EditRulemakingRecordDialog } from './edit-rulemaking-record-dialog';
 import { cn } from '@/lib/utils';
 import { Highlight } from '../ui/highlight';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 
 type RulemakingTableProps = {
   records: RulemakingRecord[];
@@ -86,6 +88,7 @@ const BulletList = ({ text, searchTerm }: { text: string; searchTerm: string }) 
 
 export function RulemakingTable({ records, onDelete, isLoading, onUpdate, searchTerm, sort, setSort }: RulemakingTableProps) {
   const [recordToEdit, setRecordToEdit] = React.useState<RulemakingRecord | null>(null);
+  const { toast } = useToast();
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
@@ -132,6 +135,43 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
         return `https://${url}`;
     }
     return url;
+  };
+
+  const handleExport = () => {
+    if (records.length === 0) {
+        toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
+        return;
+    }
+
+    const dataToExport = records.flatMap(record => {
+        if (record.stages && record.stages.length > 0) {
+            return record.stages.map(stage => ({
+                'Perihal': record.perihal,
+                'Kategori': record.kategori,
+                'Tanggal Pengajuan': stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'yyyy-MM-dd') : 'N/A',
+                'Nomor Surat': stage.pengajuan.nomor || 'N/A',
+                'Keterangan Pengajuan': stage.pengajuan.keteranganPengajuan || 'N/A',
+                'Attachment Link': stage.pengajuan.fileUrl || 'N/A',
+                'Deskripsi Status': stage.status.deskripsi.trim(),
+                'Keterangan': stage.keterangan?.text || 'N/A',
+            }));
+        }
+        return [{
+            'Perihal': record.perihal,
+            'Kategori': record.kategori,
+            'Tanggal Pengajuan': 'N/A',
+            'Nomor Surat': 'N/A',
+            'Keterangan Pengajuan': 'N/A',
+            'Attachment Link': 'N/A',
+            'Deskripsi Status': 'No stages available',
+            'Keterangan': 'N/A',
+        }];
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rulemaking Monitoring");
+    XLSX.writeFile(workbook, "rulemaking_monitoring_export.xlsx");
   };
   
   const renderStage = (stage: Stage, index: number, isLast: boolean) => {
