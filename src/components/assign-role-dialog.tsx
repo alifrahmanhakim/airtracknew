@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -24,6 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -38,6 +38,7 @@ import { updateUser } from '@/lib/actions/user';
 import { userDepartments } from '@/lib/data';
 
 const formSchema = z.object({
+  name: z.string().min(1, 'Name is required.'),
   role: z.enum(['Administrator', 'Sub-Directorate Head', 'Team Lead', 'PIC', 'PIC Assistant', 'Functional']),
   department: z.enum(['Pegawai STD', 'PEL', 'AIR', 'SPU', 'OPS', 'DGCA', 'K/L lain']).optional(),
 });
@@ -61,13 +62,14 @@ export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDial
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: user.name,
       role: user.role,
       department: user.department || undefined,
     },
   });
 
   const onSubmit = async (data: FormValues) => {
-    if (data.role === user.role && data.department === user.department) {
+    if (data.role === user.role && data.department === user.department && data.name === user.name) {
       setOpen(false);
       return;
     }
@@ -111,6 +113,19 @@ export function AssignRoleDialog({ user, onUserUpdate, isAdmin }: AssignRoleDial
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="role"

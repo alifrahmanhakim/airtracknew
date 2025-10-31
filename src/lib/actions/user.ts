@@ -6,7 +6,7 @@ import { doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { sendPasswordResetEmail, type AuthError } from "firebase/auth";
 import type { User } from '../types';
 
-export async function updateUser(userId: string, data: Partial<Pick<User, 'role' | 'department'>>) {
+export async function updateUser(userId: string, data: Partial<Pick<User, 'name' | 'role' | 'department'>>) {
     try {
         const userRef = doc(db, 'users', userId);
         await updateDoc(userRef, data);
