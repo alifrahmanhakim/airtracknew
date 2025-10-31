@@ -182,30 +182,19 @@ export default function KegiatanPage() {
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0);
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0);
             const dataUrl = canvas.toDataURL('image/png');
-            
+            generatePdfWithLogo(dataUrl);
+        };
+        
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
+            generatePdfWithLogo();
+        }
+
+        const generatePdfWithLogo = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
-            let startY = 25;
-
-            doc.setFontSize(18);
-            doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, startY);
-            startY += 8;
-
-            let subtitle = '';
-            if (filterMode === 'week') {
-                const weekStart = parseISO(selectedWeek);
-                const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                const weekNumber = getISOWeek(weekStart);
-                subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-            } else {
-                const monthStart = parseISO(selectedMonth);
-                subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-            }
-
-            doc.setFontSize(12);
-            doc.text(subtitle, 14, startY);
-            startY += 12;
 
             const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
             const tableRows = filteredRecords.map(record => [
@@ -220,50 +209,64 @@ export default function KegiatanPage() {
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
-                startY: startY,
+                startY: 32,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                 didDrawPage: (data) => {
-                     // Add logo only on the first page
+                    // Add logo only on the first page
                     if (data.pageNumber === 1) {
-                         const aspectRatio = img.width / img.height;
-                         const logoWidth = 30;
-                         const logoHeight = logoWidth / aspectRatio;
-                         doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                        doc.setFontSize(18);
+                        doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+
+                        let subtitle = '';
+                        if (filterMode === 'week') {
+                            const weekStart = parseISO(selectedWeek);
+                            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                            const weekNumber = getISOWeek(weekStart);
+                            subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                        } else {
+                            const monthStart = parseISO(selectedMonth);
+                            subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                        }
+                        doc.setFontSize(12);
+                        doc.text(subtitle, 14, 26);
+                        
+                        if (logoDataUrl) {
+                            const aspectRatio = img.width / img.height;
+                            const logoWidth = 30;
+                            const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                            if (logoHeight > 0) {
+                                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                            }
+                        }
                     }
 
-                    // Footer
+                    // Footer for all pages
+                    const pageCount = (doc as any).internal.getNumberOfPages();
                     doc.setFontSize(8);
-                    const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                    const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                    const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                    doc.text(text, textX, doc.internal.pageSize.height - 10);
                     
-                    const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                    const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                    const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                    const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                    doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+                    
+                    const pageText = `Page ${data.pageNumber} of ${pageCount}`;
                     doc.text(pageText, 14, doc.internal.pageSize.height - 10);
                 },
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 2; i <= pageCount; i++) { // Loop from page 2
-                doc.setPage(i);
-                const pageText = `Page ${i} of ${pageCount}`;
-                doc.setFontSize(8);
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            if (pageCount > 1) {
+                for (let i = 2; i <= pageCount; i++) {
+                    doc.setPage(i);
+                     const pageText = `Page ${i} of ${pageCount}`;
+                    doc.setFontSize(8);
+                    doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+                }
             }
 
             doc.save("jadwal_kegiatan.pdf");
         };
-
-        img.onerror = () => {
-             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF." });
-             // Proceed without the logo if it fails to load
-             handleExportPdf();
-        }
     };
 
 
