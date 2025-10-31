@@ -135,8 +135,9 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
   };
   
   const renderStage = (stage: Stage, index: number, isLast: boolean) => {
-    const statusColor = stage.status.deskripsi.toLowerCase().includes('selesai') ? 'border-green-500 bg-green-50 dark:bg-green-950' : 
-                        stage.status.deskripsi.toLowerCase().includes('dikembalikan') ? 'border-red-500 bg-red-50 dark:bg-red-950' :
+    const lowerDesc = stage.status.deskripsi.toLowerCase();
+    const statusColor = lowerDesc.includes('selesai') ? 'border-green-500 bg-green-50 dark:bg-green-950' : 
+                        lowerDesc.includes('dikembalikan') ? 'border-red-500 bg-red-50 dark:bg-red-950' :
                         'border-border';
     return (
         <Card key={index} className={cn("relative", isLast ? statusColor : '')}>
