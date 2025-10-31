@@ -12,7 +12,7 @@ import { Kegiatan } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { deleteKegiatan } from '@/lib/actions/kegiatan';
-import { Loader2, AlertTriangle, Plus, List, CalendarIcon } from 'lucide-react';
+import { Loader2, AlertTriangle, Plus, List, CalendarIcon, ArrowLeft, Printer } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,9 @@ import { id } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { motion } from 'framer-motion';
-
+import Link from 'next/link';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics').then(mod => mod.KegiatanAnalytics), {
     ssr: false,
@@ -164,6 +166,43 @@ export default function KegiatanPage() {
             });
         }
     }, [records, selectedWeek, selectedMonth, filterMode]);
+    
+    const handleExportPdf = () => {
+        if (filteredRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.setFontSize(18);
+        doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+
+        const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
+        const tableRows = filteredRecords.map(record => [
+            record.subjek,
+            format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
+            format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
+            record.nama.join(', '),
+            record.lokasi,
+            record.catatan || '-',
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                doc.setFontSize(8);
+                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = doc.internal.pageSize.width - textWidth - 14;
+                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            }
+        });
+
+        doc.save("jadwal_kegiatan.pdf");
+    };
 
 
     return (
@@ -173,15 +212,25 @@ export default function KegiatanPage() {
                 <Card className="mb-4 bg-background/80 backdrop-blur-sm">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                            <div className="flex-1">
-                                <CardTitle className="text-3xl font-bold flex items-center gap-2">
-                                    <List />
-                                    Kegiatan Subdirektorat Standardisasi
-                                </CardTitle>
-                                <CardDescription className="mt-2">
-                                    Input, lacak, dan analisis semua kegiatan Subdirektorat Standardisasi.
-                                </CardDescription>
+                            <div className="flex items-center gap-4 flex-1">
+                                 <Button asChild variant="outline" size="icon" className="transition-all hover:-translate-x-1">
+                                    <Link href="/my-dashboard">
+                                        <ArrowLeft className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                                <div>
+                                    <CardTitle className="text-3xl font-bold flex items-center gap-2">
+                                        <List />
+                                        Kegiatan Subdirektorat Standardisasi
+                                    </CardTitle>
+                                    <CardDescription className="mt-2">
+                                        Input, lacak, dan analisis semua kegiatan Subdirektorat Standardisasi.
+                                    </CardDescription>
+                                </div>
                             </div>
+                             <Button variant="outline" onClick={handleExportPdf}>
+                                <Printer className="mr-2 h-4 w-4" /> Export to PDF
+                            </Button>
                         </div>
                          <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <TabsList>
