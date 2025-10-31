@@ -276,7 +276,7 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
                 <div className="space-y-4 relative">
                    {sortedStages.map((stage, i) => (
                     <div key={stage.pengajuan.nomor || i} className="relative pl-6">
-                      {i < sortedStages.length -1 && <div className="absolute left-[7px] top-4 h-full border-l-2 border-primary/30" />}
+                      {i < sortedStages.length -1 && <div className="absolute left-[7px] top-4 h-full border-l-2 border-dashed border-primary" />}
                        <div className="absolute left-0 top-3 h-4 w-4 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
                           <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                        </div>
