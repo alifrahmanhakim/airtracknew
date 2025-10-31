@@ -167,104 +167,97 @@ export default function KegiatanPage() {
         }
     }, [records, selectedWeek, selectedMonth, filterMode]);
     
-    const handleExportPdf = () => {
-        if (filteredRecords.length === 0) {
-            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
-            return;
-        }
+   const handleExportPdf = () => {
+    if (filteredRecords.length === 0) {
+        toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+        return;
+    }
 
-        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.src = logoUrl;
+    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            generatePdfWithLogo(dataUrl);
-        };
-        
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
-            generatePdfWithLogo();
-        }
-
-        const generatePdfWithLogo = (logoDataUrl?: string) => {
-            const doc = new jsPDF({ orientation: 'landscape' });
-
-            const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
-            const tableRows = filteredRecords.map(record => [
-                record.subjek,
-                format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
-                format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-                record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
-                record.lokasi,
-                record.catatan || '-',
-            ]);
-            
-            autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                startY: 32,
-                theme: 'grid',
-                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: (data) => {
-                    // Header
-                    if (data.pageNumber === 1) {
-                        if (logoDataUrl) {
-                            const aspectRatio = img.width / img.height;
-                            const logoWidth = 30;
-                            const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                            if (logoHeight > 0) {
-                                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                            }
-                        }
-                        
-                        doc.setFontSize(18);
-                        doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
-
-                        let subtitle = '';
-                        if (filterMode === 'week') {
-                            const weekStart = parseISO(selectedWeek);
-                            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                            const weekNumber = getISOWeek(weekStart);
-                            subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-                        } else {
-                            const monthStart = parseISO(selectedMonth);
-                            subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-                        }
-                        doc.setFontSize(12);
-                        doc.text(subtitle, 14, 26);
-                    }
-
-                    // Footer
-                    doc.setFontSize(8);
-                    
-                    const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                    const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                    const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                    doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-                    
-                    const pageText = `Page ${data.pageNumber} of `;
-                    doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-                },
-            });
-            
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                 doc.setPage(i);
-                 const pageString = `Page ${i} of ${pageCount}`;
-                 doc.text(pageString, 14, doc.internal.pageSize.height - 10);
-            }
-
-            doc.save("jadwal_kegiatan.pdf");
-        };
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        generatePdfWithLogo(dataUrl);
     };
+    
+    img.onerror = () => {
+        toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
+        generatePdfWithLogo();
+    }
+
+    const generatePdfWithLogo = (logoDataUrl?: string) => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+
+        const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
+        const tableRows = filteredRecords.map(record => [
+            record.subjek,
+            format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
+            format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
+            record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
+            record.lokasi,
+            record.catatan || '-',
+        ]);
+        
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 32,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                if (data.pageNumber === 1) {
+                    if (logoDataUrl) {
+                        const aspectRatio = img.width / img.height;
+                        const logoWidth = 30;
+                        const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                    
+                    doc.setFontSize(18);
+                    doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+
+                    let subtitle = '';
+                    if (filterMode === 'week') {
+                        const weekStart = parseISO(selectedWeek);
+                        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                        const weekNumber = getISOWeek(weekStart);
+                        subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                    } else {
+                        const monthStart = parseISO(selectedMonth);
+                        subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                    }
+                    doc.setFontSize(12);
+                    doc.text(subtitle, 14, 26);
+                }
+
+                doc.setFontSize(8);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+            },
+        });
+        
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+             doc.setPage(i);
+             const pageString = `Page ${i} of ${pageCount}`;
+             doc.setFontSize(8);
+             doc.text(pageString, 14, doc.internal.pageSize.height - 10);
+        }
+
+        doc.save("jadwal_kegiatan.pdf");
+    };
+};
 
 
     return (
