@@ -181,7 +181,7 @@ export default function KegiatanPage() {
             record.subjek,
             format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
             format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-            record.nama.join(', '),
+            record.nama.join('\n'),
             record.lokasi,
             record.catatan || '-',
         ]);
