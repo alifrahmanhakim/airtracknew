@@ -114,8 +114,8 @@ export async function addRulemakingProject(projectData: unknown) {
     }
 }
 
-
-export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist' | 'team'> & { team: string[] }) {
+// REMOVED 'use server' and export from addTimKerjaProject to make it a regular function
+async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'projectType' | 'tasks' | 'documents' | 'subProjects' | 'notes' | 'checklist' | 'team'> & { team: string[] }) {
     try {
         const actor = await getCurrentUser(projectData.ownerId);
         // Fetch full user objects for the team
@@ -156,6 +156,10 @@ export async function addTimKerjaProject(projectData: Omit<Project, 'id' | 'proj
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
+
+// Export the function so it can be used by other server actions
+export { addTimKerjaProject };
+
 
 export async function deleteAllTimKerjaProjects() {
     try {
