@@ -165,14 +165,11 @@
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background-image: none !important;
     background: white !important;
     color: black !important;
   }
   
-  [data-sidebar="sidebar"],
-  [data-sidebar="trigger"],
-  .print\:hidden {
+  .print-hidden, [data-sidebar="sidebar"], [data-sidebar="trigger"], .print\:hidden {
     display: none !important;
   }
 
@@ -215,7 +212,6 @@
   }
 
   .dark {
-    color-scheme: light !important;
     --background: 240 10% 98% !important;
     --foreground: 222 22% 11% !important;
     --card: 0 0% 100% !important;
@@ -267,4 +263,3 @@
         opacity: .5;
     }
 }
-
