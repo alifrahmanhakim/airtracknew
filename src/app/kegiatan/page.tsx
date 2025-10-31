@@ -1,19 +1,18 @@
 
-
 'use client';
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Kegiatan } from '@/lib/types';
+import { Kegiatan, Project, Task, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { deleteKegiatan } from '@/lib/actions/kegiatan';
-import { Loader2, AlertTriangle, Plus, List, CalendarIcon, ArrowLeft, Printer } from 'lucide-react';
+import { deleteTask } from '@/lib/actions/project';
+import { Loader2, AlertTriangle, List, CalendarIcon, ArrowLeft, Printer } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,13 +39,16 @@ const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics'
     loading: () => <Skeleton className="h-[600px] w-full" />
 });
 
+const PROJECT_NAME = "Kegiatan Subdirektorat";
+
 export default function KegiatanPage() {
-    const [records, setRecords] = React.useState<Kegiatan[]>([]);
+    const [kegiatanProject, setKegiatanProject] = React.useState<Project | null>(null);
+    const [allUsers, setAllUsers] = React.useState<User[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
     
-    const [recordToDelete, setRecordToDelete] = React.useState<Kegiatan | null>(null);
+    const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
     
     const [filterMode, setFilterMode] = React.useState<'week' | 'month'>('week');
@@ -57,33 +59,34 @@ export default function KegiatanPage() {
     const [slider, setSlider] = React.useState({ left: 0, width: 0 });
 
     React.useEffect(() => {
-        const q = query(collection(db, "kegiatanRecords"), orderBy("tanggalMulai", "desc"));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const recordsFromDb: Kegiatan[] = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                recordsFromDb.push({ 
-                    id: doc.id,
-                    ...data,
-                    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
-                } as Kegiatan);
-            });
-            setRecords(recordsFromDb);
+        const usersQuery = query(collection(db, "users"));
+        const unsubUsers = onSnapshot(usersQuery, (snapshot) => {
+            setAllUsers(snapshot.docs.map(d => ({...d.data(), id: d.id } as User)));
+        });
+
+        const projectQuery = query(collection(db, "timKerjaProjects"), where("name", "==", PROJECT_NAME));
+        const unsubProject = onSnapshot(projectQuery, (snapshot) => {
+            if (!snapshot.empty) {
+                const projectDoc = snapshot.docs[0];
+                setKegiatanProject({ ...projectDoc.data(), id: projectDoc.id } as Project);
+            } else {
+                setKegiatanProject(null);
+            }
             setIsLoading(false);
         }, (error) => {
-            console.error("Error fetching records: ", error);
+            console.error("Error fetching kegiatan project: ", error);
             toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Failed to fetch data from the database.',
+                description: 'Failed to fetch activities data.',
             });
             setIsLoading(false);
         });
 
-
         return () => {
-            unsubscribe();
-        }
+            unsubUsers();
+            unsubProject();
+        };
     }, [toast]);
     
     React.useEffect(() => {
@@ -95,37 +98,28 @@ export default function KegiatanPage() {
       }, [filterMode, weeklyRef, monthlyRef]);
 
 
-    const handleDeleteRequest = (record: Kegiatan) => {
-        setRecordToDelete(record);
+    const handleDeleteRequest = (task: Task) => {
+        setTaskToDelete(task);
     };
 
-    const handleRecordAddOrUpdate = (record: Kegiatan) => {
-        setRecords(prev => {
-            const existingIndex = prev.findIndex(r => r.id === record.id);
-            if (existingIndex > -1) {
-                const newRecords = [...prev];
-                newRecords[existingIndex] = record;
-                return newRecords;
-            }
-            return [record, ...prev];
-        });
-        setActiveTab('records');
+    const handleTaskChange = (updatedProject: Project) => {
+        setKegiatanProject(updatedProject);
     };
     
     const confirmDelete = async () => {
-        if (!recordToDelete) return;
+        if (!taskToDelete || !kegiatanProject) return;
 
         setIsDeleting(true);
-        const result = await deleteKegiatan(recordToDelete.id);
+        const result = await deleteTask(kegiatanProject.id, taskToDelete.id, kegiatanProject.projectType);
         setIsDeleting(false);
 
-        if (result.success) {
-            toast({ title: "Record Deleted", description: "The activity record has been removed." });
-            setRecords(prev => prev.filter(r => r.id !== recordToDelete.id));
+        if (result.success && result.tasks) {
+            setKegiatanProject(prev => prev ? {...prev, tasks: result.tasks!} : null);
+            toast({ title: "Task Deleted", description: "The activity has been removed." });
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         }
-        setRecordToDelete(null);
+        setTaskToDelete(null);
     };
     
     const currentYear = getYear(new Date());
@@ -138,34 +132,36 @@ export default function KegiatanPage() {
         start: startOfYear(new Date(currentYear, 0, 1)),
         end: endOfYear(new Date(currentYear, 11, 31)),
     });
+    
+    const tasks = kegiatanProject?.tasks || [];
 
-    const filteredRecords = React.useMemo(() => {
+    const filteredRecords: Task[] = React.useMemo(() => {
         if (filterMode === 'week') {
-            if (!selectedWeek) return records;
+            if (!selectedWeek) return tasks;
             const weekStart = parseISO(selectedWeek);
             const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
 
-            return records.filter(record => {
-                const recordStart = parseISO(record.tanggalMulai);
-                const recordEnd = parseISO(record.tanggalSelesai);
+            return tasks.filter(record => {
+                const recordStart = parseISO(record.startDate);
+                const recordEnd = parseISO(record.dueDate);
                 return isWithinInterval(recordStart, { start: weekStart, end: weekEnd }) ||
                        isWithinInterval(recordEnd, { start: weekStart, end: weekEnd }) ||
                        (recordStart < weekStart && recordEnd > weekEnd);
             });
         } else { // filterMode === 'month'
-             if (!selectedMonth) return records;
+             if (!selectedMonth) return tasks;
              const monthStart = parseISO(selectedMonth);
              const monthEnd = endOfMonth(monthStart);
 
-             return records.filter(record => {
-                const recordStart = parseISO(record.tanggalMulai);
-                const recordEnd = parseISO(record.tanggalSelesai);
+             return tasks.filter(record => {
+                const recordStart = parseISO(record.startDate);
+                const recordEnd = parseISO(record.dueDate);
                 return isWithinInterval(recordStart, { start: monthStart, end: monthEnd }) ||
                        isWithinInterval(recordEnd, { start: monthStart, end: monthEnd }) ||
                        (recordStart < monthStart && recordEnd > monthEnd);
             });
         }
-    }, [records, selectedWeek, selectedMonth, filterMode]);
+    }, [tasks, selectedWeek, selectedMonth, filterMode]);
     
    const handleExportPdf = () => {
     if (filteredRecords.length === 0) {
@@ -178,35 +174,55 @@ export default function KegiatanPage() {
     img.crossOrigin = 'Anonymous';
     img.src = logoUrl;
 
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
-        generatePdfWithLogo(dataUrl);
-    };
-    
-    img.onerror = () => {
-        toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
-        generatePdfWithLogo();
-    }
-
     const generatePdfWithLogo = (logoDataUrl?: string) => {
         const doc = new jsPDF({ orientation: 'landscape' });
+        
+        const addPageContent = (data: { pageNumber: number, pageCount: number }) => {
+            if (data.pageNumber === 1) {
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
+                
+                doc.setFontSize(18);
+                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
 
+                let subtitle = '';
+                if (filterMode === 'week') {
+                    const weekStart = parseISO(selectedWeek);
+                    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                    const weekNumber = getISOWeek(weekStart);
+                    subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                } else {
+                    const monthStart = parseISO(selectedMonth);
+                    subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                }
+                doc.setFontSize(12);
+                doc.text(subtitle, 14, 26);
+            }
+            
+            doc.setFontSize(8);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (doc.internal.pageSize.width - textWidth) / 2;
+            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+            
+            const pageText = `Page ${data.pageNumber} of ${data.pageCount}`;
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        };
+        
         const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
         const tableRows = filteredRecords.map(record => [
-            record.subjek,
-            format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
-            format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-            record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
-            record.lokasi,
-            record.catatan || '-',
+            record.title,
+            format(parseISO(record.startDate), 'dd MMM yyyy'),
+            format(parseISO(record.dueDate), 'dd MMM yyyy'),
+            (record.assigneeIds || []).map((id, index) => `${index + 1}. ${allUsers.find(u => u.id === id)?.name || 'Unknown'}`).join('\n'),
+            kegiatanProject?.name, // This part might need adjustment based on how 'lokasi' is stored now
+            'N/A', // Notes are not part of task schema
         ]);
-        
+
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
@@ -214,49 +230,28 @@ export default function KegiatanPage() {
             theme: 'grid',
             headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
             didDrawPage: (data) => {
-                if (data.pageNumber === 1) {
-                    if (logoDataUrl) {
-                        const aspectRatio = img.width / img.height;
-                        const logoWidth = 30;
-                        const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                    }
-                    
-                    doc.setFontSize(18);
-                    doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
-
-                    let subtitle = '';
-                    if (filterMode === 'week') {
-                        const weekStart = parseISO(selectedWeek);
-                        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                        const weekNumber = getISOWeek(weekStart);
-                        subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-                    } else {
-                        const monthStart = parseISO(selectedMonth);
-                        subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-                    }
-                    doc.setFontSize(12);
-                    doc.text(subtitle, 14, 26);
-                }
-
-                doc.setFontSize(8);
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-            },
+                addPageContent({ pageNumber: data.pageNumber, pageCount: (doc as any).internal.getNumberOfPages() });
+            }
         });
         
         const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-             doc.setPage(i);
-             const pageString = `Page ${i} of ${pageCount}`;
-             doc.setFontSize(8);
-             doc.text(pageString, 14, doc.internal.pageSize.height - 10);
+        if (pageCount > 1) { // Re-iterate to fix total page count
+             for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                const pageText = `Page ${i} of ${pageCount}`;
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            }
         }
 
         doc.save("jadwal_kegiatan.pdf");
     };
+
+    img.onload = () => generatePdfWithLogo(img.src);
+    img.onerror = () => {
+        toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
+        generatePdfWithLogo();
+    }
 };
 
 
@@ -365,26 +360,35 @@ export default function KegiatanPage() {
                         </CardDescription>
                         </CardHeader>
                         <CardContent>
-                           <KegiatanForm onFormSubmit={handleRecordAddOrUpdate} />
+                           <KegiatanForm 
+                              onFormSubmit={(newProject) => {
+                                  setKegiatanProject(newProject);
+                                  setActiveTab('records');
+                              }} 
+                              allUsers={allUsers}
+                              kegiatanProject={kegiatanProject}
+                            />
                         </CardContent>
                     </Card>
                 </TabsContent>
                 
                 <TabsContent value="records">
                     <KegiatanTable 
-                        records={filteredRecords}
+                        tasks={filteredRecords}
                         onDelete={handleDeleteRequest}
-                        onUpdate={handleRecordAddOrUpdate}
+                        onUpdate={handleTaskChange}
                         isLoading={isLoading}
+                        teamMembers={kegiatanProject?.team || []}
+                        projectId={kegiatanProject?.id || ''}
                     />
                 </TabsContent>
 
                 <TabsContent value="analytics">
-                    <KegiatanAnalytics records={filteredRecords} />
+                    <KegiatanAnalytics tasks={tasks} users={allUsers}/>
                 </TabsContent>
             </Tabs>
 
-            <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
+            <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader className="text-center items-center">
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
@@ -392,7 +396,7 @@ export default function KegiatanPage() {
                         </div>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete the record for: <span className="font-semibold">{recordToDelete?.subjek}</span>.
+                            This will permanently delete the record for: <span className="font-semibold">{taskToDelete?.title}</span>.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -408,3 +412,4 @@ export default function KegiatanPage() {
         </div>
     );
 }
+

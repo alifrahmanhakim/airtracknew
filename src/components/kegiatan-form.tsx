@@ -24,10 +24,9 @@ import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import * as React from 'react';
 import { addKegiatan } from '@/lib/actions/kegiatan';
 import { useToast } from '@/hooks/use-toast';
-import type { Kegiatan, User } from '@/lib/types';
+import type { Kegiatan, User, Project, Task } from '@/lib/types';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { kegiatanSubditUsers } from '@/lib/data';
 
 const kegiatanFormSchema = z.object({
     id: z.string().optional(),
@@ -45,20 +44,30 @@ const kegiatanFormSchema = z.object({
 type KegiatanFormValues = z.infer<typeof kegiatanFormSchema>;
 
 type KegiatanFormProps = {
-    onFormSubmit: (data: Kegiatan) => void;
-    kegiatan?: Kegiatan;
+    onFormSubmit: (data: Project) => void;
+    kegiatan?: Task; // Now receives a Task
+    allUsers: User[];
+    kegiatanProject: Project | null;
 };
 
-export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
+export function KegiatanForm({ onFormSubmit, kegiatan, allUsers, kegiatanProject }: KegiatanFormProps) {
     const [isLoading, setIsLoading] = React.useState(false);
     const { toast } = useToast();
+
+    const userOptions: MultiSelectOption[] = React.useMemo(() => 
+        allUsers.map(u => ({ value: u.id, label: u.name }))
+    , [allUsers]);
 
     const form = useForm<KegiatanFormValues>({
         resolver: zodResolver(kegiatanFormSchema),
         defaultValues: kegiatan ? {
-            ...kegiatan,
-            tanggalMulai: new Date(kegiatan.tanggalMulai),
-            tanggalSelesai: new Date(kegiatan.tanggalSelesai),
+            id: kegiatan.id,
+            subjek: kegiatan.title,
+            tanggalMulai: new Date(kegiatan.startDate),
+            tanggalSelesai: new Date(kegiatan.dueDate),
+            nama: kegiatan.assigneeIds || [],
+            lokasi: kegiatanProject?.name || '', // Placeholder for now
+            catatan: '', // Notes not directly on task
         } : {
             subjek: '',
             nama: [],
@@ -71,10 +80,9 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
         setIsLoading(true);
         const result = await addKegiatan({
             ...data,
-            id: kegiatan?.id,
             tanggalMulai: format(data.tanggalMulai, 'yyyy-MM-dd'),
             tanggalSelesai: format(data.tanggalSelesai, 'yyyy-MM-dd'),
-        });
+        }, allUsers);
 
         setIsLoading(false);
 
@@ -82,7 +90,7 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
             onFormSubmit(result.data);
             toast({
                 title: `Activity ${kegiatan ? 'Updated' : 'Added'}`,
-                description: `"${data.subjek}" has been saved.`,
+                description: `"${data.subjek}" has been saved as a task.`,
             });
             if (!kegiatan) {
                 form.reset({
@@ -179,7 +187,7 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
                             <FormLabel>Nama yang Terlibat</FormLabel>
                             <FormControl>
                                 <MultiSelect
-                                    options={kegiatanSubditUsers}
+                                    options={userOptions}
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
                                     placeholder="Select team members..."
