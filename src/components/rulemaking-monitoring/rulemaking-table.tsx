@@ -153,7 +153,7 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
                     {stage.pengajuan.fileUrl && (
                         <Button asChild variant="outline" size="sm" className="h-8" onClick={(e) => e.stopPropagation()}>
                             <a href={formatUrl(stage.pengajuan.fileUrl)} target="_blank" rel="noopener noreferrer" >
-                                <LinkIcon className="mr-2 h-3.5 w-3.5" /> View
+                                <LinkIcon className="mr-2 h-3.5 w-3.5" /> View Attachment
                             </a>
                         </Button>
                     )}
@@ -268,3 +268,5 @@ export function RulemakingTable({ records, onDelete, isLoading, onUpdate, search
     </>
   );
 }
+
+    
