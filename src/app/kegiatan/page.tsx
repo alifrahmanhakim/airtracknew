@@ -39,27 +39,6 @@ const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics'
     loading: () => <Skeleton className="h-[600px] w-full" />
 });
 
-// Helper function to add image to PDF
-const addImageToPdf = (doc: jsPDF, imageUrl: string, callback: (imageDataUrl: string) => void) => {
-    const img = new Image();
-    img.crossOrigin = 'Anonymous'; // Important for CORS
-    img.src = imageUrl;
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL('image/png');
-        callback(dataURL); // Proceed with saving after image is loaded
-    };
-    img.onerror = () => {
-        console.error("Failed to load logo image for PDF export.");
-        callback(''); // Proceed even if image fails
-    }
-};
-
-
 export default function KegiatanPage() {
     const [records, setRecords] = React.useState<Kegiatan[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -192,11 +171,14 @@ export default function KegiatanPage() {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
-        const doc = new jsPDF({ orientation: 'landscape' });
+
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
-        let logoDataUrl = ''; // To store the base64 logo
+        let logoDataUrl = '';
+        let logoHeight = 10;
+        const logoWidth = 30;
 
         const addContentAndSave = () => {
+            const doc = new jsPDF({ orientation: 'landscape' });
             let startY = 20;
 
             doc.setFontSize(18);
@@ -228,17 +210,18 @@ export default function KegiatanPage() {
                 record.catatan || '-',
             ]);
             
-            const addPageContent = (pageNumber: number) => {
-                if (logoDataUrl) {
-                     doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+            const addPageContent = (data: { pageNumber: number }) => {
+                if (logoDataUrl && data.pageNumber === 1) {
+                     doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
                 }
+                
                 doc.setFontSize(8);
                 const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
                 const textX = doc.internal.pageSize.width - textWidth - 14;
                 doc.text(text, textX, doc.internal.pageSize.height - 10);
 
-                const pageText = `Page ${pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
                 doc.text(pageText, 14, doc.internal.pageSize.height - 10);
             };
 
@@ -248,9 +231,7 @@ export default function KegiatanPage() {
                 startY: startY,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: (data) => {
-                   addPageContent(data.pageNumber);
-                }
+                didDrawPage: addPageContent,
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
@@ -264,7 +245,7 @@ export default function KegiatanPage() {
             doc.save("jadwal_kegiatan.pdf");
         };
         
-         const img = new Image();
+        const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
         img.onload = () => {
@@ -274,6 +255,7 @@ export default function KegiatanPage() {
             const ctx = canvas.getContext('2d');
             ctx?.drawImage(img, 0, 0);
             logoDataUrl = canvas.toDataURL('image/png');
+            logoHeight = (img.height / img.width) * logoWidth;
             addContentAndSave();
         };
         img.onerror = () => {
