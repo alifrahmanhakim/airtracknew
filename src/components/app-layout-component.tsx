@@ -33,6 +33,7 @@ import {
     CalendarDays,
     Sparkles,
     CheckSquare,
+    CalendarX,
 } from 'lucide-react';
 import Image from 'next/image';
 
