@@ -34,6 +34,7 @@ import {
     Sparkles,
     CheckSquare,
     CalendarX,
+    UserPen,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -411,15 +412,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover/task-btn:opacity-75 transition duration-1000 animate-gradient-move"></div>
                         <CardContent className="relative p-3">
                             <div className="flex items-center w-full mb-2">
-                                <ListTodo className="mr-2" />
+                                <UserPen className="mr-2" />
                                 <span className="font-semibold">My Tasks</span>
                             </div>
                             <div className="space-y-1.5 text-xs">
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Progress</span>
-                                    <span className="font-bold">{myTaskStats.total - myTaskStats.active - myTaskStats.overdue} / {myTaskStats.total}</span>
+                                    <span className="font-bold">{myTaskStats.total - myTaskStats.active} / {myTaskStats.total}</span>
                                 </div>
-                                <Progress value={myTaskStats.completionPercentage} className="h-1.5" />
+                                <Progress value={myTaskStats.completionPercentage} />
                                 <div className="flex justify-between pt-1">
                                     <span className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-blue-500" /> Active: {myTaskStats.active}</span>
                                     <span className="flex items-center gap-1.5"><CalendarX className="h-3 w-3 text-red-500" /> Overdue: {myTaskStats.overdue}</span>
