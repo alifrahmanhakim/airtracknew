@@ -32,6 +32,7 @@ import {
     Activity,
     CalendarDays,
     Sparkles,
+    CheckSquare,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -76,6 +77,7 @@ import { Progress } from '@/components/ui/progress';
 import { MyTasksDialog } from '@/components/my-tasks-dialog';
 import { WhatsNewDialog } from './whats-new-dialog';
 import { useTheme } from 'next-themes';
+import { Card, CardContent } from './ui/card';
 
 const navItems = {
     dashboards: [
@@ -408,24 +410,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarContent>
               <SidebarGroup>
                 <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start relative group/task-btn overflow-hidden"
+                    <Card
+                        className="w-full relative group/task-btn overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => setIsMyTasksDialogOpen(true)}
                     >
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover/task-btn:opacity-75 transition duration-1000 animate-gradient-move"></div>
-                        <div className="relative flex flex-col items-start w-full">
-                            <div className="flex items-center w-full">
+                        <CardContent className="relative p-3">
+                            <div className="flex items-center w-full mb-2">
                                 <ListTodo className="mr-2" />
                                 <span className="font-semibold">My Tasks</span>
-                                <span className="ml-auto text-xs text-muted-foreground">
-                                    {myTaskStats.done} / {myTaskStats.total}
-                                </span>
                             </div>
-                             <Progress value={myTaskStats.completionPercentage} className="h-1 mt-1.5" />
-                        </div>
-                    </Button>
+                            <div className="space-y-1.5 text-xs">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Progress</span>
+                                    <span className="font-bold">{myTaskStats.done} / {myTaskStats.total}</span>
+                                </div>
+                                <Progress value={myTaskStats.completionPercentage} className="h-1.5" />
+                                <div className="flex justify-between pt-1">
+                                    <span className="flex items-center gap-1.5"><ListTodo className="h-3 w-3 text-gray-500" /> To Do: {myTaskStats.todo}</span>
+                                    <span className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-blue-500" /> In Progress: {myTaskStats.inProgress}</span>
+                                    <span className="flex items-center gap-1.5"><CheckSquare className="h-3 w-3 text-green-500" /> Done: {myTaskStats.done}</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
               <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
               <SidebarMenu>
