@@ -232,6 +232,10 @@ export default function RulemakingMonitoringPage() {
 
         const tableColumn = ["Tanggal", "No. Surat", "Keterangan Pengajuan", "Status", "Keterangan", "Attachment"];
         
+        doc.setFontSize(18);
+        doc.text("Rulemaking Monitoring Records", 14, finalY);
+        finalY += 10;
+
         Object.entries(groupedByPerihal).forEach(([perihal, recordsInGroup], groupIndex) => {
             
             const flattenedDataForPdf = recordsInGroup.flatMap(r => r.stages.map(stage => ({
@@ -253,10 +257,6 @@ export default function RulemakingMonitoringPage() {
                 doc.addPage();
                 finalY = 20;
             }
-            
-            doc.setFontSize(18);
-            doc.text("Rulemaking Monitoring Records", 14, finalY);
-            finalY += 10;
     
             doc.setFontSize(14);
             doc.setFont(undefined, 'bold');
@@ -279,7 +279,7 @@ export default function RulemakingMonitoringPage() {
                     fontStyle: 'bold',
                 },
                 columnStyles: {
-                  5: { textColor: [0, 0, 255] } // Make text in column 5 (Attachment) blue
+                  5: { textColor: [0, 0, 255] }
                 },
                 didDrawCell: (data) => {
                     if (data.section === 'body' && data.column.index === 5 && data.cell.text[0] === 'Link') {
