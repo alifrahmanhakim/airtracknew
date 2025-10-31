@@ -311,58 +311,67 @@ export default function CcefodPage() {
   
   const handleExportPdf = () => {
     if (allRecords.length === 0) {
-        toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
-        return;
+      toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+      return;
     }
-    
-    const doc = new jsPDF({ orientation: 'landscape' });
-    let finalY = 20;
-
-    const groupedByAnnex = allRecords.reduce<Record<string, CcefodRecord[]>>((acc, record) => {
-        const key = record.annex;
-        if (!acc[key]) {
-            acc[key] = [];
-        }
-        acc[key].push(record);
-        return acc;
-    }, {});
-
-    const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
-
-    const addPageContent = (data: { pageNumber: number, settings: { margin: { top: number } } }, logoDataUrl?: string) => {
-        if (data.pageNumber === 1 && logoDataUrl) {
-            const img = new Image();
-            img.src = logoDataUrl;
-            const aspectRatio = img.width / img.height;
-            const logoWidth = 30;
-            const logoHeight = logoWidth / aspectRatio;
-            doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-        }
-
-        doc.setFontSize(8);
-        const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-        const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-        const textX = (doc.internal.pageSize.width - textWidth) / 2;
-        doc.text(text, textX, doc.internal.pageSize.height - 10);
-    };
-    
+  
     const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.src = logoUrl;
-    
+  
     img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
-            return;
-        }
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL('image/png');
+  
+      generatePdf(dataUrl);
+    };
+  
+    img.onerror = () => {
+      toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
+      generatePdf(); // Proceed without the logo if it fails
+    }
+  
+    const generatePdf = (logoDataUrl?: string) => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+        let finalY = 20;
 
+        const groupedByAnnex = allRecords.reduce<Record<string, CcefodRecord[]>>((acc, record) => {
+            const key = record.annex;
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(record);
+            return acc;
+        }, {});
+
+        const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
+        
+        const addPageContent = (data: { pageNumber: number }) => {
+            if (logoDataUrl && data.pageNumber === 1) {
+                const aspectRatio = img.width / img.height;
+                const logoWidth = 30;
+                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                if (logoHeight > 0) {
+                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
+            }
+
+            doc.setFontSize(8);
+            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (doc.internal.pageSize.width - textWidth) / 2;
+            doc.text(text, textX, doc.internal.pageSize.height - 10);
+        };
+    
         Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
             const tableRows = recordsInGroup.map(record => [
                 record.annexReference,
@@ -400,7 +409,7 @@ export default function CcefodPage() {
                     textColor: 255,
                     fontStyle: 'bold',
                 },
-                didDrawPage: (data) => addPageContent(data, data.pageNumber === 1 ? dataUrl : undefined),
+                didDrawPage: addPageContent,
             });
             
             finalY = (doc as any).lastAutoTable.finalY;
@@ -408,11 +417,6 @@ export default function CcefodPage() {
 
         doc.save("ccefod_records.pdf");
     };
-
-     img.onerror = () => {
-        toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
-        handleExportPdf(); // Call again without the logo logic if it fails
-    }
   };
 
   function renderContent() {
