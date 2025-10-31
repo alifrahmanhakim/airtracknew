@@ -250,60 +250,86 @@ export default function GlossaryPage() {
         toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
         return;
     }
-    const doc = new jsPDF({ orientation: 'landscape' });
-    const tableColumn = ["No", "TSU", "TSA", "Editing", "Makna", "Keterangan", "Referensi", "Status"];
-    
-    const sortedData = [...filteredAndSortedRecords].sort((a, b) => a.tsu.localeCompare(b.tsu));
+    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = logoUrl;
 
-    const tableRows = sortedData.map((record, index) => [
-        index + 1,
-        record.tsu,
-        record.tsa,
-        record.editing,
-        record.makna,
-        record.keterangan,
-        record.referensi || '-',
-        record.status
-    ]);
-    
-    doc.setFontSize(18);
-    doc.text("Translation Analysis Records", 14, 20);
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+            return;
+        }
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
 
-    autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: 30,
-        theme: 'grid',
-        headStyles: {
-            fillColor: [22, 160, 133], // A nice teal color
-            textColor: 255,
-            fontStyle: 'bold',
-        },
-        styles: {
-            fontSize: 8,
-            cellPadding: 2,
-        },
-        columnStyles: {
-            0: { cellWidth: 10 }, // No
-            1: { cellWidth: 40 }, // TSU
-            2: { cellWidth: 40 }, // TSA
-            3: { cellWidth: 40 }, // Editing
-            4: { cellWidth: 40 }, // Makna
-            5: { cellWidth: 40 }, // Keterangan
-            6: { cellWidth: 30 }, // Referensi
-            7: { cellWidth: 20 }, // Status
-        },
-        didDrawPage: (data) => {
-            const pageCount = doc.internal.pages.length;
+        const doc = new jsPDF({ orientation: 'landscape' });
+        const tableColumn = ["No", "TSU", "TSA", "Editing", "Makna", "Keterangan", "Referensi", "Status"];
+        const sortedData = [...filteredAndSortedRecords].sort((a, b) => a.tsu.localeCompare(b.tsu));
+        const tableRows = sortedData.map((record, index) => [
+            index + 1,
+            record.tsu,
+            record.tsa,
+            record.editing,
+            record.makna,
+            record.keterangan,
+            record.referensi || '-',
+            record.status
+        ]);
+        
+        const addPageContent = (data: { pageNumber: number }) => {
+            if (data.pageNumber === 1) {
+                const aspectRatio = img.width / img.height;
+                const logoWidth = 30;
+                const logoHeight = logoWidth / aspectRatio;
+                doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+            }
             doc.setFontSize(8);
             const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
             const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
             const textX = (doc.internal.pageSize.width - textWidth) / 2;
             doc.text(text, textX, doc.internal.pageSize.height - 10);
-        }
-    });
+            
+            const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        };
 
-    doc.save("translation_analysis_records.pdf");
+        doc.setFontSize(18);
+        doc.text("Translation Analysis Records", 14, 20);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            styles: { fontSize: 8, cellPadding: 2 },
+            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 40 }, 2: { cellWidth: 40 }, 3: { cellWidth: 40 }, 4: { cellWidth: 40 }, 5: { cellWidth: 40 }, 6: { cellWidth: 30 }, 7: { cellWidth: 20 } },
+            didDrawPage: addPageContent
+        });
+
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 2; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageText = `Page ${i} of ${pageCount}`;
+            doc.setFontSize(8);
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (doc.internal.pageSize.width - textWidth) / 2;
+            doc.text(text, textX, doc.internal.pageSize.height - 10);
+        }
+
+        doc.save("translation_analysis_records.pdf");
+    };
+
+    img.onerror = () => {
+         toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF." });
+    }
   };
 
   function renderContent() {
