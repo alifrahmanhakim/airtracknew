@@ -432,77 +432,98 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
             return;
         }
 
-        const doc = new jsPDF({ orientation: 'landscape' });
-        
-        const logoUrl = 'https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png';
-        // This is a simplified way. A better way would be to fetch and convert to base64.
-        // For now, we'll just add it. `addImage` can handle URLs if the environment allows it.
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
 
-        const addPageContent = (pageNumber: number, pageCount: number) => {
-            doc.setFontSize(16);
-            doc.text(`Task List for Project: ${projectName}`, 14, 15);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
 
-            // Add logo - assuming it's loaded. We will add it as base64 in a moment.
-            // doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 40, 8, 25, 10);
-        
-            doc.setFontSize(8);
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = doc.internal.pageSize.width - textWidth - 14;
-            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+            const doc = new jsPDF({ orientation: 'landscape' });
 
-            const pageText = `Page ${pageNumber} of ${pageCount}`;
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            const addPageContent = (data: { pageNumber: number }) => {
+                doc.setFontSize(16);
+                doc.text(`Task List for Project: ${projectName}`, 14, 15);
+                
+                if (data.pageNumber === 1) {
+                     const aspectRatio = img.width / img.height;
+                     const logoWidth = 30;
+                     const logoHeight = logoWidth / aspectRatio;
+                     doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
+
+                doc.setFontSize(8);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = doc.internal.pageSize.width - textWidth - 14;
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            };
+
+            const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status", "Attachment"];
+            const tableRows = dataToExport.map(item => [
+                item['No.'],
+                item['Task'],
+                item['Assignees'],
+                item['Start Date'],
+                item['Due Date'],
+                item['Status'],
+                item['Attachments'] ? 'Link' : 'N/A'
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 25,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                columnStyles: {
+                    6: { textColor: [0, 0, 255], cellWidth: 20 }
+                },
+                didDrawCell: (data) => {
+                    if (data.section === 'body' && data.column.index === 6 && data.cell.text[0] === 'Link') {
+                        const record = dataToExport[data.row.index];
+                        if (record && record['Attachments']) {
+                            const firstUrl = record['Attachments'].split('\n')[0];
+                            doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: firstUrl });
+                        }
+                    }
+                },
+                didDrawPage: addPageContent,
+            });
+            
+            // Finalize page numbering
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 2; i <= pageCount; i++) {
+                doc.setPage(i);
+                const pageText = `Page ${i} of ${pageCount}`;
+                doc.setFontSize(8);
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            }
+
+            doc.save(`${projectName}_tasks.pdf`);
+             toast({
+                title: 'Export Successful',
+                description: 'Tasks have been exported to a PDF file.',
+            });
         };
 
-        const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status", "Attachment"];
-        const tableRows = dataToExport.map(item => [
-            item['No.'],
-            item['Task'],
-            item['Assignees'],
-            item['Start Date'],
-            item['Due Date'],
-            item['Status'],
-            item['Attachments'] ? 'Link' : 'N/A'
-        ]);
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 25,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            columnStyles: {
-                6: { textColor: [0, 0, 255], cellWidth: 20 }
-            },
-            didDrawCell: (data) => {
-                if (data.section === 'body' && data.column.index === 6 && data.cell.text[0] === 'Link') {
-                    const record = dataToExport[data.row.index];
-                    if (record && record['Attachments']) {
-                        const firstUrl = record['Attachments'].split('\n')[0];
-                        doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: firstUrl });
-                    }
-                }
-            },
-            didDrawPage: (data) => {
-                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
-            },
-        });
-        
-        // Finalize page numbering
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            const pageText = `Page ${i} of ${pageCount}`;
-            doc.setFontSize(8);
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-        }
-
-        doc.save(`${projectName}_tasks.pdf`);
-         toast({
-            title: 'Export Successful',
-            description: 'Tasks have been exported to a PDF file.',
-        });
+        img.onerror = () => {
+             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF. Exporting without it." });
+             handleExportPdf(); // Proceed without the logo
+        };
     };
 
     return (

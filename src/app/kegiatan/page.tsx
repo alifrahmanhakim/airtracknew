@@ -173,13 +173,20 @@ export default function KegiatanPage() {
         }
 
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
-        let logoDataUrl = '';
-        let logoHeight = 10;
-        const logoWidth = 30;
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
 
-        const addContentAndSave = () => {
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            
             const doc = new jsPDF({ orientation: 'landscape' });
-            let startY = 20;
+            let startY = 25;
 
             doc.setFontSize(18);
             doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, startY);
@@ -210,57 +217,52 @@ export default function KegiatanPage() {
                 record.catatan || '-',
             ]);
             
-            const addPageContent = (data: { pageNumber: number }) => {
-                if (logoDataUrl && data.pageNumber === 1) {
-                     doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                }
-                
-                doc.setFontSize(8);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
-
-                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-            };
-
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
                 startY: startY,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent,
+                didDrawPage: (data) => {
+                     // Add logo only on the first page
+                    if (data.pageNumber === 1) {
+                         const aspectRatio = img.width / img.height;
+                         const logoWidth = 30;
+                         const logoHeight = logoWidth / aspectRatio;
+                         doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+
+                    // Footer
+                    doc.setFontSize(8);
+                    const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                    const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                    const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                    doc.text(text, textX, doc.internal.pageSize.height - 10);
+                    
+                    const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                    doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+                },
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
+            for (let i = 2; i <= pageCount; i++) { // Loop from page 2
                 doc.setPage(i);
                 const pageText = `Page ${i} of ${pageCount}`;
                 doc.setFontSize(8);
                 doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(text, textX, doc.internal.pageSize.height - 10);
             }
 
             doc.save("jadwal_kegiatan.pdf");
         };
-        
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.src = logoUrl;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0);
-            logoDataUrl = canvas.toDataURL('image/png');
-            logoHeight = (img.height / img.width) * logoWidth;
-            addContentAndSave();
-        };
+
         img.onerror = () => {
-            console.error("Failed to load logo image for PDF export.");
-            addContentAndSave(); // Proceed even if image fails
+             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF." });
+             // Proceed without the logo if it fails to load
+             handleExportPdf();
         }
     };
 
