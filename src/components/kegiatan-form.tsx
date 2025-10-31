@@ -25,9 +25,11 @@ import * as React from 'react';
 import { addKegiatan } from '@/lib/actions/kegiatan';
 import { useToast } from '@/hooks/use-toast';
 import type { Kegiatan, User } from '@/lib/types';
-import { kegiatanSubditUsers } from '@/lib/data';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const kegiatanFormSchema = z.object({
+    id: z.string().optional(),
     subjek: z.string().min(1, 'Subjek is required.'),
     tanggalMulai: z.date({ required_error: 'Start date is required.'}),
     tanggalSelesai: z.date({ required_error: 'End date is required.'}),
@@ -48,9 +50,20 @@ type KegiatanFormProps = {
 
 export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
     const [isLoading, setIsLoading] = React.useState(false);
+    const [allUsers, setAllUsers] = React.useState<User[]>([]);
     const { toast } = useToast();
 
-    const userOptions: MultiSelectOption[] = kegiatanSubditUsers;
+    React.useEffect(() => {
+        const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
+            const usersFromDb = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+            setAllUsers(usersFromDb);
+        });
+        return () => unsub();
+    }, []);
+
+    const userOptions: MultiSelectOption[] = React.useMemo(() => 
+        allUsers.map(u => ({ value: u.id, label: u.name })), 
+    [allUsers]);
 
     const form = useForm<KegiatanFormValues>({
         resolver: zodResolver(kegiatanFormSchema),
@@ -80,8 +93,8 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
         if (result.success && result.data) {
             onFormSubmit(result.data);
             toast({
-                title: `Activity ${kegiatan ? 'Updated' : 'Added'}`,
-                description: `The activity "${data.subjek}" has been saved.`,
+                title: `Activity ${kegiatan ? 'Updated' : 'Added'} as a Task`,
+                description: `"${data.subjek}" has been saved as a task.`,
             });
             if (!kegiatan) {
                 form.reset({
