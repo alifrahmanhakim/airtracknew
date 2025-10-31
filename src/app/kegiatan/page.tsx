@@ -173,8 +173,26 @@ export default function KegiatanPage() {
             return;
         }
         const doc = new jsPDF({ orientation: 'landscape' });
+        let startY = 20;
+
         doc.setFontSize(18);
-        doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+        doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, startY);
+        startY += 8;
+
+        let subtitle = '';
+        if (filterMode === 'week') {
+            const weekStart = parseISO(selectedWeek);
+            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+            const weekNumber = getISOWeek(weekStart);
+            subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+        } else {
+            const monthStart = parseISO(selectedMonth);
+            subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+        }
+
+        doc.setFontSize(12);
+        doc.text(subtitle, 14, startY);
+        startY += 12;
 
         const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
         const tableRows = filteredRecords.map(record => [
@@ -189,7 +207,7 @@ export default function KegiatanPage() {
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 30,
+            startY: startY,
             theme: 'grid',
             headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
             didDrawPage: (data) => {
