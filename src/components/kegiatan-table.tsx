@@ -27,15 +27,14 @@ import { KegiatanForm } from './kegiatan-form';
 import { Skeleton } from './ui/skeleton';
 
 type KegiatanTableProps = {
-  tasks: Task[];
-  onDelete: (task: Task) => void;
-  onUpdate: (project: Project) => void;
+  kegiatanList: Kegiatan[];
+  onDelete: (kegiatan: Kegiatan) => void;
+  onUpdate: (kegiatan: Kegiatan) => void;
   isLoading: boolean;
-  teamMembers: User[];
-  projectId: string;
+  allUsers: User[];
 };
 
-function EditKegiatanDialog({ task, onUpdate, teamMembers, projectId }: { task: Task; onUpdate: (project: Project) => void; teamMembers: User[], projectId: string }) {
+function EditKegiatanDialog({ kegiatan, onUpdate, allUsers }: { kegiatan: Kegiatan; onUpdate: (kegiatan: Kegiatan) => void; allUsers: User[] }) {
     const [open, setOpen] = React.useState(false);
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -48,17 +47,16 @@ function EditKegiatanDialog({ task, onUpdate, teamMembers, projectId }: { task: 
                 <DialogHeader>
                     <DialogTitle>Edit Kegiatan</DialogTitle>
                     <DialogDescription>
-                        Perbarui detail kegiatan "{task.title}".
+                        Perbarui detail kegiatan "{kegiatan.subjek}".
                     </DialogDescription>
                 </DialogHeader>
                 <KegiatanForm 
-                    kegiatan={task}
-                    onFormSubmit={(updatedProject) => {
-                        onUpdate(updatedProject);
+                    kegiatan={kegiatan}
+                    onFormSubmit={(updatedKegiatan) => {
+                        onUpdate(updatedKegiatan);
                         setOpen(false);
                     }}
-                    allUsers={teamMembers}
-                    kegiatanProject={{ id: projectId, name: 'Kegiatan Subdirektorat' } as Project} // Simplified project object
+                    allUsers={allUsers}
                 />
             </DialogContent>
         </Dialog>
@@ -66,13 +64,13 @@ function EditKegiatanDialog({ task, onUpdate, teamMembers, projectId }: { task: 
 }
 
 
-export function KegiatanTable({ tasks, onDelete, onUpdate, isLoading, teamMembers, projectId }: KegiatanTableProps) {
+export function KegiatanTable({ kegiatanList, onDelete, onUpdate, isLoading, allUsers }: KegiatanTableProps) {
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full" />;
   }
   
-  if (tasks.length === 0) {
+  if (kegiatanList.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground bg-muted/50 rounded-lg">
         <Info className="mx-auto h-8 w-8 mb-2" />
@@ -90,28 +88,31 @@ export function KegiatanTable({ tasks, onDelete, onUpdate, isLoading, teamMember
             <TableHead className="w-[25%]">Subjek</TableHead>
             <TableHead className="w-[20%]">Tanggal</TableHead>
             <TableHead className="w-[25%]">Nama yang Terlibat</TableHead>
+            <TableHead className="w-[15%]">Lokasi</TableHead>
+            <TableHead className="w-[15%]">Catatan</TableHead>
             <TableHead className="text-right w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tasks.map((task) => (
-            <TableRow key={task.id}>
-              <TableCell className="font-medium align-top">{task.title}</TableCell>
+          {kegiatanList.map((kegiatan) => (
+            <TableRow key={kegiatan.id}>
+              <TableCell className="font-medium align-top">{kegiatan.subjek}</TableCell>
               <TableCell className="align-top">
-                {format(parseISO(task.startDate), 'dd MMM yyyy')} - {format(parseISO(task.dueDate), 'dd MMM yyyy')}
+                {format(parseISO(kegiatan.tanggalMulai), 'dd MMM yyyy')} - {format(parseISO(kegiatan.tanggalSelesai), 'dd MMM yyyy')}
               </TableCell>
               <TableCell className="align-top">
                 <div className="flex flex-wrap gap-1">
-                    {(task.assigneeIds || []).map((id, i) => {
-                        const user = teamMembers.find(u => u.id === id);
-                        return <Badge key={i} variant="secondary">{user?.name || id}</Badge>
-                    })}
+                    {kegiatan.nama.map((nama, i) => (
+                        <Badge key={i} variant="secondary">{nama}</Badge>
+                    ))}
                 </div>
               </TableCell>
+              <TableCell className="align-top">{kegiatan.lokasi}</TableCell>
+              <TableCell className="align-top">{kegiatan.catatan || '-'}</TableCell>
               <TableCell className="text-right align-top">
                 <div className="flex justify-end gap-1">
-                    <EditKegiatanDialog task={task} onUpdate={onUpdate} teamMembers={teamMembers} projectId={projectId}/>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(task)}>
+                    <EditKegiatanDialog kegiatan={kegiatan} onUpdate={onUpdate} allUsers={allUsers}/>
+                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(kegiatan)}>
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>

@@ -9,7 +9,7 @@ import { Bar, BarChart as BarChartComponent, ResponsiveContainer, XAxis, YAxis, 
 import { AnimatedCounter } from './ui/animated-counter';
 
 type KegiatanAnalyticsProps = {
-  tasks: Task[];
+  tasks: Kegiatan[];
   users: User[];
 };
 
@@ -20,10 +20,8 @@ export function KegiatanAnalytics({ tasks, users }: KegiatanAnalyticsProps) {
     }
       
     const kegiatanByPersonel = tasks.reduce((acc, task) => {
-        (task.assigneeIds || []).forEach(personId => {
-            const user = users.find(u => u.id === personId);
-            const name = user?.name || 'Unknown User';
-            acc[name] = (acc[name] || 0) + 1;
+        (task.nama || []).forEach(personName => {
+            acc[personName] = (acc[personName] || 0) + 1;
         });
         return acc;
     }, {} as Record<string, number>);
@@ -32,10 +30,20 @@ export function KegiatanAnalytics({ tasks, users }: KegiatanAnalyticsProps) {
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count);
 
+    const kegiatanByLokasi = tasks.reduce((acc, task) => {
+        acc[task.lokasi] = (acc[task.lokasi] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const lokasiData = Object.entries(kegiatanByLokasi)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a,b) => b.count - a.count);
+
 
     return {
       totalKegiatan: tasks.length,
       personelData,
+      lokasiData
     };
   }, [tasks, users]);
 
@@ -60,9 +68,27 @@ export function KegiatanAnalytics({ tasks, users }: KegiatanAnalyticsProps) {
             </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-            <div>
-                <h3 className="text-lg font-semibold">Total Activities</h3>
-                <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalKegiatan} /></p>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+                <div>
+                    <h3 className="text-lg font-semibold">Total Activities</h3>
+                    <p className="text-4xl font-bold"><AnimatedCounter endValue={analyticsData.totalKegiatan} /></p>
+                </div>
+                <div>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <BarChart className="h-5 w-5" />
+                        Activities by Location
+                    </h3>
+                    <div className="h-[200px] w-full">
+                        <ResponsiveContainer>
+                        <BarChartComponent data={analyticsData.lokasiData} layout="vertical" margin={{ left: 50 }}>
+                            <XAxis type="number" />
+                            <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                            <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
+                            <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+                        </BarChartComponent>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
             </div>
             <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
