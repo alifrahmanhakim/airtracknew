@@ -40,7 +40,7 @@ async function getOrCreateKegiatanProject(ownerId: string, allUsers: User[]): Pr
             startDate: new Date().toISOString().split('T')[0],
             endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 5)).toISOString().split('T')[0], // 5 years from now
             status: 'On Track' as const,
-            team: allUsers.map(u => u.id), // Add all users to the project by default
+            team: allUsers.map(u => u.id), // Pass user IDs
             tags: ["Internal"],
         };
 
@@ -63,14 +63,12 @@ export async function addKegiatan(data: KegiatanFormValues) {
     const { id, subjek, tanggalMulai, tanggalSelesai, nama, lokasi, catatan } = parsed.data;
 
     try {
-        // This action now creates a Task, not a Kegiatan record.
-        // We need an owner for the parent project. Let's use a default admin or the first user.
         const usersSnapshot = await getDocs(collection(db, 'users'));
         const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        const owner = allUsers.find(u => u.email === 'admin@admin2023.com') || allUsers[0];
+        const owner = allUsers.find(u => u.role === 'Sub-Directorate Head') || allUsers[0];
 
         if (!owner) {
-            return { success: false, error: "No users found to own the main project." };
+            return { success: false, error: "No suitable owner found to create the main project." };
         }
 
         const projectId = await getOrCreateKegiatanProject(owner.id, allUsers);
