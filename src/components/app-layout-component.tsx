@@ -407,6 +407,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           <SidebarContent>
               <SidebarGroup>
+                <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start relative group/task-btn overflow-hidden"
+                        onClick={() => setIsMyTasksDialogOpen(true)}
+                    >
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg blur opacity-0 group-hover/task-btn:opacity-75 transition duration-1000 animate-gradient-move"></div>
+                        <div className="relative flex flex-col items-start w-full">
+                            <div className="flex items-center w-full">
+                                <ListTodo className="mr-2" />
+                                <span className="font-semibold">My Tasks</span>
+                                <span className="ml-auto text-xs text-muted-foreground">
+                                    {myTaskStats.done} / {myTaskStats.total}
+                                </span>
+                            </div>
+                             <Progress value={myTaskStats.completionPercentage} className="h-1 mt-1.5" />
+                        </div>
+                    </Button>
+                </div>
               <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
               <SidebarMenu>
                   {navItems.dashboards.map((item) => {
