@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
@@ -12,7 +11,7 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllPqRecords, deletePqRecord } from '@/lib/actions/pqs';
-import { Loader2, FileSpreadsheet, AlertTriangle, Trash2 } from 'lucide-react';
+import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, ChevronDown, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Papa from 'papaparse';
@@ -30,6 +29,9 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { AppLayout } from '@/components/app-layout-component';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 // Dynamically import heavy components
@@ -281,7 +283,7 @@ export default function PqsPage() {
     }
   };
 
-  const confirmExport = () => {
+  const confirmExportCsv = () => {
     if (allRecords.length === 0) {
         toast({
             variant: 'destructive',
@@ -310,6 +312,42 @@ export default function PqsPage() {
             document.body.removeChild(link);
         }
     }, 500);
+  };
+  
+  const handleExportPdf = () => {
+    if (allRecords.length === 0) {
+        toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+        return;
+    }
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(18);
+    doc.text("Protocol Questions Records", 14, 20);
+
+    const tableColumn = ["PQ Number", "Protocol Question", "Critical Element", "ICAO Status", "Status"];
+    const tableRows = allRecords.map(record => [
+        record.pqNumber,
+        record.protocolQuestion,
+        record.criticalElement,
+        record.icaoStatus,
+        record.status
+    ]);
+    
+    autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 30,
+        theme: 'grid',
+        headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+        didDrawPage: (data) => {
+            doc.setFontSize(8);
+            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (doc.internal.pageSize.width - textWidth) / 2;
+            doc.text(text, textX, doc.internal.pageSize.height - 10);
+        }
+    });
+
+    doc.save("pqs_records.pdf");
   };
 
   const filteredAnalyticsRecords = useMemo(() => {
@@ -386,10 +424,23 @@ export default function PqsPage() {
                             </div>
                             {isAdmin && (
                                 <div className="flex items-center gap-2 print:hidden">
-                                    <Button variant="outline" size="icon" onClick={confirmExport}>
-                                        <FileSpreadsheet className="h-4 w-4" />
-                                        <span className="sr-only">Export as CSV</span>
-                                    </Button>
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                        <Button variant="outline">
+                                            Export <ChevronDown className="ml-2 h-4 w-4" />
+                                        </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={confirmExportCsv}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to CSV
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleExportPdf}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Export to PDF
+                                        </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                     <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
                                         <Trash2 className="h-4 w-4" />
                                         <span className="sr-only">Delete All Records</span>

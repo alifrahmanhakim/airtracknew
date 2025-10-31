@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -14,7 +15,7 @@ import type { User } from "@/lib/types";
 import { collection, getDocs, doc, getDoc, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, AlertTriangle, Loader2, UserCheck, UserX, ArrowUpDown, Search, User as UserIcon } from 'lucide-react';
+import { Trash2, AlertTriangle, Loader2, UserCheck, UserX, ArrowUpDown, Search, User as UserIcon, Printer } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +37,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatDistanceToNow } from 'date-fns';
 import { userDepartments } from '@/lib/data';
 import { AppLayout } from '@/components/app-layout-component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const USERS_PER_PAGE = 10;
 
@@ -242,6 +245,23 @@ export default function TeamPage() {
         return { column, direction: 'asc' };
     });
   }
+  
+  const handleExportPdf = () => {
+    const doc = new jsPDF();
+    doc.text("Team Members", 14, 15);
+    autoTable(doc, {
+      startY: 20,
+      head: [['Name', 'Email', 'Role', 'Department', 'Status']],
+      body: filteredAndSortedUsers.map(user => [
+        user.name,
+        user.email,
+        user.role,
+        user.department || 'N/A',
+        user.isApproved ? 'Approved' : 'Pending'
+      ]),
+    });
+    doc.save('team_members.pdf');
+  };
 
   const renderSortIcon = (column: keyof User) => {
       if (sort?.column !== column) return <ArrowUpDown className="h-4 w-4 ml-2 opacity-30" />;
@@ -282,11 +302,16 @@ export default function TeamPage() {
     <TooltipProvider>
     <div className="p-4 md:p-8">
       <Card>
-        <CardHeader>
-          <CardTitle>Team Members</CardTitle>
-          <CardDescription>
-            An overview of all team members and their roles.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Team Members</CardTitle>
+              <CardDescription>
+                An overview of all team members and their roles.
+              </CardDescription>
+            </div>
+            <Button variant="outline" onClick={handleExportPdf}>
+              <Printer className="mr-2 h-4 w-4" /> Export as PDF
+            </Button>
         </CardHeader>
         <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">

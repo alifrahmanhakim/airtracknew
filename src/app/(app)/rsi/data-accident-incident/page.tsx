@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, Loader2, ArrowLeft, FileSpreadsheet } from 'lucide-react';
+import { RotateCcw, Search, Loader2, ArrowLeft, FileSpreadsheet, Printer } from 'lucide-react';
 import { getYear, parseISO, format, isValid } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,8 @@ import Link from 'next/link';
 import * as XLSX from 'xlsx';
 import { EditAccidentIncidentRecordDialog } from '@/components/rsi/edit-accident-incident-dialog';
 import { AppLayout } from '@/components/app-layout-component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -158,6 +160,44 @@ export default function DataAccidentIncidentPage() {
         XLSX.writeFile(workbook, 'accident_incident_records.xlsx');
     };
     
+    const handleExportPdf = () => {
+        if (filteredRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.setFontSize(18);
+        doc.text("Accident & Serious Incident Records", 14, 20);
+
+        const tableColumn = ["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
+        const tableRows = filteredRecords.map(record => [
+            record.tanggal,
+            record.kategori,
+            record.aoc,
+            record.registrasiPesawat,
+            record.tipePesawat,
+            record.lokasi,
+            record.taxonomy
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                doc.setFontSize(8);
+                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            }
+        });
+
+        doc.save("accident_incident_records.pdf");
+    };
+
     const form = useForm<AccidentIncidentFormValues>({
         resolver: zodResolver(accidentIncidentFormSchema),
         defaultValues: {
@@ -263,10 +303,16 @@ export default function DataAccidentIncidentPage() {
                                         <CardTitle>Records</CardTitle>
                                         <CardDescription>List of all accident and serious incident records.</CardDescription>
                                     </div>
-                                    <Button variant="outline" onClick={handleExportExcel}>
-                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                        Export to Excel
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="outline" onClick={handleExportExcel}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to Excel
+                                        </Button>
+                                         <Button variant="outline" onClick={handleExportPdf}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Export to PDF
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardHeader>
                             <CardContent>
