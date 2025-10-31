@@ -328,58 +328,91 @@ export default function CcefodPage() {
     }, {});
 
     const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
+
+    const addPageContent = (data: { pageNumber: number, settings: { margin: { top: number } } }, logoDataUrl?: string) => {
+        if (data.pageNumber === 1 && logoDataUrl) {
+            const img = new Image();
+            img.src = logoDataUrl;
+            const aspectRatio = img.width / img.height;
+            const logoWidth = 30;
+            const logoHeight = logoWidth / aspectRatio;
+            doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+        }
+
+        doc.setFontSize(8);
+        const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+        const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+        const textX = (doc.internal.pageSize.width - textWidth) / 2;
+        doc.text(text, textX, doc.internal.pageSize.height - 10);
+    };
     
-    Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
-        const tableRows = recordsInGroup.map(record => [
-            record.annexReference,
-            (record.standardPractice || '').replace(/<[^>]+>/g, ''), // Strip HTML
-            record.legislationReference,
-            record.implementationLevel,
-            record.status,
-        ]);
-
-        if (finalY > 20 || groupIndex > 0) {
-            finalY += 10;
+    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = logoUrl;
+    
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+            return;
         }
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
 
-        if (finalY > doc.internal.pageSize.height - 40) {
-            doc.addPage();
-            finalY = 20;
-        }
-        
-        doc.setFontSize(18);
-        doc.text("CC/EFOD Records", 14, finalY);
-        finalY += 10;
+        Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
+            const tableRows = recordsInGroup.map(record => [
+                record.annexReference,
+                (record.standardPractice || '').replace(/<[^>]+>/g, ''), // Strip HTML
+                record.legislationReference,
+                record.implementationLevel,
+                record.status,
+            ]);
 
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.text(`Annex: ${annex}`, 14, finalY);
-        finalY += 8;
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: finalY,
-            theme: 'grid',
-            headStyles: {
-                fillColor: [22, 160, 133],
-                textColor: 255,
-                fontStyle: 'bold',
-            },
-            didDrawPage: (data) => {
-                const pageCount = doc.internal.pages.length;
-                doc.setFontSize(8);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            if (finalY > 20 || groupIndex > 0) {
+                finalY += 10;
             }
-        });
-        
-        finalY = (doc as any).lastAutoTable.finalY;
-    });
 
-    doc.save("ccefod_records.pdf");
+            if (finalY > doc.internal.pageSize.height - 40) {
+                doc.addPage();
+                finalY = 20;
+            }
+            
+            doc.setFontSize(18);
+            doc.text("CC/EFOD Records", 14, finalY);
+            finalY += 10;
+
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Annex: ${annex}`, 14, finalY);
+            finalY += 8;
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: finalY,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [22, 160, 133],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                },
+                didDrawPage: (data) => addPageContent(data, data.pageNumber === 1 ? dataUrl : undefined),
+            });
+            
+            finalY = (doc as any).lastAutoTable.finalY;
+        });
+
+        doc.save("ccefod_records.pdf");
+    };
+
+     img.onerror = () => {
+        toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
+        handleExportPdf(); // Call again without the logo logic if it fails
+    }
   };
 
   function renderContent() {
