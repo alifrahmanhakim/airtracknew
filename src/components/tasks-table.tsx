@@ -43,6 +43,7 @@ import {
   FileText,
   FileImage,
   FileQuestion,
+  Printer,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -55,8 +56,10 @@ import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Highlight } from './ui/highlight';
 
 type TaskRowProps = {
@@ -416,6 +419,45 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
             description: 'Tasks have been exported to an Excel file.',
         });
     };
+    
+    const handleExportPdf = () => {
+        const dataToExport = flattenTasksForExport(sortedTasks);
+         if (dataToExport.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data to Export',
+                description: 'There are no tasks to export.',
+            });
+            return;
+        }
+
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.text(`Task List for Project: ${projectId}`, 14, 15);
+        
+        const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status"];
+        const tableRows = dataToExport.map(item => [
+            item['No.'],
+            item['Task'],
+            item['Assignees'],
+            item['Start Date'],
+            item['Due Date'],
+            item['Status']
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 20,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' }
+        });
+
+        doc.save(`${projectId}_tasks.pdf`);
+         toast({
+            title: 'Export Successful',
+            description: 'Tasks have been exported to a PDF file.',
+        });
+    };
 
     return (
         <TooltipProvider>
@@ -481,10 +523,23 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                                 <RotateCcw className="mr-2 h-4 w-4" /> Reset
                             </Button>
                         )}
-                        <Button variant="outline" onClick={handleExportExcel}>
-                            <FileSpreadsheet className="mr-2 h-4 w-4" />
-                            Export
-                        </Button>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    Export <ChevronDown className="ml-2 h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Export to Excel
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportPdf}>
+                                    <Printer className="mr-2 h-4 w-4" />
+                                    Export to PDF
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <AddTaskDialog 
                             projectId={projectId}
                             projectType={projectType}
