@@ -388,7 +388,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                 'Start Date': task.startDate ? format(parseISO(task.startDate), 'yyyy-MM-dd') : '',
                 'Due Date': task.dueDate ? format(parseISO(task.dueDate), 'yyyy-MM-dd') : '',
                 'Status': task.status,
-                'Attachments': (task.attachments || []).map(att => att.url).join(', '),
+                'Attachments': (task.attachments || []).map(att => att.url).join('\n'),
                 'Critical Issue': task.criticalIssue || '',
             });
             if (task.subTasks) {
@@ -434,14 +434,15 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         const doc = new jsPDF({ orientation: 'landscape' });
         doc.text(`Task List for Project: ${projectId}`, 14, 15);
         
-        const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status"];
+        const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status", "Attachment"];
         const tableRows = dataToExport.map(item => [
             item['No.'],
             item['Task'],
             item['Assignees'],
             item['Start Date'],
             item['Due Date'],
-            item['Status']
+            item['Status'],
+            item['Attachments'] ? 'Link' : 'N/A'
         ]);
 
         autoTable(doc, {
@@ -449,7 +450,19 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
             body: tableRows,
             startY: 20,
             theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' }
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            columnStyles: {
+                6: { textColor: [0, 0, 255], cellWidth: 20 }
+            },
+            didDrawCell: (data) => {
+                if (data.section === 'body' && data.column.index === 6 && data.cell.text[0] === 'Link') {
+                    const record = dataToExport[data.row.index];
+                    if (record && record['Attachments']) {
+                        const firstUrl = record['Attachments'].split('\n')[0];
+                        doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: firstUrl });
+                    }
+                }
+            }
         });
 
         doc.save(`${projectId}_tasks.pdf`);
