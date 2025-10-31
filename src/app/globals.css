@@ -165,75 +165,86 @@
   body {
     background: white !important;
     color: black !important;
-  }
-
-  /* Hide all non-printable elements */
-  header, footer, [data-sidebar="sidebar"], [data-sidebar="trigger"], .print-hidden, [data-radix-dialog-overlay], [data-radix-popover-content] {
-    display: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
-  /* Reset layout for printable area */
-  main.flex-1 {
-    overflow: visible !important;
+  /* Hide all non-printable elements by default */
+  header,
+  footer,
+  aside,
+  nav,
+  [data-sidebar="sidebar"],
+  [data-sidebar="trigger"],
+  .print-hidden,
+  .print\:hidden, /* Tailwind's print:hidden utility */
+  [data-radix-dialog-overlay],
+  [data-radix-popover-content],
+  [data-radix-tooltip-content] {
+    display: none !important;
+  }
+
+  /* Ensure the main layout and content area are visible */
+  body > div, body > div > div {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Make the main content area take up the full page */
+  main, main > div, main > div > div {
     display: block !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    overflow: visible !important;
   }
-  
-  /* Target the specific page container */
+
+  /* Specifically target the page content and reset layout */
   #rulemaking-monitoring-page, #ccefod-page, #pqs-page, #glossary-page {
     padding: 0 !important;
     margin: 0 !important;
   }
-  
-  /* Show only the active tab content */
-  .w-full > [role="tabpanel"]:not([data-state="active"]) {
+
+  /* Show only the active tab's content */
+  .w-full > [role="tabpanel"] {
     display: none !important;
   }
-
-  /* Ensure card and content within printable area are visible and styled correctly */
+  .w-full > [role="tabpanel"][data-state="active"] {
+    display: block !important;
+  }
+  
+  /* Style cards for printing */
   .card {
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #ddd !important;
     box-shadow: none !important;
     break-inside: avoid;
     background: white !important;
     padding: 0 !important;
     margin: 0 !important;
   }
-  
   .card-header, .card-content {
       padding: 1rem !important;
   }
 
-  /* Hide specific headers and filters within the card */
-  #rulemaking-monitoring-page .card-header,
-  #ccefod-page .card-header,
-  #pqs-page .card-header,
-  #glossary-page .card-header,
-  #rulemaking-monitoring-page .print\:hidden,
-  #ccefod-page .print\:hidden,
-  #pqs-page .print\:hidden,
-  #glossary-page .print\:hidden,
-  #rulemaking-monitoring-page .flex-col.sm\:flex-row.gap-4 {
-      display: none !important;
-  }
-  
-  /* Specifically display the table's card header if needed, but we hide all by default */
-  #rulemaking-monitoring-page .max-w-7xl .card-header {
-      display: none !important;
-  }
-
+  /* Ensure table is fully visible */
   .table, .table-fixed, .table-row, .table-cell {
     page-break-inside: auto;
+    width: 100% !important;
   }
   
   .table-row {
       page-break-inside: avoid;
   }
+  
+  .table-fixed {
+    table-layout: fixed !important;
+  }
 
-  h1, h2, h3, h4, p, span, div, th, td {
+  h1, h2, h3, h4, p, span, div, th, td, li {
     color: black !important;
+    background-color: transparent !important;
   }
 
   .bg-muted\/50, .bg-card, .bg-background {
