@@ -167,6 +167,7 @@
     print-color-adjust: exact !important;
     background-image: none !important;
     background: white !important;
+    color: black !important;
   }
   
   [data-sidebar="sidebar"],
@@ -175,20 +176,28 @@
     display: none !important;
   }
 
-  main {
+  main, #rulemaking-monitoring-page, #ccefod-page, #pqs-page, #glossary-page {
     padding: 0 !important;
     margin: 0 !important;
   }
   
-  #ccefod-page, #pqs-page, #glossary-page {
-      padding: 0 !important;
-      margin: 0 !important;
-  }
-
   .card {
     border: 1px solid #e2e8f0 !important;
     box-shadow: none !important;
     break-inside: avoid;
+    background: white !important;
+  }
+
+  .card-header, .card-content, .card-title, .card-description, p, h1, h2, h3, h4, h5, h6, span, div, th, td {
+      color: black !important;
+  }
+
+  .bg-muted\/50, .bg-card {
+      background: white !important;
+  }
+
+  .text-muted-foreground {
+      color: #555 !important;
   }
   
   .no-print-break {
@@ -201,7 +210,7 @@
   }
 
   @page {
-    size: auto;
+    size: A4 landscape;
     margin: 0.5in;
   }
 
@@ -227,6 +236,7 @@
     background-color: white !important;
   }
 }
+
 
 .login-bg-slideshow {
     transition: opacity 1s ease-in-out;
@@ -257,5 +267,3 @@
         opacity: .5;
     }
 }
-
-    
