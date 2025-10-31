@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
@@ -38,6 +37,8 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { parseISO } from 'date-fns';
 import { AppLayout } from '@/components/app-layout-component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Dynamically import heavy components
 const GlossaryForm = dynamic(() => import('@/components/glossary-form').then(mod => mod.GlossaryForm), { 
@@ -245,7 +246,64 @@ export default function GlossaryPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    if (filteredAndSortedRecords.length === 0) {
+        toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
+        return;
+    }
+    const doc = new jsPDF({ orientation: 'landscape' });
+    const tableColumn = ["No", "TSU", "TSA", "Editing", "Makna", "Keterangan", "Referensi", "Status"];
+    
+    const sortedData = [...filteredAndSortedRecords].sort((a, b) => a.tsu.localeCompare(b.tsu));
+
+    const tableRows = sortedData.map((record, index) => [
+        index + 1,
+        record.tsu,
+        record.tsa,
+        record.editing,
+        record.makna,
+        record.keterangan,
+        record.referensi || '-',
+        record.status
+    ]);
+    
+    doc.setFontSize(18);
+    doc.text("Translation Analysis Records", 14, 20);
+
+    autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 30,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [22, 160, 133], // A nice teal color
+            textColor: 255,
+            fontStyle: 'bold',
+        },
+        styles: {
+            fontSize: 8,
+            cellPadding: 2,
+        },
+        columnStyles: {
+            0: { cellWidth: 10 }, // No
+            1: { cellWidth: 40 }, // TSU
+            2: { cellWidth: 40 }, // TSA
+            3: { cellWidth: 40 }, // Editing
+            4: { cellWidth: 40 }, // Makna
+            5: { cellWidth: 40 }, // Keterangan
+            6: { cellWidth: 30 }, // Referensi
+            7: { cellWidth: 20 }, // Status
+        },
+        didDrawPage: (data) => {
+            const pageCount = doc.internal.pages.length;
+            doc.setFontSize(8);
+            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (doc.internal.pageSize.width - textWidth) / 2;
+            doc.text(text, textX, doc.internal.pageSize.height - 10);
+        }
+    });
+
+    doc.save("translation_analysis_records.pdf");
   };
 
   function renderContent() {
@@ -329,7 +387,7 @@ export default function GlossaryPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={handlePrint}>
                                 <Printer className="mr-2 h-4 w-4" />
-                                Print to PDF
+                                Export to PDF
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
