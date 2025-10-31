@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -40,7 +41,7 @@ async function getOrCreateKegiatanProject(ownerId: string, allUsers: User[]): Pr
             startDate: new Date().toISOString().split('T')[0],
             endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 5)).toISOString().split('T')[0], // 5 years from now
             status: 'On Track' as const,
-            team: allUsers.map(u => u.id), // FIX: Pass user IDs instead of full user objects
+            team: allUsers.map(u => u.id), // FIX: Pass an array of user IDs
             tags: ["Internal"],
         };
 
@@ -48,6 +49,7 @@ async function getOrCreateKegiatanProject(ownerId: string, allUsers: User[]): Pr
         if (result.success && result.id) {
             return result.id;
         } else {
+            console.error("Project creation failed with error:", result.error);
             throw new Error("Failed to create the main 'Kegiatan Subdirektorat' project.");
         }
     }
@@ -122,3 +124,4 @@ export async function deleteKegiatan(id: string) {
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
+
