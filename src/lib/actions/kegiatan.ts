@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, getDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, getDoc, query, where, getDocs, arrayUnion } from 'firebase/firestore';
 import type { Kegiatan, Task, Project, User } from '../types';
 import { addTimKerjaProject } from './project';
 import { findUserById } from '../data-utils';
@@ -40,7 +40,7 @@ async function getOrCreateKegiatanProject(ownerId: string, allUsers: User[]): Pr
             startDate: new Date().toISOString().split('T')[0],
             endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 5)).toISOString().split('T')[0], // 5 years from now
             status: 'On Track' as const,
-            team: allUsers.map(u => u.id), // Pass user IDs
+            team: allUsers.map(u => u.id), // FIX: Pass user IDs instead of full user objects
             tags: ["Internal"],
         };
 
@@ -86,13 +86,10 @@ export async function addKegiatan(data: KegiatanFormValues) {
         };
 
         const projectRef = doc(db, 'timKerjaProjects', projectId);
-        const projectSnap = await getDoc(projectRef);
-        if (!projectSnap.exists()) throw new Error("Kegiatan project not found.");
         
-        const projectData = projectSnap.data() as Project;
-        const updatedTasks = [...(projectData.tasks || []), newTask];
-
-        await updateDoc(projectRef, { tasks: updatedTasks });
+        await updateDoc(projectRef, { 
+            tasks: arrayUnion(newTask) 
+        });
         
         // We're returning a Kegiatan-like object for client-side compatibility, but the data is now a task
         const resultData: Kegiatan = {
@@ -109,6 +106,7 @@ export async function addKegiatan(data: KegiatanFormValues) {
         return { success: true, data: resultData };
 
     } catch (error) {
+        console.error("Error in addKegiatan:", error);
         return { success: false, error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }
