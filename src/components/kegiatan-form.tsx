@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Kegiatan, User } from '@/lib/types';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { kegiatanSubditUsers } from '@/lib/data';
 
 const kegiatanFormSchema = z.object({
     id: z.string().optional(),
@@ -50,20 +51,7 @@ type KegiatanFormProps = {
 
 export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
     const [isLoading, setIsLoading] = React.useState(false);
-    const [allUsers, setAllUsers] = React.useState<User[]>([]);
     const { toast } = useToast();
-
-    React.useEffect(() => {
-        const unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-            const usersFromDb = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-            setAllUsers(usersFromDb);
-        });
-        return () => unsub();
-    }, []);
-
-    const userOptions: MultiSelectOption[] = React.useMemo(() => 
-        allUsers.map(u => ({ value: u.id, label: u.name })), 
-    [allUsers]);
 
     const form = useForm<KegiatanFormValues>({
         resolver: zodResolver(kegiatanFormSchema),
@@ -83,7 +71,7 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
         setIsLoading(true);
         const result = await addKegiatan({
             ...data,
-            id: kegiatan?.id, // pass id if editing
+            id: kegiatan?.id,
             tanggalMulai: format(data.tanggalMulai, 'yyyy-MM-dd'),
             tanggalSelesai: format(data.tanggalSelesai, 'yyyy-MM-dd'),
         });
@@ -93,8 +81,8 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
         if (result.success && result.data) {
             onFormSubmit(result.data);
             toast({
-                title: `Activity ${kegiatan ? 'Updated' : 'Added'} as a Task`,
-                description: `"${data.subjek}" has been saved as a task.`,
+                title: `Activity ${kegiatan ? 'Updated' : 'Added'}`,
+                description: `"${data.subjek}" has been saved.`,
             });
             if (!kegiatan) {
                 form.reset({
@@ -191,7 +179,7 @@ export function KegiatanForm({ onFormSubmit, kegiatan }: KegiatanFormProps) {
                             <FormLabel>Nama yang Terlibat</FormLabel>
                             <FormControl>
                                 <MultiSelect
-                                    options={userOptions}
+                                    options={kegiatanSubditUsers}
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
                                     placeholder="Select team members..."
