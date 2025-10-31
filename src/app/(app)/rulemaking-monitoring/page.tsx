@@ -255,8 +255,8 @@ export default function RulemakingMonitoringPage() {
             doc.text(`Kategori: ${records[0].kategori}`, 14, finalY);
             finalY += 8;
 
-            const tableColumn = ["Tanggal", "Nomor Surat", "Keterangan Pengajuan", "Status", "Keterangan"];
-            const tableRows: any[] = [];
+            const tableColumn = ["Tanggal", "Nomor Surat", "Keterangan Pengajuan", "Status", "Keterangan", "Attachment"];
+            const tableRows: any[][] = [];
         
             records.flatMap(r => r.stages).forEach(stage => {
                 const rowData = [
@@ -265,6 +265,7 @@ export default function RulemakingMonitoringPage() {
                     stage.pengajuan.keteranganPengajuan || 'N/A',
                     stage.status.deskripsi.trim(),
                     stage.keterangan?.text || 'N/A',
+                    { content: 'Link', styles: { textColor: [0, 0, 255], fontStyle: 'bold' }, href: stage.pengajuan.fileUrl || '' }
                 ];
                 tableRows.push(rowData);
             });
