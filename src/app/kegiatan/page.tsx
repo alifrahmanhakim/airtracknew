@@ -214,7 +214,17 @@ export default function KegiatanPage() {
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                 didDrawPage: (data) => {
+                    // Header
                     if (data.pageNumber === 1) {
+                        if (logoDataUrl) {
+                            const aspectRatio = img.width / img.height;
+                            const logoWidth = 30;
+                            const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                            if (logoHeight > 0) {
+                                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                            }
+                        }
+                        
                         doc.setFontSize(18);
                         doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
 
@@ -230,18 +240,9 @@ export default function KegiatanPage() {
                         }
                         doc.setFontSize(12);
                         doc.text(subtitle, 14, 26);
-                        
-                        if (logoDataUrl) {
-                            const aspectRatio = img.width / img.height;
-                            const logoWidth = 30;
-                            const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                            if (logoHeight > 0) {
-                                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                            }
-                        }
                     }
 
-                    // Footer for all pages
+                    // Footer
                     doc.setFontSize(8);
                     
                     const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
@@ -413,3 +414,4 @@ export default function KegiatanPage() {
         </div>
     );
 }
+
