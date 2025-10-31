@@ -161,58 +161,46 @@
   }
 }
 
+/* Aggressive Print Styles */
 @media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Make the printable area and its parents visible */
+  #rulemaking-monitoring-page,
+  #rulemaking-monitoring-page *,
+  [data-radix-dialog-content] *, /* For dialogs, if any are used for printing */
+  [data-radix-dialog-content] {
+    visibility: visible;
+  }
+
+  /* Ensure the printable area takes up the whole page */
+  #rulemaking-monitoring-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 2rem !important;
+    margin: 0 !important;
+  }
+  
+  /* Force a white background and black text for printing */
   body {
     background: white !important;
     color: black !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  }
+
+  h1, h2, h3, h4, p, span, div, th, td, li {
+    color: black !important;
+    background-color: transparent !important;
   }
   
-  /* Hide all non-printable elements by default */
-  header,
-  footer,
-  aside,
-  nav,
-  [data-sidebar="sidebar"],
-  [data-sidebar="trigger"],
+  /* Hide non-essential elements within the printable area */
   .print-hidden,
-  .print\:hidden, /* Tailwind's print:hidden utility */
-  [data-radix-dialog-overlay],
-  [data-radix-popover-content],
-  [data-radix-tooltip-content] {
+  .print\:hidden {
     display: none !important;
-  }
-
-  /* Ensure the main layout and content area are visible */
-  body > div, body > div > div {
-    display: block !important;
-    position: static !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-  
-  /* Make the main content area take up the full page */
-  main, main > div, main > div > div {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-  }
-
-  /* Specifically target the page content and reset layout */
-  #rulemaking-monitoring-page, #ccefod-page, #pqs-page, #glossary-page {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Show only the active tab's content */
-  .w-full > [role="tabpanel"] {
-    display: none !important;
-  }
-  .w-full > [role="tabpanel"][data-state="active"] {
-    display: block !important;
   }
   
   /* Style cards for printing */
@@ -237,30 +225,7 @@
   .table-row {
       page-break-inside: avoid;
   }
-  
-  .table-fixed {
-    table-layout: fixed !important;
-  }
-
-  h1, h2, h3, h4, p, span, div, th, td, li {
-    color: black !important;
-    background-color: transparent !important;
-  }
-
-  .bg-muted\/50, .bg-card, .bg-background {
-    background-color: white !important;
-  }
-
-  .text-muted-foreground {
-      color: #555 !important;
-  }
-
-  .dark {
-    --background: white !important;
-    --foreground: black !important;
-  }
 }
-
 
 .login-bg-slideshow {
     transition: opacity 1s ease-in-out;
