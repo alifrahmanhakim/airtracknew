@@ -190,3 +190,47 @@
         opacity: .5;
     }
 }
+
+@media print {
+    body * {
+        visibility: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #ccefod-page, #ccefod-page * {
+        visibility: visible !important;
+    }
+
+    #ccefod-page {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+    }
+
+    .print\:hidden {
+        display: none !important;
+    }
+
+    main, .app-content-container, .p-4, .md\:p-8 {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .card, .card-content, .card-header {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    @page {
+      size: auto;
+      margin: 0.5in;
+    }
+}
+

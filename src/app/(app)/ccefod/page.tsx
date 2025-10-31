@@ -13,7 +13,7 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { deleteCcefodRecord } from '@/lib/actions/ccefod';
-import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, RotateCcw } from 'lucide-react';
+import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, RotateCcw, Printer, ChevronDown } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
@@ -32,6 +38,9 @@ import { Search } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { AppLayout } from '@/components/app-layout-component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { format } from 'date-fns';
 
 
 // Dynamically import heavy components
@@ -239,7 +248,7 @@ export default function CcefodPage() {
     });
   }, [allRecords, analyticsAnnexFilter, analyticsAdaPerubahanFilter, analyticsStatusFilter]);
 
-  const confirmExport = () => {
+  const confirmExportExcel = () => {
     if (allRecords.length === 0) {
         toast({
             variant: 'destructive',
@@ -300,6 +309,79 @@ export default function CcefodPage() {
     }, 500);
   };
   
+  const handleExportPdf = () => {
+    if (allRecords.length === 0) {
+        toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+        return;
+    }
+    
+    const doc = new jsPDF({ orientation: 'landscape' });
+    let finalY = 20;
+
+    const groupedByAnnex = allRecords.reduce<Record<string, CcefodRecord[]>>((acc, record) => {
+        const key = record.annex;
+        if (!acc[key]) {
+            acc[key] = [];
+        }
+        acc[key].push(record);
+        return acc;
+    }, {});
+
+    const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
+    
+    Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
+        const tableRows = recordsInGroup.map(record => [
+            record.annexReference,
+            (record.standardPractice || '').replace(/<[^>]+>/g, ''), // Strip HTML
+            record.legislationReference,
+            record.implementationLevel,
+            record.status,
+        ]);
+
+        if (finalY > 20 || groupIndex > 0) {
+            finalY += 10;
+        }
+
+        if (finalY > doc.internal.pageSize.height - 40) {
+            doc.addPage();
+            finalY = 20;
+        }
+        
+        doc.setFontSize(18);
+        doc.text("CC/EFOD Records", 14, finalY);
+        finalY += 10;
+
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Annex: ${annex}`, 14, finalY);
+        finalY += 8;
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: finalY,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [22, 160, 133],
+                textColor: 255,
+                fontStyle: 'bold',
+            },
+            didDrawPage: (data) => {
+                const pageCount = doc.internal.pages.length;
+                doc.setFontSize(8);
+                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            }
+        });
+        
+        finalY = (doc as any).lastAutoTable.finalY;
+    });
+
+    doc.save("ccefod_records.pdf");
+  };
+
   function renderContent() {
     if (isLoading) {
       return (
@@ -422,10 +504,23 @@ export default function CcefodPage() {
                             </div>
                              {isAdmin && (
                                 <div className="flex items-center gap-2 print:hidden">
-                                    <Button variant="outline" size="icon" onClick={confirmExport}>
-                                        <FileSpreadsheet className="h-4 w-4" />
-                                        <span className="sr-only">Export as Excel</span>
-                                     </Button>
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                        <Button variant="outline">
+                                            Export <ChevronDown className="ml-2 h-4 w-4" />
+                                        </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={confirmExportExcel}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to Excel
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleExportPdf}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Export to PDF
+                                        </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                      <Button variant="destructive" size="icon" onClick={() => setShowDeleteAllConfirm(true)} disabled={allRecords.length === 0}>
                                         <Trash2 className="h-4 w-4" />
                                         <span className="sr-only">Delete All Records</span>
