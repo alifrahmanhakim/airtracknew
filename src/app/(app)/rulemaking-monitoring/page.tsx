@@ -181,6 +181,7 @@ export default function RulemakingMonitoringPage() {
                     'Tanggal Pengajuan': stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'yyyy-MM-dd') : 'N/A',
                     'Nomor Surat': stage.pengajuan.nomor || 'N/A',
                     'Keterangan Pengajuan': stage.pengajuan.keteranganPengajuan || 'N/A',
+                    'Attachment Link': stage.pengajuan.fileUrl || 'N/A',
                     'Deskripsi Status': stage.status.deskripsi.trim(),
                     'Keterangan': stage.keterangan?.text || 'N/A',
                 }));
@@ -191,6 +192,7 @@ export default function RulemakingMonitoringPage() {
                 'Tanggal Pengajuan': 'N/A',
                 'Nomor Surat': 'N/A',
                 'Keterangan Pengajuan': 'N/A',
+                'Attachment Link': 'N/A',
                 'Deskripsi Status': 'No stages available',
                 'Keterangan': 'N/A',
             }];
