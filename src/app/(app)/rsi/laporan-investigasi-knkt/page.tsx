@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RotateCcw, Search, ArrowLeft, Loader2, AlertTriangle, Trash2, FileSpreadsheet } from 'lucide-react';
+import { RotateCcw, Search, ArrowLeft, Loader2, AlertTriangle, Trash2, FileSpreadsheet, Printer, ChevronDown } from 'lucide-react';
 import { getYear, parseISO } from 'date-fns';
 import { aocOptions, taxonomyOptions as staticTaxonomyOptions } from '@/lib/data';
 import Link from 'next/link';
@@ -26,6 +26,10 @@ import { addKnktReport, deleteKnktReport } from '@/lib/actions/knkt';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import * as XLSX from 'xlsx';
 import { AppLayout } from '@/components/app-layout-component';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
     loading: () => <Skeleton className="h-[600px] w-full" /> 
@@ -202,6 +206,45 @@ export default function LaporanInvestigasiKnktPage() {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'KNKT Reports');
         XLSX.writeFile(workbook, 'knkt_reports.xlsx');
     };
+    
+    const handleExportPdf = () => {
+        if (filteredRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.setFontSize(18);
+        doc.text("KNKT Investigation Reports", 14, 20);
+
+        const tableColumn = ["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
+        const tableRows = filteredRecords.map(record => [
+            record.tanggal_diterbitkan,
+            record.nomor_laporan,
+            record.status,
+            record.operator,
+            record.registrasi,
+            record.tipe_pesawat,
+            record.lokasi,
+            record.taxonomy || 'N/A'
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                doc.setFontSize(8);
+                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            }
+        });
+
+        doc.save("knkt_reports.pdf");
+    };
 
     return (
         <AppLayout>
@@ -262,10 +305,23 @@ export default function LaporanInvestigasiKnktPage() {
                                             Daftar semua laporan investigasi yang diterbitkan oleh KNKT.
                                         </CardDescription>
                                     </div>
-                                    <Button variant="outline" onClick={handleExportExcel}>
-                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                        Export to Excel
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                        <Button variant="outline">
+                                            Export <ChevronDown className="ml-2 h-4 w-4" />
+                                        </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={handleExportExcel}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to Excel
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleExportPdf}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Export to PDF
+                                        </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </CardHeader>
                             <CardContent>
