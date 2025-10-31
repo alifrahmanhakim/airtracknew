@@ -191,7 +191,7 @@ export default function DataAccidentIncidentPage() {
         const generatePdfWithLogo = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
 
-            const addPageContent = (data: { pageNumber: number }) => {
+            const addPageContent = (data: { pageNumber: number, pageCount: number }) => {
                 if (data.pageNumber === 1) {
                     doc.setFontSize(18);
                     doc.text("Accident & Serious Incident Records", 14, 15);
@@ -199,7 +199,7 @@ export default function DataAccidentIncidentPage() {
                         const aspectRatio = img.width / img.height;
                         const logoWidth = 30;
                         const logoHeight = logoWidth / aspectRatio;
-                        doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
                     }
                 }
         
@@ -209,7 +209,7 @@ export default function DataAccidentIncidentPage() {
                 const textX = doc.internal.pageSize.width - textWidth - 14;
                 doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
 
-                const pageText = `Page ${data.pageNumber} of `;
+                const pageText = `Page ${data.pageNumber} of ${data.pageCount}`;
                 doc.text(pageText, 14, doc.internal.pageSize.height - 10);
             };
 
@@ -230,13 +230,13 @@ export default function DataAccidentIncidentPage() {
                 startY: 25,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent,
+                didDrawPage: (data) => addPageContent({...data, pageCount: (doc as any).internal.getNumberOfPages()}),
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                doc.text(String(pageCount), 14 + doc.getStringUnitWidth(`Page ${i} of `) * doc.getFontSize() / doc.internal.scaleFactor, doc.internal.pageSize.height - 10);
+                doc.text(`Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
             }
 
             doc.save("accident_incident_records.pdf");

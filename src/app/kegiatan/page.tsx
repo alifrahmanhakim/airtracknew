@@ -258,7 +258,8 @@ export default function KegiatanPage() {
             const pageCount = (doc as any).internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                  doc.setPage(i);
-                 doc.text(String(pageCount), 14 + doc.getStringUnitWidth(`Page ${i} of `) * doc.getFontSize() / doc.internal.scaleFactor, doc.internal.pageSize.height - 10);
+                 const pageString = `Page ${i} of ${pageCount}`;
+                 doc.text(pageString, 14, doc.internal.pageSize.height - 10);
             }
 
             doc.save("jadwal_kegiatan.pdf");
@@ -414,4 +415,3 @@ export default function KegiatanPage() {
         </div>
     );
 }
-

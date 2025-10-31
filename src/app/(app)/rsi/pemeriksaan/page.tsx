@@ -231,7 +231,7 @@ export default function PemeriksaanPage() {
                         const aspectRatio = img.width / img.height;
                         const logoWidth = 30;
                         const logoHeight = logoWidth / aspectRatio;
-                        doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
                     }
                 }
 
@@ -240,9 +240,6 @@ export default function PemeriksaanPage() {
                 const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
                 const textX = doc.internal.pageSize.width - textWidth - 14;
                 doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-
-                const pageText = `Page ${data.pageNumber} of `;
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
             };
 
             const tableColumn = ["Tanggal", "Kategori", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Korban"];
@@ -262,14 +259,12 @@ export default function PemeriksaanPage() {
                 startY: 25,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent
+                didDrawPage: (data) => {
+                    addPageContent(data);
+                    const pageCount = (doc as any).internal.getNumberOfPages();
+                    doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
+                }
             });
-            
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.text(String(pageCount), 14 + doc.getStringUnitWidth(`Page ${i} of `) * doc.getFontSize() / doc.internal.scaleFactor, doc.internal.pageSize.height - 10);
-            }
             
             doc.save("pemeriksaan_records.pdf");
         };
