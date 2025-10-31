@@ -39,6 +39,27 @@ const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics'
     loading: () => <Skeleton className="h-[600px] w-full" />
 });
 
+// Helper function to add image to PDF
+const addImageToPdf = (doc: jsPDF, imageUrl: string, callback: () => void) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous'; // Important for CORS
+    img.src = imageUrl;
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/png');
+        doc.addImage(dataURL, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+        callback(); // Proceed with saving after image is loaded
+    };
+    img.onerror = () => {
+        console.error("Failed to load logo image for PDF export.");
+        callback(); // Proceed even if image fails
+    }
+};
+
 
 export default function KegiatanPage() {
     const [records, setRecords] = React.useState<Kegiatan[]>([]);
@@ -173,53 +194,61 @@ export default function KegiatanPage() {
             return;
         }
         const doc = new jsPDF({ orientation: 'landscape' });
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         let startY = 20;
 
-        doc.setFontSize(18);
-        doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, startY);
-        startY += 8;
+        const addContentAndSave = () => {
+            doc.setFontSize(18);
+            doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, startY);
+            startY += 8;
 
-        let subtitle = '';
-        if (filterMode === 'week') {
-            const weekStart = parseISO(selectedWeek);
-            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-            const weekNumber = getISOWeek(weekStart);
-            subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-        } else {
-            const monthStart = parseISO(selectedMonth);
-            subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-        }
-
-        doc.setFontSize(12);
-        doc.text(subtitle, 14, startY);
-        startY += 12;
-
-        const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
-        const tableRows = filteredRecords.map(record => [
-            record.subjek,
-            format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
-            format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-            record.nama.join('\n'),
-            record.lokasi,
-            record.catatan || '-',
-        ]);
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: startY,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: (data) => {
-                doc.setFontSize(8);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
+            let subtitle = '';
+            if (filterMode === 'week') {
+                const weekStart = parseISO(selectedWeek);
+                const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                const weekNumber = getISOWeek(weekStart);
+                subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+            } else {
+                const monthStart = parseISO(selectedMonth);
+                subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
             }
-        });
 
-        doc.save("jadwal_kegiatan.pdf");
+            doc.setFontSize(12);
+            doc.text(subtitle, 14, startY);
+            startY += 12;
+
+            const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
+            const tableRows = filteredRecords.map(record => [
+                record.subjek,
+                format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
+                format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
+                record.nama.join('\n'),
+                record.lokasi,
+                record.catatan || '-',
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: startY,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                didDrawPage: (data) => {
+                    if (data.pageNumber > 1) {
+                         doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+                    }
+                    doc.setFontSize(8);
+                    const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                    const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                    const textX = doc.internal.pageSize.width - textWidth - 14;
+                    doc.text(text, textX, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save("jadwal_kegiatan.pdf");
+        };
+
+        addImageToPdf(doc, logoUrl, addContentAndSave);
     };
 
 
