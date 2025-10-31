@@ -35,6 +35,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const RulemakingForm = dynamic(() => import('@/components/rulemaking-monitoring/rulemaking-form').then(mod => mod.RulemakingForm), { 
     ssr: false,
@@ -211,7 +213,56 @@ export default function RulemakingMonitoringPage() {
     };
 
     const handlePrint = () => {
-        window.print();
+        if (filteredAndSortedRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
+        
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Rulemaking Monitoring Records", 14, 22);
+        
+        const tableColumn = ["Perihal", "Kategori", "Tanggal Pengajuan", "Status"];
+        const tableRows: any[] = [];
+    
+        filteredAndSortedRecords.forEach(record => {
+            if (record.stages && record.stages.length > 0) {
+                 record.stages.forEach(stage => {
+                    const rowData = [
+                        record.perihal,
+                        record.kategori,
+                        stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
+                        stage.status.deskripsi.trim(),
+                    ];
+                    tableRows.push(rowData);
+                });
+            } else {
+                 tableRows.push([
+                    record.perihal,
+                    record.kategori,
+                    'N/A',
+                    'No stages available'
+                 ]);
+            }
+        });
+        
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'striped',
+            styles: {
+                fontSize: 8,
+                cellPadding: 2,
+            },
+            headStyles: {
+                fillColor: [22, 160, 133], // Your theme's primary color
+                textColor: 255,
+                fontStyle: 'bold',
+            },
+        });
+        
+        doc.save("rulemaking_monitoring.pdf");
     };
 
 

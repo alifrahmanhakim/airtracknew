@@ -54,6 +54,8 @@
     "genkit": "^1.13.0",
     "googleapis": "^140.0.1",
     "jsdom": "^26.1.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
     "lucide-react": "^0.475.0",
     "next": "latest",
     "next-themes": "^0.3.0",
