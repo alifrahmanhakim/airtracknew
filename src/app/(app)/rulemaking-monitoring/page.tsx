@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, AlertTriangle, ListChecks, Search, FileSpreadsheet } from 'lucide-react';
+import { Loader2, AlertTriangle, ListChecks, Search, FileSpreadsheet, Printer, ChevronDown } from 'lucide-react';
 import { deleteRulemakingRecord } from '@/lib/actions/rulemaking';
 import { AppLayout } from '@/components/app-layout-component';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,12 @@ import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { format, parseISO } from 'date-fns';
 import Image from 'next/image';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const RulemakingForm = dynamic(() => import('@/components/rulemaking-monitoring/rulemaking-form').then(mod => mod.RulemakingForm), { 
     ssr: false,
@@ -167,7 +173,7 @@ export default function RulemakingMonitoringPage() {
         setRecordToDelete(null);
     };
 
-    const handleExport = () => {
+    const handleExportExcel = () => {
         if (filteredAndSortedRecords.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
             return;
@@ -204,11 +210,16 @@ export default function RulemakingMonitoringPage() {
         XLSX.writeFile(workbook, "rulemaking_monitoring_export.xlsx");
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+
+
     return (
         <AppLayout>
-            <main className="p-4 md:p-8">
+            <main className="p-4 md:p-8" id="rulemaking-monitoring-page">
                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <Card className="mb-4 overflow-hidden relative">
+                    <Card className="mb-4 overflow-hidden relative print:hidden">
                         <div className="flex flex-col md:flex-row">
                             <div className="flex-1 p-6 z-10">
                                 <CardTitle className="text-3xl font-bold flex items-center gap-2"><ListChecks /> Monitoring</CardTitle>
@@ -234,7 +245,7 @@ export default function RulemakingMonitoringPage() {
                         </div>
                     </Card>
 
-                    <Card className="mb-4">
+                    <Card className="mb-4 print:hidden">
                          <CardHeader>
                             <CardTitle>Analytics</CardTitle>
                             <CardDescription>Visualisasi data berdasarkan filter yang dipilih.</CardDescription>
@@ -269,7 +280,7 @@ export default function RulemakingMonitoringPage() {
                     </Card>
 
 
-                    <TabsContent value="form">
+                    <TabsContent value="form" className="print:hidden">
                         <div className="max-w-7xl mx-auto">
                             <Card>
                                 <CardHeader>
@@ -291,16 +302,29 @@ export default function RulemakingMonitoringPage() {
                     <TabsContent value="records">
                         <div className="max-w-7xl mx-auto">
                             <Card>
-                                <CardHeader>
+                                <CardHeader className="print:hidden">
                                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                         <div className='flex-1'>
                                             <CardTitle>All Records</CardTitle>
                                             <CardDescription>A list of all rulemaking monitoring records.</CardDescription>
                                         </div>
-                                        <Button variant="outline" onClick={handleExport}>
-                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                            Export to Excel
-                                        </Button>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                            <Button variant="outline">
+                                                Export <ChevronDown className="ml-2 h-4 w-4" />
+                                            </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={handleExportExcel}>
+                                                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                                Export to Excel
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={handlePrint}>
+                                                <Printer className="mr-2 h-4 w-4" />
+                                                Print to PDF
+                                            </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
                                     <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                         <div className="relative flex-grow">
