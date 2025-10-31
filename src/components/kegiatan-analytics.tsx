@@ -7,11 +7,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Info, BarChart, User as UserIcon } from 'lucide-react';
 import { Bar, BarChart as BarChartComponent, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { AnimatedCounter } from './ui/animated-counter';
+import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 type KegiatanAnalyticsProps = {
   tasks: Kegiatan[];
   users: User[];
 };
+
+// Custom tick component for Y-axis to handle text wrapping and tooltips
+const CustomYAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const maxChars = 20; // Max characters before truncating
+    const text = payload.value;
+    const truncatedText = text.length > maxChars ? `${text.substring(0, maxChars)}...` : text;
+
+    return (
+        <g transform={`translate(${x},${y})`}>
+             <UITooltipProvider>
+                <UITooltip>
+                    <UITooltipTrigger asChild>
+                        <text x={-10} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs cursor-default">
+                            {truncatedText}
+                        </text>
+                    </UITooltipTrigger>
+                    <UITooltipContent>
+                        <p>{text}</p>
+                    </UITooltipContent>
+                </UITooltip>
+            </UITooltipProvider>
+        </g>
+    );
+};
+
 
 export function KegiatanAnalytics({ tasks, users }: KegiatanAnalyticsProps) {
   const analyticsData = React.useMemo(() => {
@@ -78,13 +105,13 @@ export function KegiatanAnalytics({ tasks, users }: KegiatanAnalyticsProps) {
                         <BarChart className="h-5 w-5" />
                         Activities by Location
                     </h3>
-                    <div className="h-[200px] w-full">
+                    <div className="h-[300px] w-full">
                         <ResponsiveContainer>
-                        <BarChartComponent data={analyticsData.lokasiData} layout="vertical" margin={{ left: 50 }}>
-                            <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                        <BarChartComponent data={analyticsData.lokasiData} layout="vertical" margin={{ left: 100 }}>
+                            <XAxis type="number" allowDecimals={false} />
+                            <YAxis dataKey="name" type="category" width={150} interval={0} tick={<CustomYAxisTick />} />
                             <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
-                            <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+                            <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} barSize={20} />
                         </BarChartComponent>
                         </ResponsiveContainer>
                     </div>
@@ -95,13 +122,13 @@ export function KegiatanAnalytics({ tasks, users }: KegiatanAnalyticsProps) {
                     <UserIcon className="h-5 w-5" />
                     Activities by Personnel
                 </h3>
-                <div className="h-[400px] w-full">
+                <div className="h-[600px] w-full">
                     <ResponsiveContainer>
-                    <BarChartComponent data={analyticsData.personelData} layout="vertical" margin={{ left: 50 }}>
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={150} interval={0} tick={{ fontSize: 12 }} />
+                    <BarChartComponent data={analyticsData.personelData} layout="vertical" margin={{ left: 100 }}>
+                        <XAxis type="number" allowDecimals={false} />
+                        <YAxis dataKey="name" type="category" width={150} interval={0} tick={<CustomYAxisTick />} />
                         <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
-                        <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+                        <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} barSize={20} />
                     </BarChartComponent>
                     </ResponsiveContainer>
                 </div>
