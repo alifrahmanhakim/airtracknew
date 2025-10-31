@@ -218,50 +218,78 @@ export default function RulemakingMonitoringPage() {
             return;
         }
         
-        const doc = new jsPDF();
+        const doc = new jsPDF({ orientation: 'landscape' });
+        let finalY = 20; // Initial Y position
+        
         doc.setFontSize(18);
-        doc.text("Rulemaking Monitoring Records", 14, 22);
-        
-        const tableColumn = ["Perihal", "Kategori", "Tanggal Pengajuan", "Status"];
-        const tableRows: any[] = [];
+        doc.text("Rulemaking Monitoring Records", 14, finalY);
+        finalY += 10;
     
-        filteredAndSortedRecords.forEach(record => {
-            if (record.stages && record.stages.length > 0) {
-                 record.stages.forEach(stage => {
-                    const rowData = [
-                        record.perihal,
-                        record.kategori,
-                        stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
-                        stage.status.deskripsi.trim(),
-                    ];
-                    tableRows.push(rowData);
-                });
-            } else {
-                 tableRows.push([
-                    record.perihal,
-                    record.kategori,
-                    'N/A',
-                    'No stages available'
-                 ]);
+        const groupedByPerihal = filteredAndSortedRecords.reduce<Record<string, RulemakingRecord[]>>((acc, record) => {
+            const key = record.perihal;
+            if (!acc[key]) {
+                acc[key] = [];
             }
-        });
+            acc[key].push(record);
+            return acc;
+        }, {});
+
+        Object.entries(groupedByPerihal).forEach(([perihal, records]) => {
+            if (finalY > 20) { // Add space before a new group, unless it's the first one
+                finalY += 10;
+            }
+
+             // Check if there's enough space for the group header and at least one row, otherwise add a new page
+            if (finalY > doc.internal.pageSize.height - 40) {
+                doc.addPage();
+                finalY = 20;
+            }
+
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Perihal: ${perihal}`, 14, finalY);
+            finalY += 6;
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Kategori: ${records[0].kategori}`, 14, finalY);
+            finalY += 8;
+
+            const tableColumn = ["Tanggal", "Nomor Surat", "Keterangan Pengajuan", "Status", "Keterangan"];
+            const tableRows: any[] = [];
         
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 30,
-            theme: 'striped',
-            styles: {
-                fontSize: 8,
-                cellPadding: 2,
-            },
-            headStyles: {
-                fillColor: [22, 160, 133], // Your theme's primary color
-                textColor: 255,
-                fontStyle: 'bold',
-            },
+            records.flatMap(r => r.stages).forEach(stage => {
+                const rowData = [
+                    stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
+                    stage.pengajuan.nomor || 'N/A',
+                    stage.pengajuan.keteranganPengajuan || 'N/A',
+                    stage.status.deskripsi.trim(),
+                    stage.keterangan?.text || 'N/A',
+                ];
+                tableRows.push(rowData);
+            });
+            
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: finalY,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [22, 160, 133],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                },
+                didDrawPage: (data) => {
+                    // Footer
+                    const pageCount = doc.internal.pages.length;
+                    doc.setFontSize(8);
+                    doc.text(`Copyright © AirTrack ${new Date().getFullYear()}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+                }
+            });
+            
+            finalY = (doc as any).lastAutoTable.finalY;
         });
-        
+
         doc.save("rulemaking_monitoring.pdf");
     };
 
