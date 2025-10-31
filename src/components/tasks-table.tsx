@@ -218,13 +218,14 @@ type SortDescriptor = {
 
 type TasksTableProps = {
     projectId: string;
+    projectName: string;
     projectType: Project['projectType'];
     tasks: Task[];
     teamMembers: User[];
     onTasksChange: (tasks: Task[]) => void;
 };
 
-export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasksChange }: TasksTableProps) {
+export function TasksTable({ projectId, projectName, projectType, tasks, teamMembers, onTasksChange }: TasksTableProps) {
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState(false);
     const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
@@ -432,7 +433,7 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
         }
 
         const doc = new jsPDF({ orientation: 'landscape' });
-        doc.text(`Task List for Project: ${projectId}`, 14, 15);
+        doc.text(`Task List for Project: ${projectName}`, 14, 15);
         
         const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status", "Attachment"];
         const tableRows = dataToExport.map(item => [
@@ -462,10 +463,18 @@ export function TasksTable({ projectId, projectType, tasks, teamMembers, onTasks
                         doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: firstUrl });
                     }
                 }
+            },
+            didDrawPage: (data) => {
+                const pageCount = doc.internal.pages.length;
+                doc.setFontSize(8);
+                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = doc.internal.pageSize.width - textWidth - 14;
+                doc.text(text, textX, doc.internal.pageSize.height - 10);
             }
         });
 
-        doc.save(`${projectId}_tasks.pdf`);
+        doc.save(`${projectName}_tasks.pdf`);
          toast({
             title: 'Export Successful',
             description: 'Tasks have been exported to a PDF file.',
