@@ -255,7 +255,7 @@ export default function RulemakingMonitoringPage() {
             finalY += 8;
 
             const tableColumn = ["Tanggal", "No. Surat", "Keterangan Pengajuan", "Status", "Keterangan", "Attachment"];
-            const tableRows: (string | { content: string; href: string; styles: { textColor: number[] } })[][] = [];
+            const tableRows: (string | { content: string; href: string })[][] = [];
         
             recordsInGroup.flatMap(r => r.stages).forEach(stage => {
                 const rowData = [
@@ -264,9 +264,7 @@ export default function RulemakingMonitoringPage() {
                     stage.pengajuan.keteranganPengajuan || 'N/A',
                     stage.status.deskripsi.trim(),
                     stage.keterangan?.text || 'N/A',
-                    stage.pengajuan.fileUrl 
-                        ? { content: 'Link', href: stage.pengajuan.fileUrl, styles: { textColor: [0, 0, 255] } } 
-                        : 'N/A'
+                    stage.pengajuan.fileUrl ? 'Link' : 'N/A' // Use simple text, link is added in didDrawCell
                 ];
                 tableRows.push(rowData);
             });
@@ -280,6 +278,16 @@ export default function RulemakingMonitoringPage() {
                     fillColor: [22, 160, 133],
                     textColor: 255,
                     fontStyle: 'bold',
+                },
+                didDrawCell: (data) => {
+                    if (data.section === 'body' && data.column.index === 5) {
+                        const stageIndex = data.row.index;
+                        const record = recordsInGroup.find(r => r.stages.length > stageIndex);
+                        const fileUrl = record?.stages[stageIndex]?.pengajuan.fileUrl;
+                        if (fileUrl) {
+                            doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: fileUrl });
+                        }
+                    }
                 },
                 didDrawPage: (data) => {
                     const pageCount = doc.internal.pages.length;
