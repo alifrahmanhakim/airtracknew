@@ -241,55 +241,82 @@ export default function MonitoringRekomendasiDgcaPage() {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
-        const doc = new jsPDF({ orientation: 'landscape' });
+
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
 
-        const addPageContent = (pageNumber: number, pageCount: number) => {
-            doc.setFontSize(18);
-            doc.text("Tindak Lanjut Rekomendasi KNKT ke DGCA", 14, 15);
-
-            if(pageNumber === 1) {
-              doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+                return;
             }
-            
-            doc.setFontSize(8);
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = doc.internal.pageSize.width - textWidth - 14;
-            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-
-            const pageText = `Page ${pageNumber} of ${pageCount}`;
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdf(dataUrl);
+        };
+        
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
+            generatePdf(); // Proceed without the logo if it fails
         };
 
-        const tableColumn = ["Laporan KNKT", "Rekomendasi", "Nomor Rekomendasi", "Tindak Lanjut DKPPU"];
-        const tableRows = filteredAndSortedRecords.map(record => [
-            `${record.judulLaporan}\nNo: ${record.nomorLaporan}\nOp: ${record.operator}\nReg: ${record.registrasi}\nKejadian: ${record.tanggalKejadian}`,
-            record.rekomendasiKeDgca,
-            record.nomorRekomendasi,
-            record.tindakLanjutDkppu
-        ]);
+        const generatePdf = (logoDataUrl?: string) => {
+            const doc = new jsPDF({ orientation: 'landscape' });
 
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 25,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: (data) => {
-                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
+            const addPageContent = (data: { pageNumber: number }) => {
+                if (logoDataUrl && data.pageNumber === 1) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if (logoHeight > 0) {
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                }
+
+                doc.setFontSize(18);
+                doc.text("Tindak Lanjut Rekomendasi KNKT ke DGCA", 14, 15);
+                
+                doc.setFontSize(8);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = doc.internal.pageSize.width - textWidth - 14;
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            };
+
+            const tableColumn = ["Laporan KNKT", "Rekomendasi", "Nomor Rekomendasi", "Tindak Lanjut DKPPU"];
+            const tableRows = filteredAndSortedRecords.map(record => [
+                `${record.judulLaporan}\nNo: ${record.nomorLaporan}\nOp: ${record.operator}\nReg: ${record.registrasi}\nKejadian: ${record.tanggalKejadian}`,
+                record.rekomendasiKeDgca,
+                record.nomorRekomendasi,
+                record.tindakLanjutDkppu
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 25,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                didDrawPage: addPageContent
+            });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 2; i <= pageCount; i++) {
+                doc.setPage(i);
+                addPageContent({ pageNumber: i });
             }
-        });
-        
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            const pageText = `Page ${i} of ${pageCount}`;
-            doc.setFontSize(8);
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-        }
 
-        doc.save("tindak_lanjut_dgca.pdf");
+            doc.save("tindak_lanjut_dgca.pdf");
+        };
     };
 
 
