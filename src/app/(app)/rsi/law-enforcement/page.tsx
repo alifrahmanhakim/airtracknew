@@ -176,10 +176,9 @@ export default function LawEnforcementPage() {
                     const logoWidth = 30;
                     const logoHeight = logoWidth / aspectRatio;
                     doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                    doc.setFontSize(16);
+                    doc.text("Law Enforcement Records", 14, 15);
                 }
-
-                doc.setFontSize(16);
-                doc.text("Law Enforcement Records", 14, 15);
                 
                 doc.setFontSize(8);
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;

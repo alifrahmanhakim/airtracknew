@@ -235,16 +235,17 @@ export default function LaporanInvestigasiKnktPage() {
                     const logoWidth = 30;
                     const logoHeight = logoWidth / aspectRatio;
                     doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                    doc.setFontSize(18);
+                    doc.text("KNKT Investigation Reports", 14, 20);
                 }
                 
-                doc.setFontSize(18);
-                doc.text("KNKT Investigation Reports", 14, 20);
-
                 doc.setFontSize(8);
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
                 const textX = (doc.internal.pageSize.width - textWidth) / 2;
                 doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+                 const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
             };
 
             const tableColumn = ["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
@@ -267,6 +268,12 @@ export default function LaporanInvestigasiKnktPage() {
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                 didDrawPage: addPageContent,
             });
+
+             const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 2; i <= pageCount; i++) {
+                doc.setPage(i);
+                addPageContent({ pageNumber: i });
+            }
 
             doc.save("knkt_reports.pdf");
         }

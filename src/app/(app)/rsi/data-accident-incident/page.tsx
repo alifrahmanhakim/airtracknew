@@ -188,11 +188,10 @@ export default function DataAccidentIncidentPage() {
                     const logoWidth = 30;
                     const logoHeight = logoWidth / aspectRatio;
                     doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                    doc.setFontSize(18);
+                    doc.text("Accident & Serious Incident Records", 14, 15);
                 }
         
-                doc.setFontSize(18);
-                doc.text("Accident & Serious Incident Records", 14, 15);
-                
                 doc.setFontSize(8);
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
@@ -234,7 +233,6 @@ export default function DataAccidentIncidentPage() {
 
         img.onerror = () => {
             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
-            // Fallback to generate PDF without logo
             const doc = new jsPDF({ orientation: 'landscape' });
             autoTable(doc, {
                 head: [["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"]],

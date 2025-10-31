@@ -212,10 +212,9 @@ export default function PemeriksaanPage() {
                     const logoWidth = 30;
                     const logoHeight = logoWidth / aspectRatio;
                     doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                    doc.setFontSize(18);
+                    doc.text("Pemeriksaan Records", 14, 15);
                 }
-                
-                doc.setFontSize(18);
-                doc.text("Pemeriksaan Records", 14, 15);
 
                 doc.setFontSize(8);
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
