@@ -190,8 +190,26 @@ export default function PemeriksaanPage() {
             return;
         }
         const doc = new jsPDF({ orientation: 'landscape' });
-        doc.setFontSize(18);
-        doc.text("Pemeriksaan Records", 14, 20);
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+    
+        const addPageContent = (pageNumber: number, pageCount: number) => {
+            doc.setFontSize(18);
+            doc.text("Pemeriksaan Records", 14, 15);
+
+            if(pageNumber === 1) {
+              doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+            }
+
+            doc.setFontSize(8);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = doc.internal.pageSize.width - textWidth - 14;
+            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+            const pageText = `Page ${pageNumber} of ${pageCount}`;
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        };
+
 
         const tableColumn = ["Tanggal", "Kategori", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Korban"];
         const tableRows = filteredRecords.map(record => [
@@ -207,17 +225,21 @@ export default function PemeriksaanPage() {
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 30,
+            startY: 25,
             theme: 'grid',
             headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
             didDrawPage: (data) => {
-                doc.setFontSize(8);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
+                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
             }
         });
+        
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageText = `Page ${i} of ${pageCount}`;
+            doc.setFontSize(8);
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        }
 
         doc.save("pemeriksaan_records.pdf");
     };

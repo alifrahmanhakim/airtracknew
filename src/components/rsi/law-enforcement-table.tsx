@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { LawEnforcementRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, ArrowUpDown, Info, AlertTriangle, Loader2, Link as LinkIcon, RotateCcw, Search } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, Info, AlertTriangle, Loader2, Link as LinkIcon, RotateCcw, Search, Printer, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,

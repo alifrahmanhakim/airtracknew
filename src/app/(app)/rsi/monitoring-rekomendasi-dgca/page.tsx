@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TindakLanjutDgcaRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet } from 'lucide-react';
+import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +25,8 @@ import { getYear, parseISO, format, isValid } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import * as XLSX from 'xlsx';
 import { AppLayout } from '@/components/app-layout-component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 const TindakLanjutDgcaForm = dynamic(() => import('@/components/rsi/tindak-lanjut-dgca-form').then(mod => mod.TindakLanjutDgcaForm), { 
@@ -233,6 +235,62 @@ export default function MonitoringRekomendasiDgcaPage() {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Tindak Lanjut DGCA');
         XLSX.writeFile(workbook, 'tindak_lanjut_dgca.xlsx');
     };
+    
+    const handleExportPdf = () => {
+        if (filteredAndSortedRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'landscape' });
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+
+        const addPageContent = (pageNumber: number, pageCount: number) => {
+            doc.setFontSize(18);
+            doc.text("Tindak Lanjut Rekomendasi KNKT ke DGCA", 14, 15);
+
+            if(pageNumber === 1) {
+              doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+            }
+            
+            doc.setFontSize(8);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = doc.internal.pageSize.width - textWidth - 14;
+            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+            const pageText = `Page ${pageNumber} of ${pageCount}`;
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        };
+
+        const tableColumn = ["Laporan KNKT", "Rekomendasi", "Nomor Rekomendasi", "Tindak Lanjut DKPPU"];
+        const tableRows = filteredAndSortedRecords.map(record => [
+            `${record.judulLaporan}\nNo: ${record.nomorLaporan}\nOp: ${record.operator}\nReg: ${record.registrasi}\nKejadian: ${record.tanggalKejadian}`,
+            record.rekomendasiKeDgca,
+            record.nomorRekomendasi,
+            record.tindakLanjutDkppu
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 25,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
+            }
+        });
+        
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageText = `Page ${i} of ${pageCount}`;
+            doc.setFontSize(8);
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        }
+
+        doc.save("tindak_lanjut_dgca.pdf");
+    };
 
 
     return (
@@ -292,10 +350,16 @@ export default function MonitoringRekomendasiDgcaPage() {
                                         <CardTitle>Records</CardTitle>
                                         <CardDescription>List of all DGCA recommendation follow-ups.</CardDescription>
                                     </div>
-                                    <Button variant="outline" onClick={handleExportExcel}>
-                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                        Export to Excel
-                                    </Button>
+                                     <div className="flex items-center gap-2">
+                                        <Button variant="outline" onClick={handleExportExcel}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to Excel
+                                        </Button>
+                                        <Button variant="outline" onClick={handleExportPdf}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Export to PDF
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardHeader>
                             <CardContent>

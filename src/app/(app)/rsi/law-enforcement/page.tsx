@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LawEnforcementRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, FileSpreadsheet } from 'lucide-react';
+import { ArrowLeft, Loader2, FileSpreadsheet, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +21,8 @@ import type { z } from 'zod';
 import { addLawEnforcementRecord } from '@/lib/actions/law-enforcement';
 import * as XLSX from 'xlsx';
 import { AppLayout } from '@/components/app-layout-component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -145,6 +147,67 @@ export default function LawEnforcementPage() {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Law Enforcement Records');
         XLSX.writeFile(workbook, 'law_enforcement_records.xlsx');
     };
+    
+    const handleExportPdf = () => {
+        if (records.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
+        const doc = new jsPDF();
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+
+        const addPageContent = (pageNumber: number, pageCount: number) => {
+            doc.setFontSize(18);
+            doc.text("Law Enforcement Records", 14, 15);
+            
+            if(pageNumber === 1) {
+              doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+            }
+            
+            doc.setFontSize(8);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = doc.internal.pageSize.width - textWidth - 14;
+            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+            const pageText = `Page ${pageNumber} of ${pageCount}`;
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        };
+        
+        const tableColumn = ["Imposition Type", "Sanctioned Entity", "References"];
+        const tableRows = records.map(record => {
+             const sanctionedEntity = 
+                record.impositionType === 'aoc' ? (record.sanctionedAoc?.map(s => s.value).join('\n') || '') :
+                record.impositionType === 'personnel' ? (record.sanctionedPersonnel?.map(s => s.value).join('\n') || '') :
+                (record.sanctionedOrganization?.map(s => s.value).join('\n') || '');
+            
+            const references = (record.references || []).map(ref => 
+                `Type: ${ref.sanctionType}\nRef: ${ref.refLetter}\nDate: ${ref.dateLetter}`
+            ).join('\n\n');
+            return [record.impositionType, sanctionedEntity, references];
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 25,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
+            }
+        });
+        
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageText = `Page ${i} of ${pageCount}`;
+            doc.setFontSize(8);
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        }
+
+        doc.save("law_enforcement_records.pdf");
+    };
 
 
     return (
@@ -206,10 +269,16 @@ export default function LawEnforcementPage() {
                                         <CardTitle>Sanction Records</CardTitle>
                                         <CardDescription>List of all law enforcement records.</CardDescription>
                                     </div>
-                                    <Button variant="outline" onClick={handleExportExcel}>
-                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                        Export to Excel
-                                    </Button>
+                                     <div className="flex items-center gap-2">
+                                        <Button variant="outline" onClick={handleExportExcel}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to Excel
+                                        </Button>
+                                        <Button variant="outline" onClick={handleExportPdf}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Export to PDF
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardHeader>
                             <CardContent>

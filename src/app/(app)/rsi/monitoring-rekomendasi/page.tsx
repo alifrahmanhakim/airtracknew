@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TindakLanjutRecord } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet } from 'lucide-react';
+import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +25,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { aocOptions } from '@/lib/data';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { AppLayout } from '@/components/app-layout-component';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 const TindakLanjutForm = dynamic(() => import('@/components/rsi/tindak-lanjut-form').then(mod => mod.TindakLanjutForm), { 
@@ -218,6 +220,68 @@ export default function MonitoringRekomendasiPage() {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Tindak Lanjut KNKT');
         XLSX.writeFile(workbook, 'tindak_lanjut_knkt.xlsx');
     };
+    
+    const handleExportPdf = () => {
+        if (filteredRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'landscape' });
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+
+        const addPageContent = (pageNumber: number, pageCount: number) => {
+            doc.setFontSize(18);
+            doc.text("Monitoring Tindak Lanjut Rekomendasi KNKT", 14, 15);
+            
+            if(pageNumber === 1) {
+              doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+            }
+
+            doc.setFontSize(8);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = doc.internal.pageSize.width - textWidth - 14;
+            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+            const pageText = `Page ${pageNumber} of ${pageCount}`;
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        };
+
+        const tableColumn = ["Laporan KNKT", "Penerima", "Rekomendasi", "Tindak Lanjut DKPPU", "Tindak Lanjut Operator", "Status"];
+        const tableRows = filteredRecords.map(record => {
+            const rekomendasiText = (record.rekomendasi || []).map(r => `${r.nomor}: ${r.deskripsi}`).join('\n\n');
+            const penerimaText = (Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi : [record.penerimaRekomendasi]).join('\n');
+            return [
+                `${record.judulLaporan}\nNo: ${record.nomorLaporan}`,
+                penerimaText,
+                rekomendasiText,
+                record.tindakLanjutDkppu || '-',
+                record.tindakLanjutOperator || '-',
+                record.status,
+            ];
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 25,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
+            },
+        });
+
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageText = `Page ${i} of ${pageCount}`;
+            doc.setFontSize(8);
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        }
+
+        doc.save("tindak_lanjut_knkt.pdf");
+    };
 
     return (
         <AppLayout>
@@ -276,10 +340,16 @@ export default function MonitoringRekomendasiPage() {
                                         <CardTitle>Records</CardTitle>
                                         <CardDescription>List of all recommendation follow-ups.</CardDescription>
                                     </div>
-                                    <Button variant="outline" onClick={handleExportExcel}>
-                                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                                        Export to Excel
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="outline" onClick={handleExportExcel}>
+                                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                            Export to Excel
+                                        </Button>
+                                         <Button variant="outline" onClick={handleExportPdf}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Export to PDF
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardHeader>
                             <CardContent>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { TindakLanjutDgcaRecord } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Info, ArrowUpDown, Link as LinkIcon } from 'lucide-react';
+import { Pencil, Trash2, Info, ArrowUpDown, Link as LinkIcon, Printer, FileSpreadsheet } from 'lucide-react';
 import { Highlight } from '../ui/highlight';
 import { EditTindakLanjutDgcaDialog } from './edit-tindak-lanjut-dgca-dialog';
 import { format, parseISO, isValid } from 'date-fns';
