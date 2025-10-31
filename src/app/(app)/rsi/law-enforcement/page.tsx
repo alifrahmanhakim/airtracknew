@@ -153,60 +153,84 @@ export default function LawEnforcementPage() {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
-        const doc = new jsPDF();
+
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
 
-        const addPageContent = (pageNumber: number, pageCount: number) => {
-            doc.setFontSize(18);
-            doc.text("Law Enforcement Records", 14, 15);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+
+            const doc = new jsPDF();
             
-            if(pageNumber === 1) {
-              doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
+            const addPageContent = (data: { pageNumber: number }) => {
+                if (data.pageNumber === 1) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = logoWidth / aspectRatio;
+                    doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                }
+
+                doc.setFontSize(16);
+                doc.text("Law Enforcement Records", 14, 15);
+                
+                doc.setFontSize(8);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = doc.internal.pageSize.width - textWidth - 14;
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            };
+            
+            const tableColumn = ["Imposition Type", "Sanctioned Entity", "References"];
+            const tableRows = records.map(record => {
+                 const sanctionedEntity = 
+                    record.impositionType === 'aoc' ? (record.sanctionedAoc?.map(s => s.value).join('\n') || '') :
+                    record.impositionType === 'personnel' ? (record.sanctionedPersonnel?.map(s => s.value).join('\n') || '') :
+                    (record.sanctionedOrganization?.map(s => s.value).join('\n') || '');
+                
+                const references = (record.references || []).map(ref => 
+                    `Type: ${ref.sanctionType}\nRef: ${ref.refLetter}\nDate: ${ref.dateLetter}`
+                ).join('\n\n');
+                return [record.impositionType, sanctionedEntity, references];
+            });
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 25,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                didDrawPage: addPageContent
+            });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 2; i <= pageCount; i++) {
+                doc.setPage(i);
+                addPageContent({ pageNumber: i });
             }
-            
-            doc.setFontSize(8);
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = doc.internal.pageSize.width - textWidth - 14;
-            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
 
-            const pageText = `Page ${pageNumber} of ${pageCount}`;
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            doc.save("law_enforcement_records.pdf");
         };
-        
-        const tableColumn = ["Imposition Type", "Sanctioned Entity", "References"];
-        const tableRows = records.map(record => {
-             const sanctionedEntity = 
-                record.impositionType === 'aoc' ? (record.sanctionedAoc?.map(s => s.value).join('\n') || '') :
-                record.impositionType === 'personnel' ? (record.sanctionedPersonnel?.map(s => s.value).join('\n') || '') :
-                (record.sanctionedOrganization?.map(s => s.value).join('\n') || '');
-            
-            const references = (record.references || []).map(ref => 
-                `Type: ${ref.sanctionType}\nRef: ${ref.refLetter}\nDate: ${ref.dateLetter}`
-            ).join('\n\n');
-            return [record.impositionType, sanctionedEntity, references];
-        });
 
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 25,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: (data) => {
-                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
-            }
-        });
-        
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            const pageText = `Page ${i} of ${pageCount}`;
-            doc.setFontSize(8);
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        img.onerror = () => {
+             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+             const doc = new jsPDF();
+             autoTable(doc, {
+                head: [["Imposition Type", "Sanctioned Entity", "References"]],
+                body: records.map(record => [record.impositionType, /* ... */]),
+            });
+            doc.save("law_enforcement_records.pdf");
         }
-
-        doc.save("law_enforcement_records.pdf");
     };
 
 

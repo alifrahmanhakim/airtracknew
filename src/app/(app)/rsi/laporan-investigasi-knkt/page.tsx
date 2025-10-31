@@ -212,39 +212,76 @@ export default function LaporanInvestigasiKnktPage() {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
-        const doc = new jsPDF({ orientation: 'landscape' });
-        doc.setFontSize(18);
-        doc.text("KNKT Investigation Reports", 14, 20);
+        
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
 
-        const tableColumn = ["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
-        const tableRows = filteredRecords.map(record => [
-            record.tanggal_diterbitkan,
-            record.nomor_laporan,
-            record.status,
-            record.operator,
-            record.registrasi,
-            record.tipe_pesawat,
-            record.lokasi,
-            record.taxonomy || 'N/A'
-        ]);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
 
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: (data) => {
+            const doc = new jsPDF({ orientation: 'landscape' });
+
+            const addPageContent = (data: { pageNumber: number }) => {
+                if (data.pageNumber === 1) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = logoWidth / aspectRatio;
+                    doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                }
+                
+                doc.setFontSize(18);
+                doc.text("KNKT Investigation Reports", 14, 20);
+
                 doc.setFontSize(8);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
                 const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
-            }
-        });
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+            };
 
-        doc.save("knkt_reports.pdf");
+            const tableColumn = ["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
+            const tableRows = filteredRecords.map(record => [
+                record.tanggal_diterbitkan,
+                record.nomor_laporan,
+                record.status,
+                record.operator,
+                record.registrasi,
+                record.tipe_pesawat,
+                record.lokasi,
+                record.taxonomy || 'N/A'
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                didDrawPage: addPageContent,
+            });
+
+            doc.save("knkt_reports.pdf");
+        }
+        
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
+            const doc = new jsPDF({ orientation: 'landscape' });
+            autoTable(doc, {
+                head: [["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"]],
+                body: filteredRecords.map(record => [record.tanggal_diterbitkan, record.nomor_laporan, record.status, record.operator, record.registrasi, record.tipe_pesawat, record.lokasi, record.taxonomy || 'N/A']),
+            });
+            doc.save("knkt_reports.pdf");
+        }
     };
+
 
     return (
         <AppLayout>

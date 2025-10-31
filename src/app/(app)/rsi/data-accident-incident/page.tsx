@@ -165,59 +165,85 @@ export default function DataAccidentIncidentPage() {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
-        const doc = new jsPDF({ orientation: 'landscape' });
+        
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
 
-        const addPageContent = (pageNumber: number, pageCount: number) => {
-            doc.setFontSize(18);
-            doc.text("Accident & Serious Incident Records", 14, 15);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
             
-            if(pageNumber === 1) {
-              doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, 30, 10);
-            }
-    
-            doc.setFontSize(8);
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = doc.internal.pageSize.width - textWidth - 14;
-            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+            const doc = new jsPDF({ orientation: 'landscape' });
 
-            const pageText = `Page ${pageNumber} of ${pageCount}`;
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            const addPageContent = (data: { pageNumber: number }) => {
+                if (data.pageNumber === 1) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = logoWidth / aspectRatio;
+                    doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                }
+        
+                doc.setFontSize(18);
+                doc.text("Accident & Serious Incident Records", 14, 15);
+                
+                doc.setFontSize(8);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = doc.internal.pageSize.width - textWidth - 14;
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            };
+
+            const tableColumn = ["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
+            const tableRows = filteredRecords.map(record => [
+                record.tanggal,
+                record.kategori,
+                record.aoc,
+                record.registrasiPesawat,
+                record.tipePesawat,
+                record.lokasi,
+                record.taxonomy
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 25,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                didDrawPage: addPageContent,
+            });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 2; i <= pageCount; i++) {
+                doc.setPage(i);
+                addPageContent({ pageNumber: i });
+            }
+
+            doc.save("accident_incident_records.pdf");
         };
 
-        const tableColumn = ["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
-        const tableRows = filteredRecords.map(record => [
-            record.tanggal,
-            record.kategori,
-            record.aoc,
-            record.registrasiPesawat,
-            record.tipePesawat,
-            record.lokasi,
-            record.taxonomy
-        ]);
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 25,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: (data) => {
-                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
-            }
-        });
-        
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            const pageText = `Page ${i} of ${pageCount}`;
-            doc.setFontSize(8);
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+            // Fallback to generate PDF without logo
+            const doc = new jsPDF({ orientation: 'landscape' });
+            autoTable(doc, {
+                head: [["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"]],
+                body: filteredRecords.map(record => [record.tanggal, record.kategori, record.aoc, record.registrasiPesawat, record.tipePesawat, record.lokasi, record.taxonomy])
+            });
+            doc.save("accident_incident_records.pdf");
         }
-
-        doc.save("accident_incident_records.pdf");
     };
+
 
     const form = useForm<AccidentIncidentFormValues>({
         resolver: zodResolver(accidentIncidentFormSchema),
