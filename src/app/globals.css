@@ -163,73 +163,90 @@
 
 @media print {
   body {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
     background: white !important;
     color: black !important;
   }
-  
-  .print-hidden, [data-sidebar="sidebar"], [data-sidebar="trigger"], .print\:hidden {
+
+  /* Hide all non-printable elements */
+  header, footer, [data-sidebar="sidebar"], [data-sidebar="trigger"], .print-hidden, [data-radix-dialog-overlay], [data-radix-popover-content] {
     display: none !important;
   }
-
-  main, #rulemaking-monitoring-page, #ccefod-page, #pqs-page, #glossary-page {
+  
+  /* Reset layout for printable area */
+  main.flex-1 {
+    overflow: visible !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Target the specific page container */
+  #rulemaking-monitoring-page, #ccefod-page, #pqs-page, #glossary-page {
     padding: 0 !important;
     margin: 0 !important;
   }
   
+  /* Show only the active tab content */
+  .w-full > [role="tabpanel"]:not([data-state="active"]) {
+    display: none !important;
+  }
+
+  /* Ensure card and content within printable area are visible and styled correctly */
   .card {
     border: 1px solid #e2e8f0 !important;
     box-shadow: none !important;
     break-inside: avoid;
     background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .card-header, .card-content {
+      padding: 1rem !important;
   }
 
-  .card-header, .card-content, .card-title, .card-description, p, h1, h2, h3, h4, h5, h6, span, div, th, td {
-      color: black !important;
+  /* Hide specific headers and filters within the card */
+  #rulemaking-monitoring-page .card-header,
+  #ccefod-page .card-header,
+  #pqs-page .card-header,
+  #glossary-page .card-header,
+  #rulemaking-monitoring-page .print\:hidden,
+  #ccefod-page .print\:hidden,
+  #pqs-page .print\:hidden,
+  #glossary-page .print\:hidden,
+  #rulemaking-monitoring-page .flex-col.sm\:flex-row.gap-4 {
+      display: none !important;
+  }
+  
+  /* Specifically display the table's card header if needed, but we hide all by default */
+  #rulemaking-monitoring-page .max-w-7xl .card-header {
+      display: none !important;
   }
 
-  .bg-muted\/50, .bg-card {
-      background: white !important;
+  .table, .table-fixed, .table-row, .table-cell {
+    page-break-inside: auto;
+  }
+  
+  .table-row {
+      page-break-inside: avoid;
+  }
+
+  h1, h2, h3, h4, p, span, div, th, td {
+    color: black !important;
+  }
+
+  .bg-muted\/50, .bg-card, .bg-background {
+    background-color: white !important;
   }
 
   .text-muted-foreground {
       color: #555 !important;
   }
-  
-  .no-print-break {
-    break-inside: avoid;
-  }
-
-  [data-radix-scroll-area-viewport] {
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  @page {
-    size: A4 landscape;
-    margin: 0.5in;
-  }
 
   .dark {
-    --background: 240 10% 98% !important;
-    --foreground: 222 22% 11% !important;
-    --card: 0 0% 100% !important;
-    --card-foreground: 222 22% 11% !important;
-    --popover: 0 0% 100% !important;
-    --popover-foreground: 222 22% 11% !important;
-    --primary: 204 70% 53% !important;
-    --primary-foreground: 355.7 100% 97.3% !important;
-    --secondary: 210 40% 96.1% !important;
-    --secondary-foreground: 222 22% 11% !important;
-    --muted: 210 40% 96.1% !important;
-    --muted-foreground: 215 16% 47% !important;
-    --accent: 120 73% 75% !important;
-    --accent-foreground: 222 22% 11% !important;
-    --border: 214.3 31.8% 91.4% !important;
-  }
-  .dark body {
-    background-color: white !important;
+    --background: white !important;
+    --foreground: black !important;
   }
 }
 
