@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -213,7 +214,6 @@ export default function KegiatanPage() {
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                 didDrawPage: (data) => {
-                    // Add logo only on the first page
                     if (data.pageNumber === 1) {
                         doc.setFontSize(18);
                         doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
@@ -242,7 +242,6 @@ export default function KegiatanPage() {
                     }
 
                     // Footer for all pages
-                    const pageCount = (doc as any).internal.getNumberOfPages();
                     doc.setFontSize(8);
                     
                     const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
@@ -250,19 +249,15 @@ export default function KegiatanPage() {
                     const textX = (doc.internal.pageSize.width - textWidth) / 2;
                     doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
                     
-                    const pageText = `Page ${data.pageNumber} of ${pageCount}`;
+                    const pageText = `Page ${data.pageNumber} of `;
                     doc.text(pageText, 14, doc.internal.pageSize.height - 10);
                 },
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
-            if (pageCount > 1) {
-                for (let i = 2; i <= pageCount; i++) {
-                    doc.setPage(i);
-                     const pageText = `Page ${i} of ${pageCount}`;
-                    doc.setFontSize(8);
-                    doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-                }
+            for (let i = 1; i <= pageCount; i++) {
+                 doc.setPage(i);
+                 doc.text(String(pageCount), 14 + doc.getStringUnitWidth(`Page ${i} of `) * doc.getFontSize() / doc.internal.scaleFactor, doc.internal.pageSize.height - 10);
             }
 
             doc.save("jadwal_kegiatan.pdf");

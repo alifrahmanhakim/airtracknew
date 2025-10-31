@@ -180,16 +180,27 @@ export default function DataAccidentIncidentPage() {
             ctx.drawImage(img, 0, 0);
             const dataUrl = canvas.toDataURL('image/png');
             
+            generatePdfWithLogo(dataUrl);
+        };
+
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+            generatePdfWithLogo();
+        }
+
+        const generatePdfWithLogo = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
 
             const addPageContent = (data: { pageNumber: number }) => {
                 if (data.pageNumber === 1) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = logoWidth / aspectRatio;
-                    doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
                     doc.setFontSize(18);
                     doc.text("Accident & Serious Incident Records", 14, 15);
+                    if (logoDataUrl) {
+                        const aspectRatio = img.width / img.height;
+                        const logoWidth = 30;
+                        const logoHeight = logoWidth / aspectRatio;
+                        doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                    }
                 }
         
                 doc.setFontSize(8);
@@ -198,7 +209,7 @@ export default function DataAccidentIncidentPage() {
                 const textX = doc.internal.pageSize.width - textWidth - 14;
                 doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
 
-                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                const pageText = `Page ${data.pageNumber} of `;
                 doc.text(pageText, 14, doc.internal.pageSize.height - 10);
             };
 
@@ -223,23 +234,13 @@ export default function DataAccidentIncidentPage() {
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 2; i <= pageCount; i++) {
+            for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                addPageContent({ pageNumber: i });
+                doc.text(String(pageCount), 14 + doc.getStringUnitWidth(`Page ${i} of `) * doc.getFontSize() / doc.internal.scaleFactor, doc.internal.pageSize.height - 10);
             }
 
             doc.save("accident_incident_records.pdf");
         };
-
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
-            const doc = new jsPDF({ orientation: 'landscape' });
-            autoTable(doc, {
-                head: [["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"]],
-                body: filteredRecords.map(record => [record.tanggal, record.kategori, record.aoc, record.registrasiPesawat, record.tipePesawat, record.lokasi, record.taxonomy])
-            });
-            doc.save("accident_incident_records.pdf");
-        }
     };
 
 
