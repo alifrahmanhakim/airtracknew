@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, where, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { KegiatanForm } from '@/components/kegiatan-form';
 import { KegiatanTable } from '@/components/kegiatan-table';
-import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isWithinInterval, startOfWeek, endOfWeek, getISOWeek, eachMonthOfInterval, startOfMonth, endOfMonth, isSameMonth } from 'date-fns';
+import { eachWeekOfInterval, format, startOfYear, endOfYear, getYear, parseISO, isWithinInterval, startOfWeek, endOfWeek, getISOWeek, eachMonthOfInterval, startOfMonth, endOfMonth, isSameMonth, isValid } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -67,7 +67,15 @@ export default function KegiatanPage() {
 
         const kegiatanQuery = query(collection(db, "kegiatanRecords"));
         const unsubKegiatan = onSnapshot(kegiatanQuery, (snapshot) => {
-            const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Kegiatan));
+            const records = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return { 
+                    id: doc.id,
+                    ...data,
+                    tanggalMulai: data.tanggalMulai?.toDate ? data.tanggalMulai.toDate().toISOString() : data.tanggalMulai,
+                    tanggalSelesai: data.tanggalSelesai?.toDate ? data.tanggalSelesai.toDate().toISOString() : data.tanggalSelesai,
+                } as Kegiatan;
+            });
             setKegiatanRecords(records);
             setIsLoading(false);
         }, (error) => {
@@ -171,41 +179,39 @@ export default function KegiatanPage() {
 
     const generatePdfWithLogo = (logoDataUrl?: string) => {
         const doc = new jsPDF({ orientation: 'landscape' });
-        
-        const addPageContent = (data: { pageNumber: number, pageCount: number }) => {
-            doc.setFontSize(16);
-            if (data.pageNumber === 1) {
-                if (logoDataUrl) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                }
-                
-                doc.setFontSize(18);
-                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+        let finalY = 0;
 
-                let subtitle = '';
-                if (filterMode === 'week') {
-                    const weekStart = parseISO(selectedWeek);
-                    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                    const weekNumber = getISOWeek(weekStart);
-                    subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-                } else {
-                    const monthStart = parseISO(selectedMonth);
-                    subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-                }
-                doc.setFontSize(12);
-                doc.text(subtitle, 14, 26);
+        const addPageContent = (data: { pageNumber: number }) => {
+            if (logoDataUrl && data.pageNumber === 1) {
+                const aspectRatio = img.width / img.height;
+                const logoWidth = 30;
+                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
             }
             
+            doc.setFontSize(18);
+            doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+
+            let subtitle = '';
+            if (filterMode === 'week') {
+                const weekStart = parseISO(selectedWeek);
+                const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                const weekNumber = getISOWeek(weekStart);
+                subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+            } else {
+                const monthStart = parseISO(selectedMonth);
+                subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+            }
+            doc.setFontSize(12);
+            doc.text(subtitle, 14, 26);
+    
             doc.setFontSize(8);
             const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
             const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
             const textX = (doc.internal.pageSize.width - textWidth) / 2;
             doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
             
-            const pageText = `Page ${data.pageNumber} of ${data.pageCount}`;
+            const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
             doc.text(pageText, 14, doc.internal.pageSize.height - 10);
         };
         
@@ -219,8 +225,6 @@ export default function KegiatanPage() {
             record.catatan || 'N/A',
         ]);
 
-        const pageCount = (doc as any).internal.getNumberOfPages();
-
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
@@ -228,9 +232,21 @@ export default function KegiatanPage() {
             theme: 'grid',
             headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
             didDrawPage: (data) => {
-                 addPageContent({ pageNumber: data.pageNumber, pageCount: pageCount });
+                addPageContent({ pageNumber: data.pageNumber });
             }
         });
+        
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 2; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageText = `Page ${i} of ${pageCount}`;
+            doc.setFontSize(8);
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (doc.internal.pageSize.width - textWidth) / 2;
+            doc.text(text, textX, doc.internal.pageSize.height - 10);
+        }
         
         doc.save("jadwal_kegiatan.pdf");
     };
