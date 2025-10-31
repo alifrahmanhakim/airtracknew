@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { RulemakingRecord } from '@/lib/types';
 import { RulemakingForm } from './rulemaking-form';
+import { cn } from '@/lib/utils';
 
 interface EditRulemakingRecordDialogProps {
   record: RulemakingRecord;
@@ -39,7 +40,10 @@ export function EditRulemakingRecordDialog({ record, onRecordUpdate, onDelete, o
                     <Pencil className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogContent className={cn(
+                "sm:max-w-4xl max-h-[90vh] flex flex-col",
+                "bg-gradient-to-br from-background via-muted/50 to-background"
+            )}>
                 <DialogHeader>
                     <div>
                         <DialogTitle>Edit Record</DialogTitle>

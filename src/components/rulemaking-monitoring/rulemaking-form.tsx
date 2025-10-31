@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, File, Calendar, PenSquare, Info } from 'lucide-react';
 import { addRulemakingRecord, updateRulemakingRecord } from '@/lib/actions/rulemaking';
 import type { RulemakingRecord } from '@/lib/types';
 import { Combobox, type ComboboxOption } from '../ui/combobox';
@@ -33,6 +33,13 @@ type RulemakingFormProps = {
   record?: RulemakingRecord;
   onFormSubmit: (data: RulemakingRecord) => void;
 };
+
+const STAGE_COLORS = [
+    'bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-800/50',
+    'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50',
+    'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50',
+    'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800/50',
+];
 
 export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -155,32 +162,36 @@ export function RulemakingForm({ record, onFormSubmit }: RulemakingFormProps) {
             />
         </div>
         
-        <Card>
+        <Card className="bg-transparent">
             <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Pengajuan</CardTitle>
+                <CardTitle>Stages</CardTitle>
                 <Button type="button" variant="outline" size="sm" onClick={() => appendStage({ pengajuan: { tanggal: '', nomor: '', keteranganPengajuan: '', fileUrl: '' }, status: { deskripsi: '' }, keterangan: { text: '' }})}>
-                    <Plus className="mr-2 h-4 w-4" /> Add Pengajuan
+                    <Plus className="mr-2 h-4 w-4" /> Add Stage
                 </Button>
             </CardHeader>
-            <CardContent className="space-y-0">
+            <CardContent className="space-y-4">
                 {stageFields.map((field, index) => (
-                    <div key={field.id} className="border p-4 rounded-lg relative space-y-4 mb-4 last:mb-0">
-                        <h4 className="font-semibold mb-2">Pengajuan {index + 1}</h4>
-                        {stageFields.length > 1 && <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeStage(index)}><Trash2 className="h-4 w-4" /></Button>}
-                        
-                        <fieldset className="border p-4 rounded-md">
-                            <legend className="text-sm font-medium px-1">Detail Pengajuan (Opsional)</legend>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                <FormField control={form.control} name={`stages.${index}.pengajuan.tanggal`} render={({ field }) => (<FormItem><FormLabel>Tanggal</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name={`stages.${index}.pengajuan.nomor`} render={({ field }) => (<FormItem><FormLabel>No. Surat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <FormField control={form.control} name={`stages.${index}.pengajuan.keteranganPengajuan`} render={({ field }) => (<FormItem className="mt-4"><FormLabel>Keterangan Pengajuan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name={`stages.${index}.pengajuan.fileUrl`} render={({ field }) => (<FormItem className="mt-4"><FormLabel>Attachment Link</FormLabel><FormControl><Input type="url" placeholder="https://example.com/file.pdf" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        </fieldset>
-
-                        <FormField control={form.control} name={`stages.${index}.status.deskripsi`} render={({ field }) => (<FormItem><FormLabel>Deskripsi Status</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`stages.${index}.keterangan.text`} render={({ field }) => (<FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    </div>
+                    <Card key={field.id} className={`${STAGE_COLORS[index % STAGE_COLORS.length]} shadow-sm hover:shadow-md transition-shadow`}>
+                        <CardHeader className="flex-row items-start justify-between pb-2">
+                             <h4 className="font-bold text-lg text-foreground">Stage {index + 1}</h4>
+                            {stageFields.length > 1 && <Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={() => removeStage(index)}><Trash2 className="h-4 w-4" /></Button>}
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <fieldset className="border p-4 rounded-md">
+                                <legend className="text-sm font-medium px-1 flex items-center gap-2">
+                                    <PenSquare className="h-4 w-4" /> Detail Pengajuan
+                                </legend>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                    <FormField control={form.control} name={`stages.${index}.pengajuan.tanggal`} render={({ field }) => (<FormItem><FormLabel>Tanggal</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                    <FormField control={form.control} name={`stages.${index}.pengajuan.nomor`} render={({ field }) => (<FormItem><FormLabel>No. Surat</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                </div>
+                                <FormField control={form.control} name={`stages.${index}.pengajuan.keteranganPengajuan`} render={({ field }) => (<FormItem className="mt-4"><FormLabel>Keterangan Pengajuan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name={`stages.${index}.pengajuan.fileUrl`} render={({ field }) => (<FormItem className="mt-4"><FormLabel>Attachment Link</FormLabel><FormControl><Input type="url" placeholder="https://example.com/file.pdf" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            </fieldset>
+                            <FormField control={form.control} name={`stages.${index}.status.deskripsi`} render={({ field }) => (<FormItem><FormLabel>Deskripsi Status</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`stages.${index}.keterangan.text`} render={({ field }) => (<FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        </CardContent>
+                    </Card>
                 ))}
             </CardContent>
         </Card>
