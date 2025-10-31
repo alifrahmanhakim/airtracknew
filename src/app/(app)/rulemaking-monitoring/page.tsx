@@ -234,12 +234,11 @@ export default function RulemakingMonitoringPage() {
             return acc;
         }, {});
 
-        Object.entries(groupedByPerihal).forEach(([perihal, records]) => {
-            if (finalY > 20) { // Add space before a new group, unless it's the first one
+        Object.entries(groupedByPerihal).forEach(([perihal, recordsInGroup]) => {
+            if (finalY > 20) {
                 finalY += 10;
             }
 
-             // Check if there's enough space for the group header and at least one row, otherwise add a new page
             if (finalY > doc.internal.pageSize.height - 40) {
                 doc.addPage();
                 finalY = 20;
@@ -252,20 +251,22 @@ export default function RulemakingMonitoringPage() {
             
             doc.setFontSize(12);
             doc.setFont(undefined, 'normal');
-            doc.text(`Kategori: ${records[0].kategori}`, 14, finalY);
+            doc.text(`Kategori: ${recordsInGroup[0].kategori}`, 14, finalY);
             finalY += 8;
 
-            const tableColumn = ["Tanggal", "Nomor Surat", "Keterangan Pengajuan", "Status", "Keterangan", "Attachment"];
-            const tableRows: any[][] = [];
+            const tableColumn = ["Tanggal", "No. Surat", "Keterangan Pengajuan", "Status", "Keterangan", "Attachment"];
+            const tableRows: (string | { content: string; href: string; styles: { textColor: number[] } })[][] = [];
         
-            records.flatMap(r => r.stages).forEach(stage => {
+            recordsInGroup.flatMap(r => r.stages).forEach(stage => {
                 const rowData = [
                     stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
                     stage.pengajuan.nomor || 'N/A',
                     stage.pengajuan.keteranganPengajuan || 'N/A',
                     stage.status.deskripsi.trim(),
                     stage.keterangan?.text || 'N/A',
-                    { content: 'Link', styles: { textColor: [0, 0, 255], fontStyle: 'bold' }, href: stage.pengajuan.fileUrl || '' }
+                    stage.pengajuan.fileUrl 
+                        ? { content: 'Link', href: stage.pengajuan.fileUrl, styles: { textColor: [0, 0, 255] } } 
+                        : 'N/A'
                 ];
                 tableRows.push(rowData);
             });
@@ -281,7 +282,6 @@ export default function RulemakingMonitoringPage() {
                     fontStyle: 'bold',
                 },
                 didDrawPage: (data) => {
-                    // Footer
                     const pageCount = doc.internal.pages.length;
                     doc.setFontSize(8);
                     doc.text(`Copyright © AirTrack ${new Date().getFullYear()}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
