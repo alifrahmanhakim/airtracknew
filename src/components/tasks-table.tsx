@@ -433,8 +433,28 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
         }
 
         const doc = new jsPDF({ orientation: 'landscape' });
-        doc.text(`Task List for Project: ${projectName}`, 14, 15);
         
+        const logoUrl = 'https://i.postimg.cc/3NNnNB5C/LOGO-AIRTRACK.png';
+        // This is a simplified way. A better way would be to fetch and convert to base64.
+        // For now, we'll just add it. `addImage` can handle URLs if the environment allows it.
+
+        const addPageContent = (pageNumber: number, pageCount: number) => {
+            doc.setFontSize(16);
+            doc.text(`Task List for Project: ${projectName}`, 14, 15);
+
+            // Add logo - assuming it's loaded. We will add it as base64 in a moment.
+            // doc.addImage(logoUrl, 'PNG', doc.internal.pageSize.getWidth() - 40, 8, 25, 10);
+        
+            doc.setFontSize(8);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = doc.internal.pageSize.width - textWidth - 14;
+            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+            const pageText = `Page ${pageNumber} of ${pageCount}`;
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        };
+
         const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status", "Attachment"];
         const tableRows = dataToExport.map(item => [
             item['No.'],
@@ -449,7 +469,7 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 20,
+            startY: 25,
             theme: 'grid',
             headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
             columnStyles: {
@@ -465,14 +485,18 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                 }
             },
             didDrawPage: (data) => {
-                const pageCount = doc.internal.pages.length;
-                doc.setFontSize(8);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
-            }
+                addPageContent(data.pageNumber, (doc as any).internal.getNumberOfPages());
+            },
         });
+        
+        // Finalize page numbering
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageText = `Page ${i} of ${pageCount}`;
+            doc.setFontSize(8);
+            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+        }
 
         doc.save(`${projectName}_tasks.pdf`);
          toast({
