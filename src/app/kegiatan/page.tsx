@@ -184,11 +184,13 @@ export default function KegiatanPage() {
         const doc = new jsPDF({ orientation: 'landscape' });
 
         const addPageContent = (data: { pageNumber: number }) => {
-            if (logoDataUrl && data.pageNumber === 1) {
+            if (logoDataUrl) {
                 const aspectRatio = img.width / img.height;
                 const logoWidth = 30;
                 const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                if (logoHeight > 0) {
+                  doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
             }
             
             doc.setFontSize(18);
@@ -213,8 +215,8 @@ export default function KegiatanPage() {
             const textX = (doc.internal.pageSize.width - textWidth) / 2;
             doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
             
-            // This will be replaced by the loop below
-            doc.text(`Page ${data.pageNumber}`, 14, doc.internal.pageSize.height - 10);
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
         };
         
         const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
@@ -235,14 +237,6 @@ export default function KegiatanPage() {
             headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
             didDrawPage: addPageContent,
         });
-        
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            const pageText = `Page ${i} of ${pageCount}`;
-            doc.setFontSize(8);
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-        }
         
         doc.save("jadwal_kegiatan.pdf");
     };
