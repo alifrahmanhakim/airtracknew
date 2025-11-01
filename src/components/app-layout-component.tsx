@@ -292,11 +292,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     unsubs.push(unsubGapAnalysis);
 
 
-    updateUserOnlineStatus(userId);
-    const presenceInterval = setInterval(() => {
-        updateUserOnlineStatus(userId);
-    }, 60 * 1000); 
+    const updateStatus = () => updateUserOnlineStatus(userId);
+    updateStatus(); // Initial update
+    const presenceInterval = setInterval(updateStatus, 60000); // Update every 60 seconds
     unsubs.push(() => clearInterval(presenceInterval));
+
 
     return () => {
         unsubs.forEach(unsub => unsub());
