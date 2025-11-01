@@ -5,13 +5,14 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, AlertTriangle, FileText, User, Calendar, Filter, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertTriangle, FileText, User, Calendar, Filter, Loader2, Fingerprint } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 
 type ExportDocument = {
     documentType: string;
@@ -91,6 +92,10 @@ export default function VerificationPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-3 text-sm">
+                             <div className="flex items-start justify-between">
+                                <span className="flex items-center gap-2 text-muted-foreground"><Fingerprint className="h-4 w-4"/> Document ID</span>
+                                <span className="font-mono text-xs bg-muted p-1 rounded-md">{id}</span>
+                            </div>
                             <div className="flex items-start justify-between">
                                 <span className="flex items-center gap-2 text-muted-foreground"><FileText className="h-4 w-4"/> Document Type</span>
                                 <span className="font-semibold">{data.documentType}</span>
@@ -121,6 +126,15 @@ export default function VerificationPage() {
                                 This document is an uncontrolled copy. The most up-to-date and official version resides within the AirTrack application. Information may have changed since the export date.
                             </AlertDescription>
                         </Alert>
+                         <div className="flex justify-center pt-4">
+                            <Image
+                                src="https://ik.imagekit.io/avmxsiusm/Untitled-2%20(1).webp"
+                                alt="Genuine Document Stamp"
+                                width={150}
+                                height={150}
+                                className="opacity-80"
+                            />
+                        </div>
                     </CardContent>
                 </Card>
             ) : (
