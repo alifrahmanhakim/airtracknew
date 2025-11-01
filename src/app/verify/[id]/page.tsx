@@ -1,18 +1,16 @@
+
+'use client';
+
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, AlertTriangle, FileText, User, Calendar, Filter } from 'lucide-react';
+import { CheckCircle, AlertTriangle, FileText, User, Calendar, Filter, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
-type VerificationPageProps = {
-  params: {
-    id: string;
-  };
-};
+import { useState, useEffect } from 'react';
 
 type ExportDocument = {
     documentType: string;
@@ -25,24 +23,62 @@ type ExportDocument = {
     createdAt: Timestamp;
 }
 
-async function getExportData(id: string): Promise<ExportDocument | null> {
-    try {
-        const docRef = doc(db, 'exportedDocuments', id);
-        const docSnap = await getDoc(docRef);
+type VerificationPageProps = {
+  params: {
+    id: string;
+  };
+};
 
-        if (docSnap.exists()) {
-            return docSnap.data() as ExportDocument;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching verification data:", error);
-        return null;
-    }
-}
-
-export default async function VerificationPage({ params }: VerificationPageProps) {
+export default function VerificationPage({ params }: VerificationPageProps) {
     const { id } = params;
-    const data = await getExportData(id);
+    const [data, setData] = useState<ExportDocument | null | undefined>(undefined);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!id) {
+            setIsLoading(false);
+            setData(null);
+            return;
+        };
+
+        const getExportData = async (docId: string) => {
+            setIsLoading(true);
+            try {
+                const docRef = doc(db, 'exportedDocuments', docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    setData(docSnap.data() as ExportDocument);
+                } else {
+                    setData(null);
+                }
+            } catch (error) {
+                console.error("Error fetching verification data:", error);
+                setData(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        
+        getExportData(id);
+
+    }, [id]);
+
+    if (isLoading || data === undefined) {
+        return (
+            <main className="min-h-screen bg-muted/40 p-4 md:p-8 flex items-center justify-center">
+                 <Card className="w-full max-w-2xl text-center">
+                    <CardContent className="p-12">
+                        <div className="flex flex-col items-center gap-4">
+                            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                            <p className="font-semibold text-lg">Verifying document...</p>
+                            <p className="text-muted-foreground">Please wait while we check the document's authenticity.</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </main>
+        )
+    }
 
     return (
         <main className="min-h-screen bg-muted/40 p-4 md:p-8 flex items-center justify-center">
@@ -71,14 +107,16 @@ export default async function VerificationPage({ params }: VerificationPageProps
                                 <span className="flex items-center gap-2 text-muted-foreground"><User className="h-4 w-4"/> Exported By</span>
                                 <span className="font-semibold">{data.exportedBy.name}</span>
                             </div>
-                            <div className="flex items-start justify-between">
-                                <span className="flex items-center gap-2 text-muted-foreground"><Filter className="h-4 w-4"/> Filters Applied</span>
-                                <div className='flex flex-wrap gap-1 justify-end'>
-                                    {Object.entries(data.filters).map(([key, value]) => (
-                                        <Badge key={key} variant="secondary">{key}: {String(value)}</Badge>
-                                    ))}
+                            {Object.keys(data.filters).length > 0 && (
+                                <div className="flex items-start justify-between">
+                                    <span className="flex items-center gap-2 text-muted-foreground"><Filter className="h-4 w-4"/> Filters Applied</span>
+                                    <div className='flex flex-wrap gap-1 justify-end'>
+                                        {Object.entries(data.filters).map(([key, value]) => (
+                                            <Badge key={key} variant="secondary">{key}: {String(value)}</Badge>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                         <Alert variant="destructive">
                             <AlertTriangle className="h-4 w-4" />
