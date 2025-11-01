@@ -140,14 +140,14 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
       if (typeof dateValue === 'string') {
         const parsedDate = parseISO(dateValue);
         if (isValid(parsedDate)) {
-          return format(parsedDate, 'PPP p');
+          return format(parsedDate, 'PPP');
         }
       }
       if (dateValue instanceof Date) {
-        return format(dateValue, 'PPP p');
+        return format(dateValue, 'PPP');
       }
       if (typeof dateValue === 'object' && 'toDate' in dateValue && typeof dateValue.toDate === 'function') {
-        return format(dateValue.toDate(), 'PPP p');
+        return format(dateValue.toDate(), 'PPP');
       }
     } catch (e) {
       console.error('Date formatting failed:', e);
@@ -259,23 +259,24 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
         
         // --- Evaluations ---
         record.evaluations.forEach((evaluation, index) => {
+            const evaluationBody = [
+                ['ICAO SARP', evaluation.icaoSarp],
+                ['Review', evaluation.review],
+                ['Compliance Status', evaluation.complianceStatus],
+                ['CASR Affected', evaluation.casrAffected],
+                ['Follow Up', evaluation.followUp || '-'],
+                ['Proposed Amendment', evaluation.proposedAmendment || '-'],
+                ['Reason/Remark', evaluation.reasonOrRemark || '-'],
+                ['Status Item', evaluation.status || 'N/A'],
+            ].map(([label, value]) => ([{ content: label, styles: { fontStyle: 'bold' } }, value]));
+
             autoTable(doc, {
                 head: [[`Evaluation Item ${index + 1}`]],
-                body: [
-                    ['ICAO SARP', evaluation.icaoSarp],
-                    ['Review', evaluation.review],
-                    ['Compliance Status', evaluation.complianceStatus],
-                    ['CASR Affected', evaluation.casrAffected],
-                    ['Follow Up', evaluation.followUp || '-'],
-                    ['Proposed Amendment', evaluation.proposedAmendment || '-'],
-                    ['Reason/Remark', evaluation.reasonOrRemark || '-'],
-                    ['Status Item', evaluation.status || 'N/A'],
-                ],
+                body: evaluationBody,
                 startY: (doc as any).lastAutoTable.finalY + 10,
                 theme: 'striped',
                 headStyles: { fillColor: [41, 128, 185], textColor: 255 },
                 styles: { fontSize: 9, cellPadding: 2, cellWidth: 'wrap' },
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
                 didDrawPage: addHeaderAndFooter,
             });
         });
