@@ -255,7 +255,7 @@ export default function KegiatanPage() {
                     doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
     
                     let currentX = pageWidth - 15;
-                    const logoHeight = 10; // Fixed height for both logos
+                    const logoHeight = 10;
     
                     if (logo1DataUrl && logo1Img.naturalWidth > 0 && logo1Img.naturalHeight > 0) {
                         const img1Ratio = logo1Img.naturalWidth / logo1Img.naturalHeight;
@@ -266,7 +266,7 @@ export default function KegiatanPage() {
                     if (logo2DataUrl && logo2Img.naturalWidth > 0 && logo2Img.naturalHeight > 0) {
                         const img2Ratio = logo2Img.naturalWidth / logo2Img.naturalHeight;
                         const logo2Width = logoHeight * img2Ratio;
-                        currentX -= (logo2Width + 5);
+                        currentX -= (logo2Width + 2); // Reduced gap
                         doc.addImage(logo2DataUrl, 'PNG', currentX, 10, logo2Width, logoHeight);
                     }
                     
@@ -327,26 +327,34 @@ export default function KegiatanPage() {
                     const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
                     let startY = (doc as any).lastAutoTable.finalY + 10;
                     
-                    const requiredSpace = (uninvolvedTableRows.length + 2) * 8 + 30; // 30 for footer
+                    const requiredSpaceForTitle = 10;
+                    const requiredSpaceForTable = (uninvolvedTableRows.length + 2) * 8; // Estimate row height
+                    const requiredSpaceForFooter = 30;
                     
-                    if (startY + requiredSpace > doc.internal.pageSize.getHeight()) {
+                    if (startY + requiredSpaceForTitle + requiredSpaceForTable + requiredSpaceForFooter > doc.internal.pageSize.getHeight()) {
                         doc.addPage();
-                        addPageContent({ pageNumber: (doc as any).internal.getNumberOfPages() });
-                        startY = 34;
+                        startY = 34; // Start Y on a new page
+                    } else {
+                       startY += 5; // Add some margin
                     }
                     
                     doc.setFontSize(12);
                     doc.text('Personel yang Belum Terlibat', 14, startY);
                     
                     autoTable(doc, {
+                        head: [['Nama Personel']],
                         body: uninvolvedTableRows,
                         startY: startY + 4,
                         theme: 'grid',
-                        showHead: 'firstPage',
                         headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
                         styles: { lineWidth: 0.15, cellPadding: 2, fontSize: 8 },
-                        didDrawPage: addPageContent,
-                        margin: { top: 34, bottom: 25 },
+                        didDrawPage: (data) => {
+                            // Don't add main header on subsequent pages for this table
+                            if(data.pageNumber > 1) {
+                                // We might need a simpler header logic if this table spans pages
+                            }
+                        },
+                        margin: { top: 34, bottom: 30 },
                     });
                 }
     
@@ -355,6 +363,20 @@ export default function KegiatanPage() {
                     doc.setPage(i);
                     addFooter({ pageNumber: i, pageCount });
                 }
+
+                doc.setFontSize(8);
+                const involvedCountText = `Total Personel Terlibat: ${involvedPersonnel.size}`;
+                const uninvolvedCountText = `Total Personel Belum Terlibat: ${uninvolvedPersonnel.length}`;
+
+                // Find where the last table ended to draw text below it
+                let lastY = (doc as any).lastAutoTable.finalY;
+                if (lastY + 20 > doc.internal.pageSize.getHeight() - 30) {
+                  doc.addPage();
+                  lastY = 34;
+                }
+                
+                doc.text(involvedCountText, 14, lastY + 10);
+                doc.text(uninvolvedCountText, 14, lastY + 15);
                 
                 doc.save("jadwal_kegiatan.pdf");
             };
@@ -522,4 +544,5 @@ export default function KegiatanPage() {
         </div>
     );
 }
+
 
