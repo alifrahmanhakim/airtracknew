@@ -270,65 +270,72 @@ export default function PqsPage() {
     };
 
     const generatePdf = async (logoDataUrl?: string) => {
-      const doc = new jsPDF({ orientation: 'landscape' });
-      const tableColumn = ["PQ Number", "Protocol Question", "Critical Element", "ICAO Status", "Status"];
-      const tableRows = allRecords.map(record => [
-        record.pqNumber,
-        record.protocolQuestion,
-        record.criticalElement,
-        record.icaoStatus,
-        record.status
-      ]);
-  
-      const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
-      const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
-  
-      const addPageContent = (data: { pageNumber: number }) => {
-        // Header
-        doc.setFontSize(18);
-        doc.text("Protocol Questions Records", 14, 20);
-        if (logoDataUrl) {
-            const aspectRatio = img.width / img.height;
-            const logoWidth = 30;
-            const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-            if (logoHeight > 0) {
-                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+        const doc = new jsPDF({ orientation: 'landscape' });
+        const tableColumn = ["PQ Number", "Protocol Question", "Critical Element", "ICAO Status", "Status"];
+        const tableRows = allRecords.map(record => [
+            record.pqNumber,
+            record.protocolQuestion,
+            record.criticalElement,
+            record.icaoStatus,
+            record.status
+        ]);
+
+        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
+        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+
+        const addHeader = (doc: jsPDF, logoDataUrl?: string) => {
+            doc.setFontSize(18);
+            doc.text("Protocol Questions Records", 14, 20);
+            if (logoDataUrl) {
+                const aspectRatio = img.width / img.height;
+                const logoWidth = 30;
+                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                if (logoHeight > 0) {
+                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
             }
-        }
-  
-        // Footer
+        };
+
+        const addFooter = (doc: jsPDF, pageNumber: number, totalPages: number) => {
+            const footerY = doc.internal.pageSize.height - 20;
+            doc.setFontSize(8);
+            
+            // QR Code
+            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+            
+            // Copyright
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+
+            // Page number
+            doc.text(`Page ${pageNumber} of ${totalPages}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+        };
+
+        addHeader(doc, logoDataUrl);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
+            margin: { top: 30, bottom: 30 },
+            didDrawPage: (data) => {
+                // We only need the header on the first page, autoTable handles subsequent page headers
+                if (data.pageNumber > 1) {
+                    // You can add headers to other pages here if needed, but autoTable does it by default
+                }
+            }
+        });
+      
         const pageCount = (doc as any).internal.getNumberOfPages();
-        const footerY = doc.internal.pageSize.height - 20;
-        doc.setFontSize(8);
-  
-        // QR Code
-        doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
-        doc.text('Genuine Document by AirTrack', 14, footerY + 12);
-  
-        // Copyright and Page Number
-        const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-        doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-        doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-      };
-  
-      autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: 30,
-        theme: 'grid',
-        headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
-        didDrawPage: addPageContent,
-        margin: { top: 30, bottom: 30 },
-      });
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            addFooter(doc, i, pageCount);
+        }
       
-      const pageCountFinal = (doc as any).internal.getNumberOfPages();
-      for (let i = 1; i <= pageCountFinal; i++) {
-          doc.setPage(i);
-          doc.setFontSize(8);
-          doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 8, { align: 'right' });
-      }
-      
-      doc.save("pqs_records.pdf");
+        doc.save("pqs_records.pdf");
     };
   };
 
