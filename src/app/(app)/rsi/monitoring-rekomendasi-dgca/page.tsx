@@ -295,6 +295,12 @@ export default function MonitoringRekomendasiDgcaPage() {
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                 margin: { top: 30, bottom: 30 },
+                columnStyles: {
+                    0: { cellWidth: 60 },
+                    1: { cellWidth: 80 },
+                    2: { cellWidth: 40 },
+                    3: { cellWidth: 'auto' },
+                },
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
