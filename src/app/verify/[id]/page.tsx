@@ -118,23 +118,23 @@ export default function VerificationPage() {
                                     </div>
                                 </div>
                             )}
-                        </div>
-                        <Alert variant="destructive">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertTitle>Uncontrolled Copy</AlertTitle>
-                            <AlertDescription>
-                                This document is an uncontrolled copy. The most up-to-date and official version resides within the AirTrack application. Information may have changed since the export date.
-                            </AlertDescription>
-                        </Alert>
-                         <div className="flex justify-center">
-                            <div className="relative w-64 h-64">
-                                <Image
-                                    src="https://ik.imagekit.io/avmxsiusm/Untitled-2%20(1).webp"
-                                    alt="Genuine Document Stamp"
-                                    fill
-                                    sizes="256px"
-                                    className="opacity-80 object-contain"
-                                />
+                             <Alert variant="destructive" className="mt-6">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertTitle>Uncontrolled Copy</AlertTitle>
+                                <AlertDescription>
+                                    This document is an uncontrolled copy. The most up-to-date and official version resides within the AirTrack application. Information may have changed since the export date.
+                                </AlertDescription>
+                            </Alert>
+                             <div className="flex justify-center mt-6">
+                                <div className="relative w-64 h-64">
+                                    <Image
+                                        src="https://ik.imagekit.io/avmxsiusm/Untitled-2%20(1).webp"
+                                        alt="Genuine Document Stamp"
+                                        fill
+                                        sizes="256px"
+                                        className="opacity-80 object-contain"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </CardContent>
