@@ -33,6 +33,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Skeleton } from '@/components/ui/skeleton';
 import QRCode from 'qrcode';
+import { format } from 'date-fns';
 
 
 // Dynamically import heavy components
@@ -288,10 +289,12 @@ export default function PqsPage() {
 
             // QR Code
             doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
 
             // Copyright and Page Number
-            doc.text(`Copyright © AirTrack ${new Date().getFullYear()}`, doc.internal.pageSize.width / 2, footerY, { align: 'center' });
-            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY, { align: 'right' });
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
         };
         
         autoTable(doc, {
@@ -303,8 +306,8 @@ export default function PqsPage() {
             didDrawPage: addPageContent
         });
         
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 2; i <= pageCount; i++) {
+        const pageCountFinal = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCountFinal; i++) {
             doc.setPage(i);
             addPageContent({ pageNumber: i });
         }
@@ -319,6 +322,7 @@ export default function PqsPage() {
         const ctx = canvas.getContext('2d');
         if (!ctx) {
             toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+            generatePdf();
             return;
         }
         ctx.drawImage(img, 0, 0);

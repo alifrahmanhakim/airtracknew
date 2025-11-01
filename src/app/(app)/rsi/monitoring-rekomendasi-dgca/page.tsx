@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -27,6 +26,7 @@ import * as XLSX from 'xlsx';
 import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
 
 
 const TindakLanjutDgcaForm = dynamic(() => import('@/components/rsi/tindak-lanjut-dgca-form').then(mod => mod.TindakLanjutDgcaForm), { 
@@ -269,7 +269,9 @@ export default function MonitoringRekomendasiDgcaPage() {
         const generatePdf = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
 
-            const addPageContent = (data: { pageNumber: number }) => {
+            const addPageContent = async (data: { pageNumber: number }) => {
+                const pageCount = (doc as any).internal.getNumberOfPages();
+
                 if (logoDataUrl && data.pageNumber === 1) {
                     const aspectRatio = img.width / img.height;
                     const logoWidth = 30;
@@ -282,14 +284,19 @@ export default function MonitoringRekomendasiDgcaPage() {
                 doc.setFontSize(18);
                 doc.text("Tindak Lanjut Rekomendasi KNKT ke DGCA", 14, 15);
                 
+                const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
+                const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+                
+                const footerY = doc.internal.pageSize.height - 15;
                 doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
 
-                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+                const pageText = `Page ${data.pageNumber} of ${pageCount}`;
+                doc.text(pageText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             };
 
             const tableColumn = ["Laporan KNKT", "Rekomendasi", "Nomor Rekomendasi", "Tindak Lanjut DKPPU"];
@@ -309,13 +316,14 @@ export default function MonitoringRekomendasiDgcaPage() {
                 didDrawPage: addPageContent
             });
             
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 2; i <= pageCount; i++) {
-                doc.setPage(i);
-                addPageContent({ pageNumber: i });
-            }
-
-            doc.save("tindak_lanjut_dgca.pdf");
+            const pageCountFinal = (doc as any).internal.getNumberOfPages();
+            (async () => {
+                for (let i = 1; i <= pageCountFinal; i++) {
+                    doc.setPage(i);
+                    await addPageContent({ pageNumber: i });
+                }
+                doc.save("tindak_lanjut_dgca.pdf");
+            })();
         };
     };
 

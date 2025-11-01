@@ -18,7 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { tindakLanjutFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addTindakLanjutRecord, deleteTindakLanjutRecord } from '@/lib/actions/tindak-lanjut';
-import { getYear } from 'date-fns';
+import { getYear, format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { aocOptions } from '@/lib/data';
@@ -26,6 +26,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
 
 
 const TindakLanjutForm = dynamic(() => import('@/components/rsi/tindak-lanjut-form').then(mod => mod.TindakLanjutForm), { 
