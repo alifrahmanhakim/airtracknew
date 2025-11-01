@@ -178,7 +178,6 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
     }
     
     const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
-    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
 
     try {
         const doc = new jsPDF({ orientation: 'portrait' });
@@ -203,6 +202,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             doc.text(`Page ${data.pageNumber} of ${pageCount}`, pageWidth - 14, footerY, { align: 'right' });
         };
         
+        // --- General Section ---
         autoTable(doc, {
             startY: 30,
             theme: 'plain',
@@ -212,19 +212,35 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 ['Annex', record.annex],
                 ['Subject', record.subject],
                 ['Status', record.statusItem],
+                ['Date of Evaluation', record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'],
+                ['Effective Date', record.effectiveDate ? format(parseISO(record.effectiveDate), 'PPP') : 'N/A'],
+                ['Applicability Date', record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'],
             ],
-            styles: { fontSize: 10 },
+            styles: { fontSize: 9 },
             columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
             didDrawPage: addHeaderAndFooter,
         });
 
+        // --- Action Required ---
+        autoTable(doc, {
+            head: [['Action Required']],
+            body: (record.actionRequired || []).map(item => {
+                let text = actionRequiredLabels[item.id];
+                if (item.checked && item.date) {
+                    text += ` (Date: ${format(parseISO(item.date), 'PPP')})`;
+                }
+                return [item.checked ? `[X] ${text}` : `[ ] ${text}`];
+            }),
+            startY: (doc as any).lastAutoTable.finalY + 5,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255 },
+            didDrawPage: addHeaderAndFooter,
+        });
+        
+        // --- Evaluations ---
         record.evaluations.forEach((evaluation, index) => {
-            if (index > 0) doc.addPage();
-             autoTable(doc, {
-                startY: (doc as any).lastAutoTable.finalY + 10,
+            autoTable(doc, {
                 head: [[`Evaluation Item ${index + 1}`]],
-                theme: 'striped',
-                headStyles: { fillColor: [41, 128, 185], textColor: 255 },
                 body: [
                     ['ICAO SARP', evaluation.icaoSarp],
                     ['Review', evaluation.review],
@@ -235,13 +251,54 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                     ['Reason/Remark', evaluation.reasonOrRemark || '-'],
                     ['Status Item', evaluation.status || 'N/A'],
                 ],
-                styles: { fontSize: 9 },
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+                startY: (doc as any).lastAutoTable.finalY + 10,
+                theme: 'striped',
+                headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+                styles: { fontSize: 9, cellPadding: 2 },
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: { cellWidth: 'auto' } },
                 didDrawPage: addHeaderAndFooter,
             });
         });
 
+        // --- Implementation Tasks ---
+        if (record.implementationTasks && record.implementationTasks.length > 0) {
+            autoTable(doc, {
+                head: [['Implementation Task List']],
+                body: record.implementationTasks.map(task => [
+                    `${task.description}\nEst. Compliance Date: ${task.estimatedComplianceDate ? format(parseISO(task.estimatedComplianceDate), 'PPP') : 'N/A'}`
+                ]),
+                startY: (doc as any).lastAutoTable.finalY + 10,
+                theme: 'striped',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255 },
+                didDrawPage: addHeaderAndFooter,
+            });
+        }
+
+        // --- Summary & Authorization ---
+        autoTable(doc, {
+            startY: (doc as any).lastAutoTable.finalY + 10,
+            head: [['Summary']],
+            body: [[record.summary || 'No summary provided.']],
+            theme: 'grid',
+            headStyles: { fillColor: [44, 62, 80] },
+            didDrawPage: addHeaderAndFooter,
+        });
+        
+        autoTable(doc, {
+            startY: (doc as any).lastAutoTable.finalY + 5,
+            head: [['DGCA Authorization']],
+            body: [
+              ['Inspectors:', (record.inspectors || []).map(i => i.name).join(', ')],
+              ['Verified By:', (record.verifiers || []).map(v => `${v.name} on ${v.date ? format(parseISO(v.date), 'PPP') : 'N/A'}`).join('\n')],
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: [44, 62, 80] },
+            columnStyles: { 0: { fontStyle: 'bold' } },
+            didDrawPage: addHeaderAndFooter,
+        });
+
         doc.save(`GAP_Analysis_${record.slReferenceNumber}.pdf`);
+        toast({ title: "Export successful", description: "Your PDF has been downloaded." });
 
     } catch (e) {
         console.error(e);
