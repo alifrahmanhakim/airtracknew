@@ -159,45 +159,29 @@ export default function LawEnforcementPage() {
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            generatePdfWithLogo(dataUrl);
-        };
-        
-        img.onerror = () => {
-             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
-             generatePdfWithLogo();
-        }
-
         const generatePdfWithLogo = (logoDataUrl?: string) => {
             const doc = new jsPDF();
             
             const addPageContent = (data: { pageNumber: number }) => {
-                if (data.pageNumber === 1) {
-                    doc.setFontSize(16);
-                    doc.text("Law Enforcement Records", 14, 15);
-                    if (logoDataUrl) {
-                        const aspectRatio = img.width / img.height;
-                        const logoWidth = 30;
-                        const logoHeight = logoWidth / aspectRatio;
-                        doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
-                    }
+                const pageCount = (doc as any).internal.getNumberOfPages();
+
+                // Header
+                doc.setFontSize(16);
+                doc.text("Law Enforcement Records", 14, 15);
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = logoWidth / aspectRatio;
+                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
                 }
                 
+                // Footer
                 doc.setFontSize(8);
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
                 const textX = doc.internal.pageSize.width - textWidth - 14;
                 doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-
-                const pageText = `Page ${data.pageNumber} of `;
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+                doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
             };
             
             const tableColumn = ["Imposition Type", "Sanctioned Entity", "References"];
@@ -222,14 +206,27 @@ export default function LawEnforcementPage() {
                 didDrawPage: addPageContent
             });
             
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.text(String(pageCount), 14 + doc.getStringUnitWidth(`Page ${i} of `) * doc.getFontSize() / doc.internal.scaleFactor, doc.internal.pageSize.height - 10);
-            }
-            
             doc.save("law_enforcement_records.pdf");
         };
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                generatePdfWithLogo();
+                return;
+            }
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdfWithLogo(dataUrl);
+        };
+        
+        img.onerror = () => {
+             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+             generatePdfWithLogo();
+        }
     };
 
 
