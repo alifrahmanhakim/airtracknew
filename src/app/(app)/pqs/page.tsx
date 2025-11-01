@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PqRecord, User } from '@/lib/types';
 import { collection, onSnapshot, query, orderBy, getDocs, limit, startAfter, where, QueryConstraint, endBefore, getCountFromServer, getDoc, Timestamp, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { deleteAllPqRecords, deletePqRecord } from '@/lib/actions/pqs';
 import { Loader2, FileSpreadsheet, AlertTriangle, Trash2, ChevronDown, Printer } from 'lucide-react';
@@ -242,36 +241,86 @@ export default function PqsPage() {
         toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
         return;
     }
-    const doc = new jsPDF({ orientation: 'landscape' });
-    doc.setFontSize(18);
-    doc.text("Protocol Questions Records", 14, 20);
 
-    const tableColumn = ["PQ Number", "Protocol Question", "Critical Element", "ICAO Status", "Status"];
-    const tableRows = allRecords.map(record => [
-        record.pqNumber,
-        record.protocolQuestion,
-        record.criticalElement,
-        record.icaoStatus,
-        record.status
-    ]);
-    
-    autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: 30,
-        theme: 'grid',
-        headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-        didDrawPage: (data) => {
+    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = logoUrl;
+
+    const generatePdf = (logoDataUrl?: string) => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+        
+        const tableColumn = ["PQ Number", "Protocol Question", "Critical Element", "ICAO Status", "Status"];
+        const tableRows = allRecords.map(record => [
+            record.pqNumber,
+            record.protocolQuestion,
+            record.criticalElement,
+            record.icaoStatus,
+            record.status
+        ]);
+        
+        const addPageContent = (data: { pageNumber: number }) => {
+            if (data.pageNumber === 1) {
+                doc.setFontSize(18);
+                doc.text("Protocol Questions Records", 14, 20);
+
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if (logoHeight > 0) {
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                }
+            }
+            
             doc.setFontSize(8);
-            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
             const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(text, textX, doc.internal.pageSize.height - 10);
+            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+        };
+        
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            didDrawPage: addPageContent
+        });
+        
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            const pageNumText = `Page ${i} of ${pageCount}`;
+            doc.text(pageNumText, 14, doc.internal.pageSize.height - 10);
         }
-    });
+        
+        doc.save("pqs_records.pdf");
+    };
 
-    doc.save("pqs_records.pdf");
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+            return;
+        }
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        generatePdf(dataUrl);
+    };
+    
+    img.onerror = () => {
+        toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
+        generatePdf(); // Proceed without the logo if it fails
+    };
   };
+
 
   const filteredAnalyticsRecords = useMemo(() => {
     return allRecords.filter(record => {
@@ -460,3 +509,5 @@ export default function PqsPage() {
     </AppLayout>
   );
 }
+
+    
