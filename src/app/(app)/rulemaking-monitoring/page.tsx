@@ -285,44 +285,72 @@ export default function RulemakingMonitoringPage() {
                 doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             };
     
-            filteredAndSortedRecords.forEach((record, index) => {
-                const startNewPage = index > 0;
-                let startY = 30;
-                if (startNewPage) {
-                    const requiredSpace = (record.stages.length * 10) + 40; // rough estimate
-                    if ((doc as any).lastAutoTable.finalY + requiredSpace > doc.internal.pageSize.getHeight() - 30) {
-                        doc.addPage();
-                    } else {
-                       startY = (doc as any).lastAutoTable.finalY + 10;
-                    }
+            const groupedByCategory = filteredAndSortedRecords.reduce((acc, record) => {
+                const key = record.kategori;
+                if (!acc[key]) {
+                    acc[key] = [];
+                }
+                acc[key].push(record);
+                return acc;
+            }, {} as Record<string, RulemakingRecord[]>);
+            
+            let isFirstPage = true;
+    
+            for (const kategori of Object.keys(groupedByCategory)) {
+                if (!isFirstPage) {
+                    doc.addPage();
                 }
 
                 autoTable(doc, {
-                    head: [[`${record.perihal} (${record.kategori})`]],
+                    head: [[`Kategori: ${kategori}`]],
                     body: [[]],
-                    startY: startY,
+                    startY: isFirstPage ? 30 : 30,
                     theme: 'plain',
-                    headStyles: { fontStyle: 'bold', fontSize: 14 }
+                    headStyles: { fontStyle: 'bold', fontSize: 16 }
                 });
+                
+                const recordsInKategori = groupedByCategory[kategori];
+                const groupedByPerihal = recordsInKategori.reduce((acc, record) => {
+                    const key = record.perihal;
+                    if (!acc[key]) {
+                        acc[key] = [];
+                    }
+                    acc[key].push(record);
+                    return acc;
+                }, {} as Record<string, RulemakingRecord[]>);
+                
+                for (const perihal of Object.keys(groupedByPerihal)) {
+                     autoTable(doc, {
+                        head: [[`Perihal: ${perihal}`]],
+                        body: [[]],
+                        startY: (doc as any).lastAutoTable.finalY + 2,
+                        theme: 'plain',
+                        headStyles: { fontStyle: 'bold', fontSize: 14 }
+                    });
 
-                const tableRows = record.stages.map(stage => [
-                    stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
-                    stage.pengajuan.nomor || 'N/A',
-                    stage.pengajuan.keteranganPengajuan || 'N/A',
-                    stage.status.deskripsi.trim(),
-                    stage.keterangan?.text || 'N/A',
-                ]);
+                    const recordsInPerihal = groupedByPerihal[perihal];
+                    const tableRows = recordsInPerihal.flatMap(record => 
+                        record.stages.map(stage => [
+                            stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
+                            stage.pengajuan.nomor || 'N/A',
+                            stage.pengajuan.keteranganPengajuan || 'N/A',
+                            stage.status.deskripsi.trim(),
+                            stage.keterangan?.text || 'N/A',
+                        ])
+                    );
 
-                autoTable(doc, {
-                    head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
-                    body: tableRows,
-                    startY: (doc as any).lastAutoTable.finalY,
-                    theme: 'grid',
-                    headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                    didDrawPage: addPageContent,
-                    margin: { top: 30, bottom: 30 },
-                });
-            });
+                    autoTable(doc, {
+                        head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
+                        body: tableRows,
+                        startY: (doc as any).lastAutoTable.finalY,
+                        theme: 'grid',
+                        headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                        didDrawPage: addPageContent,
+                        margin: { top: 30, bottom: 30 },
+                    });
+                }
+                 isFirstPage = false;
+            }
             
             doc.save("rulemaking_monitoring.pdf");
         };
