@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -437,23 +438,6 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            
-            generatePdf(dataUrl);
-        };
-        
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
-            generatePdf();
-        }
-
         const generatePdf = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
     
@@ -468,6 +452,26 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                 item['Attachments'] ? 'Link' : 'N/A'
             ]);
     
+            const addPageContent = (data: { pageNumber: number }) => {
+                if (data.pageNumber === 1) {
+                    doc.setFontSize(16);
+                    doc.text(`Task List for Project: ${projectName}`, 14, 15);
+                
+                    if (logoDataUrl) {
+                        const aspectRatio = img.width / img.height;
+                        const logoWidth = 30;
+                        const logoHeight = logoWidth / aspectRatio;
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                }
+                
+                doc.setFontSize(8);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+            };
+
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
@@ -486,30 +490,9 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                         }
                     }
                 },
-                didDrawPage: (data) => {
-                    const pageCount = (doc as any).internal.getNumberOfPages();
-                     if (data.pageNumber === 1) {
-                        doc.setFontSize(16);
-                        doc.text(`Task List for Project: ${projectName}`, 14, 15);
-                    
-                        if (logoDataUrl) {
-                            const aspectRatio = img.width / img.height;
-                            const logoWidth = 30;
-                            const logoHeight = logoWidth / aspectRatio;
-                            doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                        }
-                    }
-
-                    doc.setFontSize(8);
-                    const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                    const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                    const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                    doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-                    
-                    doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
-                },
+                didDrawPage: addPageContent,
             });
-
+            
             const pageCount = (doc as any).internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -524,6 +507,22 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                 description: 'Tasks have been exported to a PDF file.',
             });
         };
+
+        img.onload = () => {
+             const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdf(dataUrl);
+        };
+        
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+            generatePdf();
+        }
     };
 
     return (

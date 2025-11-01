@@ -633,6 +633,7 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
 
             <TasksTable 
               projectId={project.id}
+              projectName={project.name}
               projectType={project.projectType}
               tasks={tasks}
               teamMembers={project.team}
