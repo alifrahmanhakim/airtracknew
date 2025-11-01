@@ -1,15 +1,14 @@
 
-
 'use client';
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LawEnforcementRecord } from '@/lib/types';
+import { LawEnforcementRecord, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, FileSpreadsheet, Printer } from 'lucide-react';
@@ -23,6 +22,8 @@ import * as XLSX from 'xlsx';
 import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { createExportRecord } from '@/lib/actions/verification';
+import QRCode from 'qrcode';
 
 const LawEnforcementForm = dynamic(() => import('@/components/rsi/law-enforcement-form').then(mod => mod.LawEnforcementForm), { 
     ssr: false,
@@ -43,12 +44,13 @@ export default function LawEnforcementPage() {
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
     const form = useForm<LawEnforcementFormValues>({
         resolver: zodResolver(lawEnforcementFormSchema),
         defaultValues: {
             impositionType: 'aoc',
-            references: [{ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() }],
+            references: [{ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date(), fileUrl: '' }],
             sanctionedAoc: [{ value: '' }],
             sanctionedPersonnel: [{ value: '' }],
             sanctionedOrganization: [{ value: '' }],
@@ -78,6 +80,15 @@ export default function LawEnforcementPage() {
             });
             setIsLoading(false);
         });
+        
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => unsubscribe();
     }, [toast]);
@@ -99,7 +110,7 @@ export default function LawEnforcementPage() {
             toast({ title: 'Record Added', description: 'The new sanction record has been successfully added.' });
             form.reset({
                 impositionType: 'aoc',
-                references: [{ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date() }],
+                references: [{ id: `ref-${Date.now()}`, sanctionType: '', refLetter: '', dateLetter: new Date(), fileUrl: '' }],
                 sanctionedAoc: [{ value: '' }],
                 sanctionedPersonnel: [],
                 sanctionedOrganization: [],
@@ -124,22 +135,21 @@ export default function LawEnforcementPage() {
             return;
         }
 
-        const dataToExport = records.map(record => {
+        const dataToExport = records.flatMap(record => {
             const sanctionedEntity = 
                 record.impositionType === 'aoc' ? (record.sanctionedAoc?.map(s => s.value).join(', ') || '') :
                 record.impositionType === 'personnel' ? (record.sanctionedPersonnel?.map(s => s.value).join(', ') || '') :
                 (record.sanctionedOrganization?.map(s => s.value).join(', ') || '');
             
-            const references = (record.references || []).map(ref => 
-                `Type: ${ref.sanctionType}, Letter: ${ref.refLetter}, Date: ${ref.dateLetter}`
-            ).join('; ');
-
-            return {
+            return (record.references || []).map(ref => ({
                 'Imposition Type': record.impositionType,
                 'Sanctioned Entity': sanctionedEntity,
-                'References': references,
+                'Sanction Type': ref.sanctionType,
+                'Reference Letter': ref.refLetter,
+                'Date Letter': ref.dateLetter,
+                'File URL': ref.fileUrl || '',
                 'Created At': record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '',
-            };
+            }));
         });
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -148,41 +158,39 @@ export default function LawEnforcementPage() {
         XLSX.writeFile(workbook, 'law_enforcement_records.xlsx');
     };
     
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         if (records.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
 
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+
+        const exportRecord = await createExportRecord({
+            documentType: 'List of Law Enforcement',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: {},
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+        
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        const generatePdfWithLogo = (logoDataUrl?: string) => {
-            const doc = new jsPDF();
-            
-            const addPageContent = (data: { pageNumber: number }) => {
-                const pageCount = (doc as any).internal.getNumberOfPages();
-
-                // Header
-                doc.setFontSize(16);
-                doc.text("Law Enforcement Records", 14, 15);
-                if (logoDataUrl) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = logoWidth / aspectRatio;
-                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
-                }
-                
-                // Footer
-                doc.setFontSize(8);
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-                doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
-            };
+        const generatePdfWithLogo = async (logoDataUrl?: string) => {
+            const doc = new jsPDF({ orientation: 'landscape' });
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
             
             const tableColumn = ["Imposition Type", "Sanctioned Entity", "References"];
             const tableRows = records.map(record => {
@@ -192,7 +200,7 @@ export default function LawEnforcementPage() {
                     (record.sanctionedOrganization?.map(s => s.value).join('\n') || '');
                 
                 const references = (record.references || []).map(ref => 
-                    `Type: ${ref.sanctionType}\nRef: ${ref.refLetter}\nDate: ${ref.dateLetter}`
+                    `Type: ${ref.sanctionType}\nRef: ${ref.refLetter}\nDate: ${ref.dateLetter}${ref.fileUrl ? `\nLink: ${ref.fileUrl}` : ''}`
                 ).join('\n\n');
                 return [record.impositionType, sanctionedEntity, references];
             });
@@ -203,8 +211,33 @@ export default function LawEnforcementPage() {
                 startY: 25,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent
+                didDrawPage: (data) => {
+                    // Header
+                    doc.setFontSize(16);
+                    doc.text("Law Enforcement Records", 14, 20);
+                    if (logoDataUrl) {
+                        const aspectRatio = img.width / img.height;
+                        const logoWidth = 30;
+                        const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                        if(logoHeight > 0) doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                    }
+                },
+                 margin: { top: 30, bottom: 30 },
             });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            }
             
             doc.save("law_enforcement_records.pdf");
         };
