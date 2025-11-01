@@ -31,6 +31,7 @@ import { AppLayout } from '@/components/app-layout-component';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 // Dynamically import heavy components
@@ -509,5 +510,3 @@ export default function PqsPage() {
     </AppLayout>
   );
 }
-
-    
