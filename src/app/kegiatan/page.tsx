@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, where, doc, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, Timestamp, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +34,9 @@ import Link from 'next/link';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { deleteKegiatan } from '@/lib/actions/kegiatan';
+import QRCode from 'qrcode';
+import { createExportRecord } from '@/lib/actions/verification';
+
 
 const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics').then(mod => mod.KegiatanAnalytics), {
     ssr: false,
@@ -48,6 +51,7 @@ export default function KegiatanPage() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
     
     const [kegiatanToDelete, setKegiatanToDelete] = React.useState<Kegiatan | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
@@ -88,6 +92,15 @@ export default function KegiatanPage() {
             });
             setIsLoading(false);
         });
+
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => {
             unsubUsers();
@@ -169,12 +182,31 @@ export default function KegiatanPage() {
         }
     }, [kegiatanRecords, selectedWeek, selectedMonth, filterMode]);
     
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         if (filteredRecords.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
+
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+
+        const exportRecord = await createExportRecord({
+            documentType: 'Jadwal Kegiatan Subdirektorat',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { filterMode, ...(filterMode === 'week' ? { week: selectedWeek } : { month: selectedMonth }) },
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
     
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
@@ -183,44 +215,6 @@ export default function KegiatanPage() {
         const generatePdfWithLogo = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
     
-            const addPageHeader = () => {
-                if (logoDataUrl) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                    if (logoHeight > 0) {
-                      doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                    }
-                }
-                
-                doc.setFontSize(18);
-                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
-    
-                let subtitle = '';
-                if (filterMode === 'week') {
-                    const weekStart = parseISO(selectedWeek);
-                    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                    const weekNumber = getISOWeek(weekStart);
-                    subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-                } else {
-                    const monthStart = parseISO(selectedMonth);
-                    subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-                }
-                doc.setFontSize(12);
-                doc.text(subtitle, 14, 26);
-            };
-    
-            const addPageFooter = (pageNumber: number, totalPages: number) => {
-                 doc.setFontSize(8);
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-                
-                const pageText = `Page ${pageNumber} of ${totalPages}`;
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-            };
-            
             const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
             const tableRows = filteredRecords.map(record => [
                 record.subjek,
@@ -242,8 +236,43 @@ export default function KegiatanPage() {
             const pageCount = (doc as any).internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                addPageHeader(); // Add header to each page
-                addPageFooter(i, pageCount); // Add footer to each page
+
+                // Header
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if (logoHeight > 0) {
+                      doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                }
+                doc.setFontSize(18);
+                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+    
+                let subtitle = '';
+                if (filterMode === 'week') {
+                    const weekStart = parseISO(selectedWeek);
+                    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                    const weekNumber = getISOWeek(weekStart);
+                    subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                } else {
+                    const monthStart = parseISO(selectedMonth);
+                    subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                }
+                doc.setFontSize(12);
+                doc.text(subtitle, 14, 26);
+                
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                
+                const pageText = `Page ${i} of ${pageCount}`;
+                doc.text(pageText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             }
             
             doc.save("jadwal_kegiatan.pdf");
