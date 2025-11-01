@@ -1,14 +1,13 @@
-
 'use client';
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TindakLanjutDgcaRecord } from '@/lib/types';
+import { TindakLanjutDgcaRecord, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet, Printer } from 'lucide-react';
@@ -27,6 +26,7 @@ import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
+import { createExportRecord } from '@/lib/actions/verification';
 
 
 const TindakLanjutDgcaForm = dynamic(() => import('@/components/rsi/tindak-lanjut-dgca-form').then(mod => mod.TindakLanjutDgcaForm), { 
@@ -53,6 +53,7 @@ export default function MonitoringRekomendasiDgcaPage() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
     
     // Filter and sort states
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -86,6 +87,15 @@ export default function MonitoringRekomendasiDgcaPage() {
             });
             setIsLoading(false);
         });
+        
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => unsubscribe();
     }, [toast]);
@@ -236,68 +246,39 @@ export default function MonitoringRekomendasiDgcaPage() {
         XLSX.writeFile(workbook, 'tindak_lanjut_dgca.xlsx');
     };
     
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         if (filteredAndSortedRecords.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
 
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+    
+        const exportRecord = await createExportRecord({
+            documentType: 'Tindak Lanjut Rekomendasi KNKT ke DGCA',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, yearFilter },
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+        
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+        
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
-                return;
-            }
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            generatePdf(dataUrl);
-        };
-        
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
-            generatePdf(); // Proceed without the logo if it fails
-        };
-
-        const generatePdf = (logoDataUrl?: string) => {
+        const generatePdf = async (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
-
-            const addPageContent = async (data: { pageNumber: number }) => {
-                const pageCount = (doc as any).internal.getNumberOfPages();
-
-                if (logoDataUrl && data.pageNumber === 1) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                    if (logoHeight > 0) {
-                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                    }
-                }
-
-                doc.setFontSize(18);
-                doc.text("Tindak Lanjut Rekomendasi KNKT ke DGCA", 14, 15);
-                
-                const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
-                const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
-                
-                const footerY = doc.internal.pageSize.height - 15;
-                doc.setFontSize(8);
-                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
-                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
-                
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-
-                const pageText = `Page ${data.pageNumber} of ${pageCount}`;
-                doc.text(pageText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-            };
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
 
             const tableColumn = ["Laporan KNKT", "Rekomendasi", "Nomor Rekomendasi", "Tindak Lanjut DKPPU"];
             const tableRows = filteredAndSortedRecords.map(record => [
@@ -313,17 +294,62 @@ export default function MonitoringRekomendasiDgcaPage() {
                 startY: 25,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent
+                margin: { top: 30, bottom: 30 },
             });
             
-            const pageCountFinal = (doc as any).internal.getNumberOfPages();
-            (async () => {
-                for (let i = 1; i <= pageCountFinal; i++) {
-                    doc.setPage(i);
-                    await addPageContent({ pageNumber: i });
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Header only on first page
+                if (i === 1) {
+                    doc.setFontSize(18);
+                    doc.text("Tindak Lanjut Rekomendasi KNKT ke DGCA", 14, 20);
+
+                    if (logoDataUrl) {
+                        const aspectRatio = img.width / img.height;
+                        const logoWidth = 30;
+                        const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                        if (logoHeight > 0) {
+                            doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                        }
+                    }
                 }
-                doc.save("tindak_lanjut_dgca.pdf");
-            })();
+                
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+
+                const pageText = `Page ${i} of ${pageCount}`;
+                doc.text(pageText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            }
+            
+            doc.save("tindak_lanjut_dgca.pdf");
+        };
+        
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                generatePdf();
+                return;
+            }
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdf(dataUrl);
+        };
+
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
+            generatePdf();
         };
     };
 
