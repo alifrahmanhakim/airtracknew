@@ -38,20 +38,9 @@ import { Checkbox } from './ui/checkbox';
 import { useRouter } from 'next/navigation';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { projectSchema } from '@/lib/schemas';
 
-
-const projectSchema = z.object({
-  name: z.string().min(1, 'Project name is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  startDate: z.date({ required_error: 'Start date is required.' }),
-  endDate: z.date({ required_error: 'End date is required.' }),
-  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
-  annex: z.string().min(1, 'Annex is required.'),
-  casr: z.string().min(1, 'CASR is required.'),
-  casrRevision: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  isHighPriority: z.boolean().default(false),
-});
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
@@ -85,6 +74,7 @@ export function AddRulemakingProjectDialog({ allUsers: initialUsers }: AddRulema
     defaultValues: {
       name: '',
       description: '',
+      jenisRegulasi: 'CASR/PKPS',
       team: [],
       annex: '',
       casr: '',
@@ -93,6 +83,8 @@ export function AddRulemakingProjectDialog({ allUsers: initialUsers }: AddRulema
       isHighPriority: false,
     },
   });
+
+  const jenisRegulasi = form.watch('jenisRegulasi');
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
@@ -179,47 +171,69 @@ export function AddRulemakingProjectDialog({ allUsers: initialUsers }: AddRulema
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
+            <FormField
                 control={form.control}
-                name="annex"
+                name="jenisRegulasi"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Annex</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g., 1" {...field} />
-                    </FormControl>
-                    <FormMessage />
+                        <FormLabel>Jenis Regulasi</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Pilih jenis regulasi..." /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="CASR/PKPS">CASR/PKPS</SelectItem>
+                                <SelectItem value="SI">SI</SelectItem>
+                                <SelectItem value="AC">AC</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
                     </FormItem>
                 )}
-                />
-                <FormField
-                control={form.control}
-                name="casr"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>CASR</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g., 61" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                 <FormField
-                control={form.control}
-                name="casrRevision"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Revisi CASR Ke</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g., 2" {...field} type="number" />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-            </div>
+            />
+            {jenisRegulasi === 'CASR/PKPS' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="annex"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Annex</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., 1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="casr"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>CASR</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., 61" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="casrRevision"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Revisi CASR Ke</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., 2" {...field} type="number" />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+            )}
             <FormField
               control={form.control}
               name="description"

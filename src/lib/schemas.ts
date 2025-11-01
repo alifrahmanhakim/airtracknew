@@ -293,3 +293,33 @@ export const rulemakingRecordSchema = z.object({
         }).optional(),
     })).min(1, 'At least one stage is required'),
 });
+
+export const projectSchema = z.object({
+  name: z.string().min(1, 'Project name is required.'),
+  description: z.string().min(1, 'Description is required.'),
+  jenisRegulasi: z.enum(['CASR/PKPS', 'SI', 'AC']),
+  annex: z.string().optional(),
+  casr: z.string().optional(),
+  casrRevision: z.string().optional(),
+  startDate: z.date({ required_error: 'Start date is required.' }),
+  endDate: z.date({ required_error: 'End date is required.' }),
+  team: z.array(z.string()).min(1, 'At least one team member must be selected.'),
+  tags: z.array(z.string()).optional(),
+  isHighPriority: z.boolean().default(false),
+}).refine(data => {
+    if (data.jenisRegulasi === 'CASR/PKPS') {
+        return !!data.annex && !!data.casr;
+    }
+    return true;
+}, {
+    message: "Annex and CASR are required for CASR/PKPS type.",
+    path: ["annex"], // You can point the error to one of the fields
+}).refine(data => {
+    if (data.jenisRegulasi === 'CASR/PKPS') {
+        return !!data.casr;
+    }
+    return true;
+}, {
+    message: "CASR is required for CASR/PKPS type.",
+    path: ["casr"],
+});
