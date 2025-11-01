@@ -161,11 +161,11 @@ export default function LoginPage() {
 
     try {
         const { db, auth, googleProvider } = await import('@/lib/firebase');
-        const { signInWithPopup, signOut, prompt } = await import('firebase/auth');
+        const { signInWithPopup, signOut } = await import('firebase/auth');
         const { doc, getDoc, setDoc, updateDoc } = await import('firebase/firestore');
 
         if(isDifferentAccount) {
-            prompt(auth, googleProvider);
+            await signOut(auth);
         }
 
         const result = await signInWithPopup(auth, googleProvider);
@@ -468,44 +468,44 @@ export default function LoginPage() {
                             )}
                             {error && <Alert variant="destructive" className="mt-6"><AlertTitle>Login Failed</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
                             
-                            <div className="my-6">
-                                <div className="space-y-2">
-                                    {lastLoggedInUser ? (
-                                        <Button variant="outline" className="w-full h-auto py-2 px-3 justify-start" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
-                                            <div className="flex items-center gap-4 w-full">
-                                                 <Avatar className="h-10 w-10">
-                                                    <AvatarImage src={lastLoggedInUser.avatarUrl} alt={lastLoggedInUser.name}/>
-                                                    <AvatarFallback>{lastLoggedInUser.name?.[0]}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex-1 text-left">
-                                                    <p className="font-semibold text-sm">Sign in as {lastLoggedInUser.name}</p>
-                                                    <p className="text-xs text-muted-foreground flex items-center">{lastLoggedInUser.email} <ChevronDown className="h-3 w-3 ml-1" /></p>
-                                                </div>
-                                                {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <GoogleIcon />}
-                                            </div>
-                                        </Button>
-                                    ) : (
-                                        <Button variant="outline" className="w-full" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
-                                            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                            Sign in with Google
-                                        </Button>
-                                    )}
-                                    {lastLoggedInUser && (
-                                        <Button variant="link" className="w-full text-xs text-muted-foreground" onClick={() => handleGoogleSignIn(true)} disabled={isGoogleLoading || isCheckingAuth}>
-                                            Sign in with a different account
-                                        </Button>
-                                    )}
-                              </div>
+                             <div className="my-6">
+                                <div className="relative my-6">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <span className="w-full border-t border-border" />
+                                    </div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-card/60 px-2 text-muted-foreground">Or log in with email</span>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div className="relative my-6">
-                                <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t border-border" />
-                                </div>
-                                <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-card/60 px-2 text-muted-foreground">Or log in with email</span>
-                                </div>
-                            </div>
+                            <div className="space-y-2 mb-6">
+                                {lastLoggedInUser ? (
+                                    <Button variant="outline" className="w-full h-auto py-2 px-3 justify-start" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
+                                        <div className="flex items-center gap-4 w-full">
+                                                <Avatar className="h-10 w-10">
+                                                <AvatarImage src={lastLoggedInUser.avatarUrl} alt={lastLoggedInUser.name}/>
+                                                <AvatarFallback>{lastLoggedInUser.name?.[0]}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 text-left">
+                                                <p className="font-semibold text-sm">Sign in as {lastLoggedInUser.name}</p>
+                                                <p className="text-xs text-muted-foreground flex items-center">{lastLoggedInUser.email} <ChevronDown className="h-3 w-3 ml-1" /></p>
+                                            </div>
+                                            {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <GoogleIcon />}
+                                        </div>
+                                    </Button>
+                                ) : (
+                                    <Button variant="outline" className="w-full" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
+                                        {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                        Sign in with Google
+                                    </Button>
+                                )}
+                                {lastLoggedInUser && (
+                                    <Button variant="link" className="w-full text-xs text-muted-foreground" onClick={() => handleGoogleSignIn(true)} disabled={isGoogleLoading || isCheckingAuth}>
+                                        Sign in with a different account
+                                    </Button>
+                                )}
+                          </div>
 
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <div className="space-y-2">
@@ -637,3 +637,5 @@ export default function LoginPage() {
       </main>
   );
 }
+
+    
