@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,6 +36,8 @@ import { MultiSelect, type MultiSelectOption } from './ui/multi-select';
 import { addTimKerjaProject } from '@/lib/actions/project';
 import { Checkbox } from './ui/checkbox';
 import { z } from 'zod';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const timKerjaProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -53,13 +55,23 @@ type AddTimKerjaProjectDialogProps = {
   allUsers: User[];
 };
 
-export function AddTimKerjaProjectDialog({ allUsers }: AddTimKerjaProjectDialogProps) {
+export function AddTimKerjaProjectDialog({ allUsers: initialUsers }: AddTimKerjaProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [liveUsers, setLiveUsers] = useState<User[]>(initialUsers);
   const { toast } = useToast();
   const router = useRouter();
 
-  const userOptions: MultiSelectOption[] = allUsers.map(user => ({
+  useEffect(() => {
+    if (!open) return;
+    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+        const usersFromDb = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setLiveUsers(usersFromDb);
+    });
+    return () => unsubscribe();
+  }, [open]);
+
+  const userOptions: MultiSelectOption[] = liveUsers.map(user => ({
     value: user.id,
     label: user.name || user.email || user.id,
   }));

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,6 +45,8 @@ import { Checkbox } from './ui/checkbox';
 import { updateProject } from '@/lib/actions/project';
 import { countAllTasks } from '@/lib/data-utils';
 import { Badge } from './ui/badge';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const editProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -89,11 +91,6 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
       return 'At Risk';
     }
     
-    // Check original status if it provides a more severe warning
-    if (project.status === 'At Risk' || project.status === 'Off Track') {
-      return project.status;
-    }
-    
     const projectStart = parseISO(project.startDate);
     const totalDuration = differenceInDays(projectEnd, projectStart);
   
@@ -110,13 +107,23 @@ const getEffectiveStatus = (project: Project): Project['status'] => {
 };
 
 
-export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps) {
+export function EditProjectDialog({ project, allUsers: initialUsers }: EditProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [liveUsers, setLiveUsers] = useState<User[]>(initialUsers);
   const { toast } = useToast();
   const router = useRouter();
 
-  const userOptions: MultiSelectOption[] = allUsers.map(user => ({
+  useEffect(() => {
+    if (!open) return;
+    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+        const usersFromDb = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setLiveUsers(usersFromDb);
+    });
+    return () => unsubscribe();
+  }, [open]);
+
+  const userOptions: MultiSelectOption[] = liveUsers.map(user => ({
     value: user.id,
     label: user.name || user.email || user.id,
   }));
@@ -148,7 +155,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
     setIsSubmitting(true);
     
     const updatedTeam = data.team.map(userId => {
-        const user = allUsers.find(u => u.id === userId);
+        const user = liveUsers.find(u => u.id === userId);
         return {
             id: userId,
             name: user?.name || 'Unnamed User',
@@ -404,7 +411,7 @@ export function EditProjectDialog({ project, allUsers }: EditProjectDialogProps)
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {allUsers.map((user) => (
+                      {liveUsers.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.name}
                         </SelectItem>
