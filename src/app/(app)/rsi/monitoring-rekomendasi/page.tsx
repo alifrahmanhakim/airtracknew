@@ -4,11 +4,11 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TindakLanjutRecord } from '@/lib/types';
+import { TindakLanjutRecord, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, RotateCcw, Search, Trash2, AlertTriangle, FileSpreadsheet, Printer } from 'lucide-react';
@@ -18,7 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { tindakLanjutFormSchema } from '@/lib/schemas';
 import type { z } from 'zod';
 import { addTindakLanjutRecord, deleteTindakLanjutRecord } from '@/lib/actions/tindak-lanjut';
-import { getYear, format } from 'date-fns';
+import { getYear, format, parseISO, isValid } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { aocOptions } from '@/lib/data';
@@ -27,6 +27,7 @@ import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
+import { createExportRecord } from '@/lib/actions/verification';
 
 
 const TindakLanjutForm = dynamic(() => import('@/components/rsi/tindak-lanjut-form').then(mod => mod.TindakLanjutForm), { 
@@ -49,6 +50,7 @@ export default function MonitoringRekomendasiPage() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
     
     // Filter states
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -82,6 +84,15 @@ export default function MonitoringRekomendasiPage() {
             });
             setIsLoading(false);
         });
+
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => unsubscribe();
     }, [toast]);
@@ -221,62 +232,38 @@ export default function MonitoringRekomendasiPage() {
         XLSX.writeFile(workbook, 'tindak_lanjut_knkt.xlsx');
     };
     
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         if (filteredRecords.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
 
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+
+        const exportRecord = await createExportRecord({
+            documentType: 'Monitoring Tindak Lanjut Rekomendasi KNKT',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, penerimaFilter, yearFilter },
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
-                return;
-            }
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-
-            generatePdf(dataUrl);
-        };
-
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
-            generatePdf(); // Proceed without the logo if it fails
-        };
-        
-        const generatePdf = (logoDataUrl?: string) => {
+        const generatePdf = async (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
-
-            const addPageContent = (data: { pageNumber: number }) => {
-                if (logoDataUrl && data.pageNumber === 1) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                    if (logoHeight > 0) {
-                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                    }
-                }
-
-                doc.setFontSize(18);
-                doc.text("Monitoring Tindak Lanjut Rekomendasi KNKT", 14, 15);
-                
-                doc.setFontSize(8);
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-
-                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-            };
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
 
             const tableColumn = ["Laporan KNKT", "Penerima", "Rekomendasi", "Tindak Lanjut DKPPU", "Tindak Lanjut Operator", "Status"];
             const tableRows = filteredRecords.map(record => {
@@ -298,16 +285,61 @@ export default function MonitoringRekomendasiPage() {
                 startY: 25,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent,
+                didDrawPage: (data) => {
+                    // Header on first page
+                    if (data.pageNumber === 1) {
+                         if (logoDataUrl) {
+                            const aspectRatio = img.width / img.height;
+                            const logoWidth = 30;
+                            const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                            if (logoHeight > 0) {
+                                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                            }
+                        }
+                        doc.setFontSize(18);
+                        doc.text("Monitoring Tindak Lanjut Rekomendasi KNKT", 14, 15);
+                    }
+                },
+                margin: { top: 30, bottom: 30 }, // Increased bottom margin for footer
             });
 
             const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 2; i <= pageCount; i++) {
+            for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                addPageContent({ pageNumber: i });
+                
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             }
 
             doc.save("tindak_lanjut_knkt.pdf");
+        };
+        
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+                generatePdf(dataUrl);
+            } else {
+                generatePdf(); // Fallback without logo
+            }
+        };
+
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
+            generatePdf();
         };
     };
 
