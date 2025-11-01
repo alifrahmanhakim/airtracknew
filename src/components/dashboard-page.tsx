@@ -561,7 +561,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                 </Card>
             </Collapsible>
         )}
-        <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60 h-full">
+        <Card className="border-blue-400 bg-blue-50 dark:bg-blue-950/80 dark:border-blue-700/60">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
                     <History /> Recently Added Tasks
@@ -673,7 +673,7 @@ export function DashboardPage({ initialProjects, initialUsers }: DashboardPagePr
                                     </TableCell>
                                     <TableCell>
                                       <div className='flex flex-col items-center gap-1'>
-                                          <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} className="h-2 w-full" />
+                                          <Progress value={maxWorkloadScore > 0 ? (workloadScore / maxWorkloadScore) * 100 : 0} colorLogic="inverted" className="h-2 w-full" />
                                           <Badge variant="outline" className={cn("text-xs", {
                                               'border-red-500/50 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/60': workloadStatus === 'Overload',
                                               'border-blue-500/50 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/60': workloadStatus === 'Underload',

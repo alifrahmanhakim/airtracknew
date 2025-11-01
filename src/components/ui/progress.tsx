@@ -6,18 +6,34 @@ import * as ProgressPrimitive from "@radix-ui/react-progress"
 
 import { cn } from "@/lib/utils"
 
+type ColorLogic = "default" | "inverted";
+
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { indicatorClassName?: string }
->(({ className, value, indicatorClassName, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { indicatorClassName?: string; colorLogic?: ColorLogic }
+>(({ className, value, indicatorClassName, colorLogic = "default", ...props }, ref) => {
   const progressValue = value || 0;
   
-  const colorClass =
-    progressValue <= 40
-      ? "bg-red-500"
-      : progressValue <= 70
-      ? "bg-yellow-500"
-      : "bg-green-500";
+  let colorClass = '';
+
+  if (colorLogic === 'inverted') {
+    // Inverted: Higher value is more red
+    colorClass =
+      progressValue > 70
+        ? "bg-red-500"
+        : progressValue > 40
+        ? "bg-yellow-500"
+        : "bg-green-500";
+  } else {
+    // Default: Higher value is more green
+    colorClass =
+      progressValue <= 40
+        ? "bg-red-500"
+        : progressValue <= 70
+        ? "bg-yellow-500"
+        : "bg-green-500";
+  }
+
 
   return (
     <ProgressPrimitive.Root
