@@ -477,7 +477,7 @@ export default function CcefodPage() {
   function renderContent() {
     if (isLoading) {
       return (
-        <div className="space-y-4">
+        <div className="space-y-4 p-4 md:p-8">
             <div className="flex justify-between items-center">
                 <Skeleton className="h-12 w-1/3" />
                 <Skeleton className="h-10 w-1/4" />
@@ -488,35 +488,33 @@ export default function CcefodPage() {
     }
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <Card className="mb-4">
-                <CardHeader>
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div className="flex-1">
-                            <CardTitle className="text-3xl font-bold">CC/EFOD Monitoring</CardTitle>
-                            <CardDescription className="mt-2">
-                                Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
-                            </CardDescription>
-                             <div className="mt-4">
-                                <TabsList>
-                                    <TabsTrigger value="form">Input Form</TabsTrigger>
-                                    <TabsTrigger value="records">Records</TabsTrigger>
-                                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                                </TabsList>
-                            </div>
+            <div className="mb-4 bg-background/80 backdrop-blur-sm p-4 md:p-6 rounded-lg">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-1">
+                        <CardTitle className="text-3xl font-bold">CC/EFOD Monitoring</CardTitle>
+                        <CardDescription className="mt-2">
+                            Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
+                        </CardDescription>
+                         <div className="mt-4">
+                            <TabsList>
+                                <TabsTrigger value="form">Input Form</TabsTrigger>
+                                <TabsTrigger value="records">Records</TabsTrigger>
+                                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                            </TabsList>
                         </div>
-                         {isAdmin && (
-                            <div className='flex items-center gap-2'>
-                                <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                                    <ImportCcefodCsvDialog />
-                                </Suspense>
-                            </div>
-                        )}
                     </div>
-                </CardHeader>
-            </Card>
+                     {isAdmin && (
+                        <div className='flex items-center gap-2'>
+                            <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                                <ImportCcefodCsvDialog />
+                            </Suspense>
+                        </div>
+                    )}
+                </div>
+            </div>
             
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
-                <Card className="max-w-4xl mx-auto">
+                <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                     <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
                     <CardDescription>
@@ -526,11 +524,11 @@ export default function CcefodPage() {
                     <CardContent>
                        <CcefodForm onFormSubmit={handleRecordAdd} />
                     </CardContent>
-                </Card>
+                </div>
             </TabsContent>
             
             <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
-                <Card>
+                <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
@@ -581,11 +579,11 @@ export default function CcefodPage() {
                     <CardContent>
                        <CcefodAnalyticsDashboard records={filteredAnalyticsRecords} />
                     </CardContent>
-                </Card>
+                </div>
             </TabsContent>
             
             <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
-                <Card>
+                <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                         <div className='flex justify-between items-start'>
                             <div>
@@ -692,7 +690,7 @@ export default function CcefodPage() {
                             </div>
                         </div>
                     </CardContent>
-                </Card>
+                </div>
             </TabsContent>
         </Tabs>
     );
@@ -700,7 +698,7 @@ export default function CcefodPage() {
 
   return (
     <AppLayout>
-        <div className="p-4 md:p-8" id="ccefod-page">
+        <div id="ccefod-page">
         {renderContent()}
 
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
