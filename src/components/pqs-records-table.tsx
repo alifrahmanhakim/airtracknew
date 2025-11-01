@@ -211,7 +211,7 @@ export function PqsRecordsTable({
           </div>
         ) : (
         <>
-          <ScrollArea className="border rounded-md h-[500px] w-full">
+          <div className="border rounded-md overflow-auto h-[500px] w-full">
             <Table>
               <TableHeader className="sticky top-0 bg-background/95 z-10">
                 <TableRow>
@@ -276,7 +276,7 @@ export function PqsRecordsTable({
                 ))}
               </TableBody>
             </Table>
-          </ScrollArea>
+          </div>
           <Pagination>
             <PaginationContent>
               <PaginationItem>
