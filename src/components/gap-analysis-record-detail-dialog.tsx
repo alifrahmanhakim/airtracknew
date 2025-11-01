@@ -236,7 +236,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             startY: 30,
             theme: 'plain',
             body: generalData,
-            styles: { fontSize: 9 },
+            styles: { fontSize: 9, cellPadding: 1.5 },
             columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: { cellWidth: 'auto' } },
             didDrawPage: addHeaderAndFooter,
         });
@@ -260,15 +260,18 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
         // --- Evaluations ---
         record.evaluations.forEach((evaluation, index) => {
             const evaluationBody = [
-                ['ICAO SARP', evaluation.icaoSarp],
-                ['Review', evaluation.review],
-                ['Compliance Status', evaluation.complianceStatus],
-                ['CASR Affected', evaluation.casrAffected],
-                ['Follow Up', evaluation.followUp || '-'],
-                ['Proposed Amendment', evaluation.proposedAmendment || '-'],
-                ['Reason/Remark', evaluation.reasonOrRemark || '-'],
-                ['Status Item', evaluation.status || 'N/A'],
-            ].map(([label, value]) => ([{ content: label, styles: { fontStyle: 'bold' } }, value]));
+                { title: 'ICAO SARP', content: evaluation.icaoSarp },
+                { title: 'Review', content: evaluation.review },
+                { title: 'Compliance Status', content: evaluation.complianceStatus },
+                { title: 'CASR Affected', content: evaluation.casrAffected },
+                { title: 'Follow Up', content: evaluation.followUp || '-' },
+                { title: 'Proposed Amendment', content: evaluation.proposedAmendment || '-' },
+                { title: 'Reason/Remark', content: evaluation.reasonOrRemark || '-' },
+                { title: 'Status Item', content: evaluation.status || 'N/A' },
+            ].map(item => [
+                { content: item.title, styles: { fontStyle: 'bold', cellWidth: 50 } },
+                { content: item.content, styles: { cellWidth: 'auto' } }
+            ]);
 
             autoTable(doc, {
                 head: [[`Evaluation Item ${index + 1}`]],
@@ -276,7 +279,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 startY: (doc as any).lastAutoTable.finalY + 10,
                 theme: 'striped',
                 headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-                styles: { fontSize: 9, cellPadding: 2, cellWidth: 'wrap' },
+                styles: { fontSize: 9, cellPadding: 2 },
                 didDrawPage: addHeaderAndFooter,
             });
         });
@@ -328,9 +331,13 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
         const signatureDataUrls = await Promise.all(signaturePromises);
         
         if (signatureDataUrls.length > 0) {
-            doc.addPage();
+            // Check if there is enough space on the current page for the title and at least one signature block.
+            if (startY + 10 + 40 > doc.internal.pageSize.getHeight() - 20) {
+              doc.addPage();
+              startY = 30; // Reset Y on new page
+            }
             addHeaderAndFooter({ pageNumber: (doc as any).internal.getNumberOfPages() });
-            startY = 30; // Reset Y on new page
+            
             doc.setFontSize(14);
             doc.text("DGCA Authorization Signatures", 14, startY);
             startY += 10;
@@ -338,8 +345,8 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             signatureDataUrls.forEach(({ name, dataUrl, type, date }) => {
                 if (startY + 40 > doc.internal.pageSize.getHeight() - 20) {
                     doc.addPage();
-                    addHeaderAndFooter({ pageNumber: (doc as any).internal.getNumberOfPages() });
                     startY = 30;
+                    addHeaderAndFooter({ pageNumber: (doc as any).internal.getNumberOfPages() });
                 }
                 doc.setFontSize(10);
                 doc.text(`${type}: ${name}`, 14, startY);
