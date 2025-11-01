@@ -216,6 +216,7 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
 
         setIsMeetLoading(true);
         const result = await createGoogleMeet({
+            userId: currentUser.id,
             summary: `Meeting with ${selectedUser.name}`,
             description: `Quick meeting arranged via AirTrack.`,
             attendees: [
@@ -223,24 +224,26 @@ export function ChatWindow({ currentUser, selectedUser, onViewProfile }: ChatWin
                 { email: selectedUser.email }
             ]
         });
-        setIsMeetLoading(false);
 
         if (result.authUrl) {
-            // This can be improved by opening a popup, but for now, we'll redirect.
-            window.open(result.authUrl, '_blank');
+            // Open a new window for the user to authorize the app
+            window.open(result.authUrl, '_blank', 'width=500,height=600');
             toast({
                 title: 'Authorization Required',
-                description: 'Please authorize access to your Google Calendar in the new tab.',
+                description: 'Please authorize access to your Google Calendar in the new window. After authorizing, try creating the meeting again.',
             });
+            setIsMeetLoading(false);
         } else if (result.meetLink && chatRoomId) {
             const meetMessage = `I've created a Google Meet for us: <a href="${result.meetLink}" target="_blank" rel="noopener noreferrer" style="color: hsl(var(--primary)); text-decoration: underline;">${result.meetLink}</a>`;
             handleSendMessage(meetMessage);
+            setIsMeetLoading(false);
         } else if (result.error) {
             toast({
                 variant: 'destructive',
                 title: 'Could not create meeting',
                 description: result.error,
             });
+            setIsMeetLoading(false);
         }
     };
 

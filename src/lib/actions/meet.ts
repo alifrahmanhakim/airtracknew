@@ -5,7 +5,10 @@ import { google } from 'googleapis';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
+const SCOPES = [
+    'https://www.googleapis.com/auth/calendar.events',
+    'https://www.googleapis.com/auth/drive.readonly'
+];
 
 function getOAuth2Client() {
     const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } = process.env;
@@ -49,12 +52,11 @@ interface CreateMeetParams {
     summary: string;
     description: string;
     attendees: { email: string }[];
+    userId: string;
 }
 
 export async function createGoogleMeet(params: CreateMeetParams) {
-    // This is a placeholder for getting the current user's ID.
-    // In a real app, you would get this from the session.
-    const userId = '...'; // TODO: Replace with actual user ID from session
+    const { userId } = params;
 
     const oauth2Client = getOAuth2Client();
     if (!oauth2Client) {
@@ -69,6 +71,7 @@ export async function createGoogleMeet(params: CreateMeetParams) {
         const authUrl = oauth2Client.generateAuthUrl({
             access_type: 'offline', // Important to get a refresh token
             scope: SCOPES,
+            prompt: 'consent',
             state: JSON.stringify({ userId }), // Pass user ID to identify them in the callback
         });
         return { authUrl };
@@ -120,6 +123,7 @@ export async function createGoogleMeet(params: CreateMeetParams) {
              const authUrl = oauth2Client.generateAuthUrl({
                 access_type: 'offline',
                 scope: SCOPES,
+                prompt: 'consent',
                 state: JSON.stringify({ userId }),
             });
             return { authUrl };
