@@ -1,23 +1,32 @@
 
-
 'use client';
 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem, ImplementationTaskItem, Verifier } from '@/lib/types';
+import type { EvaluationItem, GapAnalysisRecord, ActionRequiredItem, ImplementationTaskItem, Verifier, User } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from './ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { User, ListChecks } from 'lucide-react';
+import { User as UserIcon, ListChecks, Printer, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Checkbox } from './ui/checkbox';
+import { Button } from './ui/button';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
+import { createExportRecord } from '@/lib/actions/verification';
+import QRCode from 'qrcode';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type DetailRowProps = {
   label: string;
@@ -90,6 +99,21 @@ type GapAnalysisRecordDetailDialogProps = {
 };
 
 export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: GapAnalysisRecordDetailDialogProps) {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const userId = localStorage.getItem('loggedInUserId');
+    if (userId) {
+        getDoc(doc(db, "users", userId)).then(userSnap => {
+            if (userSnap.exists()) {
+                setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+            }
+        });
+    }
+  }, []);
+
   if (!record) return null;
 
   const actionRequiredContent = (
@@ -130,6 +154,101 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
       return 'Invalid Date';
     }
     return String(dateValue);
+  };
+  
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    if (!currentUser) {
+      toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user to create a verified export." });
+      setIsExporting(false);
+      return;
+    }
+
+    const exportRecord = await createExportRecord({
+      documentType: `GAP Analysis for ${record.slReferenceNumber}`,
+      exportedAt: new Date(),
+      exportedBy: { id: currentUser.id, name: currentUser.name },
+      filters: { recordId: record.id },
+    });
+
+    if (!exportRecord.success || !exportRecord.id) {
+      toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+      setIsExporting(false);
+      return;
+    }
+    
+    const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+
+    try {
+        const doc = new jsPDF({ orientation: 'portrait' });
+        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+
+        const addHeaderAndFooter = (data: any) => {
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            
+            // Header
+            doc.setFontSize(16);
+            doc.text("GAP Analysis Details", 14, 20);
+            
+            // Footer
+            const footerY = pageHeight - 15;
+            doc.setFontSize(8);
+            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+            doc.text('Genuine Document by AirTrack', 32, footerY);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            doc.text(copyrightText, pageWidth / 2, footerY, { align: 'center' });
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, pageWidth - 14, footerY, { align: 'right' });
+        };
+        
+        autoTable(doc, {
+            startY: 30,
+            theme: 'plain',
+            body: [
+                ['SL Ref. Number', record.slReferenceNumber],
+                ['SL Ref. Date', record.slReferenceDate ? format(parseISO(record.slReferenceDate), 'PPP') : 'N/A'],
+                ['Annex', record.annex],
+                ['Subject', record.subject],
+                ['Status', record.statusItem],
+            ],
+            styles: { fontSize: 10 },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+            didDrawPage: addHeaderAndFooter,
+        });
+
+        record.evaluations.forEach((evaluation, index) => {
+            if (index > 0) doc.addPage();
+             autoTable(doc, {
+                startY: (doc as any).lastAutoTable.finalY + 10,
+                head: [[`Evaluation Item ${index + 1}`]],
+                theme: 'striped',
+                headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+                body: [
+                    ['ICAO SARP', evaluation.icaoSarp],
+                    ['Review', evaluation.review],
+                    ['Compliance Status', evaluation.complianceStatus],
+                    ['CASR Affected', evaluation.casrAffected],
+                    ['Follow Up', evaluation.followUp || '-'],
+                    ['Proposed Amendment', evaluation.proposedAmendment || '-'],
+                    ['Reason/Remark', evaluation.reasonOrRemark || '-'],
+                    ['Status Item', evaluation.status || 'N/A'],
+                ],
+                styles: { fontSize: 9 },
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+                didDrawPage: addHeaderAndFooter,
+            });
+        });
+
+        doc.save(`GAP_Analysis_${record.slReferenceNumber}.pdf`);
+
+    } catch (e) {
+        console.error(e);
+        toast({ variant: 'destructive', title: 'Export Error', description: 'Failed to generate PDF.' });
+    } finally {
+        setIsExporting(false);
+    }
   };
 
 
@@ -196,7 +315,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 <DetailRow label="Summary" value={record.summary} isLongText />
                 
                  <div className="py-3 border-b">
-                    <dt className="font-semibold text-muted-foreground mb-2 flex items-center gap-2"><User className="h-4 w-4" /> DGCA Authorization</dt>
+                    <dt className="font-semibold text-muted-foreground mb-2 flex items-center gap-2"><UserIcon className="h-4 w-4" /> DGCA Authorization</dt>
                     <dd className="space-y-4">
                         <p className='text-sm font-medium'>Inspectors:</p>
                         {record.inspectors?.map((inspector) => (
@@ -239,6 +358,12 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 <DetailRow label="Created At" value={getFormattedDate(record.createdAt)} />
             </dl>
         </ScrollArea>
+        <DialogFooter>
+            <Button variant="outline" onClick={handleExportPdf} disabled={isExporting}>
+                {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}
+                Export to PDF
+            </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
