@@ -577,8 +577,9 @@ export default function RsiPage() {
                                     <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
                                         <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
                                     </CardTitle>
-                                    <Button variant="outline" size="sm" onClick={handleExportAwaitingFollowUpPdf} className="bg-orange-100/50 border-orange-300 text-orange-800 hover:bg-orange-100">
-                                        <Printer className="mr-2 h-4 w-4" /> Export PDF
+                                    <Button variant="outline" size="icon" onClick={handleExportAwaitingFollowUpPdf} className="bg-orange-100/50 border-orange-300 text-orange-800 hover:bg-orange-100 h-8 w-8">
+                                        <Printer className="h-4 w-4" />
+                                        <span className="sr-only">Export PDF</span>
                                     </Button>
                                 </div>
                                 <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
