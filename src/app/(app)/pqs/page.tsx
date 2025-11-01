@@ -32,6 +32,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Skeleton } from '@/components/ui/skeleton';
+import QRCode from 'qrcode';
 
 
 // Dynamically import heavy components
@@ -248,7 +249,7 @@ export default function PqsPage() {
     img.crossOrigin = 'Anonymous';
     img.src = logoUrl;
 
-    const generatePdf = (logoDataUrl?: string) => {
+    const generatePdf = async (logoDataUrl?: string) => {
         const doc = new jsPDF({ orientation: 'landscape' });
         
         const tableColumn = ["PQ Number", "Protocol Question", "Critical Element", "ICAO Status", "Status"];
@@ -260,7 +261,13 @@ export default function PqsPage() {
             record.status
         ]);
         
+        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
+        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+        
         const addPageContent = (data: { pageNumber: number }) => {
+            const pageCount = (doc as any).internal.getNumberOfPages();
+
+            // Header
             if (data.pageNumber === 1) {
                 doc.setFontSize(18);
                 doc.text("Protocol Questions Records", 14, 20);
@@ -275,11 +282,16 @@ export default function PqsPage() {
                 }
             }
             
+            // Footer
+            const footerY = doc.internal.pageSize.height - 15;
             doc.setFontSize(8);
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+
+            // QR Code
+            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+
+            // Copyright and Page Number
+            doc.text(`Copyright © AirTrack ${new Date().getFullYear()}`, doc.internal.pageSize.width / 2, footerY, { align: 'center' });
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY, { align: 'right' });
         };
         
         autoTable(doc, {
@@ -292,11 +304,9 @@ export default function PqsPage() {
         });
         
         const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
+        for (let i = 2; i <= pageCount; i++) {
             doc.setPage(i);
-            doc.setFontSize(8);
-            const pageNumText = `Page ${i} of ${pageCount}`;
-            doc.text(pageNumText, 14, doc.internal.pageSize.height - 10);
+            addPageContent({ pageNumber: i });
         }
         
         doc.save("pqs_records.pdf");

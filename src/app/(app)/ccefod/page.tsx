@@ -41,6 +41,7 @@ import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import QRCode from 'qrcode';
 
 
 // Dynamically import heavy components
@@ -311,7 +312,12 @@ export default function CcefodPage() {
 
   const htmlToPlainText = (html: string) => {
     if (typeof document === 'undefined') {
-      return html.replace(/<[^>]*>?/gm, '');
+      // Basic fallback for server-side or non-browser environments
+      return html
+        .replace(/<p>/gi, '\n')
+        .replace(/<\/p>/gi, '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '');
     }
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
@@ -329,6 +335,96 @@ export default function CcefodPage() {
     img.crossOrigin = 'Anonymous';
     img.src = logoUrl;
   
+    const generatePdf = async (logoDataUrl?: string) => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+        
+        const groupedByAnnex = allRecords.reduce<Record<string, CcefodRecord[]>>((acc, record) => {
+            const key = record.annex;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(record);
+            return acc;
+        }, {});
+
+        const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
+        
+        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
+        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+        
+        let finalY = 0;
+
+        const addPageContent = (data: { pageNumber: number }) => {
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            const footerY = doc.internal.pageSize.height - 15;
+            doc.setFontSize(8);
+
+            // QR Code
+            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+            
+            // Copyright
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+
+            // Page Number
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+        };
+    
+        Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
+            const tableRows = recordsInGroup.map(record => [
+                record.annexReference,
+                htmlToPlainText(record.standardPractice || ''),
+                record.legislationReference,
+                record.implementationLevel,
+                record.status,
+            ]);
+            
+            const isFirstGroupOnPage = finalY === 0 || finalY > doc.internal.pageSize.height - 60;
+
+            if (!isFirstGroupOnPage) {
+                doc.addPage();
+            }
+
+            // Header for the group
+            doc.setFontSize(18);
+            doc.text("CC/EFOD Records", 14, 20);
+            
+            if (logoDataUrl) {
+                const aspectRatio = img.width / img.height;
+                const logoWidth = 30;
+                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+            }
+
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Annex: ${annex}`, 14, 30);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 35,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [22, 160, 133],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                },
+                didDrawPage: addPageContent,
+            });
+            finalY = (doc as any).lastAutoTable.finalY;
+        });
+        
+        // Final pass for page numbers
+        const pageCountFinal = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCountFinal; i++) {
+            doc.setPage(i);
+            addPageContent({ pageNumber: i });
+        }
+
+
+        doc.save("ccefod_records.pdf");
+    };
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
       canvas.width = img.width;
@@ -336,6 +432,7 @@ export default function CcefodPage() {
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+        generatePdf();
         return;
       }
       ctx.drawImage(img, 0, 0);
@@ -348,84 +445,6 @@ export default function CcefodPage() {
       toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
       generatePdf(); // Proceed without the logo if it fails
     }
-  
-    const generatePdf = (logoDataUrl?: string) => {
-        const doc = new jsPDF({ orientation: 'landscape' });
-        let finalY = 20;
-
-        const groupedByAnnex = allRecords.reduce<Record<string, CcefodRecord[]>>((acc, record) => {
-            const key = record.annex;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(record);
-            return acc;
-        }, {});
-
-        const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
-        
-        const addPageContent = (data: { pageNumber: number }) => {
-            if (logoDataUrl && data.pageNumber === 1) {
-                const aspectRatio = img.width / img.height;
-                const logoWidth = 30;
-                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                if (logoHeight > 0) {
-                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                }
-            }
-
-            doc.setFontSize(8);
-            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(text, textX, doc.internal.pageSize.height - 10);
-        };
-    
-        Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
-            const tableRows = recordsInGroup.map(record => [
-                record.annexReference,
-                htmlToPlainText(record.standardPractice || ''),
-                record.legislationReference,
-                record.implementationLevel,
-                record.status,
-            ]);
-
-            if (finalY > 20 || groupIndex > 0) {
-                finalY += 10;
-            }
-
-            if (finalY > doc.internal.pageSize.height - 40) {
-                doc.addPage();
-                finalY = 20;
-            }
-            
-            doc.setFontSize(18);
-            doc.text("CC/EFOD Records", 14, finalY);
-            finalY += 10;
-
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text(`Annex: ${annex}`, 14, finalY);
-            finalY += 8;
-
-            autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                startY: finalY,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [22, 160, 133],
-                    textColor: 255,
-                    fontStyle: 'bold',
-                },
-                didDrawPage: addPageContent,
-            });
-            
-            finalY = (doc as any).lastAutoTable.finalY;
-        });
-
-        doc.save("ccefod_records.pdf");
-    };
   };
 
   function renderContent() {

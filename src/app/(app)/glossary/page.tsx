@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback, useRef } from 'react';
@@ -35,10 +36,11 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
 
 // Dynamically import heavy components
 const GlossaryForm = dynamic(() => import('@/components/glossary-form').then(mod => mod.GlossaryForm), { 
@@ -255,18 +257,7 @@ export default function GlossaryPage() {
     img.crossOrigin = 'Anonymous';
     img.src = logoUrl;
 
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
-            return;
-        }
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
-
+    const generatePdf = async (logoDataUrl?: string) => {
         const doc = new jsPDF({ orientation: 'landscape' });
         const tableColumn = ["No", "TSU", "TSA", "Editing", "Makna", "Keterangan", "Referensi", "Status"];
         const sortedData = [...filteredAndSortedRecords].sort((a, b) => a.tsu.localeCompare(b.tsu));
@@ -281,25 +272,39 @@ export default function GlossaryPage() {
             record.status
         ]);
         
+        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
+        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+        
         const addPageContent = (data: { pageNumber: number }) => {
-            if (data.pageNumber === 1) {
-                const aspectRatio = img.width / img.height;
-                const logoWidth = 30;
-                const logoHeight = logoWidth / aspectRatio;
-                doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-            }
-            doc.setFontSize(8);
-            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(text, textX, doc.internal.pageSize.height - 10);
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            const footerY = doc.internal.pageSize.height - 15;
             
-            const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-        };
+            // Header
+            if (data.pageNumber === 1) {
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = logoWidth / aspectRatio;
+                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
+                doc.setFontSize(18);
+                doc.text("Translation Analysis Records", 14, 20);
+            }
+            
+            // Footer
+            doc.setFontSize(8);
+            
+            // QR Code
+            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+            
+            // Copyright
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
 
-        doc.setFontSize(18);
-        doc.text("Translation Analysis Records", 14, 20);
+            // Page Number
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+        };
 
         autoTable(doc, {
             head: [tableColumn],
@@ -311,24 +316,35 @@ export default function GlossaryPage() {
             columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 40 }, 2: { cellWidth: 40 }, 3: { cellWidth: 40 }, 4: { cellWidth: 40 }, 5: { cellWidth: 40 }, 6: { cellWidth: 30 }, 7: { cellWidth: 20 } },
             didDrawPage: addPageContent
         });
-
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 2; i <= pageCount; i++) {
+        
+        // Final pass for correct page count
+        const pageCountFinal = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCountFinal; i++) {
             doc.setPage(i);
-            const pageText = `Page ${i} of ${pageCount}`;
-            doc.setFontSize(8);
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-            const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(text, textX, doc.internal.pageSize.height - 10);
+            addPageContent({ pageNumber: i });
         }
+
 
         doc.save("translation_analysis_records.pdf");
     };
 
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+            return;
+        }
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        generatePdf(dataUrl);
+    };
+
     img.onerror = () => {
          toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF." });
+         generatePdf();
     }
   };
 
