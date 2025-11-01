@@ -212,15 +212,15 @@ export default function KegiatanPage() {
         const logo1Url = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const logo2Url = 'https://ik.imagekit.io/avmxsiusm/Untitled-4.png';
     
-        const loadImage = (url: string): Promise<HTMLImageElement | null> => {
-            return new Promise((resolve) => {
+        const loadImage = (url: string): Promise<HTMLImageElement> => {
+            return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.crossOrigin = 'Anonymous';
                 img.src = url;
                 img.onload = () => resolve(img);
-                img.onerror = () => {
+                img.onerror = (e) => {
                     toast({ variant: "destructive", title: "Logo Error", description: `Could not load logo from ${url}.` });
-                    resolve(null);
+                    reject(e);
                 };
             });
         };
@@ -242,43 +242,32 @@ export default function KegiatanPage() {
     
         try {
             const [logo1Img, logo2Img] = await Promise.all([loadImage(logo1Url), loadImage(logo2Url)]);
-            const logo1DataUrl = logo1Img ? imageToDataUrl(logo1Img) : null;
-            const logo2DataUrl = logo2Img ? imageToDataUrl(logo2Img) : null;
+            const logo1DataUrl = imageToDataUrl(logo1Img);
+            const logo2DataUrl = imageToDataUrl(logo2Img);
     
             const generatePdf = async () => {
                 const doc = new jsPDF({ orientation: 'portrait' });
-        
-                const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
-                const tableRows = filteredRecords.map(record => [
-                    record.subjek,
-                    format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
-                    format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-                    record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
-                    record.lokasi,
-                    record.catatan || 'N/A',
-                ]);
-                
                 const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
-                
+    
                 const addPageContent = (data: { pageNumber: number }) => {
                     const pageWidth = doc.internal.pageSize.getWidth();
                     doc.setFontSize(18);
                     doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
     
                     let currentX = pageWidth - 15;
-                    if (logo1DataUrl && logo1Img) {
-                        const img1Ratio = logo1Img.width / logo1Img.height;
-                        const logo1Width = 30;
-                        const logo1Height = img1Ratio > 0 ? logo1Width / img1Ratio : 0;
+                    const logoHeight = 10; // Fixed height for both logos
+    
+                    if (logo1DataUrl && logo1Img.naturalWidth > 0 && logo1Img.naturalHeight > 0) {
+                        const img1Ratio = logo1Img.naturalWidth / logo1Img.naturalHeight;
+                        const logo1Width = logoHeight * img1Ratio;
                         currentX -= logo1Width;
-                        if (logo1Height > 0) doc.addImage(logo1DataUrl, 'PNG', currentX, 8, logo1Width, logo1Height);
+                        doc.addImage(logo1DataUrl, 'PNG', currentX, 10, logo1Width, logoHeight);
                     }
-                    if (logo2DataUrl && logo2Img) {
-                        const img2Ratio = logo2Img.width / logo2Img.height;
-                        const logo2Width = 30; // Set a fixed width
-                        const logo2Height = img2Ratio > 0 ? logo2Width / img2Ratio : 0; // Calculate height to maintain aspect ratio
+                    if (logo2DataUrl && logo2Img.naturalWidth > 0 && logo2Img.naturalHeight > 0) {
+                        const img2Ratio = logo2Img.naturalWidth / logo2Img.naturalHeight;
+                        const logo2Width = logoHeight * img2Ratio;
                         currentX -= (logo2Width + 5);
-                        if (logo2Height > 0) doc.addImage(logo2DataUrl, 'PNG', currentX, 8, logo2Width, logo2Height);
+                        doc.addImage(logo2DataUrl, 'PNG', currentX, 10, logo2Width, logoHeight);
                     }
                     
                     let subtitle = '';
@@ -294,49 +283,8 @@ export default function KegiatanPage() {
                     doc.setFontSize(12);
                     doc.text(subtitle, 14, 28);
                 };
-    
-                autoTable(doc, {
-                    head: [tableColumn],
-                    body: tableRows,
-                    startY: 34,
-                    theme: 'grid',
-                    headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
-                    styles: { lineWidth: 0.15 },
-                    didDrawPage: addPageContent,
-                });
-    
-                const allPersonnel = kegiatanSubditUsers.map(u => u.value);
-                const involvedPersonnel = new Set(filteredRecords.flatMap(r => r.nama));
-                const uninvolvedPersonnel = allPersonnel.filter(p => !involvedPersonnel.has(p));
-    
-                if (uninvolvedPersonnel.length > 0) {
-                    const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
-                    const lastTableY = (doc as any).lastAutoTable.finalY || 40;
-                    
-                    const availableSpace = doc.internal.pageSize.getHeight() - lastTableY - 30; // 30 for footer
-                    const requiredSpace = (uninvolvedTableRows.length + 2) * 8;
-    
-                    let startY = lastTableY + 10;
-                    if (requiredSpace > availableSpace) {
-                        doc.addPage();
-                        startY = 34; // Start at top after adding page
-                    }
-    
-                    autoTable(doc, {
-                        head: [['Personel yang Belum Terlibat']],
-                        body: uninvolvedTableRows,
-                        startY: startY,
-                        theme: 'grid',
-                        headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
-                        styles: { lineWidth: 0.15 },
-                        didDrawPage: addPageContent,
-                    });
-                }
-    
-                const pageCount = (doc as any).internal.getNumberOfPages();
-                for (let i = 1; i <= pageCount; i++) {
-                    doc.setPage(i);
-                    
+                
+                const addFooter = (data: { pageNumber: number, pageCount: number }) => {
                     const footerY = doc.internal.pageSize.height - 20;
                     doc.setFontSize(8);
                     doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
@@ -345,8 +293,67 @@ export default function KegiatanPage() {
                     const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                     doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
                     
-                    const pageText = `Page ${i} of ${pageCount}`;
+                    const pageText = `Page ${data.pageNumber} of ${data.pageCount}`;
                     doc.text(pageText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+                };
+    
+                const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
+                const tableRows = filteredRecords.map(record => [
+                    record.subjek,
+                    format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
+                    format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
+                    record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
+                    record.lokasi,
+                    record.catatan || 'N/A',
+                ]);
+    
+                autoTable(doc, {
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 34,
+                    theme: 'grid',
+                    headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
+                    styles: { lineWidth: 0.15, cellPadding: 2, fontSize: 8 },
+                    columnStyles: { 3: { cellWidth: 'auto' } },
+                    didDrawPage: addPageContent,
+                    margin: { top: 34, bottom: 25 },
+                });
+    
+                const allPersonnel = kegiatanSubditUsers.map(u => u.value);
+                const involvedPersonnel = new Set(filteredRecords.flatMap(r => r.nama));
+                const uninvolvedPersonnel = allPersonnel.filter(p => !involvedPersonnel.has(p));
+    
+                if (uninvolvedPersonnel.length > 0) {
+                    const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
+                    let startY = (doc as any).lastAutoTable.finalY + 10;
+                    
+                    const requiredSpace = (uninvolvedTableRows.length + 2) * 8 + 30; // 30 for footer
+                    
+                    if (startY + requiredSpace > doc.internal.pageSize.getHeight()) {
+                        doc.addPage();
+                        addPageContent({ pageNumber: (doc as any).internal.getNumberOfPages() });
+                        startY = 34;
+                    }
+                    
+                    doc.setFontSize(12);
+                    doc.text('Personel yang Belum Terlibat', 14, startY);
+                    
+                    autoTable(doc, {
+                        body: uninvolvedTableRows,
+                        startY: startY + 4,
+                        theme: 'grid',
+                        showHead: 'firstPage',
+                        headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
+                        styles: { lineWidth: 0.15, cellPadding: 2, fontSize: 8 },
+                        didDrawPage: addPageContent,
+                        margin: { top: 34, bottom: 25 },
+                    });
+                }
+    
+                const pageCount = (doc as any).internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    addFooter({ pageNumber: i, pageCount });
                 }
                 
                 doc.save("jadwal_kegiatan.pdf");
@@ -515,3 +522,4 @@ export default function KegiatanPage() {
         </div>
     );
 }
+
