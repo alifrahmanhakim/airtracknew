@@ -263,7 +263,7 @@ export default function PqsPage() {
       return;
     }
   
-    const verificationUrl = `${window.location.origin}/verify/${exportRecord.id}`;
+    const verificationUrl = `https://airtrack-c7979.web.app/verify/${exportRecord.id}`;
     
     const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
     const img = new Image();
@@ -290,25 +290,23 @@ export default function PqsPage() {
             theme: 'grid',
             headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
             margin: { top: 30, bottom: 30 },
+            didDrawPage: (data) => {
+                 if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if (logoHeight > 0) {
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                }
+                doc.setFontSize(18);
+                doc.text("Protocol Questions Records", 14, 20);
+            }
         });
       
         const pageCount = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            
-            // Header
-            doc.setFontSize(18);
-            doc.text("Protocol Questions Records", 14, 20);
-            if (logoDataUrl) {
-                const aspectRatio = img.width / img.height;
-                const logoWidth = 30;
-                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                if (logoHeight > 0) {
-                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                }
-            }
-
-            // Footer
             const footerY = doc.internal.pageSize.height - 20;
             doc.setFontSize(8);
             
