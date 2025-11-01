@@ -126,13 +126,13 @@ export default function VerificationPage() {
                                 This document is an uncontrolled copy. The most up-to-date and official version resides within the AirTrack application. Information may have changed since the export date.
                             </AlertDescription>
                         </Alert>
-                         <div className="flex justify-center pt-4">
-                            <div className="relative w-[200px] h-[200px]">
+                         <div className="flex justify-center">
+                            <div className="relative w-64 h-64">
                                 <Image
                                     src="https://ik.imagekit.io/avmxsiusm/Untitled-2%20(1).webp"
                                     alt="Genuine Document Stamp"
                                     fill
-                                    sizes="200px"
+                                    sizes="256px"
                                     className="opacity-80 object-contain"
                                 />
                             </div>
