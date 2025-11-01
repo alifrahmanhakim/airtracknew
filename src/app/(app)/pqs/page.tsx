@@ -391,7 +391,7 @@ export default function PqsPage() {
                 </div>
             </div>
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
-                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
+                 <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                     <CardTitle>Protocol Question (PQ) Form</CardTitle>
                     <CardDescription>
@@ -404,7 +404,7 @@ export default function PqsPage() {
                 </div>
             </TabsContent>
             <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
-                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg max-w-7xl mx-auto">
+                 <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                         <div className='flex justify-between items-start'>
                             <div>
@@ -482,7 +482,7 @@ export default function PqsPage() {
 
   return (
     <AppLayout>
-        <div id="pqs-page" className="max-w-7xl mx-auto">
+        <div id="pqs-page" className="max-w-4xl mx-auto">
         {renderContent()}
 
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
