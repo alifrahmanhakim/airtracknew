@@ -4,11 +4,11 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { KnktReport } from '@/lib/types';
+import { KnktReport, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
+import { createExportRecord } from '@/lib/actions/verification';
 
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
@@ -50,6 +51,7 @@ export default function LaporanInvestigasiKnktPage() {
     const { toast } = useToast();
     const [activeTab, setActiveTab] = React.useState('records');
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
     // Filter states
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -81,6 +83,15 @@ export default function LaporanInvestigasiKnktPage() {
             });
             setIsLoading(false);
         });
+
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => unsubscribe();
     }, [toast]);
@@ -207,44 +218,66 @@ export default function LaporanInvestigasiKnktPage() {
         XLSX.writeFile(workbook, 'knkt_reports.xlsx');
     };
     
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         if (filteredRecords.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
+
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+
+        const exportRecord = await createExportRecord({
+            documentType: 'KNKT Investigation Reports',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, operatorFilter, yearFilter, statusFilter, taxonomyFilter },
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+        
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
         
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                generatePdfWithLogo();
-                return;
-            }
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            generatePdfWithLogo(dataUrl);
-        };
-        
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
-            generatePdfWithLogo();
-        };
-
         const generatePdfWithLogo = async (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
             
-            const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
-            const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+            const tableColumn = ["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
+            const tableRows = filteredRecords.map(record => [
+                record.tanggal_diterbitkan,
+                record.nomor_laporan,
+                record.status,
+                record.operator,
+                record.registrasi,
+                record.tipe_pesawat,
+                record.lokasi,
+                record.taxonomy || 'N/A'
+            ]);
 
-            const addPageContent = (data: { pageNumber: number }) => {
-                const pageCount = (doc as any).internal.getNumberOfPages();
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                margin: { top: 30, bottom: 30 },
+            });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+            
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
                 // Header
                 doc.setFontSize(18);
                 doc.text("KNKT Investigation Reports", 14, 20);
@@ -265,40 +298,30 @@ export default function LaporanInvestigasiKnktPage() {
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
                 
-                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-            };
-
-            const tableColumn = ["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
-            const tableRows = filteredRecords.map(record => [
-                record.tanggal_diterbitkan,
-                record.nomor_laporan,
-                record.status,
-                record.operator,
-                record.registrasi,
-                record.tipe_pesawat,
-                record.lokasi,
-                record.taxonomy || 'N/A'
-            ]);
-
-            autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                startY: 30,
-                theme: 'grid',
-                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent,
-                margin: { top: 30, bottom: 30 },
-            });
-            
-            const pageCountFinal = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCountFinal; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 8, { align: 'right' });
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             }
 
             doc.save("knkt_reports.pdf");
         }
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                generatePdfWithLogo();
+                return;
+            }
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdfWithLogo(dataUrl);
+        };
+        
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
+            generatePdfWithLogo();
+        };
     };
 
 
@@ -452,4 +475,5 @@ export default function LaporanInvestigasiKnktPage() {
             </main>
         </AppLayout>
     );
-}
+
+    
