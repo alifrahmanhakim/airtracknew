@@ -225,19 +225,11 @@ export default function KegiatanPage() {
                 record.catatan || 'N/A',
             ]);
     
-            autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                startY: 32,
-                theme: 'grid',
-                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                margin: { bottom: 30 },
-            });
-            
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
-            
-            const addPageHeader = (pageNumber: number) => {
+             const addPageContent = (data: { pageNumber: number }) => {
+                // Header
+                doc.setFontSize(18);
+                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+    
                 if (logoDataUrl) {
                     const aspectRatio = img.width / img.height;
                     const logoWidth = 30;
@@ -246,10 +238,8 @@ export default function KegiatanPage() {
                       doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
                     }
                 }
-                doc.setFontSize(18);
-                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
-    
-                let subtitle = '';
+                
+                 let subtitle = '';
                 if (filterMode === 'week') {
                     const weekStart = parseISO(selectedWeek);
                     const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
@@ -261,11 +251,23 @@ export default function KegiatanPage() {
                 }
                 doc.setFontSize(12);
                 doc.text(subtitle, 14, 26);
-            }
+            };
 
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 32,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                margin: { top: 32, bottom: 30 },
+                didDrawPage: addPageContent,
+            });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+            
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                addPageHeader(i);
                 
                 const footerY = doc.internal.pageSize.height - 20;
                 doc.setFontSize(8);
