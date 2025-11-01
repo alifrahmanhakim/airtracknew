@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -7,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Info, BarChart, User as UserIcon } from 'lucide-react';
 import { Bar, BarChart as BarChartComponent, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { AnimatedCounter } from './ui/animated-counter';
-import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip as TooltipComponent, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 type KegiatanAnalyticsProps = {
   tasks: Kegiatan[];
@@ -23,18 +22,18 @@ const CustomYAxisTick = (props: any) => {
 
     return (
         <g transform={`translate(${x},${y})`}>
-             <UITooltipProvider>
-                <UITooltip>
-                    <UITooltipTrigger asChild>
+             <TooltipProvider>
+                <TooltipComponent>
+                    <TooltipTrigger asChild>
                         <text x={-10} y={0} dy={4} textAnchor="end" fill="hsl(var(--foreground))" className="text-xs cursor-default">
                             {truncatedText}
                         </text>
-                    </UITooltipTrigger>
-                    <UITooltipContent>
+                    </TooltipTrigger>
+                    <TooltipContent>
                         <p>{text}</p>
-                    </UITooltipContent>
-                </UITooltip>
-            </UITooltipProvider>
+                    </TooltipContent>
+                </TooltipComponent>
+            </TooltipProvider>
         </g>
     );
 };
