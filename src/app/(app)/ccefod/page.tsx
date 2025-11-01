@@ -312,6 +312,7 @@ export default function CcefodPage() {
 
   const htmlToPlainText = (html: string) => {
     if (typeof document === 'undefined') {
+        // Fallback for server-side or non-browser environments
         return html.replace(/<p>/gi, '\n').replace(/<\/p>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
     }
     const tempDiv = document.createElement("div");
@@ -319,8 +320,8 @@ export default function CcefodPage() {
     
     // Process paragraphs and breaks to maintain structure
     tempDiv.querySelectorAll('p').forEach(p => {
-        if (p.textContent) {
-            p.textContent += '\n';
+        if (p.textContent && p.textContent.trim() !== '') {
+            p.textContent += '\n\n'; // Add double newline for paragraph breaks
         }
     });
     tempDiv.querySelectorAll('br').forEach(br => {
@@ -330,7 +331,7 @@ export default function CcefodPage() {
     return tempDiv.textContent || tempDiv.innerText || "";
 };
   
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     if (allRecords.length === 0) {
       toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
       return;
@@ -350,26 +351,20 @@ export default function CcefodPage() {
             acc[key].push(record);
             return acc;
         }, {});
+        
+        const sortedAnnexKeys = Object.keys(groupedByAnnex).sort((a, b) => {
+            const numA = parseInt(a, 10);
+            const numB = parseInt(b, 10);
+            if (!isNaN(numA) && !isNaN(numB)) {
+                if (numA !== numB) return numA - numB;
+            }
+            return a.localeCompare(b);
+        });
 
         const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
         
-        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
-        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
-
-        const addPageContent = (data: { pageNumber: number }) => {
-            const footerY = doc.internal.pageSize.height - 20;
-            doc.setFontSize(8);
-
-            // QR Code
-            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
-            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
-            
-            // Copyright
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-        };
-    
-        Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
+        sortedAnnexKeys.forEach((annex, groupIndex) => {
+            const recordsInGroup = groupedByAnnex[annex];
             const tableRows = recordsInGroup.map(record => [
                 record.annexReference,
                 htmlToPlainText(record.standardPractice || ''),
@@ -378,9 +373,8 @@ export default function CcefodPage() {
                 record.status,
             ]);
             
-            const isFirstGroupOnPage = groupIndex === 0;
-
-            if (!isFirstGroupOnPage) {
+            const isFirstGroup = groupIndex === 0;
+            if (!isFirstGroup) {
                 doc.addPage();
             }
 
@@ -409,16 +403,29 @@ export default function CcefodPage() {
                     textColor: 255,
                     fontStyle: 'bold',
                 },
-                didDrawPage: addPageContent,
                 margin: { top: 30, bottom: 30 },
             });
         });
         
         const pageCountFinal = (doc as any).internal.getNumberOfPages();
+        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
+        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+
         for (let i = 1; i <= pageCountFinal; i++) {
             doc.setPage(i);
+            const footerY = doc.internal.pageSize.height - 20;
             doc.setFontSize(8);
-            doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 8, { align: 'right' });
+
+            // QR Code
+            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+            
+            // Copyright
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+
+            // Page number
+            doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
         }
 
 
