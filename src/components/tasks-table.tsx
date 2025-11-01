@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -486,15 +485,17 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
             const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
             
             const addPageContent = (data: any) => {
-                const pageCount = doc.internal.pages.length - 1;
+                const pageCount = (doc as any).internal.getNumberOfPages();
                 doc.setFontSize(16);
-                doc.text(`Task List for Project: ${projectName}`, 14, 15);
+                doc.text(`Task List for Project: ${projectName}`, 14, 20);
             
                 if (logoDataUrl) {
                     const aspectRatio = img.width / img.height;
                     const logoWidth = 30;
                     const logoHeight = logoWidth / aspectRatio;
-                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    if(logoHeight > 0) {
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
                 }
                 
                 const footerY = doc.internal.pageSize.height - 20;
@@ -504,14 +505,17 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                 
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                
+                doc.setFontSize(8);
+                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             };
     
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
-                startY: 25,
                 theme: 'grid',
-                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
+                margin: { top: 30, bottom: 30 },
                 columnStyles: {
                     6: { textColor: [0, 0, 255], cellWidth: 20 }
                 },
@@ -524,13 +528,7 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                         }
                     }
                 },
-                didDrawPage: (data) => {
-                  addPageContent(data);
-                  const pageCount = (doc as any).internal.getNumberOfPages();
-                  doc.setFontSize(8);
-                  doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 10, { align: 'right' });
-                },
-                margin: { bottom: 30 }
+                didDrawPage: addPageContent,
             });
             
             doc.save(`${projectName}_tasks.pdf`);
@@ -545,7 +543,10 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
-            if (!ctx) return;
+            if (!ctx) {
+                generatePdf();
+                return;
+            }
             ctx.drawImage(img, 0, 0);
             const dataUrl = canvas.toDataURL('image/png');
             generatePdf(dataUrl);
