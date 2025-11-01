@@ -263,7 +263,7 @@ export default function PqsPage() {
       return;
     }
   
-    const verificationUrl = `https://airtrack-c7979.web.app/verify/${exportRecord.id}`;
+    const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
     
     const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
     const img = new Image();
@@ -530,3 +530,5 @@ export default function PqsPage() {
     </AppLayout>
   );
 }
+
+    
