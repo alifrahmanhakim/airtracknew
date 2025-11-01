@@ -437,6 +437,23 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            generatePdf(dataUrl);
+        };
+        
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+            generatePdf();
+        }
+
         const generatePdf = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
     
@@ -492,18 +509,20 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                     doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
                 },
             });
+
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                const pageNumText = `Page ${i} of ${pageCount}`;
+                doc.text(pageNumText, 14, doc.internal.pageSize.height - 10);
+            }
             
             doc.save(`${projectName}_tasks.pdf`);
              toast({
                 title: 'Export Successful',
                 description: 'Tasks have been exported to a PDF file.',
             });
-        };
-        
-        img.onload = () => generatePdf(img.src);
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
-            generatePdf();
         };
     };
 
