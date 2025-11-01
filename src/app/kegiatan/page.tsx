@@ -258,7 +258,8 @@ export default function KegiatanPage() {
                 body: tableRows,
                 startY: 32,
                 theme: 'grid',
-                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
+                styles: { lineWidth: 0.15 },
                 margin: { top: 32, bottom: 30 }, // Adjust bottom margin for footer
                 didDrawPage: addPageContent,
             });
