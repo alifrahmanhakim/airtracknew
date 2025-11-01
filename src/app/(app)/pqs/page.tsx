@@ -366,34 +366,32 @@ export default function PqsPage() {
     }
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <Card className="mb-4">
-                <CardHeader>
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div className="flex-1">
-                            <CardTitle className="text-3xl font-bold">Protocol Questions (PQs)</CardTitle>
-                            <CardDescription className="mt-2">
-                                Manage and monitor Protocol Questions records.
-                            </CardDescription>
-                             <div className="mt-4">
-                                <TabsList>
-                                  <TabsTrigger value="form">Input Form</TabsTrigger>
-                                  <TabsTrigger value="records">Records</TabsTrigger>
-                                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                                </TabsList>
-                            </div>
+            <div className="mb-4 bg-background/80 backdrop-blur-sm p-6 rounded-lg">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-1">
+                        <CardTitle className="text-3xl font-bold">Protocol Questions (PQs)</CardTitle>
+                        <CardDescription className="mt-2">
+                            Manage and monitor Protocol Questions records.
+                        </CardDescription>
+                         <div className="mt-4">
+                            <TabsList>
+                              <TabsTrigger value="form">Input Form</TabsTrigger>
+                              <TabsTrigger value="records">Records</TabsTrigger>
+                              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                            </TabsList>
                         </div>
-                        {isAdmin && (
-                            <div className='flex items-center gap-2'>
-                              <Suspense fallback={<Skeleton className="h-10 w-24" />}>
-                                <ImportPqsCsvDialog onImportSuccess={() => {}} />
-                              </Suspense>
-                            </div>
-                        )}
                     </div>
-                </CardHeader>
-            </Card>
+                    {isAdmin && (
+                        <div className='flex items-center gap-2'>
+                          <Suspense fallback={<Skeleton className="h-10 w-24" />}>
+                            <ImportPqsCsvDialog onImportSuccess={() => {}} />
+                          </Suspense>
+                        </div>
+                    )}
+                </div>
+            </div>
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
-                <Card className="max-w-4xl mx-auto">
+                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg max-w-4xl mx-auto">
                     <CardHeader>
                     <CardTitle>Protocol Question (PQ) Form</CardTitle>
                     <CardDescription>
@@ -403,10 +401,10 @@ export default function PqsPage() {
                     <CardContent>
                        <PqsForm onFormSubmit={() => { setActiveTab('records'); }} />
                     </CardContent>
-                </Card>
+                </div>
             </TabsContent>
             <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
-                <Card>
+                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                         <div className='flex justify-between items-start'>
                             <div>
@@ -458,23 +456,25 @@ export default function PqsPage() {
                           searchInputRef={searchInputRef}
                         />
                     </CardContent>
-                </Card>
+                </div>
             </TabsContent>
             <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
-                <PqsAnalyticsDashboard 
-                    allRecords={allRecords}
-                    filteredRecords={filteredAnalyticsRecords}
-                    filters={{ 
-                        statusFilter: analyticsStatusFilter,
-                        icaoStatusFilter: analyticsIcaoStatusFilter,
-                        criticalElementFilter: analyticsCriticalElementFilter
-                    }}
-                    setFilters={{
-                        setStatusFilter: setAnalyticsStatusFilter,
-                        setIcaoStatusFilter: setAnalyticsIcaoStatusFilter,
-                        setCriticalElementFilter: setAnalyticsCriticalElementFilter
-                    }}
-                />
+                 <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
+                    <PqsAnalyticsDashboard 
+                        allRecords={allRecords}
+                        filteredRecords={filteredAnalyticsRecords}
+                        filters={{ 
+                            statusFilter: analyticsStatusFilter,
+                            icaoStatusFilter: analyticsIcaoStatusFilter,
+                            criticalElementFilter: analyticsCriticalElementFilter
+                        }}
+                        setFilters={{
+                            setStatusFilter: setAnalyticsStatusFilter,
+                            setIcaoStatusFilter: setAnalyticsIcaoStatusFilter,
+                            setCriticalElementFilter: setAnalyticsCriticalElementFilter
+                        }}
+                    />
+                </div>
             </TabsContent>
         </Tabs>
     );
@@ -482,7 +482,7 @@ export default function PqsPage() {
 
   return (
     <AppLayout>
-        <div className="p-4 md:p-8" id="pqs-page">
+        <div id="pqs-page">
         {renderContent()}
 
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
