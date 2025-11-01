@@ -90,7 +90,7 @@ export default function VerificationPage() {
                             This document was genuinely generated from the AirTrack system.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent>
                         <div className="space-y-3 text-sm">
                              <div className="flex items-start justify-between">
                                 <span className="flex items-center gap-2 text-muted-foreground"><Fingerprint className="h-4 w-4"/> Document ID</span>
@@ -125,7 +125,7 @@ export default function VerificationPage() {
                                     This document is an uncontrolled copy. The most up-to-date and official version resides within the AirTrack application. Information may have changed since the export date.
                                 </AlertDescription>
                             </Alert>
-                             <div className="flex justify-center mt-6">
+                             <div className="mt-6 flex justify-center">
                                 <div className="relative w-64 h-64">
                                     <Image
                                         src="https://ik.imagekit.io/avmxsiusm/Untitled-2%20(1).webp"
@@ -140,7 +140,7 @@ export default function VerificationPage() {
                     </CardContent>
                 </Card>
             ) : (
-                 <Card className="w-full max-w-2xl text-center">
+                 <Card className="w-full max-w-2xl text-center animate-fade-in-blur">
                     <CardHeader className="items-center">
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4 border-4 border-red-200">
                             <AlertTriangle className="h-10 w-10 text-red-600" />
