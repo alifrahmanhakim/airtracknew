@@ -213,14 +213,14 @@ export default function KegiatanPage() {
         img.src = logoUrl;
     
         const generatePdfWithLogo = async (logoDataUrl?: string) => {
-            const doc = new jsPDF({ orientation: 'landscape' });
+            const doc = new jsPDF({ orientation: 'portrait' });
     
             const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
             const tableRows = filteredRecords.map(record => [
                 record.subjek,
                 format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
                 format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-                record.nama.join(', '),
+                record.nama.join('\n'), // Use newline character for vertical list
                 record.lokasi,
                 record.catatan || 'N/A',
             ]);
@@ -259,7 +259,7 @@ export default function KegiatanPage() {
                 startY: 32,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                margin: { top: 32, bottom: 30 },
+                margin: { top: 32, bottom: 30 }, // Adjust bottom margin for footer
                 didDrawPage: addPageContent,
             });
             
