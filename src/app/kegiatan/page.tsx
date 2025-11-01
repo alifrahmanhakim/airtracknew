@@ -36,6 +36,7 @@ import autoTable from 'jspdf-autotable';
 import { deleteKegiatan } from '@/lib/actions/kegiatan';
 import QRCode from 'qrcode';
 import { createExportRecord } from '@/lib/actions/verification';
+import { kegiatanSubditUsers } from '@/lib/data';
 
 
 const KegiatanAnalytics = dynamic(() => import('@/components/kegiatan-analytics').then(mod => mod.KegiatanAnalytics), {
@@ -207,12 +208,20 @@ export default function KegiatanPage() {
     
         const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
         
-        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.src = logoUrl;
+        const logo1Url = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const logo2Url = 'https://ik.imagekit.io/avmxsiusm/Untitled-4.png';
     
-        const generatePdfWithLogo = async (logoDataUrl?: string) => {
+        const loadImage = (url: string): Promise<HTMLImageElement> => {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.src = url;
+                img.onload = () => resolve(img);
+                img.onerror = (err) => reject(err);
+            });
+        };
+
+        const generatePdf = async (logo1: HTMLImageElement | null, logo2: HTMLImageElement | null) => {
             const doc = new jsPDF({ orientation: 'portrait' });
     
             const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
@@ -226,17 +235,21 @@ export default function KegiatanPage() {
             ]);
     
              const addPageContent = (data: { pageNumber: number }) => {
-                // Header
+                const pageWidth = doc.internal.pageSize.getWidth();
                 doc.setFontSize(18);
                 doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
     
-                if (logoDataUrl) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                    if (logoHeight > 0) {
-                      doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                    }
+                 if (logo1) {
+                    const img1Ratio = logo1.width / logo1.height;
+                    const logo1Width = 30;
+                    const logo1Height = logo1Width / img1Ratio;
+                    doc.addImage(logo1, 'PNG', pageWidth - 15 - logo1Width, 8, logo1Width, logo1Height);
+                }
+                if (logo2) {
+                    const img2Ratio = logo2.width / logo2.height;
+                    const logo2Width = 30;
+                    const logo2Height = logo2Width / img2Ratio;
+                    doc.addImage(logo2, 'PNG', pageWidth - 15 - logo2Width - 15 - (logo1 ? 30 : 0), 8, logo2Width, logo2Height);
                 }
                 
                  let subtitle = '';
@@ -263,7 +276,26 @@ export default function KegiatanPage() {
                 margin: { top: 32, bottom: 30 }, // Adjust bottom margin for footer
                 didDrawPage: addPageContent,
             });
-            
+
+            // --- Add uninvolved personnel table ---
+            const allPersonnel = kegiatanSubditUsers.map(u => u.value);
+            const involvedPersonnel = new Set(filteredRecords.flatMap(r => r.nama));
+            const uninvolvedPersonnel = allPersonnel.filter(p => !involvedPersonnel.has(p));
+
+            if (uninvolvedPersonnel.length > 0) {
+                const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
+                autoTable(doc, {
+                    head: [['Personel yang Belum Terlibat']],
+                    body: uninvolvedTableRows,
+                    startY: (doc as any).lastAutoTable.finalY + 10,
+                    theme: 'grid',
+                    headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold' },
+                    styles: { lineWidth: 0.15 },
+                    didDrawPage: addPageContent, // Redraw header/footer if this table causes a new page
+                });
+            }
+
+            // --- Footer ---
             const pageCount = (doc as any).internal.getNumberOfPages();
             const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
             
@@ -284,26 +316,23 @@ export default function KegiatanPage() {
             
             doc.save("jadwal_kegiatan.pdf");
         };
-    
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.drawImage(img, 0, 0);
-                const dataUrl = canvas.toDataURL('image/png');
-                generatePdfWithLogo(dataUrl);
-            } else {
-                generatePdfWithLogo();
-            }
-        };
-        img.onerror = () => {
-            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
-            generatePdfWithLogo();
+
+        try {
+            const [logo1, logo2] = await Promise.all([
+                loadImage(logo1Url).catch(e => {
+                    toast({ variant: "destructive", title: "Logo Error", description: "Could not load AirTrack logo." });
+                    return null;
+                }),
+                loadImage(logo2Url).catch(e => {
+                    toast({ variant: "destructive", title: "Logo Error", description: "Could not load second logo." });
+                    return null;
+                })
+            ]);
+            await generatePdf(logo1, logo2);
+        } catch (error) {
+            toast({ variant: "destructive", title: "PDF Export Failed", description: "An unexpected error occurred during PDF generation." });
         }
     };
-
 
     return (
         <div className="min-h-screen bg-muted/20">
