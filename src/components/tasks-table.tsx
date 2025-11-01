@@ -62,6 +62,10 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Highlight } from './ui/highlight';
+import { createExportRecord } from '@/lib/actions/verification';
+import QRCode from 'qrcode';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type TaskRowProps = {
   task: Task;
@@ -230,6 +234,7 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState(false);
     const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
     // Filter and sort state
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -249,6 +254,17 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
         actions: true,
     });
     
+     React.useEffect(() => {
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
+    }, []);
+
     const columnDefs: { key: keyof Task | 'no' | 'actions' | 'attachments' | 'namaSurat' | 'tanggalPelaksanaan'; header: string }[] = [
         { key: 'no', header: 'No.' },
         { key: 'title', header: 'Task' },
@@ -422,23 +438,38 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
         });
     };
     
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         const dataToExport = flattenTasksForExport(sortedTasks);
          if (dataToExport.length === 0) {
-            toast({
-                variant: 'destructive',
-                title: 'No Data to Export',
-                description: 'There are no tasks to export.',
-            });
+            toast({ variant: 'destructive', title: 'No Data to Export', description: 'There are no tasks to export.' });
             return;
         }
 
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+
+        const exportRecord = await createExportRecord({
+            documentType: `Task List for ${projectName}`,
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, statusFilter, assigneeFilter },
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+        
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        const generatePdf = (logoDataUrl?: string) => {
+        const generatePdf = async (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
     
             const tableColumn = ["No.", "Task", "Assignees", "Start Date", "Due Date", "Status", "Attachment"];
@@ -452,7 +483,11 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                 item['Attachments'] ? 'Link' : 'N/A'
             ]);
     
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+
             const addPageContent = (data: { pageNumber: number }) => {
+                 const pageCount = (doc as any).internal.getNumberOfPages();
+                // Header
                 if (data.pageNumber === 1) {
                     doc.setFontSize(16);
                     doc.text(`Task List for Project: ${projectName}`, 14, 15);
@@ -465,11 +500,19 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                     }
                 }
                 
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
                 doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
                 const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+                doc.text(copyrightText, textX, footerY + 12);
+
+                const pageNumText = `Page ${data.pageNumber} of ${pageCount}`;
+                doc.text(pageNumText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             };
 
             autoTable(doc, {
@@ -491,14 +534,13 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                     }
                 },
                 didDrawPage: addPageContent,
+                margin: { bottom: 30 }
             });
             
-            const pageCount = (doc as any).internal.getNumberOfPages();
+             const pageCount = (doc as any).internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
-                doc.setFontSize(8);
-                const pageNumText = `Page ${i} of ${pageCount}`;
-                doc.text(pageNumText, 14, doc.internal.pageSize.height - 10);
+                addPageContent({ pageNumber: i });
             }
             
             doc.save(`${projectName}_tasks.pdf`);
