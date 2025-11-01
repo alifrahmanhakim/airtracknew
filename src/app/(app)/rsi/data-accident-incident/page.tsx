@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -208,30 +207,6 @@ export default function DataAccidentIncidentPage() {
             
             const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
 
-            const addPageContent = (data: { pageNumber: number }) => {
-                const pageCount = (doc as any).internal.getNumberOfPages();
-                
-                // Header
-                doc.setFontSize(18);
-                doc.text("Accident & Serious Incident Records", 14, 20);
-                
-                if (logoDataUrl) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                    if(logoHeight > 0) doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                }
-                
-                // Footer
-                const footerY = doc.internal.pageSize.height - 20;
-                doc.setFontSize(8);
-                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
-                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-            };
-
             const tableColumn = ["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
             const tableRows = filteredRecords.map(record => [
                 record.tanggal,
@@ -249,9 +224,33 @@ export default function DataAccidentIncidentPage() {
                 startY: 25,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: addPageContent,
                 margin: { top: 30, bottom: 30 },
             });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Header
+                doc.setFontSize(18);
+                doc.text("Accident & Serious Incident Records", 14, 20);
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if(logoHeight > 0) doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
+                
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            }
             
             doc.save("accident_incident_records.pdf");
         };
