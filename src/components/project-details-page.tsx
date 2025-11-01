@@ -563,18 +563,23 @@ export function ProjectDetailsPage({ project: initialProject, users, allGapAnaly
                         <h4 className="font-semibold mb-2 flex items-center gap-2"><Users className="h-5 w-5" /> Team</h4>
                         <ScrollArea className="h-[150px]">
                              <div className="space-y-3">
-                                {project.team.map((user, index) => (
-                                    <div key={`${user.id}-${index}`} className="flex items-center gap-3">
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="person portrait" />
-                                            <AvatarFallback><UserIcon className="h-5 w-5" /></AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-medium text-sm">{user.name}</p>
-                                            <p className="text-xs text-muted-foreground">{user.role}</p>
+                                {project.team.map((member) => {
+                                    const fullUser = findUserById(member.id, users);
+                                    if (!fullUser) return null; // Skip if user not found
+                                    const isOnline = fullUser.lastOnline ? (new Date().getTime() - new Date(fullUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+                                    return (
+                                        <div key={fullUser.id} className="flex items-center gap-3">
+                                            <Avatar className="h-10 w-10" online={isOnline}>
+                                                <AvatarImage src={fullUser.avatarUrl} alt={fullUser.name} data-ai-hint="person portrait" />
+                                                <AvatarFallback><UserIcon className="h-5 w-5" /></AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="font-medium text-sm">{fullUser.name}</p>
+                                                <p className="text-xs text-muted-foreground">{fullUser.role}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
                         </ScrollArea>
                     </div>

@@ -34,7 +34,7 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const getEffectiveStatus = (): Project['status'] => {
-    if (progress === 100 || project.status === 'Completed') {
+    if (progress === 100) {
       return 'Completed';
     }
   
@@ -159,18 +159,19 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
                         <div className="flex items-center -space-x-2">
                             {team.slice(0, 3).map((member) => {
                                 const fullUser = allUsers.find(u => u.id === member.id);
-                                const isOnline = fullUser?.lastOnline ? (new Date().getTime() - new Date(fullUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
+                                if (!fullUser) return null;
+                                const isOnline = fullUser.lastOnline ? (new Date().getTime() - new Date(fullUser.lastOnline).getTime()) / (1000 * 60) < 5 : false;
                                 return (
                                     <Tooltip key={member.id}>
                                         <TooltipTrigger asChild>
                                             <Avatar className="h-7 w-7 border-2 border-background" online={isOnline}>
-                                                <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="person portrait" />
+                                                <AvatarImage src={fullUser.avatarUrl} alt={fullUser.name} data-ai-hint="person portrait" />
                                                 <AvatarFallback>
                                                     <UserIcon className="h-4 w-4" />
                                                 </AvatarFallback>
                                             </Avatar>
                                         </TooltipTrigger>
-                                        <TooltipContent><p>{member.name}</p></TooltipContent>
+                                        <TooltipContent><p>{fullUser.name}</p></TooltipContent>
                                     </Tooltip>
                                 )}
                             )}
