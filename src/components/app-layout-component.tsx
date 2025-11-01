@@ -301,7 +301,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return () => {
         unsubs.forEach(unsub => unsub());
     };
-  }, [userId, router, isCheckingAuth]);
+  }, [userId, isCheckingAuth]);
 
   React.useEffect(() => {
     if (!userId || allProjects.length === 0) {
