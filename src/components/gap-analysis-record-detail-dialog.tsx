@@ -156,6 +156,27 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
     return String(dateValue);
   };
   
+  const loadImageAsDataURL = (url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const img = new window.Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            } else {
+                reject(new Error('Could not get canvas context.'));
+            }
+        };
+        img.onerror = () => reject(new Error(`Failed to load image from ${url}`));
+        img.src = url;
+    });
+  };
+
   const handleExportPdf = async () => {
     setIsExporting(true);
     if (!currentUser) {
@@ -188,11 +209,9 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             
-            // Header
             doc.setFontSize(16);
             doc.text("GAP Analysis Details", 14, 20);
             
-            // Footer
             const footerY = pageHeight - 15;
             doc.setFontSize(8);
             doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
@@ -217,7 +236,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 ['Applicability Date', record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'],
             ],
             styles: { fontSize: 9 },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: {cellWidth: 'auto'} },
             didDrawPage: addHeaderAndFooter,
         });
 
@@ -254,8 +273,8 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 startY: (doc as any).lastAutoTable.finalY + 10,
                 theme: 'striped',
                 headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-                styles: { fontSize: 9, cellPadding: 2 },
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: { cellWidth: 'auto' } },
+                styles: { fontSize: 9, cellPadding: 2, cellWidth: 'wrap' },
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
                 didDrawPage: addHeaderAndFooter,
             });
         });
@@ -274,7 +293,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             });
         }
 
-        // --- Summary & Authorization ---
+        // --- Summary ---
         autoTable(doc, {
             startY: (doc as any).lastAutoTable.finalY + 10,
             head: [['Summary']],
@@ -283,26 +302,71 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             headStyles: { fillColor: [44, 62, 80] },
             didDrawPage: addHeaderAndFooter,
         });
-        
+
+        // --- DGCA Authorization ---
+        const finalY = (doc as any).lastAutoTable.finalY;
+        const signaturePromises: Promise<void>[] = [];
+
         autoTable(doc, {
-            startY: (doc as any).lastAutoTable.finalY + 5,
-            head: [['DGCA Authorization']],
-            body: [
+          startY: finalY + 10,
+          head: [['DGCA Authorization']],
+          body: [
               ['Inspectors:', (record.inspectors || []).map(i => i.name).join(', ')],
               ['Verified By:', (record.verifiers || []).map(v => `${v.name} on ${v.date ? format(parseISO(v.date), 'PPP') : 'N/A'}`).join('\n')],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [44, 62, 80] },
-            columnStyles: { 0: { fontStyle: 'bold' } },
-            didDrawPage: addHeaderAndFooter,
-        });
+          ],
+          theme: 'grid',
+          headStyles: { fillColor: [44, 62, 80] },
+          columnStyles: { 0: { fontStyle: 'bold' } },
+          didParseCell: (data) => {
+              if (data.section === 'body' && (data.row.index === 0 || data.row.index === 1)) {
+                  data.cell.styles.valign = 'middle';
+              }
+          },
+          didDrawPage: addHeaderAndFooter,
+      });
 
-        doc.save(`GAP_Analysis_${record.slReferenceNumber}.pdf`);
-        toast({ title: "Export successful", description: "Your PDF has been downloaded." });
+      const signatureStartY = (doc as any).lastAutoTable.finalY + 5;
+
+      const inspectorsWithSignatures = (record.inspectors || []).filter(i => i.signature);
+      for (let i = 0; i < inspectorsWithSignatures.length; i++) {
+        const inspector = inspectorsWithSignatures[i];
+        if (inspector.signature) {
+            signaturePromises.push(
+                loadImageAsDataURL(inspector.signature).then(dataUrl => {
+                    const yPos = signatureStartY + (i * 30);
+                    doc.setFontSize(8);
+                    doc.text(`Inspector: ${inspector.name}`, 14, yPos);
+                    doc.addImage(dataUrl, 'PNG', 14, yPos + 2, 40, 20);
+                })
+            );
+        }
+      }
+
+      await Promise.all(signaturePromises);
+
+      const verifiersWithSignatures = (record.verifiers || []).filter(v => v.signature);
+       for (let i = 0; i < verifiersWithSignatures.length; i++) {
+        const verifier = verifiersWithSignatures[i];
+        if (verifier.signature) {
+            signaturePromises.push(
+                loadImageAsDataURL(verifier.signature).then(dataUrl => {
+                    const yPos = signatureStartY + ((inspectorsWithSignatures.length + i) * 30);
+                    doc.setFontSize(8);
+                    doc.text(`Verifier: ${verifier.name}`, 14, yPos);
+                    doc.addImage(dataUrl, 'PNG', 14, yPos + 2, 40, 20);
+                })
+            );
+        }
+      }
+
+      await Promise.all(signaturePromises);
+      
+      doc.save(`GAP_Analysis_${record.slReferenceNumber}.pdf`);
+      toast({ title: "Export successful", description: "Your PDF has been downloaded." });
 
     } catch (e) {
         console.error(e);
-        toast({ variant: 'destructive', title: 'Export Error', description: 'Failed to generate PDF.' });
+        toast({ variant: 'destructive', title: 'Export Error', description: 'Failed to generate PDF. One or more images may have failed to load.' });
     } finally {
         setIsExporting(false);
     }
