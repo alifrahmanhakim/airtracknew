@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -188,19 +189,19 @@ export default function KegiatanPage() {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
-
+    
         if (!currentUser) {
             toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
             return;
         }
-
+    
         const exportRecord = await createExportRecord({
             documentType: 'Jadwal Kegiatan Subdirektorat',
             exportedAt: new Date(),
             exportedBy: { id: currentUser.id, name: currentUser.name },
             filters: { filterMode, ...(filterMode === 'week' ? { week: selectedWeek } : { month: selectedMonth }) },
         });
-
+    
         if (!exportRecord.success || !exportRecord.id) {
             toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
             return;
@@ -238,123 +239,126 @@ export default function KegiatanPage() {
                 return null;
             }
         };
-
-        const generatePdfWithLogo = async (logo1DataUrl?: string | null, logo2DataUrl?: string | null) => {
-            const doc = new jsPDF({ orientation: 'portrait' });
     
-            const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
-            const tableRows = filteredRecords.map(record => [
-                record.subjek,
-                format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
-                format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-                record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
-                record.lokasi,
-                record.catatan || 'N/A',
-            ]);
-            
-            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
-            
-            const addPageContent = (data: { pageNumber: number }) => {
-                const pageWidth = doc.internal.pageSize.getWidth();
-                doc.setFontSize(18);
-                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
-
-                let currentX = pageWidth - 15;
-                if (logo1DataUrl) {
-                    const img1Ratio = 97 / 24; // Assuming fixed size for simplicity now
-                    const logo1Width = 30;
-                    const logo1Height = logo1Width / img1Ratio;
-                    currentX -= logo1Width;
-                    doc.addImage(logo1DataUrl, 'PNG', currentX, 8, logo1Width, logo1Height);
-                }
-                if (logo2DataUrl) {
-                    const img2Ratio = 1; // Assuming square
-                    const logo2Width = 30;
-                    const logo2Height = logo2Width / img2Ratio;
-                    currentX -= (logo2Width + 5);
-                    doc.addImage(logo2DataUrl, 'PNG', currentX, 8, logo2Width, logo2Height);
-                }
-                
-                let subtitle = '';
-                if (filterMode === 'week') {
-                    const weekStart = parseISO(selectedWeek);
-                    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                    const weekNumber = getISOWeek(weekStart);
-                    subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-                } else {
-                    const monthStart = parseISO(selectedMonth);
-                    subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-                }
-                doc.setFontSize(12);
-                doc.text(subtitle, 14, 28);
-            };
-
-            autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                startY: 34,
-                theme: 'grid',
-                headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
-                styles: { lineWidth: 0.15 },
-                margin: { top: 34, bottom: 30 },
-                didDrawPage: addPageContent,
-            });
-
-            const allPersonnel = kegiatanSubditUsers.map(u => u.value);
-            const involvedPersonnel = new Set(filteredRecords.flatMap(r => r.nama));
-            const uninvolvedPersonnel = allPersonnel.filter(p => !involvedPersonnel.has(p));
-
-            if (uninvolvedPersonnel.length > 0) {
-                const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
-                const lastTableY = (doc as any).lastAutoTable.finalY || 40;
-                
-                const availableSpace = doc.internal.pageSize.getHeight() - lastTableY - 30; // 30 for footer
-                const requiredSpace = (uninvolvedTableRows.length + 2) * 6; // Approximation
-
-                if (requiredSpace > availableSpace) {
-                    doc.addPage();
-                }
-
-                autoTable(doc, {
-                    head: [['Personel yang Belum Terlibat']],
-                    body: uninvolvedTableRows,
-                    startY: (doc as any).lastAutoTable.finalY + 10,
-                    theme: 'grid',
-                    headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold' },
-                    styles: { lineWidth: 0.15 },
-                    didDrawPage: addPageContent,
-                });
-            }
-
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                
-                const footerY = doc.internal.pageSize.height - 20;
-                doc.setFontSize(8);
-                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
-                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
-
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-                
-                const pageText = `Page ${i} of ${pageCount}`;
-                doc.text(pageText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-            }
-            
-            doc.save("jadwal_kegiatan.pdf");
-        };
-
         try {
             const [logo1Img, logo2Img] = await Promise.all([loadImage(logo1Url), loadImage(logo2Url)]);
             const logo1DataUrl = logo1Img ? imageToDataUrl(logo1Img) : null;
             const logo2DataUrl = logo2Img ? imageToDataUrl(logo2Img) : null;
-            await generatePdfWithLogo(logo1DataUrl, logo2DataUrl);
+    
+            const generatePdf = async () => {
+                const doc = new jsPDF({ orientation: 'portrait' });
+        
+                const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
+                const tableRows = filteredRecords.map(record => [
+                    record.subjek,
+                    format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
+                    format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
+                    record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
+                    record.lokasi,
+                    record.catatan || 'N/A',
+                ]);
+                
+                const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+                
+                const addPageContent = (data: { pageNumber: number }) => {
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    doc.setFontSize(18);
+                    doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+    
+                    let currentX = pageWidth - 15;
+                    if (logo1DataUrl && logo1Img) {
+                        const img1Ratio = logo1Img.width / logo1Img.height;
+                        const logo1Width = 30;
+                        const logo1Height = img1Ratio > 0 ? logo1Width / img1Ratio : 0;
+                        currentX -= logo1Width;
+                        if (logo1Height > 0) doc.addImage(logo1DataUrl, 'PNG', currentX, 8, logo1Width, logo1Height);
+                    }
+                    if (logo2DataUrl && logo2Img) {
+                        const img2Ratio = logo2Img.width / logo2Img.height;
+                        const logo2Width = 30; // Set a fixed width
+                        const logo2Height = img2Ratio > 0 ? logo2Width / img2Ratio : 0; // Calculate height to maintain aspect ratio
+                        currentX -= (logo2Width + 5);
+                        if (logo2Height > 0) doc.addImage(logo2DataUrl, 'PNG', currentX, 8, logo2Width, logo2Height);
+                    }
+                    
+                    let subtitle = '';
+                    if (filterMode === 'week') {
+                        const weekStart = parseISO(selectedWeek);
+                        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                        const weekNumber = getISOWeek(weekStart);
+                        subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                    } else {
+                        const monthStart = parseISO(selectedMonth);
+                        subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                    }
+                    doc.setFontSize(12);
+                    doc.text(subtitle, 14, 28);
+                };
+    
+                autoTable(doc, {
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 34,
+                    theme: 'grid',
+                    headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
+                    styles: { lineWidth: 0.15 },
+                    didDrawPage: addPageContent,
+                });
+    
+                const allPersonnel = kegiatanSubditUsers.map(u => u.value);
+                const involvedPersonnel = new Set(filteredRecords.flatMap(r => r.nama));
+                const uninvolvedPersonnel = allPersonnel.filter(p => !involvedPersonnel.has(p));
+    
+                if (uninvolvedPersonnel.length > 0) {
+                    const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
+                    const lastTableY = (doc as any).lastAutoTable.finalY || 40;
+                    
+                    const availableSpace = doc.internal.pageSize.getHeight() - lastTableY - 30; // 30 for footer
+                    const requiredSpace = (uninvolvedTableRows.length + 2) * 8;
+    
+                    let startY = lastTableY + 10;
+                    if (requiredSpace > availableSpace) {
+                        doc.addPage();
+                        startY = 34; // Start at top after adding page
+                    }
+    
+                    autoTable(doc, {
+                        head: [['Personel yang Belum Terlibat']],
+                        body: uninvolvedTableRows,
+                        startY: startY,
+                        theme: 'grid',
+                        headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
+                        styles: { lineWidth: 0.15 },
+                        didDrawPage: addPageContent,
+                    });
+                }
+    
+                const pageCount = (doc as any).internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    
+                    const footerY = doc.internal.pageSize.height - 20;
+                    doc.setFontSize(8);
+                    doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                    doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+    
+                    const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                    doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                    
+                    const pageText = `Page ${i} of ${pageCount}`;
+                    doc.text(pageText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+                }
+                
+                doc.save("jadwal_kegiatan.pdf");
+            };
+    
+            await generatePdf();
         } catch (error) {
             toast({ variant: "destructive", title: "PDF Export Failed", description: "An unexpected error occurred during PDF generation." });
             console.error("PDF Export Error:", error);
         }
     };
+    
 
     return (
         <div className="min-h-screen bg-muted/20">
