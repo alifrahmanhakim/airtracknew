@@ -59,7 +59,7 @@ const RECORDS_PER_PAGE = 10;
 export default function PqsPage() {
   const [allRecords, setAllRecords] = useState<PqRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('form');
+  const [activeTab, setActiveTab] = useState('records');
   const { toast } = useToast();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
@@ -482,7 +482,7 @@ export default function PqsPage() {
 
   return (
     <AppLayout>
-        <div id="pqs-page" className="max-w-4xl mx-auto">
+        <div id="pqs-page">
         {renderContent()}
 
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
@@ -530,3 +530,5 @@ export default function PqsPage() {
     </AppLayout>
   );
 }
+
+    
