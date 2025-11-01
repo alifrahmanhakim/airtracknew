@@ -223,10 +223,23 @@ export default function KegiatanPage() {
                 };
             });
         };
+        
+        const imageToDataUrl = (img: HTMLImageElement): string | null => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return null;
+                ctx.drawImage(img, 0, 0);
+                return canvas.toDataURL('image/png');
+            } catch (error) {
+                console.error("Canvas toDataURL error:", error);
+                return null;
+            }
+        };
 
-        try {
-            const [logo1Img, logo2Img] = await Promise.all([loadImage(logo1Url), loadImage(logo2Url)]);
-            
+        const generatePdfWithLogo = async (logo1DataUrl?: string | null, logo2DataUrl?: string | null) => {
             const doc = new jsPDF({ orientation: 'portrait' });
     
             const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
@@ -234,7 +247,7 @@ export default function KegiatanPage() {
                 record.subjek,
                 format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
                 format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-                record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'), // Add numbering
+                record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'),
                 record.lokasi,
                 record.catatan || 'N/A',
             ]);
@@ -247,22 +260,22 @@ export default function KegiatanPage() {
                 doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
 
                 let currentX = pageWidth - 15;
-                if (logo1Img) {
-                    const img1Ratio = logo1Img.width / logo1Img.height;
+                if (logo1DataUrl) {
+                    const img1Ratio = 97 / 24; // Assuming fixed size for simplicity now
                     const logo1Width = 30;
                     const logo1Height = logo1Width / img1Ratio;
                     currentX -= logo1Width;
-                    doc.addImage(logo1Img, 'PNG', currentX, 8, logo1Width, logo1Height);
+                    doc.addImage(logo1DataUrl, 'PNG', currentX, 8, logo1Width, logo1Height);
                 }
-                if (logo2Img) {
-                    const img2Ratio = logo2Img.width / logo2Img.height;
+                if (logo2DataUrl) {
+                    const img2Ratio = 1; // Assuming square
                     const logo2Width = 30;
                     const logo2Height = logo2Width / img2Ratio;
                     currentX -= (logo2Width + 5);
-                    doc.addImage(logo2Img, 'PNG', currentX, 8, logo2Width, logo2Height);
+                    doc.addImage(logo2DataUrl, 'PNG', currentX, 8, logo2Width, logo2Height);
                 }
                 
-                 let subtitle = '';
+                let subtitle = '';
                 if (filterMode === 'week') {
                     const weekStart = parseISO(selectedWeek);
                     const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
@@ -293,12 +306,11 @@ export default function KegiatanPage() {
 
             if (uninvolvedPersonnel.length > 0) {
                 const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
-                const lastTable = (doc as any).lastAutoTable;
-                const startY = lastTable ? lastTable.finalY + 10 : 40;
+                const lastTableY = (doc as any).lastAutoTable.finalY || 40;
+                
+                const availableSpace = doc.internal.pageSize.getHeight() - lastTableY - 30; // 30 for footer
+                const requiredSpace = (uninvolvedTableRows.length + 2) * 6; // Approximation
 
-                // Check if there is enough space, otherwise add a new page
-                const availableSpace = doc.internal.pageSize.getHeight() - doc.internal.getFontSize() - startY - 30; // 30 for footer
-                const requiredSpace = (uninvolvedTableRows.length + 1) * 10; // Approximation
                 if (requiredSpace > availableSpace) {
                     doc.addPage();
                 }
@@ -331,7 +343,13 @@ export default function KegiatanPage() {
             }
             
             doc.save("jadwal_kegiatan.pdf");
+        };
 
+        try {
+            const [logo1Img, logo2Img] = await Promise.all([loadImage(logo1Url), loadImage(logo2Url)]);
+            const logo1DataUrl = logo1Img ? imageToDataUrl(logo1Img) : null;
+            const logo2DataUrl = logo2Img ? imageToDataUrl(logo2Img) : null;
+            await generatePdfWithLogo(logo1DataUrl, logo2DataUrl);
         } catch (error) {
             toast({ variant: "destructive", title: "PDF Export Failed", description: "An unexpected error occurred during PDF generation." });
             console.error("PDF Export Error:", error);
