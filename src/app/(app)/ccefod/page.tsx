@@ -488,13 +488,13 @@ export default function CcefodPage() {
     }
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="mb-4 bg-background/80 backdrop-blur-sm p-4 md:p-6 rounded-lg">
+            <div className="mb-4 bg-background/80 backdrop-blur-sm p-6 rounded-lg">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="flex-1">
-                        <CardTitle className="text-3xl font-bold">CC/EFOD Monitoring</CardTitle>
-                        <CardDescription className="mt-2">
+                        <h1 className="text-3xl font-bold">CC/EFOD Monitoring</h1>
+                        <p className="mt-2 text-muted-foreground">
                             Formulir untuk memonitor dan mengelola Compliance Checklist dan Electronic Filing of Differences.
-                        </CardDescription>
+                        </p>
                          <div className="mt-4">
                             <TabsList>
                                 <TabsTrigger value="form">Input Form</TabsTrigger>
@@ -514,7 +514,7 @@ export default function CcefodPage() {
             </div>
             
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
-                <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm rounded-lg">
+                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                     <CardTitle>Compliance Checklist (CC) / EFOD Form</CardTitle>
                     <CardDescription>
@@ -528,7 +528,7 @@ export default function CcefodPage() {
             </TabsContent>
             
             <TabsContent value="analytics" forceMount className={cn(activeTab !== 'analytics' && 'hidden')}>
-                <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm rounded-lg">
+                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
@@ -583,7 +583,7 @@ export default function CcefodPage() {
             </TabsContent>
             
             <TabsContent value="records" forceMount className={cn(activeTab !== 'records' && 'hidden')}>
-                <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm rounded-lg">
+                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                         <div className='flex justify-between items-start'>
                             <div>
