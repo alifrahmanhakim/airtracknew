@@ -258,7 +258,7 @@ export default function RulemakingMonitoringPage() {
             
             const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
             
-            const addPageContent = (data: { pageNumber: number }) => {
+            const addPageContent = (data: any) => {
                 const pageCount = (doc as any).internal.getNumberOfPages();
                 
                 doc.setFontSize(18);
@@ -319,7 +319,7 @@ export default function RulemakingMonitoringPage() {
                 }, {} as Record<string, RulemakingRecord[]>);
                 
                 for (const perihal of Object.keys(groupedByPerihal).sort()) {
-                     const recordsInPerihal = groupedByPerihal[perihal];
+                    const recordsInPerihal = groupedByPerihal[perihal];
                     const tableRows = recordsInPerihal.flatMap(record => 
                         record.stages.map(stage => [
                             stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
