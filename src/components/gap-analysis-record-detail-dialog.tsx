@@ -223,13 +223,13 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
 
         const generalData = [
             ['SL Ref. Number', record.slReferenceNumber],
-            ['SL Ref. Date', record.slReferenceDate ? format(parseISO(record.slReferenceDate), 'PPP') : 'N/A'],
+            ['SL Ref. Date', getFormattedDate(record.slReferenceDate)],
             ['Annex', record.annex],
             ['Subject', record.subject],
             ['Status', record.statusItem],
-            ['Date of Evaluation', record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'],
-            ['Effective Date', record.effectiveDate ? format(parseISO(record.effectiveDate), 'PPP') : 'N/A'],
-            ['Applicability Date', record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'],
+            ['Date of Evaluation', getFormattedDate(record.dateOfEvaluation)],
+            ['Effective Date', getFormattedDate(record.effectiveDate)],
+            ['Applicability Date', getFormattedDate(record.applicabilityDate)],
         ];
 
         autoTable(doc, {
@@ -237,7 +237,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             theme: 'plain',
             body: generalData,
             styles: { fontSize: 9, cellPadding: 1.5 },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: { cellWidth: 'auto' } },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: { cellWidth: 'auto', cellPadding: {left: 2}} },
             didDrawPage: addHeaderAndFooter,
         });
 
@@ -247,7 +247,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             body: (record.actionRequired || []).map(item => {
                 let text = actionRequiredLabels[item.id];
                 if (item.checked && item.date) {
-                    text += ` (Date: ${format(parseISO(item.date), 'PPP')})`;
+                    text += ` (Date: ${getFormattedDate(item.date)})`;
                 }
                 return [item.checked ? `[X] ${text}` : `[ ] ${text}`];
             }),
@@ -268,10 +268,10 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 ['Proposed Amendment', evaluation.proposedAmendment || '-'],
                 ['Reason/Remark', evaluation.reasonOrRemark || '-'],
                 ['Status Item', evaluation.status || 'N/A'],
-            ].map(([title, content]) => [
+            ].map(([title, content]) => ([
                 { content: title, styles: { fontStyle: 'bold', cellWidth: 50 } },
-                { content: content, styles: { cellWidth: 'auto' } }
-            ]);
+                { content: String(content), styles: { cellWidth: 'auto', cellPadding: {left: 2}} }
+            ]));
 
             autoTable(doc, {
                 head: [[`Evaluation Item ${index + 1}`]],
@@ -279,7 +279,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 startY: (doc as any).lastAutoTable.finalY + 10,
                 theme: 'striped',
                 headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-                styles: { fontSize: 9, cellPadding: 2 },
+                styles: { fontSize: 9, cellPadding: 2, lineWidth: 0.1 },
                 didDrawPage: addHeaderAndFooter,
             });
         });
@@ -289,7 +289,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             autoTable(doc, {
                 head: [['Implementation Task List']],
                 body: record.implementationTasks.map(task => [
-                    `${task.description}\nEst. Compliance Date: ${task.estimatedComplianceDate ? format(parseISO(task.estimatedComplianceDate), 'PPP') : 'N/A'}`
+                    `${task.description}\nEst. Compliance Date: ${getFormattedDate(task.estimatedComplianceDate)}`
                 ]),
                 startY: (doc as any).lastAutoTable.finalY + 10,
                 theme: 'striped',
@@ -334,8 +334,8 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             if (startY + 10 + 40 > doc.internal.pageSize.getHeight() - 20) {
               doc.addPage();
               startY = 30; 
+              addHeaderAndFooter({ pageNumber: (doc as any).internal.getNumberOfPages() });
             }
-            addHeaderAndFooter({ pageNumber: (doc as any).internal.getNumberOfPages() });
             
             doc.setFontSize(14);
             doc.text("DGCA Authorization Signatures", 14, startY);
@@ -351,7 +351,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                 doc.text(`${type}: ${name}`, 14, startY);
                 if (date) {
                     doc.setFontSize(8);
-                    doc.text(`Date: ${format(parseISO(date), 'PPP')}`, 14, startY + 5);
+                    doc.text(`Date: ${getFormattedDate(date)}`, 14, startY + 5);
                 }
                 doc.addImage(dataUrl, 'PNG', 14, startY + 8, 60, 30);
                 startY += 40;
@@ -382,18 +382,18 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
         <ScrollArea className="max-h-[70vh] pr-6">
             <dl className="divide-y divide-border">
                 <DetailRow label="SL Reference Number" value={record.slReferenceNumber} />
-                <DetailRow label="SL Reference Date" value={record.slReferenceDate ? format(parseISO(record.slReferenceDate), 'PPP') : 'N/A'} />
+                <DetailRow label="SL Reference Date" value={getFormattedDate(record.slReferenceDate)} />
                 <DetailRow label="Annex" value={record.annex} />
                 <DetailRow label="Type of State Letter" value={record.typeOfStateLetter} />
-                <DetailRow label="Date of Evaluation" value={record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'} />
+                <DetailRow label="Date of Evaluation" value={getFormattedDate(record.dateOfEvaluation)} />
                 <DetailRow label="Subject" value={record.subject} isLongText />
                 <DetailRow label="Nama Surat" value={record.letterName} />
                 <DetailRow label="Perihal Surat" value={record.letterSubject} isLongText />
-                <DetailRow label="Tanggal Pelaksanaan" value={record.implementationDate ? format(parseISO(record.implementationDate), 'PPP') : 'N/A'} />
+                <DetailRow label="Tanggal Pelaksanaan" value={getFormattedDate(record.implementationDate)} />
                 <DetailRow label="Action Required" value={actionRequiredContent} isLongText />
-                <DetailRow label="Effective Date" value={record.effectiveDate ? format(parseISO(record.effectiveDate), 'PPP') : 'N/A'} />
-                <DetailRow label="Applicability Date" value={record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'} />
-                <DetailRow label="Embedded Applicability Date" value={record.embeddedApplicabilityDate ? format(parseISO(record.embeddedApplicabilityDate), 'PPP') : 'N/A'} />
+                <DetailRow label="Effective Date" value={getFormattedDate(record.effectiveDate)} />
+                <DetailRow label="Applicability Date" value={getFormattedDate(record.applicabilityDate)} />
+                <DetailRow label="Embedded Applicability Date" value={getFormattedDate(record.embeddedApplicabilityDate)} />
                 
                 <Separator className="my-4" />
                 
@@ -413,7 +413,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                                     <li key={task.id} className="text-sm p-2 border rounded-md">
                                         <p className="font-medium">{task.description}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Est. Compliance Date: {task.estimatedComplianceDate ? format(parseISO(task.estimatedComplianceDate), 'PPP') : 'N/A'}
+                                            Est. Compliance Date: {getFormattedDate(task.estimatedComplianceDate)}
                                         </p>
                                     </li>
                                 ))}
@@ -456,7 +456,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
                         <div key={verifier.id} className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-4 border p-3 rounded-md">
                            <div>
                                 <p><span className="font-medium">Name:</span> {verifier.name}</p>
-                                <p><span className="font-medium">Date:</span> {verifier.date ? format(parseISO(verifier.date), 'PPP') : 'N/A'}</p>
+                                <p><span className="font-medium">Date:</span> {getFormattedDate(verifier.date)}</p>
                             </div>
                             <div>
                                 <p className="font-medium mb-1">Signature:</p>
