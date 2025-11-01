@@ -3,17 +3,17 @@
 
 import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon, ChevronsUpDown, Send, Pencil } from 'lucide-react';
+import { ArrowRight, BarChart, FileSearch, Gavel, ShieldQuestion, FileWarning, Search, Info, Users, AlertTriangle, Plane, BookCheck, BookOpenCheck, LineChart as LineChartIcon, ChevronsUpDown, Send, Pencil, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
-import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord } from '@/lib/types';
+import type { AccidentIncidentRecord, KnktReport, TindakLanjutDgcaRecord, TindakLanjutRecord, LawEnforcementRecord, PemeriksaanRecord, User } from '@/lib/types';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getYear, parseISO, isToday, isValid } from 'date-fns';
+import { getYear, parseISO, isToday, isValid, format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -26,6 +26,11 @@ import { OperatorFollowUpDialog } from '@/components/rsi/operator-follow-up-dial
 import { AppLayout } from '@/components/app-layout-component';
 import { Input } from '@/components/ui/input';
 import { Highlight } from '@/components/ui/highlight';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { useToast } from '@/hooks/use-toast';
+import { createExportRecord } from '@/lib/actions/verification';
+import QRCode from 'qrcode';
 
 
 type RsiModule = {
@@ -178,6 +183,7 @@ export default function RsiPage() {
     const [recordToEdit, setRecordToEdit] = React.useState<TindakLanjutRecord | null>(null);
     const [selectedOperator, setSelectedOperator] = React.useState<string | null>(null);
     const [awaitingFollowUpSearch, setAwaitingFollowUpSearch] = React.useState('');
+    const { toast } = useToast();
 
     const toggleCardExpansion = (cardTitle: string) => {
         setExpandedCards(prev => ({ ...prev, [cardTitle]: !prev[cardTitle] }));
@@ -422,6 +428,46 @@ export default function RsiPage() {
         return allTrendData.filter(d => d.year >= currentYear - scope + 1);
     }, [dashboardStats.incidentTrend, chartYearScope]);
 
+    const handleExportAwaitingFollowUpPdf = async () => {
+        if (filteredOpenOperatorFollowUps.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There are no pending follow-ups to export." });
+            return;
+        }
+    
+        const doc = new jsPDF({ orientation: 'landscape' });
+    
+        const tableColumn = ["Report Title", "Report Number", "Operator", "Incident Date"];
+        const tableRows = filteredOpenOperatorFollowUps.map(record => [
+            record.judulLaporan || 'N/A',
+            record.nomorLaporan || 'N/A',
+            (Array.isArray(record.penerimaRekomendasi) ? record.penerimaRekomendasi.join(', ') : record.penerimaRekomendasi) || 'N/A',
+            record.tanggalKejadian ? format(parseISO(record.tanggalKejadian), 'dd MMM yyyy') : 'N/A'
+        ]);
+    
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 25,
+            theme: 'grid',
+            headStyles: { fillColor: [234, 88, 12], textColor: 255, fontStyle: 'bold' },
+            margin: { top: 30, bottom: 30 },
+            didDrawPage: (data) => {
+                doc.setFontSize(18);
+                doc.text("Awaiting Operator Follow-Up", 14, 20);
+            }
+        });
+    
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const footerY = doc.internal.pageSize.height - 15;
+            doc.setFontSize(8);
+            doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY, { align: 'right' });
+        }
+    
+        doc.save("awaiting_operator_follow_up.pdf");
+    };
+
     return (
         <AppLayout>
             <TooltipProvider>
@@ -527,9 +573,14 @@ export default function RsiPage() {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <Card className="border-orange-400 bg-orange-50 dark:bg-orange-950/80 dark:border-orange-700/60 flex flex-col">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
-                                    <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
-                                </CardTitle>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-300">
+                                        <Send /> Awaiting Operator Follow-Up ({dashboardStats.openOperatorFollowUps.length})
+                                    </CardTitle>
+                                    <Button variant="outline" size="sm" onClick={handleExportAwaitingFollowUpPdf} className="bg-orange-100/50 border-orange-300 text-orange-800 hover:bg-orange-100">
+                                        <Printer className="mr-2 h-4 w-4" /> Export PDF
+                                    </Button>
+                                </div>
                                 <div className="flex justify-between items-center text-orange-700/80 dark:text-orange-400/80">
                                     <CardDescription className="text-orange-700/80 dark:text-orange-400/80">
                                         These KNKT recommendations are waiting for a response or action from the related operator.
