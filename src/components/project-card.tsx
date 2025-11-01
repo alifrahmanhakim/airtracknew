@@ -34,7 +34,7 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const getEffectiveStatus = (): Project['status'] => {
-    if (progress === 100) {
+    if (progress === 100 || project.status === 'Completed') {
       return 'Completed';
     }
   
@@ -47,11 +47,6 @@ export function ProjectCard({ project, allUsers }: ProjectCardProps) {
   
     if (hasCritical) {
       return 'At Risk';
-    }
-    
-    // Check original status if it provides a more severe warning
-    if (status === 'At Risk' || status === 'Off Track') {
-      return status;
     }
     
     const projectStart = parseISO(startDate);
