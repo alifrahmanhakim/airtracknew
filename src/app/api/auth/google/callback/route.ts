@@ -19,19 +19,16 @@ export async function GET(request: NextRequest) {
             throw new Error("User ID not found in state.");
         }
 
-        const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
-        const host = request.headers.get('host');
-        const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-        const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
+        const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } = process.env;
 
-        if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+        if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI) {
             throw new Error("Google OAuth credentials are not configured.");
         }
         
         const oauth2Client = new google.auth.OAuth2(
             GOOGLE_CLIENT_ID,
             GOOGLE_CLIENT_SECRET,
-            redirectUri
+            GOOGLE_REDIRECT_URI
         );
 
         const { tokens } = await oauth2Client.getToken(code);

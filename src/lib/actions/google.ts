@@ -12,14 +12,9 @@ const SCOPES = [
 ];
 
 function getOAuth2Client() {
-    const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
-    
-    // Construct the redirect URI dynamically
-    const host = headers().get('host');
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-    const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
+    const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } = process.env;
 
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI) {
         console.error("Google OAuth credentials are not configured in .env file.");
         return null;
     }
@@ -27,7 +22,7 @@ function getOAuth2Client() {
     return new google.auth.OAuth2(
         GOOGLE_CLIENT_ID,
         GOOGLE_CLIENT_SECRET,
-        redirectUri
+        GOOGLE_REDIRECT_URI
     );
 }
 
