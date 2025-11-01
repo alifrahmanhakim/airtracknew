@@ -41,6 +41,7 @@ import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
+import { createExportRecord } from '@/lib/actions/verification';
 
 // Dynamically import heavy components
 const GlossaryForm = dynamic(() => import('@/components/glossary-form').then(mod => mod.GlossaryForm), { 
@@ -247,11 +248,30 @@ export default function GlossaryPage() {
     toast({ title: 'Export Started', description: 'Your Excel file is being downloaded.' });
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (filteredAndSortedRecords.length === 0) {
         toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
         return;
     }
+     if (!currentUser) {
+      toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+      return;
+    }
+
+    const exportRecord = await createExportRecord({
+      documentType: 'Translation Analysis Records',
+      exportedAt: new Date(),
+      exportedBy: { id: currentUser.id, name: currentUser.name },
+      filters: { searchTerm, statusFilter },
+    });
+  
+    if (!exportRecord.success || !exportRecord.id) {
+      toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+      return;
+    }
+
+    const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+    
     const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
     const img = new Image();
     img.crossOrigin = 'Anonymous';
@@ -272,10 +292,10 @@ export default function GlossaryPage() {
             record.status
         ]);
         
-        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
-        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
+        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
         
         const addPageContent = (data: { pageNumber: number }) => {
+            const pageCount = (doc as any).internal.getNumberOfPages();
             // Header
             doc.setFontSize(18);
             doc.text("Translation Analysis Records", 14, 20);
@@ -295,6 +315,7 @@ export default function GlossaryPage() {
             
             const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
             doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
         };
 
         autoTable(doc, {
@@ -308,13 +329,6 @@ export default function GlossaryPage() {
             didDrawPage: addPageContent,
             margin: { top: 30, bottom: 30 },
         });
-        
-        const pageCountFinal = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCountFinal; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 8, { align: 'right' });
-        }
 
         doc.save("translation_analysis_records.pdf");
     };
