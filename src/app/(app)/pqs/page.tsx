@@ -34,6 +34,7 @@ import autoTable from 'jspdf-autotable';
 import { Skeleton } from '@/components/ui/skeleton';
 import QRCode from 'qrcode';
 import { format } from 'date-fns';
+import { createExportRecord } from '@/lib/actions/verification';
 
 
 // Dynamically import heavy components
@@ -239,36 +240,36 @@ export default function PqsPage() {
     }, 500);
   };
   
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     if (allRecords.length === 0) {
       toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
       return;
     }
   
+    if (!currentUser) {
+      toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+      return;
+    }
+  
+    const exportRecord = await createExportRecord({
+      documentType: 'Protocol Questions Record',
+      exportedAt: new Date(),
+      exportedBy: { id: currentUser.id, name: currentUser.name },
+      filters: { searchTerm, tableIcaoStatusFilter, tableCriticalElementFilter },
+    });
+  
+    if (!exportRecord.success || !exportRecord.id) {
+      toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+      return;
+    }
+  
+    const verificationUrl = `${window.location.origin}/verify/${exportRecord.id}`;
+    
     const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.src = logoUrl;
   
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            generatePdf(); // Proceed without logo if canvas fails
-            return;
-        }
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
-        generatePdf(dataUrl);
-    };
-  
-    img.onerror = () => {
-      toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
-      generatePdf(); // Proceed without the logo if it fails
-    };
-
     const generatePdf = async (logoDataUrl?: string) => {
         const doc = new jsPDF({ orientation: 'landscape' });
         const tableColumn = ["PQ Number", "Protocol Question", "Critical Element", "ICAO Status", "Status"];
@@ -279,11 +280,23 @@ export default function PqsPage() {
             record.icaoStatus,
             record.status
         ]);
-
-        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
-        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
-
-        const addHeader = (doc: jsPDF, logoDataUrl?: string) => {
+        
+        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+        
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
+            margin: { top: 30, bottom: 30 },
+        });
+      
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            
+            // Header
             doc.setFontSize(18);
             doc.text("Protocol Questions Records", 14, 20);
             if (logoDataUrl) {
@@ -294,48 +307,40 @@ export default function PqsPage() {
                     doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
                 }
             }
-        };
 
-        const addFooter = (doc: jsPDF, pageNumber: number, totalPages: number) => {
+            // Footer
             const footerY = doc.internal.pageSize.height - 20;
             doc.setFontSize(8);
             
-            // QR Code
             doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
             doc.text('Genuine Document by AirTrack', 14, footerY + 12);
             
-            // Copyright
             const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
             doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
 
-            // Page number
-            doc.text(`Page ${pageNumber} of ${totalPages}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-        };
-
-        addHeader(doc, logoDataUrl);
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
-            margin: { top: 30, bottom: 30 },
-            didDrawPage: (data) => {
-                // We only need the header on the first page, autoTable handles subsequent page headers
-                if (data.pageNumber > 1) {
-                    // You can add headers to other pages here if needed, but autoTable does it by default
-                }
-            }
-        });
-      
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            addFooter(doc, i, pageCount);
+            doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
         }
       
         doc.save("pqs_records.pdf");
+    };
+
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            generatePdf(); 
+            return;
+        }
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        generatePdf(dataUrl);
+    };
+  
+    img.onerror = () => {
+      toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF. Exporting without it." });
+      generatePdf();
     };
   };
 
