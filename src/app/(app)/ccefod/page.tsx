@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react';
@@ -366,13 +367,15 @@ export default function CcefodPage() {
         const doc = new jsPDF({ orientation: 'landscape' });
         
         const groupedByAnnex = allRecords.reduce<Record<string, CcefodRecord[]>>((acc, record) => {
-            const key = record.annex;
+            const key = record.annex || 'Uncategorized';
             if (!acc[key]) acc[key] = [];
             acc[key].push(record);
             return acc;
         }, {});
         
         const sortedAnnexKeys = Object.keys(groupedByAnnex).sort((a, b) => {
+            if (a === 'Uncategorized') return 1;
+            if (b === 'Uncategorized') return -1;
             const numA = parseInt(a, 10);
             const numB = parseInt(b, 10);
             if (!isNaN(numA) && !isNaN(numB)) {
