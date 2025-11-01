@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail, Sparkles } from "lucide-react";
+import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail, Sparkles, User as UserIcon } from "lucide-react";
 import { useState, useEffect } from 'react';
 import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { WhatsNewDialog } from '@/components/whats-new-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -79,13 +80,45 @@ export default function LoginPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [progress, setProgress] = useState(0);
   const [currentCardImageIndex, setCurrentCardImageIndex] = useState(0);
+  const [lastLoggedInUser, setLastLoggedInUser] = useState<{ name: string; avatarUrl: string } | null>(null);
   
-  
+    const getCookie = (name: string) => {
+        if (typeof document === 'undefined') return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            const cookieValue = parts.pop()?.split(';').shift();
+            try {
+                return cookieValue ? decodeURIComponent(cookieValue) : null;
+            } catch (e) {
+                return cookieValue || null;
+            }
+        }
+        return null;
+    };
+    
+    const setCookie = (name: string, value: string, days: number) => {
+        if (typeof document === 'undefined') return;
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (encodeURIComponent(value) || "")  + expires + "; path=/";
+    }
+
   useEffect(() => {
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (loggedInUserId) {
         router.push('/my-dashboard');
     } else {
+        const name = getCookie('lastUserName');
+        const avatarUrl = getCookie('lastUserAvatarUrl');
+        if (name && avatarUrl) {
+            setLastLoggedInUser({ name, avatarUrl });
+        }
+        
         setIsCheckingAuth(true);
         const timer = setInterval(() => {
             setProgress(prev => {
@@ -112,25 +145,33 @@ export default function LoginPage() {
     return () => clearInterval(imageSlideInterval);
   }, []);
 
-  const handleSuccessfullLogin = (userId: string) => {
-    localStorage.setItem('loggedInUserId', userId);
+  const handleSuccessfullLogin = (user: User) => {
+    localStorage.setItem('loggedInUserId', user.id);
+    if(user.name) setCookie('lastUserName', user.name, 30);
+    if(user.avatarUrl) setCookie('lastUserAvatarUrl', user.avatarUrl, 30);
     router.push('/my-dashboard');
   };
   
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (isDifferentAccount = false) => {
     setIsGoogleLoading(true);
     setError('');
     setSignupSuccess(false);
 
     try {
         const { db, auth, googleProvider } = await import('@/lib/firebase');
-        const { signInWithPopup, signOut } = await import('firebase/auth');
+        const { signInWithPopup, signOut, prompt } = await import('firebase/auth');
         const { doc, getDoc, setDoc, updateDoc } = await import('firebase/firestore');
+
+        if(isDifferentAccount) {
+            prompt(auth, googleProvider);
+        }
 
         const result = await signInWithPopup(auth, googleProvider);
         const firebaseUser = result.user;
         const userRef = doc(db, "users", firebaseUser.uid);
         const userSnap = await getDoc(userRef);
+        
+        let finalUserData: User;
 
         if (userSnap.exists()) {
             const userData = userSnap.data() as User;
@@ -151,8 +192,8 @@ export default function LoginPage() {
             if (Object.keys(updates).length > 0) {
                 await updateDoc(userRef, updates);
             }
+            finalUserData = { id: firebaseUser.uid, ...userData, ...updates };
 
-            handleSuccessfullLogin(firebaseUser.uid);
         } else {
             const newUser: Omit<User, 'id'> = {
                 name: firebaseUser.displayName || 'Google User',
@@ -166,10 +207,18 @@ export default function LoginPage() {
             await signOut(auth);
             setSignupSuccess(true);
             setError('');
+            finalUserData = { id: firebaseUser.uid, ...newUser };
         }
+        
+        if (finalUserData.isApproved) {
+            handleSuccessfullLogin(finalUserData);
+        }
+
     } catch (err: any) {
         console.error("Google Sign-In Error:", err);
-        setError("An error occurred with Google Sign-In. Please try again.");
+        if (err.code !== 'auth/popup-closed-by-user') {
+            setError("An error occurred with Google Sign-In. Please try again.");
+        }
     } finally {
         setIsGoogleLoading(false);
     }
@@ -213,7 +262,7 @@ export default function LoginPage() {
           return;
       }
 
-      handleSuccessfullLogin(userSnap.id);
+      handleSuccessfullLogin({id: userSnap.id, ...userData});
 
     } catch (err: any) {
       console.error("Login Error:", err);
@@ -455,14 +504,31 @@ export default function LoginPage() {
                                       <span className="w-full border-t border-border" />
                                   </div>
                                   <div className="relative flex justify-center text-xs uppercase">
-                                      <span className="bg-card/60 px-2 text-muted-foreground">Or register with</span>
+                                      <span className="bg-card/60 px-2 text-muted-foreground">Or continue with</span>
                                   </div>
                               </div>
-                              <div className="grid grid-cols-1 gap-4">
-                                  <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isCheckingAuth}>
-                                      {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                      Google
-                                  </Button>
+                                <div className="space-y-2">
+                                    {lastLoggedInUser ? (
+                                        <Button variant="outline" className="w-full h-12" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
+                                            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
+                                                <Avatar className="mr-3 h-6 w-6">
+                                                    <AvatarImage src={lastLoggedInUser.avatarUrl} />
+                                                    <AvatarFallback><UserIcon /></AvatarFallback>
+                                                </Avatar>
+                                            }
+                                            Continue as {lastLoggedInUser.name}
+                                        </Button>
+                                    ) : (
+                                        <Button variant="outline" className="w-full" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
+                                            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                            Google
+                                        </Button>
+                                    )}
+                                    {lastLoggedInUser && (
+                                        <Button variant="link" className="w-full text-xs text-muted-foreground" onClick={() => handleGoogleSignIn(true)} disabled={isGoogleLoading || isCheckingAuth}>
+                                            Sign in with a different account
+                                        </Button>
+                                    )}
                               </div>
                               <div className="mt-6 flex justify-center">
                                 <StatusIndicator variant="icon" />
@@ -519,7 +585,7 @@ export default function LoginPage() {
                                   </div>
                               </div>
                               <div className="grid grid-cols-1 gap-4">
-                                  <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
+                                  <Button variant="outline" className="w-full" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading}>
                                       {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                                       Google
                                   </Button>
