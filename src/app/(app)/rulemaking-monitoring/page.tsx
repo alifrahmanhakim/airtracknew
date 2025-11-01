@@ -293,19 +293,14 @@ export default function RulemakingMonitoringPage() {
                 return acc;
             }, {} as Record<string, RulemakingRecord[]>);
             
-            let isFirstPage = true;
+            let lastFinalY = 30; // Start position for the first table
     
             for (const kategori of Object.keys(groupedByCategory).sort()) {
-                if (!isFirstPage) {
-                    doc.addPage();
-                }
-
                 autoTable(doc, {
-                    head: [[`Kategori: ${kategori}`]],
-                    body: [[]],
-                    startY: (doc as any).lastAutoTable.finalY || 30,
+                    body: [[kategori]],
+                    startY: lastFinalY,
                     theme: 'plain',
-                    headStyles: { fontStyle: 'bold', fontSize: 16 }
+                    styles: { fontStyle: 'bold', fontSize: 16 },
                 });
                 
                 const recordsInKategori = groupedByCategory[kategori];
@@ -331,24 +326,19 @@ export default function RulemakingMonitoringPage() {
                     );
 
                     autoTable(doc, {
-                        head: [[`Perihal: ${perihal}`]],
-                        startY: (doc as any).lastAutoTable.finalY + 2,
-                        theme: 'plain',
-                        headStyles: { fontStyle: 'bold', fontSize: 14, fillColor: [255, 255, 255], textColor: 0, halign: 'left' },
-                        pageBreak: 'avoid',
-                    });
-
-                    autoTable(doc, {
                         head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
-                        body: tableRows,
-                        startY: (doc as any).lastAutoTable.finalY,
+                        body: [
+                            [{ content: `Perihal: ${perihal}`, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: 20 } }],
+                             ...tableRows
+                        ],
+                        startY: (doc as any).lastAutoTable.finalY + 2,
                         theme: 'grid',
                         headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                         didDrawPage: addPageContent,
                         margin: { top: 30, bottom: 30 },
                     });
                 }
-                 isFirstPage = false;
+                 lastFinalY = (doc as any).lastAutoTable.finalY + 10;
             }
             
             doc.save("rulemaking_monitoring.pdf");
