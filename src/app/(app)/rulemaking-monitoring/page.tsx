@@ -331,23 +331,19 @@ export default function RulemakingMonitoringPage() {
                     );
 
                     autoTable(doc, {
-                        head: [
-                            [`Perihal: ${perihal}`],
-                            ['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']
-                        ],
+                        head: [[`Perihal: ${perihal}`]],
+                        startY: (doc as any).lastAutoTable.finalY + 2,
+                        theme: 'plain',
+                        headStyles: { fontStyle: 'bold', fontSize: 14, fillColor: [255, 255, 255], textColor: 0, halign: 'left' },
+                        pageBreak: 'avoid',
+                    });
+
+                    autoTable(doc, {
+                        head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
                         body: tableRows,
                         startY: (doc as any).lastAutoTable.finalY,
                         theme: 'grid',
-                        headStyles: {
-                            0: { fontStyle: 'bold', fontSize: 14, fillColor: [255, 255, 255], textColor: 0, halign: 'left' }, // Perihal header
-                            1: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' } // Column headers
-                        },
-                        willDrawCell: (data) => {
-                            if (data.section === 'head' && data.row.index === 0) {
-                                (doc as any).setFont(undefined, 'bold');
-                                (doc as any).setFontSize(14);
-                            }
-                        },
+                        headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                         didDrawPage: addPageContent,
                         margin: { top: 30, bottom: 30 },
                     });
