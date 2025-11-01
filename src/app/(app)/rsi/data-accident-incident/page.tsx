@@ -5,11 +5,11 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AccidentIncidentRecord } from '@/lib/types';
+import { AccidentIncidentRecord, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,9 @@ import { EditAccidentIncidentRecordDialog } from '@/components/rsi/edit-accident
 import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { createExportRecord } from '@/lib/actions/verification';
+import QRCode from 'qrcode';
+
 
 const AccidentIncidentForm = dynamic(() => import('@/components/rsi/accident-incident-form').then(mod => mod.AccidentIncidentForm), { 
     ssr: false,
@@ -48,6 +51,7 @@ export default function DataAccidentIncidentPage() {
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
     const [recordToEdit, setRecordToEdit] = React.useState<AccidentIncidentRecord | null>(null);
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
     // Filter states
     const [searchTerm, setSearchTerm] = React.useState('');
@@ -80,6 +84,15 @@ export default function DataAccidentIncidentPage() {
             });
             setIsLoading(false);
         });
+
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => unsubscribe();
     }, [toast]);
@@ -160,93 +173,108 @@ export default function DataAccidentIncidentPage() {
         XLSX.writeFile(workbook, 'accident_incident_records.xlsx');
     };
     
-   const handleExportPdf = () => {
-    if (filteredRecords.length === 0) {
-        toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
-        return;
-    }
-    
-    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.src = logoUrl;
+   const handleExportPdf = async () => {
+        if (filteredRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
 
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+
+        const exportRecord = await createExportRecord({
+            documentType: 'Accident & Serious Incident Records',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, aocFilter, yearFilter, categoryFilter },
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
         
-        generatePdfWithLogo(dataUrl);
-    };
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
 
-    img.onerror = () => {
-        toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
-        generatePdfWithLogo();
-    }
+        const generatePdf = async (logoDataUrl?: string) => {
+            const doc = new jsPDF({ orientation: 'landscape' });
+            
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
 
-    const generatePdfWithLogo = (logoDataUrl?: string) => {
-        const doc = new jsPDF({ orientation: 'landscape' });
-        let pageNumber = 1;
-
-        const addPageContent = (data: any) => {
-            // Header
-            if (data.pageNumber === 1) {
+            const addPageContent = (data: { pageNumber: number }) => {
+                const pageCount = (doc as any).internal.getNumberOfPages();
+                
+                // Header
                 doc.setFontSize(18);
-                doc.text("Accident & Serious Incident Records", 14, 15);
+                doc.text("Accident & Serious Incident Records", 14, 20);
+                
                 if (logoDataUrl) {
                     const aspectRatio = img.width / img.height;
                     const logoWidth = 30;
-                    const logoHeight = logoWidth / aspectRatio;
-                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if(logoHeight > 0) doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
                 }
-            }
-    
-            // Footer
-            doc.setFontSize(8);
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+                
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            };
+
+            const tableColumn = ["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
+            const tableRows = filteredRecords.map(record => [
+                record.tanggal,
+                record.kategori,
+                record.aoc,
+                record.registrasiPesawat,
+                record.tipePesawat,
+                record.lokasi,
+                record.taxonomy
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 25,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                didDrawPage: addPageContent,
+                margin: { top: 30, bottom: 30 },
+            });
             
-            // This will be replaced by the loop below
-            doc.text(`Page ${data.pageNumber}`, 14, doc.internal.pageSize.height - 10);
+            doc.save("accident_incident_records.pdf");
         };
 
-        const tableColumn = ["Tanggal", "Kategori", "AOC", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
-        const tableRows = filteredRecords.map(record => [
-            record.tanggal,
-            record.kategori,
-            record.aoc,
-            record.registrasiPesawat,
-            record.tipePesawat,
-            record.lokasi,
-            record.taxonomy
-        ]);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+                generatePdf(dataUrl);
+            } else {
+                generatePdf(); // Fallback if canvas fails
+            }
+        };
 
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 25,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: addPageContent,
-        });
-        
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            const pageText = `Page ${i} of ${pageCount}`;
-            doc.setFontSize(8);
-            doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-        }
-
-        doc.save("accident_incident_records.pdf");
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+            generatePdf();
+        };
     };
-};
 
 
     const form = useForm<AccidentIncidentFormValues>({
