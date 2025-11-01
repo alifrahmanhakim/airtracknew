@@ -211,7 +211,7 @@ export function PqsRecordsTable({
           </div>
         ) : (
         <>
-          <div className="border rounded-md overflow-auto h-[500px] w-full">
+          <div className="border rounded-md overflow-auto h-auto min-h-[500px] w-full">
             <Table>
               <TableHeader className="sticky top-0 bg-background/95 z-10">
                 <TableRow>
