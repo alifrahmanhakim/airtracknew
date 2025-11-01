@@ -211,17 +211,22 @@ export default function KegiatanPage() {
         const logo1Url = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const logo2Url = 'https://ik.imagekit.io/avmxsiusm/Untitled-4.png';
     
-        const loadImage = (url: string): Promise<HTMLImageElement> => {
-            return new Promise((resolve, reject) => {
+        const loadImage = (url: string): Promise<HTMLImageElement | null> => {
+            return new Promise((resolve) => {
                 const img = new Image();
                 img.crossOrigin = 'Anonymous';
                 img.src = url;
                 img.onload = () => resolve(img);
-                img.onerror = (err) => reject(err);
+                img.onerror = () => {
+                    toast({ variant: "destructive", title: "Logo Error", description: `Could not load logo from ${url}.` });
+                    resolve(null);
+                };
             });
         };
 
-        const generatePdf = async (logo1: HTMLImageElement | null, logo2: HTMLImageElement | null) => {
+        try {
+            const [logo1Img, logo2Img] = await Promise.all([loadImage(logo1Url), loadImage(logo2Url)]);
+            
             const doc = new jsPDF({ orientation: 'portrait' });
     
             const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
@@ -233,23 +238,28 @@ export default function KegiatanPage() {
                 record.lokasi,
                 record.catatan || 'N/A',
             ]);
-    
-             const addPageContent = (data: { pageNumber: number }) => {
+            
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+            
+            const addPageContent = (data: { pageNumber: number }) => {
                 const pageWidth = doc.internal.pageSize.getWidth();
                 doc.setFontSize(18);
                 doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
-    
-                 if (logo1) {
-                    const img1Ratio = logo1.width / logo1.height;
+
+                let currentX = pageWidth - 15;
+                if (logo1Img) {
+                    const img1Ratio = logo1Img.width / logo1Img.height;
                     const logo1Width = 30;
                     const logo1Height = logo1Width / img1Ratio;
-                    doc.addImage(logo1, 'PNG', pageWidth - 15 - logo1Width, 8, logo1Width, logo1Height);
+                    currentX -= logo1Width;
+                    doc.addImage(logo1Img, 'PNG', currentX, 8, logo1Width, logo1Height);
                 }
-                if (logo2) {
-                    const img2Ratio = logo2.width / logo2.height;
+                if (logo2Img) {
+                    const img2Ratio = logo2Img.width / logo2Img.height;
                     const logo2Width = 30;
                     const logo2Height = logo2Width / img2Ratio;
-                    doc.addImage(logo2, 'PNG', pageWidth - 15 - logo2Width - 15 - (logo1 ? 30 : 0), 8, logo2Width, logo2Height);
+                    currentX -= (logo2Width + 5);
+                    doc.addImage(logo2Img, 'PNG', currentX, 8, logo2Width, logo2Height);
                 }
                 
                  let subtitle = '';
@@ -263,27 +273,36 @@ export default function KegiatanPage() {
                     subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
                 }
                 doc.setFontSize(12);
-                doc.text(subtitle, 14, 26);
+                doc.text(subtitle, 14, 28);
             };
 
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
-                startY: 32,
+                startY: 34,
                 theme: 'grid',
                 headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
                 styles: { lineWidth: 0.15 },
-                margin: { top: 32, bottom: 30 }, // Adjust bottom margin for footer
+                margin: { top: 34, bottom: 30 },
                 didDrawPage: addPageContent,
             });
 
-            // --- Add uninvolved personnel table ---
             const allPersonnel = kegiatanSubditUsers.map(u => u.value);
             const involvedPersonnel = new Set(filteredRecords.flatMap(r => r.nama));
             const uninvolvedPersonnel = allPersonnel.filter(p => !involvedPersonnel.has(p));
 
             if (uninvolvedPersonnel.length > 0) {
                 const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
+                const lastTable = (doc as any).lastAutoTable;
+                const startY = lastTable ? lastTable.finalY + 10 : 40;
+
+                // Check if there is enough space, otherwise add a new page
+                const availableSpace = doc.internal.pageSize.getHeight() - doc.internal.getFontSize() - startY - 30; // 30 for footer
+                const requiredSpace = (uninvolvedTableRows.length + 1) * 10; // Approximation
+                if (requiredSpace > availableSpace) {
+                    doc.addPage();
+                }
+
                 autoTable(doc, {
                     head: [['Personel yang Belum Terlibat']],
                     body: uninvolvedTableRows,
@@ -291,14 +310,11 @@ export default function KegiatanPage() {
                     theme: 'grid',
                     headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold' },
                     styles: { lineWidth: 0.15 },
-                    didDrawPage: addPageContent, // Redraw header/footer if this table causes a new page
+                    didDrawPage: addPageContent,
                 });
             }
 
-            // --- Footer ---
             const pageCount = (doc as any).internal.getNumberOfPages();
-            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
-            
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
                 
@@ -315,22 +331,10 @@ export default function KegiatanPage() {
             }
             
             doc.save("jadwal_kegiatan.pdf");
-        };
 
-        try {
-            const [logo1, logo2] = await Promise.all([
-                loadImage(logo1Url).catch(e => {
-                    toast({ variant: "destructive", title: "Logo Error", description: "Could not load AirTrack logo." });
-                    return null;
-                }),
-                loadImage(logo2Url).catch(e => {
-                    toast({ variant: "destructive", title: "Logo Error", description: "Could not load second logo." });
-                    return null;
-                })
-            ]);
-            await generatePdf(logo1, logo2);
         } catch (error) {
             toast({ variant: "destructive", title: "PDF Export Failed", description: "An unexpected error occurred during PDF generation." });
+            console.error("PDF Export Error:", error);
         }
     };
 
