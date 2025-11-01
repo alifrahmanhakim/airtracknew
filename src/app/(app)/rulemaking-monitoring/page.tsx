@@ -4,11 +4,11 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { RulemakingRecord } from '@/lib/types';
+import type { RulemakingRecord, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import {
   AlertDialog,
@@ -38,6 +38,7 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
+import { createExportRecord } from '@/lib/actions/verification';
 
 const RulemakingForm = dynamic(() => import('@/components/rulemaking-monitoring/rulemaking-form').then(mod => mod.RulemakingForm), { 
     ssr: false,
@@ -72,6 +73,7 @@ export default function RulemakingMonitoringPage() {
     const [kategoriFilter, setKategoriFilter] = React.useState('all');
     const [perihalFilter, setPerihalFilter] = React.useState('all');
     const [sort, setSort] = React.useState<SortDescriptor>({ column: 'firstSubmissionDate', direction: 'desc' });
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
     React.useEffect(() => {
         const q = query(collection(db, "rulemakingRecords"), orderBy("createdAt", "desc"));
@@ -96,6 +98,15 @@ export default function RulemakingMonitoringPage() {
             });
             setIsLoading(false);
         });
+
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => unsubscribe();
     }, [toast]);
@@ -213,8 +224,120 @@ export default function RulemakingMonitoringPage() {
         XLSX.writeFile(workbook, "rulemaking_monitoring_export.xlsx");
     };
 
-    const handlePrint = () => {
-        window.print();
+    const handleExportPdf = async () => {
+        if (filteredAndSortedRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There are no records to export." });
+            return;
+        }
+    
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+    
+        const exportRecord = await createExportRecord({
+            documentType: 'Rulemaking Monitoring Records',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, kategoriFilter, perihalFilter },
+        });
+    
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+    
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+        
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
+    
+        const generatePdf = async (logoDataUrl?: string) => {
+            const doc = new jsPDF({ orientation: 'landscape' });
+            
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+            
+            const addPageContent = (data: { pageNumber: number }) => {
+                const pageCount = (doc as any).internal.getNumberOfPages();
+                
+                doc.setFontSize(18);
+                doc.text("Rulemaking Monitoring Records", 14, 20);
+                
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if (logoHeight > 0) {
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                }
+    
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                
+                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            };
+    
+            filteredAndSortedRecords.forEach((record, index) => {
+                if (index > 0) {
+                    doc.addPage();
+                }
+
+                autoTable(doc, {
+                    head: [[`Record ${index + 1}: ${record.perihal} (${record.kategori})`]],
+                    body: [[]], // Empty body for title row
+                    startY: (index === 0) ? 30 : (doc as any).lastAutoTable.finalY + 20,
+                    theme: 'plain',
+                    headStyles: { fontStyle: 'bold', fontSize: 14 }
+                });
+
+                const tableRows = record.stages.map(stage => [
+                    stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
+                    stage.pengajuan.nomor || 'N/A',
+                    stage.pengajuan.keteranganPengajuan || 'N/A',
+                    stage.status.deskripsi,
+                    stage.keterangan?.text || 'N/A',
+                ]);
+
+                autoTable(doc, {
+                    head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
+                    body: tableRows,
+                    startY: (doc as any).lastAutoTable.finalY,
+                    theme: 'grid',
+                    headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                    didDrawPage: addPageContent,
+                    margin: { top: 30, bottom: 30 },
+                });
+            });
+            
+            doc.save("rulemaking_monitoring.pdf");
+        };
+    
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                generatePdf(); 
+                return;
+            }
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdf(dataUrl);
+        };
+    
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF." });
+            generatePdf();
+        };
     };
 
 
@@ -322,9 +445,9 @@ export default function RulemakingMonitoringPage() {
                                                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                                                 Export to Excel
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={handlePrint}>
+                                            <DropdownMenuItem onClick={handleExportPdf}>
                                                 <Printer className="mr-2 h-4 w-4" />
-                                                Print to PDF
+                                                Export to PDF
                                             </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
