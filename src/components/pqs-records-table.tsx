@@ -42,6 +42,7 @@ import { EditPqRecordDialog } from './edit-pq-record-dialog';
 import { PqRecordDetailDialog } from './pq-record-detail-dialog';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './ui/pagination';
 import { Loader2 } from 'lucide-react';
+import { ScrollArea } from './ui/scroll-area';
 
 
 type PqsRecordsTableProps = {
@@ -210,7 +211,7 @@ export function PqsRecordsTable({
           </div>
         ) : (
         <>
-          <div className="border rounded-md w-full overflow-x-auto">
+          <ScrollArea className="border rounded-md h-[500px]">
             <Table>
               <TableHeader className="sticky top-0 bg-background/95 z-10">
                 <TableRow>
@@ -275,7 +276,7 @@ export function PqsRecordsTable({
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </ScrollArea>
           <Pagination>
             <PaginationContent>
               <PaginationItem>
