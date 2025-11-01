@@ -242,19 +242,20 @@ export default function KegiatanPage() {
     
         try {
             const [logo1Img, logo2Img] = await Promise.all([loadImage(logo1Url), loadImage(logo2Url)]);
-            const logo1DataUrl = imageToDataUrl(logo1Img);
-            const logo2DataUrl = imageToDataUrl(logo2Img);
-    
+            
             const generatePdf = async () => {
+                const logo1DataUrl = imageToDataUrl(logo1Img);
+                const logo2DataUrl = imageToDataUrl(logo2Img);
+
                 const doc = new jsPDF({ orientation: 'portrait' });
                 const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
     
-                const addPageContent = (data: { pageNumber: number }) => {
+                const addPageContent = (data: { pageNumber: number }, titleOverride?: string) => {
                     const pageWidth = doc.internal.pageSize.getWidth();
                     doc.setFontSize(18);
-                    doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+                    doc.text(titleOverride || "Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
     
-                    let currentX = pageWidth - 15;
+                    let currentX = pageWidth - 14; 
                     const logoHeight = 10;
     
                     if (logo1DataUrl && logo1Img.naturalWidth > 0 && logo1Img.naturalHeight > 0) {
@@ -266,22 +267,24 @@ export default function KegiatanPage() {
                     if (logo2DataUrl && logo2Img.naturalWidth > 0 && logo2Img.naturalHeight > 0) {
                         const img2Ratio = logo2Img.naturalWidth / logo2Img.naturalHeight;
                         const logo2Width = logoHeight * img2Ratio;
-                        currentX -= (logo2Width + 2); // Reduced gap
+                        currentX -= (logo2Width + 1); // gap
                         doc.addImage(logo2DataUrl, 'PNG', currentX, 10, logo2Width, logoHeight);
                     }
                     
-                    let subtitle = '';
-                    if (filterMode === 'week') {
-                        const weekStart = parseISO(selectedWeek);
-                        const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                        const weekNumber = getISOWeek(weekStart);
-                        subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-                    } else {
-                        const monthStart = parseISO(selectedMonth);
-                        subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                    if (data.pageNumber === 1 && !titleOverride) {
+                        let subtitle = '';
+                        if (filterMode === 'week') {
+                            const weekStart = parseISO(selectedWeek);
+                            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                            const weekNumber = getISOWeek(weekStart);
+                            subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                        } else {
+                            const monthStart = parseISO(selectedMonth);
+                            subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                        }
+                        doc.setFontSize(12);
+                        doc.text(subtitle, 14, 28);
                     }
-                    doc.setFontSize(12);
-                    doc.text(subtitle, 14, 28);
                 };
                 
                 const addFooter = (data: { pageNumber: number, pageCount: number }) => {
@@ -324,59 +327,57 @@ export default function KegiatanPage() {
                 const uninvolvedPersonnel = allPersonnel.filter(p => !involvedPersonnel.has(p));
     
                 if (uninvolvedPersonnel.length > 0) {
-                    const uninvolvedTableRows = uninvolvedPersonnel.map(name => [name]);
-                    let startY = (doc as any).lastAutoTable.finalY + 10;
-                    
+                    const uninvolvedTableRows = uninvolvedPersonnel.map((name, index) => [`${index + 1}.`, name]);
+                    let startY = (doc as any).lastAutoTable.finalY + 5;
                     const requiredSpaceForTitle = 10;
                     const requiredSpaceForTable = (uninvolvedTableRows.length + 2) * 8; // Estimate row height
                     const requiredSpaceForFooter = 30;
                     
                     if (startY + requiredSpaceForTitle + requiredSpaceForTable + requiredSpaceForFooter > doc.internal.pageSize.getHeight()) {
                         doc.addPage();
-                        startY = 34; // Start Y on a new page
+                        addPageContent({ pageNumber: (doc as any).internal.getNumberOfPages() }, 'Personel yang Belum Terlibat');
+                        startY = 34;
                     } else {
-                       startY += 5; // Add some margin
+                       startY += 5;
                     }
                     
-                    doc.setFontSize(12);
-                    doc.text('Personel yang Belum Terlibat', 14, startY);
+                    if (doc.internal.getCurrentPageInfo().pageNumber === 1 || startY === 34) {
+                      doc.setFontSize(12);
+                      doc.text('Personel yang Belum Terlibat', 14, startY - 5);
+                    }
                     
                     autoTable(doc, {
-                        head: [['Nama Personel']],
+                        head: [['No.', 'Nama Personel']],
                         body: uninvolvedTableRows,
-                        startY: startY + 4,
+                        startY: startY,
                         theme: 'grid',
                         headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold', lineWidth: 0.15 },
                         styles: { lineWidth: 0.15, cellPadding: 2, fontSize: 8 },
-                        didDrawPage: (data) => {
-                            // Don't add main header on subsequent pages for this table
-                            if(data.pageNumber > 1) {
-                                // We might need a simpler header logic if this table spans pages
-                            }
-                        },
+                        didDrawPage: (data) => addPageContent(data, 'Personel yang Belum Terlibat'),
                         margin: { top: 34, bottom: 30 },
                     });
                 }
     
                 const pageCount = (doc as any).internal.getNumberOfPages();
+
+                // Add summary text at the very end
+                let lastY = (doc as any).lastAutoTable.finalY;
+                const summaryTextSpace = 20; 
+                if (lastY + summaryTextSpace > doc.internal.pageSize.getHeight() - 30) {
+                  doc.addPage();
+                  lastY = 34; // Start on a new page if not enough space
+                }
+                
+                doc.setFontSize(8);
+                const involvedCountText = `Total Personel Terlibat: ${involvedPersonnel.size}`;
+                const uninvolvedCountText = `Total Personel Belum Terlibat: ${uninvolvedPersonnel.length}`;
+                doc.text(involvedCountText, 14, lastY + 10);
+                doc.text(uninvolvedCountText, 14, lastY + 15);
+
                 for (let i = 1; i <= pageCount; i++) {
                     doc.setPage(i);
                     addFooter({ pageNumber: i, pageCount });
                 }
-
-                doc.setFontSize(8);
-                const involvedCountText = `Total Personel Terlibat: ${involvedPersonnel.size}`;
-                const uninvolvedCountText = `Total Personel Belum Terlibat: ${uninvolvedPersonnel.length}`;
-
-                // Find where the last table ended to draw text below it
-                let lastY = (doc as any).lastAutoTable.finalY;
-                if (lastY + 20 > doc.internal.pageSize.getHeight() - 30) {
-                  doc.addPage();
-                  lastY = 34;
-                }
-                
-                doc.text(involvedCountText, 14, lastY + 10);
-                doc.text(uninvolvedCountText, 14, lastY + 15);
                 
                 doc.save("jadwal_kegiatan.pdf");
             };
@@ -544,5 +545,6 @@ export default function KegiatanPage() {
         </div>
     );
 }
+
 
 
