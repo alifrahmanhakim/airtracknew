@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
 type ExportDocument = {
     documentType: string;
@@ -23,14 +24,9 @@ type ExportDocument = {
     createdAt: Timestamp;
 }
 
-type VerificationPageProps = {
-  params: {
-    id: string;
-  };
-};
-
-export default function VerificationPage({ params }: VerificationPageProps) {
-    const { id } = params;
+export default function VerificationPage() {
+    const params = useParams();
+    const id = params.id as string;
     const [data, setData] = useState<ExportDocument | null | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(true);
 
