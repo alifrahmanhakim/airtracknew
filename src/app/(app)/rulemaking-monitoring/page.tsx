@@ -28,7 +28,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { format, parseISO } from 'date-fns';
-import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -304,7 +303,7 @@ export default function RulemakingMonitoringPage() {
                 autoTable(doc, {
                     head: [[`Kategori: ${kategori}`]],
                     body: [[]],
-                    startY: isFirstPage ? 30 : 30,
+                    startY: (doc as any).lastAutoTable.finalY || 30,
                     theme: 'plain',
                     headStyles: { fontStyle: 'bold', fontSize: 16 }
                 });
@@ -331,34 +330,24 @@ export default function RulemakingMonitoringPage() {
                         ])
                     );
 
-                    // Estimate height to prevent awkward page breaks
-                    const perihalTitleHeight = 10;
-                    const tableHeaderHeight = 10;
-                    const firstRowHeight = 10;
-                    const pageMargin = 30;
-                    const requiredHeight = perihalTitleHeight + tableHeaderHeight + firstRowHeight;
-                    const currentY = (doc as any).lastAutoTable.finalY || 30;
-
-                    if (currentY + requiredHeight > doc.internal.pageSize.getHeight() - pageMargin) {
-                        doc.addPage();
-                    }
-                    
                     autoTable(doc, {
-                        head: [[`Perihal: ${perihal}`]],
-                        body: [[]],
-                        startY: (doc as any).lastAutoTable.finalY + 2,
-                        theme: 'plain',
-                        headStyles: { fontStyle: 'bold', fontSize: 14 },
-                        pageBreak: 'avoid',
-                    });
-
-
-                    autoTable(doc, {
-                        head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
+                        head: [
+                            [`Perihal: ${perihal}`],
+                            ['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']
+                        ],
                         body: tableRows,
                         startY: (doc as any).lastAutoTable.finalY,
                         theme: 'grid',
-                        headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                        headStyles: {
+                            0: { fontStyle: 'bold', fontSize: 14, fillColor: [255, 255, 255], textColor: 0, halign: 'left' }, // Perihal header
+                            1: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' } // Column headers
+                        },
+                        willDrawCell: (data) => {
+                            if (data.section === 'head' && data.row.index === 0) {
+                                (doc as any).setFont(undefined, 'bold');
+                                (doc as any).setFontSize(14);
+                            }
+                        },
                         didDrawPage: addPageContent,
                         margin: { top: 30, bottom: 30 },
                     });
@@ -409,12 +398,10 @@ export default function RulemakingMonitoringPage() {
                                 </div>
                             </div>
                             <div className="relative w-full md:w-1/3 min-h-[150px] md:min-h-0">
-                                <Image
+                                <img
                                     src="https://ik.imagekit.io/avmxsiusm/cloud_storage_10.webp"
                                     alt="Monitoring Illustration"
-                                    fill
-                                    className="object-cover"
-                                    sizes="(max-width: 768px) 100vw, 33vw"
+                                    className="absolute inset-0 w-full h-full object-cover"
                                 />
                             </div>
                         </div>
