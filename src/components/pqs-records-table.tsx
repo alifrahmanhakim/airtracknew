@@ -211,7 +211,7 @@ export function PqsRecordsTable({
           </div>
         ) : (
         <>
-          <ScrollArea className="border rounded-md h-[500px]">
+          <ScrollArea className="border rounded-md h-[500px] w-full">
             <Table>
               <TableHeader className="sticky top-0 bg-background/95 z-10">
                 <TableRow>
