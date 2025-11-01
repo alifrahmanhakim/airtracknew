@@ -286,14 +286,21 @@ export default function RulemakingMonitoringPage() {
             };
     
             filteredAndSortedRecords.forEach((record, index) => {
-                if (index > 0) {
-                    doc.addPage();
+                const startNewPage = index > 0;
+                let startY = 30;
+                if (startNewPage) {
+                    const requiredSpace = (record.stages.length * 10) + 40; // rough estimate
+                    if ((doc as any).lastAutoTable.finalY + requiredSpace > doc.internal.pageSize.getHeight() - 30) {
+                        doc.addPage();
+                    } else {
+                       startY = (doc as any).lastAutoTable.finalY + 10;
+                    }
                 }
 
                 autoTable(doc, {
-                    head: [[`Record ${index + 1}: ${record.perihal} (${record.kategori})`]],
-                    body: [[]], // Empty body for title row
-                    startY: (index === 0) ? 30 : (doc as any).lastAutoTable.finalY + 20,
+                    head: [[`${record.perihal} (${record.kategori})`]],
+                    body: [[]],
+                    startY: startY,
                     theme: 'plain',
                     headStyles: { fontStyle: 'bold', fontSize: 14 }
                 });
@@ -302,7 +309,7 @@ export default function RulemakingMonitoringPage() {
                     stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
                     stage.pengajuan.nomor || 'N/A',
                     stage.pengajuan.keteranganPengajuan || 'N/A',
-                    stage.status.deskripsi,
+                    stage.status.deskripsi.trim(),
                     stage.keterangan?.text || 'N/A',
                 ]);
 
