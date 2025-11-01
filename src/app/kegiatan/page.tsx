@@ -206,13 +206,13 @@ export default function KegiatanPage() {
         }
     
         const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
-        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+        
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
     
-        const generatePdfWithLogo = (logoDataUrl?: string) => {
+        const generatePdfWithLogo = async (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
     
             const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
@@ -231,13 +231,13 @@ export default function KegiatanPage() {
                 startY: 32,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                margin: { bottom: 30 },
             });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-
-                // Header
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+            
+            const addPageHeader = (pageNumber: number) => {
                 if (logoDataUrl) {
                     const aspectRatio = img.width / img.height;
                     const logoWidth = 30;
@@ -261,8 +261,12 @@ export default function KegiatanPage() {
                 }
                 doc.setFontSize(12);
                 doc.text(subtitle, 14, 26);
+            }
+
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                addPageHeader(i);
                 
-                // Footer
                 const footerY = doc.internal.pageSize.height - 20;
                 doc.setFontSize(8);
                 doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
