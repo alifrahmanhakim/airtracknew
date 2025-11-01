@@ -169,84 +169,104 @@ export default function KegiatanPage() {
         }
     }, [kegiatanRecords, selectedWeek, selectedMonth, filterMode]);
     
-   const handleExportPdf = () => {
-    if (filteredRecords.length === 0) {
-        toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
-        return;
-    }
-
-    const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.src = logoUrl;
-
-    const generatePdfWithLogo = (logoDataUrl?: string) => {
-        const doc = new jsPDF({ orientation: 'landscape' });
-
-        const addPageContent = (data: { pageNumber: number }) => {
-            if (logoDataUrl) {
-                const aspectRatio = img.width / img.height;
-                const logoWidth = 30;
-                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                if (logoHeight > 0) {
-                  doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                }
-            }
-            
-            doc.setFontSize(18);
-            doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
-
-            let subtitle = '';
-            if (filterMode === 'week') {
-                const weekStart = parseISO(selectedWeek);
-                const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-                const weekNumber = getISOWeek(weekStart);
-                subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
-            } else {
-                const monthStart = parseISO(selectedMonth);
-                subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
-            }
-            doc.setFontSize(12);
-            doc.text(subtitle, 14, 26);
+    const handleExportPdf = () => {
+        if (filteredRecords.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
+            return;
+        }
     
-            doc.setFontSize(8);
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-            const textX = (doc.internal.pageSize.width - textWidth) / 2;
-            doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
+    
+        const generatePdfWithLogo = (logoDataUrl?: string) => {
+            const doc = new jsPDF({ orientation: 'landscape' });
+    
+            const addPageHeader = () => {
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if (logoHeight > 0) {
+                      doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
+                }
+                
+                doc.setFontSize(18);
+                doc.text("Jadwal Kegiatan Subdirektorat Standardisasi", 14, 20);
+    
+                let subtitle = '';
+                if (filterMode === 'week') {
+                    const weekStart = parseISO(selectedWeek);
+                    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+                    const weekNumber = getISOWeek(weekStart);
+                    subtitle = `Data for Week ${weekNumber}: ${format(weekStart, 'dd MMM yyyy')} - ${format(weekEnd, 'dd MMM yyyy')}`;
+                } else {
+                    const monthStart = parseISO(selectedMonth);
+                    subtitle = `Data for ${format(monthStart, 'MMMM yyyy')}`;
+                }
+                doc.setFontSize(12);
+                doc.text(subtitle, 14, 26);
+            };
+    
+            const addPageFooter = (pageNumber: number, totalPages: number) => {
+                 doc.setFontSize(8);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
+                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+                
+                const pageText = `Page ${pageNumber} of ${totalPages}`;
+                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
+            };
+            
+            const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
+            const tableRows = filteredRecords.map(record => [
+                record.subjek,
+                format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
+                format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
+                record.nama.join(', '),
+                record.lokasi,
+                record.catatan || 'N/A',
+            ]);
+    
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 32,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            });
             
             const pageCount = (doc as any).internal.getNumberOfPages();
-            doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                addPageHeader(); // Add header to each page
+                addPageFooter(i, pageCount); // Add footer to each page
+            }
+            
+            doc.save("jadwal_kegiatan.pdf");
         };
-        
-        const tableColumn = ["Subjek", "Tanggal Mulai", "Tanggal Selesai", "Nama", "Lokasi", "Catatan"];
-        const tableRows = filteredRecords.map(record => [
-            record.subjek,
-            format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
-            format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-            record.nama.join(', '),
-            record.lokasi,
-            record.catatan || 'N/A',
-        ]);
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 32,
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-            didDrawPage: addPageContent,
-        });
-        
-        doc.save("jadwal_kegiatan.pdf");
+    
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+                generatePdfWithLogo(dataUrl);
+            } else {
+                generatePdfWithLogo();
+            }
+        };
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
+            generatePdfWithLogo();
+        }
     };
-
-    img.onload = () => generatePdfWithLogo(img.src);
-    img.onerror = () => {
-        toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo. Exporting without it." });
-        generatePdfWithLogo();
-    }
-};
 
 
     return (
