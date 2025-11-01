@@ -484,37 +484,28 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
             ]);
     
             const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
-
-            const addPageContent = (data: { pageNumber: number }) => {
-                 const pageCount = (doc as any).internal.getNumberOfPages();
-                // Header
-                if (data.pageNumber === 1) {
-                    doc.setFontSize(16);
-                    doc.text(`Task List for Project: ${projectName}`, 14, 15);
-                
-                    if (logoDataUrl) {
-                        const aspectRatio = img.width / img.height;
-                        const logoWidth = 30;
-                        const logoHeight = logoWidth / aspectRatio;
-                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                    }
+            
+            const addPageContent = (data: any) => {
+                const pageCount = doc.internal.pages.length - 1;
+                doc.setFontSize(16);
+                doc.text(`Task List for Project: ${projectName}`, 14, 15);
+            
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = logoWidth / aspectRatio;
+                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
                 }
                 
-                // Footer
                 const footerY = doc.internal.pageSize.height - 20;
                 doc.setFontSize(8);
                 doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
                 doc.text('Genuine Document by AirTrack', 14, footerY + 12);
                 
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(copyrightText, textX, footerY + 12);
-
-                const pageNumText = `Page ${data.pageNumber} of ${pageCount}`;
-                doc.text(pageNumText, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
             };
-
+    
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
@@ -533,15 +524,14 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                         }
                     }
                 },
-                didDrawPage: addPageContent,
+                didDrawPage: (data) => {
+                  addPageContent(data);
+                  const pageCount = (doc as any).internal.getNumberOfPages();
+                  doc.setFontSize(8);
+                  doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 10, { align: 'right' });
+                },
                 margin: { bottom: 30 }
             });
-            
-             const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                addPageContent({ pageNumber: i });
-            }
             
             doc.save(`${projectName}_tasks.pdf`);
              toast({
