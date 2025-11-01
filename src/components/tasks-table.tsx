@@ -437,34 +437,29 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-
+        const generatePdf = (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
 
-            const addPageContent = (data: { pageNumber: number }) => {
-                doc.setFontSize(16);
-                doc.text(`Task List for Project: ${projectName}`, 14, 15);
-                
+            const addPageContent = (data: { pageNumber: number, pageCount: number }) => {
                 if (data.pageNumber === 1) {
-                     const aspectRatio = img.width / img.height;
-                     const logoWidth = 30;
-                     const logoHeight = logoWidth / aspectRatio;
-                     doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    doc.setFontSize(16);
+                    doc.text(`Task List for Project: ${projectName}`, 14, 15);
+                
+                    if (logoDataUrl) {
+                        const aspectRatio = img.width / img.height;
+                        const logoWidth = 30;
+                        const logoHeight = logoWidth / aspectRatio;
+                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                    }
                 }
 
                 doc.setFontSize(8);
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
                 const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
+                const textX = (doc.internal.pageSize.width - textWidth) / 2;
                 doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
 
-                const pageText = `Page ${data.pageNumber} of ${(doc as any).internal.getNumberOfPages()}`;
+                const pageText = `Page ${data.pageNumber} of ${data.pageCount}`;
                 doc.text(pageText, 14, doc.internal.pageSize.height - 10);
             };
 
@@ -497,22 +492,12 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                         }
                     }
                 },
-                didDrawPage: addPageContent,
+                didDrawPage: (data) => {
+                    const pageCount = (doc as any).internal.getNumberOfPages();
+                    addPageContent({ pageNumber: data.pageNumber, pageCount });
+                },
             });
             
-            // Finalize page numbering
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            for (let i = 2; i <= pageCount; i++) {
-                doc.setPage(i);
-                const pageText = `Page ${i} of ${pageCount}`;
-                doc.setFontSize(8);
-                doc.text(pageText, 14, doc.internal.pageSize.height - 10);
-                const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(text, textX, doc.internal.pageSize.height - 10);
-            }
-
             doc.save(`${projectName}_tasks.pdf`);
              toast({
                 title: 'Export Successful',
@@ -520,9 +505,10 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
             });
         };
 
+        img.onload = () => generatePdf(img.src);
         img.onerror = () => {
              toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF. Exporting without it." });
-             handleExportPdf(); // Proceed without the logo
+             generatePdf(); // Proceed without the logo
         };
     };
 
