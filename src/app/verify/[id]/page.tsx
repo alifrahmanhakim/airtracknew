@@ -127,13 +127,15 @@ export default function VerificationPage() {
                             </AlertDescription>
                         </Alert>
                          <div className="flex justify-center pt-4">
-                            <Image
-                                src="https://ik.imagekit.io/avmxsiusm/Untitled-2%20(1).webp"
-                                alt="Genuine Document Stamp"
-                                width={150}
-                                height={150}
-                                className="opacity-80"
-                            />
+                            <div className="relative w-[200px] h-[200px]">
+                                <Image
+                                    src="https://ik.imagekit.io/avmxsiusm/Untitled-2%20(1).webp"
+                                    alt="Genuine Document Stamp"
+                                    fill
+                                    sizes="200px"
+                                    className="opacity-80 object-contain"
+                                />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
