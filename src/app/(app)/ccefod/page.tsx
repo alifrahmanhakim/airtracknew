@@ -42,6 +42,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import QRCode from 'qrcode';
+import { createExportRecord } from '@/lib/actions/verification';
 
 
 // Dynamically import heavy components
@@ -126,7 +127,7 @@ export default function CcefodPage() {
     }
 
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
 
   const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'Sub-Directorate Head';
 
@@ -336,6 +337,25 @@ export default function CcefodPage() {
       toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
       return;
     }
+
+     if (!currentUser) {
+      toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+      return;
+    }
+  
+    const exportRecord = await createExportRecord({
+      documentType: 'CC/EFOD Records',
+      exportedAt: new Date(),
+      exportedBy: { id: currentUser.id, name: currentUser.name },
+      filters: { annexFilter, implementationLevelFilter, adaPerubahanFilter },
+    });
+  
+    if (!exportRecord.success || !exportRecord.id) {
+      toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+      return;
+    }
+  
+    const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
   
     const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
     const img = new Image();
@@ -362,7 +382,33 @@ export default function CcefodPage() {
         });
 
         const tableColumn = ["Annex Ref", "Standard/Practice", "Legislation Ref", "Implementation Level", "Status"];
-        
+        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+
+        const addHeaderAndFooter = (data: any) => {
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            
+            // Header
+            doc.setFontSize(18);
+            doc.text("CC/EFOD Records", 14, 20);
+            
+            if (logoDataUrl) {
+                const aspectRatio = img.width / img.height;
+                const logoWidth = 30;
+                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                if(logoHeight > 0) doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+            }
+            
+            // Footer
+            const footerY = doc.internal.pageSize.height - 20;
+            doc.setFontSize(8);
+            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+        }
+
+
         sortedAnnexKeys.forEach((annex, groupIndex) => {
             const recordsInGroup = groupedByAnnex[annex];
             const tableRows = recordsInGroup.map(record => [
@@ -373,61 +419,32 @@ export default function CcefodPage() {
                 record.status,
             ]);
             
-            const isFirstGroup = groupIndex === 0;
-            if (!isFirstGroup) {
+            if (groupIndex > 0) {
                 doc.addPage();
             }
 
-            // Header for the group
-            doc.setFontSize(18);
-            doc.text("CC/EFOD Records", 14, 20);
-            
-            if (logoDataUrl) {
-                const aspectRatio = img.width / img.height;
-                const logoWidth = 30;
-                const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
-                doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-            }
-
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text(`Annex: ${annex}`, 14, 30);
+            autoTable(doc, {
+                head: [[`Annex: ${annex}`]],
+                body: [[]],
+                startY: 30,
+                theme: 'plain',
+                headStyles: { fontStyle: 'bold', fontSize: 14 }
+            });
 
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
-                startY: 35,
+                startY: (doc as any).lastAutoTable.finalY + 2,
                 theme: 'grid',
                 headStyles: {
                     fillColor: [22, 160, 133],
                     textColor: 255,
                     fontStyle: 'bold',
                 },
+                didDrawPage: addHeaderAndFooter,
                 margin: { top: 30, bottom: 30 },
             });
         });
-        
-        const pageCountFinal = (doc as any).internal.getNumberOfPages();
-        const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
-        const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
-
-        for (let i = 1; i <= pageCountFinal; i++) {
-            doc.setPage(i);
-            const footerY = doc.internal.pageSize.height - 20;
-            doc.setFontSize(8);
-
-            // QR Code
-            doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
-            doc.text('Genuine Document by AirTrack', 14, footerY + 12);
-            
-            // Copyright
-            const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-            doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-
-            // Page number
-            doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-        }
-
 
         doc.save("ccefod_records.pdf");
     };
@@ -729,3 +746,5 @@ export default function CcefodPage() {
     </AppLayout>
   );
 }
+
+    
