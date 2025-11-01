@@ -2,8 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Task, User, Project, Attachment } from '@/lib/types';
-import { findUserById } from '@/lib/data-utils';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -12,6 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import type { Project, User, Task, Attachment } from '@/lib/types';
+import { findUserById } from '@/lib/data-utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -484,32 +485,6 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
     
             const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
             
-            const addPageContent = (data: any) => {
-                const pageCount = (doc as any).internal.getNumberOfPages();
-                doc.setFontSize(16);
-                doc.text(`Task List for Project: ${projectName}`, 14, 20);
-            
-                if (logoDataUrl) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = logoWidth / aspectRatio;
-                    if(logoHeight > 0) {
-                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
-                    }
-                }
-                
-                const footerY = doc.internal.pageSize.height - 20;
-                doc.setFontSize(8);
-                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
-                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
-                
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-                
-                doc.setFontSize(8);
-                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
-            };
-    
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
@@ -528,8 +503,36 @@ export function TasksTable({ projectId, projectName, projectType, tasks, teamMem
                         }
                     }
                 },
-                didDrawPage: addPageContent,
+                didDrawPage: (data) => {
+                    doc.setFontSize(16);
+                    doc.text(`Task List for Project: ${projectName}`, 14, 20);
+                
+                    if (logoDataUrl) {
+                        const aspectRatio = img.width / img.height;
+                        const logoWidth = 30;
+                        const logoHeight = logoWidth / aspectRatio;
+                        if(logoHeight > 0) {
+                            doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                        }
+                    }
+                },
             });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                
+                doc.setFontSize(8);
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            }
             
             doc.save(`${projectName}_tasks.pdf`);
              toast({
