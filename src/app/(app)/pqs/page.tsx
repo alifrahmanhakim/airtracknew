@@ -482,7 +482,7 @@ export default function PqsPage() {
 
   return (
     <AppLayout>
-        <div id="pqs-page">
+        <div id="pqs-page" className="max-w-7xl mx-auto">
         {renderContent()}
 
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
