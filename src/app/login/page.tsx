@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail, Sparkles, User as UserIcon } from "lucide-react";
+import { Plane, Loader2, CheckCircle, Eye, EyeOff, AlertTriangle, Mail, Sparkles, User as UserIcon, ChevronDown } from "lucide-react";
 import { useState, useEffect } from 'react';
 import type { User } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -80,7 +80,7 @@ export default function LoginPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [progress, setProgress] = useState(0);
   const [currentCardImageIndex, setCurrentCardImageIndex] = useState(0);
-  const [lastLoggedInUser, setLastLoggedInUser] = useState<{ name: string; avatarUrl: string } | null>(null);
+  const [lastLoggedInUser, setLastLoggedInUser] = useState<{ name: string; avatarUrl: string; email: string; } | null>(null);
   
     const getCookie = (name: string) => {
         if (typeof document === 'undefined') return null;
@@ -115,8 +115,9 @@ export default function LoginPage() {
     } else {
         const name = getCookie('lastUserName');
         const avatarUrl = getCookie('lastUserAvatarUrl');
-        if (name && avatarUrl) {
-            setLastLoggedInUser({ name, avatarUrl });
+        const email = getCookie('lastUserEmail');
+        if (name && avatarUrl && email) {
+            setLastLoggedInUser({ name, avatarUrl, email });
         }
         
         setIsCheckingAuth(true);
@@ -149,6 +150,7 @@ export default function LoginPage() {
     localStorage.setItem('loggedInUserId', user.id);
     if(user.name) setCookie('lastUserName', user.name, 30);
     if(user.avatarUrl) setCookie('lastUserAvatarUrl', user.avatarUrl, 30);
+    if(user.email) setCookie('lastUserEmail', user.email, 30);
     router.push('/my-dashboard');
   };
   
@@ -469,19 +471,23 @@ export default function LoginPage() {
                             <div className="my-6">
                                 <div className="space-y-2">
                                     {lastLoggedInUser ? (
-                                        <Button variant="outline" className="w-full h-12" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
-                                            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
-                                                <Avatar className="mr-3 h-6 w-6">
-                                                    <AvatarImage src={lastLoggedInUser.avatarUrl} />
-                                                    <AvatarFallback><UserIcon /></AvatarFallback>
+                                        <Button variant="outline" className="w-full h-auto py-2 px-3 justify-start" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
+                                            <div className="flex items-center gap-4 w-full">
+                                                 <Avatar className="h-10 w-10">
+                                                    <AvatarImage src={lastLoggedInUser.avatarUrl} alt={lastLoggedInUser.name}/>
+                                                    <AvatarFallback>{lastLoggedInUser.name?.[0]}</AvatarFallback>
                                                 </Avatar>
-                                            }
-                                            Continue as {lastLoggedInUser.name}
+                                                <div className="flex-1 text-left">
+                                                    <p className="font-semibold text-sm">Sign in as {lastLoggedInUser.name}</p>
+                                                    <p className="text-xs text-muted-foreground flex items-center">{lastLoggedInUser.email} <ChevronDown className="h-3 w-3 ml-1" /></p>
+                                                </div>
+                                                {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <GoogleIcon />}
+                                            </div>
                                         </Button>
                                     ) : (
                                         <Button variant="outline" className="w-full" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading || isCheckingAuth}>
                                             {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                            Google
+                                            Sign in with Google
                                         </Button>
                                     )}
                                     {lastLoggedInUser && (
@@ -551,7 +557,26 @@ export default function LoginPage() {
                                 </button>
                             </p>
                             {error && <Alert variant="destructive" className="mt-6"><AlertTitle>Signup Failed</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
-                            <form onSubmit={handleSignup} className="space-y-4 mt-6">
+                            
+                            <div className="my-6">
+                                <div className="space-y-2">
+                                     <Button variant="outline" className="w-full" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading}>
+                                      {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                      Sign up with Google
+                                  </Button>
+                                </div>
+                            </div>
+
+                             <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-border" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-card/60 px-2 text-muted-foreground">Or with email</span>
+                                </div>
+                            </div>
+                            
+                            <form onSubmit={handleSignup} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="signup-fullname">Full Name</Label>
                                     <Input id="signup-fullname" type="text" placeholder="Fletcher Donohue" value={fullName} onChange={(e) => setFullName(e.target.value)} required disabled={isSubmitting} />
@@ -578,24 +603,8 @@ export default function LoginPage() {
                                 </Button>
                             </form>
                         </div>
-                          <div className="mt-auto pt-6">
-                              <div className="relative my-6">
-                                  <div className="absolute inset-0 flex items-center">
-                                      <span className="w-full border-t border-border" />
-                                  </div>
-                                  <div className="relative flex justify-center text-xs uppercase">
-                                      <span className="bg-card/60 px-2 text-muted-foreground">Or register with</span>
-                                  </div>
-                              </div>
-                              <div className="grid grid-cols-1 gap-4">
-                                  <Button variant="outline" className="w-full" onClick={() => handleGoogleSignIn()} disabled={isGoogleLoading}>
-                                      {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                      Google
-                                  </Button>
-                              </div>
-                               <div className="mt-6 flex justify-center">
-                                <StatusIndicator variant="icon" />
-                              </div>
+                          <div className="mt-auto pt-6 flex justify-center">
+                            <StatusIndicator variant="icon" />
                           </div>
                     </div>
                 )}
