@@ -325,7 +325,8 @@ export default function RulemakingMonitoringPage() {
                         body: [[]],
                         startY: (doc as any).lastAutoTable.finalY + 2,
                         theme: 'plain',
-                        headStyles: { fontStyle: 'bold', fontSize: 14 }
+                        headStyles: { fontStyle: 'bold', fontSize: 14 },
+                        pageBreak: 'avoid',
                     });
 
                     const recordsInPerihal = groupedByPerihal[perihal];
