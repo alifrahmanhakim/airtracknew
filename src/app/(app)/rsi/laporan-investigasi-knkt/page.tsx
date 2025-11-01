@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -15,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RotateCcw, Search, ArrowLeft, Loader2, AlertTriangle, Trash2, FileSpreadsheet, Printer, ChevronDown } from 'lucide-react';
-import { getYear, parseISO } from 'date-fns';
+import { getYear, parseISO, format } from 'date-fns';
 import { aocOptions, taxonomyOptions as staticTaxonomyOptions } from '@/lib/data';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -29,6 +28,7 @@ import { AppLayout } from '@/components/app-layout-component';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
 
 
 const KnktReportsTable = dynamic(() => import('@/components/rsi/knkt-reports-table').then(mod => mod.KnktReportsTable), { 
@@ -223,10 +223,12 @@ export default function LaporanInvestigasiKnktPage() {
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
-            if (!ctx) return;
+            if (!ctx) {
+                generatePdfWithLogo();
+                return;
+            }
             ctx.drawImage(img, 0, 0);
             const dataUrl = canvas.toDataURL('image/png');
-
             generatePdfWithLogo(dataUrl);
         };
         
@@ -235,26 +237,35 @@ export default function LaporanInvestigasiKnktPage() {
             generatePdfWithLogo();
         };
 
-        const generatePdfWithLogo = (logoDataUrl?: string) => {
+        const generatePdfWithLogo = async (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
+            
+            const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
+            const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
 
             const addPageContent = (data: { pageNumber: number }) => {
-                if (data.pageNumber === 1) {
+                const pageCount = (doc as any).internal.getNumberOfPages();
+                // Header
+                doc.setFontSize(18);
+                doc.text("KNKT Investigation Reports", 14, 20);
+                if (logoDataUrl) {
                     const aspectRatio = img.width / img.height;
                     const logoWidth = 30;
                     const logoHeight = logoWidth / aspectRatio;
-                    if (logoDataUrl) {
-                        doc.addImage(dataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
-                    }
-                    doc.setFontSize(18);
-                    doc.text("KNKT Investigation Reports", 14, 20);
+                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
                 }
                 
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
                 doc.setFontSize(8);
+
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                
                 const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                
+                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
             };
 
             const tableColumn = ["Tanggal Terbit", "No. Laporan", "Status", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Taxonomy"];
@@ -275,12 +286,16 @@ export default function LaporanInvestigasiKnktPage() {
                 startY: 30,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: (data) => {
-                    addPageContent({ pageNumber: data.pageNumber });
-                    const pageCount = (doc as any).internal.getNumberOfPages();
-                    doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
-                },
+                didDrawPage: addPageContent,
+                margin: { top: 30, bottom: 30 },
             });
+            
+            const pageCountFinal = (doc as any).internal.getNumberOfPages();
+            for (let i = 1; i <= pageCountFinal; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 8, { align: 'right' });
+            }
 
             doc.save("knkt_reports.pdf");
         }

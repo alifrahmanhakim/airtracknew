@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
 
 const RulemakingForm = dynamic(() => import('@/components/rulemaking-monitoring/rulemaking-form').then(mod => mod.RulemakingForm), { 
     ssr: false,
@@ -213,96 +214,7 @@ export default function RulemakingMonitoringPage() {
     };
 
     const handlePrint = () => {
-        if (filteredAndSortedRecords.length === 0) {
-            toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
-            return;
-        }
-        
-        const doc = new jsPDF({ orientation: 'landscape' });
-        let finalY = 20;
-
-        const groupedByPerihal = filteredAndSortedRecords.reduce<Record<string, RulemakingRecord[]>>((acc, record) => {
-            const key = record.perihal;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(record);
-            return acc;
-        }, {});
-
-        const tableColumn = ["Tanggal", "No. Surat", "Keterangan Pengajuan", "Status", "Keterangan", "Attachment"];
-        
-        doc.setFontSize(18);
-        doc.text("Rulemaking Monitoring Records", 14, finalY);
-        finalY += 10;
-
-        Object.entries(groupedByPerihal).forEach(([perihal, recordsInGroup], groupIndex) => {
-            
-            const flattenedDataForPdf = recordsInGroup.flatMap(r => r.stages.map(stage => ({
-                'Tanggal': stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
-                'No. Surat': stage.pengajuan.nomor || 'N/A',
-                'Keterangan Pengajuan': stage.pengajuan.keteranganPengajuan || 'N/A',
-                'Status': stage.status.deskripsi.trim(),
-                'Keterangan': stage.keterangan?.text || 'N/A',
-                'Attachment Link': stage.pengajuan.fileUrl || 'N/A',
-            })));
-
-            const tableRows = flattenedDataForPdf.map(d => Object.values(d).map(val => val === d['Attachment Link'] && val !== 'N/A' ? 'Link' : val));
-
-            if (finalY > 20 || groupIndex > 0) {
-                finalY += 10;
-            }
-
-            if (finalY > doc.internal.pageSize.height - 40) {
-                doc.addPage();
-                finalY = 20;
-            }
-    
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text(`Perihal: ${perihal}`, 14, finalY);
-            finalY += 6;
-            
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'normal');
-            doc.text(`Kategori: ${recordsInGroup[0].kategori}`, 14, finalY);
-            finalY += 8;
-
-            autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                startY: finalY,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [22, 160, 133],
-                    textColor: 255,
-                    fontStyle: 'bold',
-                },
-                columnStyles: {
-                  5: { textColor: [0, 0, 255] }
-                },
-                didDrawCell: (data) => {
-                    if (data.section === 'body' && data.column.index === 5 && data.cell.text[0] === 'Link') {
-                        const record = flattenedDataForPdf[data.row.index];
-                        if (record && record['Attachment Link'] && record['Attachment Link'] !== 'N/A') {
-                            doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: record['Attachment Link'] });
-                        }
-                    }
-                },
-                didDrawPage: (data) => {
-                    const pageCount = doc.internal.pages.length;
-                    doc.setFontSize(8);
-                    const text = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                    const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize() / doc.internal.scaleFactor;
-                    const textX = (doc.internal.pageSize.width - textWidth) / 2;
-                    doc.text(text, textX, doc.internal.pageSize.height - 10);
-                }
-            });
-            
-            finalY = (doc as any).lastAutoTable.finalY;
-        });
-
-        doc.save("rulemaking_monitoring.pdf");
+        window.print();
     };
 
 
