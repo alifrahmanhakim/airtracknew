@@ -308,6 +308,15 @@ export default function CcefodPage() {
         XLSX.writeFile(workbook, 'ccefod_records_export.xlsx');
     }, 500);
   };
+
+  const htmlToPlainText = (html: string) => {
+    if (typeof document === 'undefined') {
+      return html.replace(/<[^>]*>?/gm, '');
+    }
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+  };
   
   const handleExportPdf = () => {
     if (allRecords.length === 0) {
@@ -375,7 +384,7 @@ export default function CcefodPage() {
         Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
             const tableRows = recordsInGroup.map(record => [
                 record.annexReference,
-                (record.standardPractice || '').replace(/<[^>]+>/g, ''), // Strip HTML
+                htmlToPlainText(record.standardPractice || ''),
                 record.legislationReference,
                 record.implementationLevel,
                 record.status,
