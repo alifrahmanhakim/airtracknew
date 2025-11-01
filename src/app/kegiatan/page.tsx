@@ -220,7 +220,7 @@ export default function KegiatanPage() {
                 record.subjek,
                 format(parseISO(record.tanggalMulai), 'dd MMM yyyy'),
                 format(parseISO(record.tanggalSelesai), 'dd MMM yyyy'),
-                record.nama.join('\n'), // Use newline character for vertical list
+                record.nama.map((name, index) => `${index + 1}. ${name}`).join('\n'), // Add numbering
                 record.lokasi,
                 record.catatan || 'N/A',
             ]);
