@@ -250,7 +250,7 @@ export default function RulemakingMonitoringPage() {
         const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
         
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
-        const img = new Image();
+        const img = new window.Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
     
