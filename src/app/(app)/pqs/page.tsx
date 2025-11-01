@@ -391,7 +391,7 @@ export default function PqsPage() {
                 </div>
             </div>
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
-                 <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
+                 <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg max-w-4xl mx-auto">
                     <CardHeader>
                     <CardTitle>Protocol Question (PQ) Form</CardTitle>
                     <CardDescription>
@@ -451,7 +451,7 @@ export default function PqsPage() {
                           handlePageChange={handlePageChange}
                           sort={sort}
                           setSort={setSort}
-                          filters={{ searchTerm, criticalElementFilter: tableCriticalElementFilter, icaoStatusFilter: tableIcaoStatusFilter }}
+                          filters={{ searchTerm, criticalElementFilter: tableIcaoStatusFilter, icaoStatusFilter: tableIcaoStatusFilter }}
                           setFilters={{ setSearchTerm, setCriticalElementFilter: setTableCriticalElementFilter, setIcaoStatusFilter: setTableIcaoStatusFilter }}
                           searchInputRef={searchInputRef}
                         />
@@ -482,7 +482,7 @@ export default function PqsPage() {
 
   return (
     <AppLayout>
-        <div id="pqs-page" className="max-w-7xl mx-auto">
+        <div id="pqs-page" className="max-w-5xl mx-auto">
         {renderContent()}
 
         <AlertDialog open={!!recordToDelete} onOpenChange={(open) => !open && setRecordToDelete(null)}>
