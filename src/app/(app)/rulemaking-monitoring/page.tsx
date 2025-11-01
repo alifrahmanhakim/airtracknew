@@ -296,7 +296,7 @@ export default function RulemakingMonitoringPage() {
             
             let isFirstPage = true;
     
-            for (const kategori of Object.keys(groupedByCategory)) {
+            for (const kategori of Object.keys(groupedByCategory).sort()) {
                 if (!isFirstPage) {
                     doc.addPage();
                 }
@@ -319,17 +319,8 @@ export default function RulemakingMonitoringPage() {
                     return acc;
                 }, {} as Record<string, RulemakingRecord[]>);
                 
-                for (const perihal of Object.keys(groupedByPerihal)) {
-                     autoTable(doc, {
-                        head: [[`Perihal: ${perihal}`]],
-                        body: [[]],
-                        startY: (doc as any).lastAutoTable.finalY + 2,
-                        theme: 'plain',
-                        headStyles: { fontStyle: 'bold', fontSize: 14 },
-                        pageBreak: 'avoid',
-                    });
-
-                    const recordsInPerihal = groupedByPerihal[perihal];
+                for (const perihal of Object.keys(groupedByPerihal).sort()) {
+                     const recordsInPerihal = groupedByPerihal[perihal];
                     const tableRows = recordsInPerihal.flatMap(record => 
                         record.stages.map(stage => [
                             stage.pengajuan.tanggal ? format(parseISO(stage.pengajuan.tanggal), 'dd-MM-yyyy') : 'N/A',
@@ -339,6 +330,28 @@ export default function RulemakingMonitoringPage() {
                             stage.keterangan?.text || 'N/A',
                         ])
                     );
+
+                    // Estimate height to prevent awkward page breaks
+                    const perihalTitleHeight = 10;
+                    const tableHeaderHeight = 10;
+                    const firstRowHeight = 10;
+                    const pageMargin = 30;
+                    const requiredHeight = perihalTitleHeight + tableHeaderHeight + firstRowHeight;
+                    const currentY = (doc as any).lastAutoTable.finalY || 30;
+
+                    if (currentY + requiredHeight > doc.internal.pageSize.getHeight() - pageMargin) {
+                        doc.addPage();
+                    }
+                    
+                    autoTable(doc, {
+                        head: [[`Perihal: ${perihal}`]],
+                        body: [[]],
+                        startY: (doc as any).lastAutoTable.finalY + 2,
+                        theme: 'plain',
+                        headStyles: { fontStyle: 'bold', fontSize: 14 },
+                        pageBreak: 'avoid',
+                    });
+
 
                     autoTable(doc, {
                         head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
