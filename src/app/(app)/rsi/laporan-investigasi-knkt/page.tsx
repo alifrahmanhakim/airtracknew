@@ -279,13 +279,15 @@ export default function LaporanInvestigasiKnktPage() {
                 doc.setPage(i);
                 
                 // Header
-                doc.setFontSize(18);
-                doc.text("KNKT Investigation Reports", 14, 20);
-                if (logoDataUrl) {
-                    const aspectRatio = img.width / img.height;
-                    const logoWidth = 30;
-                    const logoHeight = logoWidth / aspectRatio;
-                    doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                if (i === 1) {
+                  doc.setFontSize(18);
+                  doc.text("KNKT Investigation Reports", 14, 20);
+                  if (logoDataUrl) {
+                      const aspectRatio = img.width / img.height;
+                      const logoWidth = 30;
+                      const logoHeight = logoWidth / aspectRatio;
+                      doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                  }
                 }
                 
                 // Footer
@@ -475,5 +477,4 @@ export default function LaporanInvestigasiKnktPage() {
             </main>
         </AppLayout>
     );
-
-    
+}
