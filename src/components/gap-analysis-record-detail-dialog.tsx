@@ -177,7 +177,7 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
     });
   };
 
-  const handleExportPdf = async () => {
+ const handleExportPdf = async () => {
     setIsExporting(true);
     if (!currentUser) {
       toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user to create a verified export." });
@@ -220,23 +220,24 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
             doc.text(copyrightText, pageWidth / 2, footerY, { align: 'center' });
             doc.text(`Page ${data.pageNumber} of ${pageCount}`, pageWidth - 14, footerY, { align: 'right' });
         };
-        
-        // --- General Section ---
+
+        const generalData = [
+            ['SL Ref. Number', record.slReferenceNumber],
+            ['SL Ref. Date', record.slReferenceDate ? format(parseISO(record.slReferenceDate), 'PPP') : 'N/A'],
+            ['Annex', record.annex],
+            ['Subject', record.subject],
+            ['Status', record.statusItem],
+            ['Date of Evaluation', record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'],
+            ['Effective Date', record.effectiveDate ? format(parseISO(record.effectiveDate), 'PPP') : 'N/A'],
+            ['Applicability Date', record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'],
+        ];
+
         autoTable(doc, {
             startY: 30,
             theme: 'plain',
-            body: [
-                ['SL Ref. Number', record.slReferenceNumber],
-                ['SL Ref. Date', record.slReferenceDate ? format(parseISO(record.slReferenceDate), 'PPP') : 'N/A'],
-                ['Annex', record.annex],
-                ['Subject', record.subject],
-                ['Status', record.statusItem],
-                ['Date of Evaluation', record.dateOfEvaluation ? format(parseISO(record.dateOfEvaluation), 'PPP') : 'N/A'],
-                ['Effective Date', record.effectiveDate ? format(parseISO(record.effectiveDate), 'PPP') : 'N/A'],
-                ['Applicability Date', record.applicabilityDate ? format(parseISO(record.applicabilityDate), 'PPP') : 'N/A'],
-            ],
+            body: generalData,
             styles: { fontSize: 9 },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: {cellWidth: 'auto'} },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: { cellWidth: 'auto' } },
             didDrawPage: addHeaderAndFooter,
         });
 
@@ -304,62 +305,51 @@ export function GapAnalysisRecordDetailDialog({ record, open, onOpenChange }: Ga
         });
 
         // --- DGCA Authorization ---
-        const finalY = (doc as any).lastAutoTable.finalY;
-        const signaturePromises: Promise<void>[] = [];
+        let startY = (doc as any).lastAutoTable.finalY + 10;
+        
+        const signaturePromises: Promise<{name: string, dataUrl: string, type: 'Inspector' | 'Verifier', date?: string}>[] = [];
 
-        autoTable(doc, {
-          startY: finalY + 10,
-          head: [['DGCA Authorization']],
-          body: [
-              ['Inspectors:', (record.inspectors || []).map(i => i.name).join(', ')],
-              ['Verified By:', (record.verifiers || []).map(v => `${v.name} on ${v.date ? format(parseISO(v.date), 'PPP') : 'N/A'}`).join('\n')],
-          ],
-          theme: 'grid',
-          headStyles: { fillColor: [44, 62, 80] },
-          columnStyles: { 0: { fontStyle: 'bold' } },
-          didParseCell: (data) => {
-              if (data.section === 'body' && (data.row.index === 0 || data.row.index === 1)) {
-                  data.cell.styles.valign = 'middle';
-              }
-          },
-          didDrawPage: addHeaderAndFooter,
-      });
+        (record.inspectors || []).forEach(inspector => {
+            if (inspector.signature) {
+                signaturePromises.push(
+                    loadImageAsDataURL(inspector.signature).then(dataUrl => ({ name: inspector.name, dataUrl, type: 'Inspector' }))
+                );
+            }
+        });
+        (record.verifiers || []).forEach(verifier => {
+            if (verifier.signature) {
+                signaturePromises.push(
+                    loadImageAsDataURL(verifier.signature).then(dataUrl => ({ name: verifier.name, dataUrl, type: 'Verifier', date: verifier.date }))
+                );
+            }
+        });
 
-      const signatureStartY = (doc as any).lastAutoTable.finalY + 5;
-
-      const inspectorsWithSignatures = (record.inspectors || []).filter(i => i.signature);
-      for (let i = 0; i < inspectorsWithSignatures.length; i++) {
-        const inspector = inspectorsWithSignatures[i];
-        if (inspector.signature) {
-            signaturePromises.push(
-                loadImageAsDataURL(inspector.signature).then(dataUrl => {
-                    const yPos = signatureStartY + (i * 30);
+        const signatureDataUrls = await Promise.all(signaturePromises);
+        
+        if (signatureDataUrls.length > 0) {
+            doc.addPage();
+            addHeaderAndFooter({ pageNumber: (doc as any).internal.getNumberOfPages() });
+            startY = 30; // Reset Y on new page
+            doc.setFontSize(14);
+            doc.text("DGCA Authorization Signatures", 14, startY);
+            startY += 10;
+            
+            signatureDataUrls.forEach(({ name, dataUrl, type, date }) => {
+                if (startY + 40 > doc.internal.pageSize.getHeight() - 20) {
+                    doc.addPage();
+                    addHeaderAndFooter({ pageNumber: (doc as any).internal.getNumberOfPages() });
+                    startY = 30;
+                }
+                doc.setFontSize(10);
+                doc.text(`${type}: ${name}`, 14, startY);
+                if (date) {
                     doc.setFontSize(8);
-                    doc.text(`Inspector: ${inspector.name}`, 14, yPos);
-                    doc.addImage(dataUrl, 'PNG', 14, yPos + 2, 40, 20);
-                })
-            );
+                    doc.text(`Date: ${format(parseISO(date), 'PPP')}`, 14, startY + 5);
+                }
+                doc.addImage(dataUrl, 'PNG', 14, startY + 8, 60, 30);
+                startY += 40;
+            });
         }
-      }
-
-      await Promise.all(signaturePromises);
-
-      const verifiersWithSignatures = (record.verifiers || []).filter(v => v.signature);
-       for (let i = 0; i < verifiersWithSignatures.length; i++) {
-        const verifier = verifiersWithSignatures[i];
-        if (verifier.signature) {
-            signaturePromises.push(
-                loadImageAsDataURL(verifier.signature).then(dataUrl => {
-                    const yPos = signatureStartY + ((inspectorsWithSignatures.length + i) * 30);
-                    doc.setFontSize(8);
-                    doc.text(`Verifier: ${verifier.name}`, 14, yPos);
-                    doc.addImage(dataUrl, 'PNG', 14, yPos + 2, 40, 20);
-                })
-            );
-        }
-      }
-
-      await Promise.all(signaturePromises);
       
       doc.save(`GAP_Analysis_${record.slReferenceNumber}.pdf`);
       toast({ title: "Export successful", description: "Your PDF has been downloaded." });
