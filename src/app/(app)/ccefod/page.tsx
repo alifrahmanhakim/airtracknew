@@ -355,8 +355,6 @@ export default function CcefodPage() {
         
         const qrText = `Dokumen ini dibuat melalui Aplikasi AirTrack pada ${format(new Date(), 'dd MMMM yyyy HH:mm')}.`;
         const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
-        
-        let finalY = 0;
 
         const addPageContent = (data: { pageNumber: number }) => {
             const footerY = doc.internal.pageSize.height - 20;
@@ -380,7 +378,7 @@ export default function CcefodPage() {
                 record.status,
             ]);
             
-            const isFirstGroupOnPage = finalY === 0 || finalY > doc.internal.pageSize.height - 60;
+            const isFirstGroupOnPage = groupIndex === 0;
 
             if (!isFirstGroupOnPage) {
                 doc.addPage();
@@ -414,10 +412,8 @@ export default function CcefodPage() {
                 didDrawPage: addPageContent,
                 margin: { top: 30, bottom: 30 },
             });
-            finalY = (doc as any).lastAutoTable.finalY;
         });
         
-        // Final pass for page numbers
         const pageCountFinal = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= pageCountFinal; i++) {
             doc.setPage(i);
