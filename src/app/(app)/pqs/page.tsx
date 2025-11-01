@@ -287,7 +287,7 @@ export default function PqsPage() {
             body: tableRows,
             startY: 30,
             theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+            headStyles: { fillColor: [25, 25, 112], textColor: 255, fontStyle: 'bold' },
             didDrawPage: addPageContent
         });
         
