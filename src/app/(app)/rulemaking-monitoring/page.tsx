@@ -293,13 +293,12 @@ export default function RulemakingMonitoringPage() {
                 return acc;
             }, {} as Record<string, RulemakingRecord[]>);
             
-            let lastFinalY = 30; 
+            let lastFinalY = 30;
     
-            for (const kategori of Object.keys(groupedByCategory).sort()) {
-                const pageNumberBeforeCategory = (doc as any).internal.getNumberOfPages();
-                
-                if (lastFinalY > 30 || pageNumberBeforeCategory > 1) { // Add space unless it's the very first item
-                    lastFinalY += 10;
+            for (const [groupIndex, kategori] of Object.keys(groupedByCategory).sort().entries()) {
+                if (groupIndex > 0) {
+                    doc.addPage();
+                    lastFinalY = 30; // Reset for new page
                 }
 
                 autoTable(doc, {
@@ -307,9 +306,8 @@ export default function RulemakingMonitoringPage() {
                     startY: lastFinalY,
                     theme: 'plain',
                     styles: { fontStyle: 'bold', fontSize: 16 },
-                    pageBreak: 'avoid',
                 });
-                 lastFinalY = (doc as any).lastAutoTable.finalY;
+                lastFinalY = (doc as any).lastAutoTable.finalY;
                 
                 const recordsInKategori = groupedByCategory[kategori];
                 const groupedByPerihal = recordsInKategori.reduce((acc, record) => {
@@ -333,12 +331,16 @@ export default function RulemakingMonitoringPage() {
                         ])
                     );
 
+                    const perihalHeader = [{ content: `Perihal: ${perihal}`, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: 20 } }];
+                    
+                    const headerAndRows = [
+                        perihalHeader,
+                        ...tableRows
+                    ];
+                    
                     autoTable(doc, {
                         head: [['Tanggal', 'No. Surat', 'Keterangan Pengajuan', 'Deskripsi Status', 'Keterangan']],
-                        body: [
-                            [{ content: `Perihal: ${perihal}`, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: 20 } }],
-                             ...tableRows
-                        ],
+                        body: headerAndRows,
                         startY: lastFinalY + 2,
                         theme: 'grid',
                         headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
@@ -351,6 +353,11 @@ export default function RulemakingMonitoringPage() {
                             3: { cellWidth: 'auto' },
                             4: { cellWidth: 'auto' },
                         },
+                         willDrawCell: (data) => {
+                            if (data.row.raw === perihalHeader) {
+                                // This hook can be used to apply custom styles to the perihal row if needed
+                            }
+                        }
                     });
                     lastFinalY = (doc as any).lastAutoTable.finalY;
                 }
