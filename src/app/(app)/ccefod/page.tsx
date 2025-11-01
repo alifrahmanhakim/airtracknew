@@ -312,17 +312,23 @@ export default function CcefodPage() {
 
   const htmlToPlainText = (html: string) => {
     if (typeof document === 'undefined') {
-      // Basic fallback for server-side or non-browser environments
-      return html
-        .replace(/<p>/gi, '\n')
-        .replace(/<\/p>/gi, '')
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<[^>]+>/g, '');
+        return html.replace(/<p>/gi, '\n').replace(/<\/p>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
     }
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
+    
+    // Process paragraphs and breaks to maintain structure
+    tempDiv.querySelectorAll('p').forEach(p => {
+        if (p.textContent) {
+            p.textContent += '\n';
+        }
+    });
+    tempDiv.querySelectorAll('br').forEach(br => {
+        br.replaceWith('\n');
+    });
+
     return tempDiv.textContent || tempDiv.innerText || "";
-  };
+};
   
   const handleExportPdf = () => {
     if (allRecords.length === 0) {
@@ -353,8 +359,7 @@ export default function CcefodPage() {
         let finalY = 0;
 
         const addPageContent = (data: { pageNumber: number }) => {
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            const footerY = doc.internal.pageSize.height - 15;
+            const footerY = doc.internal.pageSize.height - 20;
             doc.setFontSize(8);
 
             // QR Code
@@ -364,9 +369,6 @@ export default function CcefodPage() {
             // Copyright
             const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
             doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-
-            // Page Number
-            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
         };
     
         Object.entries(groupedByAnnex).forEach(([annex, recordsInGroup], groupIndex) => {
@@ -410,6 +412,7 @@ export default function CcefodPage() {
                     fontStyle: 'bold',
                 },
                 didDrawPage: addPageContent,
+                margin: { top: 30, bottom: 30 },
             });
             finalY = (doc as any).lastAutoTable.finalY;
         });
@@ -418,7 +421,8 @@ export default function CcefodPage() {
         const pageCountFinal = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= pageCountFinal; i++) {
             doc.setPage(i);
-            addPageContent({ pageNumber: i });
+            doc.setFontSize(8);
+            doc.text(`Page ${i} of ${pageCountFinal}`, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 8, { align: 'right' });
         }
 
 

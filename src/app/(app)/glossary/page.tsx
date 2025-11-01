@@ -257,26 +257,6 @@ export default function GlossaryPage() {
     img.crossOrigin = 'Anonymous';
     img.src = logoUrl;
 
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
-            generatePdf();
-            return;
-        }
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
-        generatePdf(dataUrl);
-    };
-
-    img.onerror = () => {
-         toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF." });
-         generatePdf();
-    };
-
     const generatePdf = async (logoDataUrl?: string) => {
         const doc = new jsPDF({ orientation: 'landscape' });
         const tableColumn = ["No", "TSU", "TSA", "Editing", "Makna", "Keterangan", "Referensi", "Status"];
@@ -296,8 +276,6 @@ export default function GlossaryPage() {
         const qrDataUrl = await QRCode.toDataURL(qrText, { errorCorrectionLevel: 'H' });
         
         const addPageContent = (data: { pageNumber: number }) => {
-            const pageCount = (doc as any).internal.getNumberOfPages();
-            
             // Header
             doc.setFontSize(18);
             doc.text("Translation Analysis Records", 14, 20);
@@ -317,8 +295,6 @@ export default function GlossaryPage() {
             
             const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
             doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
-
-            doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
         };
 
         autoTable(doc, {
@@ -341,6 +317,26 @@ export default function GlossaryPage() {
         }
 
         doc.save("translation_analysis_records.pdf");
+    };
+
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            toast({ variant: "destructive", title: "Canvas Error", description: "Could not create canvas context for PDF logo." });
+            generatePdf();
+            return;
+        }
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        generatePdf(dataUrl);
+    };
+
+    img.onerror = () => {
+         toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image for the PDF." });
+         generatePdf();
     };
   };
 
