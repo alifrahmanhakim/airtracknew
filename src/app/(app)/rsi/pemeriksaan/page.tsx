@@ -5,11 +5,11 @@
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PemeriksaanRecord } from '@/lib/types';
+import { PemeriksaanRecord, User } from '@/lib/types';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Loader2, Search, RotateCcw, ArrowLeft, FileSpreadsheet, Printer } from 'lucide-react';
@@ -20,7 +20,7 @@ import type { z } from 'zod';
 import { addPemeriksaanRecord } from '@/lib/actions/pemeriksaan';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getYear, parseISO, isValid } from 'date-fns';
+import { getYear, parseISO, isValid, format } from 'date-fns';
 import Link from 'next/link';
 import { aocOptions } from '@/lib/data';
 import { Combobox, ComboboxOption } from '@/components/ui/combobox';
@@ -28,6 +28,9 @@ import * as XLSX from 'xlsx';
 import { AppLayout } from '@/components/app-layout-component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { createExportRecord } from '@/lib/actions/verification';
+import QRCode from 'qrcode';
+
 
 const PemeriksaanForm = dynamic(() => import('@/components/rsi/pemeriksaan-form').then(mod => mod.PemeriksaanForm), { 
     ssr: false,
@@ -48,6 +51,7 @@ export default function PemeriksaanPage() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeTab, setActiveTab] = React.useState('records');
     const { toast } = useToast();
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
     // Form state
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -79,6 +83,15 @@ export default function PemeriksaanPage() {
             });
             setIsLoading(false);
         });
+        
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (loggedInUserId) {
+            getDoc(doc(db, "users", loggedInUserId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
 
         return () => unsubscribe();
     }, [toast]);
@@ -192,56 +205,39 @@ export default function PemeriksaanPage() {
         XLSX.writeFile(workbook, 'pemeriksaan_records.xlsx');
     };
     
-    const handleExportPdf = () => {
+    const handleExportPdf = async () => {
         if (filteredRecords.length === 0) {
             toast({ variant: "destructive", title: "No Data", description: "There is no data to generate a PDF for." });
             return;
         }
+
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+    
+        const exportRecord = await createExportRecord({
+            documentType: 'Pemeriksaan DKPPU Records',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, yearFilter, operatorFilter },
+        });
+
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
         
         const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
         const img = new Image();
         img.crossOrigin = 'Anonymous';
         img.src = logoUrl;
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            ctx.drawImage(img, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            
-            generatePdfWithLogo(dataUrl);
-        };
-
-        img.onerror = () => {
-             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
-             generatePdfWithLogo();
-        }
-
-        const generatePdfWithLogo = (logoDataUrl?: string) => {
+        const generatePdfWithLogo = async (logoDataUrl?: string) => {
             const doc = new jsPDF({ orientation: 'landscape' });
     
-            const addPageContent = (data: { pageNumber: number }) => {
-                if (data.pageNumber === 1) {
-                    doc.setFontSize(18);
-                    doc.text("Pemeriksaan Records", 14, 15);
-                    if (logoDataUrl) {
-                        const aspectRatio = img.width / img.height;
-                        const logoWidth = 30;
-                        const logoHeight = logoWidth / aspectRatio;
-                        doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - 45, 8, logoWidth, logoHeight);
-                    }
-                }
-
-                doc.setFontSize(8);
-                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
-                const textWidth = doc.getStringUnitWidth(copyrightText) * doc.getFontSize() / doc.internal.scaleFactor;
-                const textX = doc.internal.pageSize.width - textWidth - 14;
-                doc.text(copyrightText, textX, doc.internal.pageSize.height - 10);
-            };
-
             const tableColumn = ["Tanggal", "Kategori", "Operator", "Registrasi", "Tipe Pesawat", "Lokasi", "Korban"];
             const tableRows = filteredRecords.map(record => [
                 record.tanggal,
@@ -252,22 +248,63 @@ export default function PemeriksaanPage() {
                 record.lokasi,
                 record.korban
             ]);
-
+            
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
-                startY: 25,
+                startY: 32,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
-                didDrawPage: (data) => {
-                    addPageContent(data);
-                    const pageCount = (doc as any).internal.getNumberOfPages();
-                    doc.text(`Page ${data.pageNumber} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
-                }
+                margin: { top: 32, bottom: 30 },
             });
+            
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+            
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Header
+                doc.setFontSize(18);
+                doc.text("Pemeriksaan DKPPU Records", 14, 20);
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if(logoHeight > 0) doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
+                
+                // Footer
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            }
             
             doc.save("pemeriksaan_records.pdf");
         };
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                generatePdfWithLogo();
+                return;
+            }
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdfWithLogo(dataUrl);
+        };
+
+        img.onerror = () => {
+             toast({ variant: "destructive", title: "Logo Error", description: "Could not load the logo image. PDF will be generated without it." });
+             generatePdfWithLogo();
+        }
     };
 
 
