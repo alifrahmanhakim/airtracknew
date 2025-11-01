@@ -4,8 +4,8 @@
 import type { Project, User, Task } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock, LayoutGrid, ListFilter, HelpCircle, History } from 'lucide-react';
-import { useMemo, useState, useRef } from 'react';
+import { Search, CheckCircle, Clock, AlertTriangle, List, AlertCircle, ArrowRight, Flag, Users, FileText, CalendarCheck2, ListTodo, ArrowDown, User as UserIcon, CalendarX, CalendarClock, LayoutGrid, ListFilter, HelpCircle, History, Printer } from 'lucide-react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import Link from 'next/link';
@@ -28,6 +28,13 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Separator } from './ui/separator';
 import { AnimatedCounter } from './ui/animated-counter';
 import { GanttChart } from './gantt-chart';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { useToast } from '@/hooks/use-toast';
+import { createExportRecord } from '@/lib/actions/verification';
+import QRCode from 'qrcode';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type RulemakingDashboardPageProps = {
     projects: Project[];
@@ -180,6 +187,19 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
     const [statusFilter, setStatusFilter] = useState('all');
     const [tagFilter, setTagFilter] = useState('all');
     const [sort, setSort] = useState<SortDescriptor>({ column: 'endDate', direction: 'asc' });
+    const { toast } = useToast();
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        const userId = localStorage.getItem('loggedInUserId');
+        if (userId) {
+            getDoc(doc(db, "users", userId)).then(userSnap => {
+                if (userSnap.exists()) {
+                    setCurrentUser({ id: userSnap.id, ...userSnap.data() } as User);
+                }
+            });
+        }
+    }, []);
 
     const stats = useMemo(() => {
         const statusGroups: { [key in Project['status']]: Project[] } = {
@@ -274,6 +294,105 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
 
         return filtered;
     }, [projects, searchTerm, statusFilter, tagFilter]);
+
+    const handleExportPdf = async () => {
+        if (filteredProjects.length === 0) {
+            toast({ variant: "destructive", title: "No Data", description: "There are no projects to export based on current filters." });
+            return;
+        }
+    
+        if (!currentUser) {
+            toast({ variant: "destructive", title: "User not found", description: "Could not identify the current user." });
+            return;
+        }
+    
+        const exportRecord = await createExportRecord({
+            documentType: 'Rulemaking Projects List',
+            exportedAt: new Date(),
+            exportedBy: { id: currentUser.id, name: currentUser.name },
+            filters: { searchTerm, statusFilter, tagFilter },
+        });
+    
+        if (!exportRecord.success || !exportRecord.id) {
+            toast({ variant: "destructive", title: "Export Failed", description: "Could not create an export record for verification." });
+            return;
+        }
+    
+        const verificationUrl = `https://stdatabase.site/verify/${exportRecord.id}`;
+        
+        const logoUrl = 'https://ik.imagekit.io/avmxsiusm/LOGO-AIRTRACK%20black.png';
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = logoUrl;
+    
+        const generatePdf = async (logoDataUrl?: string) => {
+            const doc = new jsPDF({ orientation: 'landscape' });
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H' });
+    
+            const tableColumn = ["CASR", "Title", "Status", "Progress", "Due Date"];
+            const tableRows = filteredProjects.map(p => {
+                const { total, completed } = countAllTasks(p.tasks || []);
+                const progress = total > 0 ? (completed / total) * 100 : 0;
+                return [
+                    `CASR ${p.casr}`,
+                    p.name,
+                    getEffectiveStatus(p),
+                    `${progress.toFixed(0)}%`,
+                    format(parseISO(p.endDate), 'dd MMM yyyy')
+                ];
+            });
+    
+            const addPageContent = (data: any) => {
+                const pageCount = (doc as any).internal.getNumberOfPages();
+                
+                doc.setFontSize(18);
+                doc.text("Rulemaking Projects", 14, 20);
+                
+                if (logoDataUrl) {
+                    const aspectRatio = img.width / img.height;
+                    const logoWidth = 30;
+                    const logoHeight = aspectRatio > 0 ? logoWidth / aspectRatio : 0;
+                    if(logoHeight > 0) doc.addImage(logoDataUrl, 'PNG', doc.internal.pageSize.getWidth() - (logoWidth + 15), 8, logoWidth, logoHeight);
+                }
+    
+                const footerY = doc.internal.pageSize.height - 20;
+                doc.setFontSize(8);
+                doc.addImage(qrDataUrl, 'PNG', 14, footerY - 5, 15, 15);
+                doc.text('Genuine Document by AirTrack', 14, footerY + 12);
+                const copyrightText = `Copyright © AirTrack ${new Date().getFullYear()}`;
+                doc.text(copyrightText, doc.internal.pageSize.width / 2, footerY + 12, { align: 'center' });
+                doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 14, footerY + 12, { align: 'right' });
+            };
+    
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
+                didDrawPage: addPageContent,
+                margin: { top: 30, bottom: 30 },
+            });
+            
+            doc.save("rulemaking_projects.pdf");
+        };
+    
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { generatePdf(); return; }
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            generatePdf(dataUrl);
+        };
+    
+        img.onerror = () => {
+            toast({ variant: "destructive", title: "Logo Error", description: "Could not load logo for PDF." });
+            generatePdf();
+        };
+    };
 
     return (
         <TooltipProvider>
@@ -472,6 +591,10 @@ export function RulemakingDashboardPage({ projects, allUsers }: RulemakingDashbo
                             {allTags.map(tag => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
                         </SelectContent>
                     </Select>
+                    <Button variant="outline" onClick={handleExportPdf}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Export to PDF
+                    </Button>
                 </div>
                 
                 <main>
