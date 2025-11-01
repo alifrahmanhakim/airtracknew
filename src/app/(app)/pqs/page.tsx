@@ -391,7 +391,7 @@ export default function PqsPage() {
                 </div>
             </div>
             <TabsContent value="form" forceMount className={cn(activeTab !== 'form' && 'hidden')}>
-                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg max-w-4xl mx-auto">
+                <div className="p-6 bg-background/80 backdrop-blur-sm rounded-lg">
                     <CardHeader>
                     <CardTitle>Protocol Question (PQ) Form</CardTitle>
                     <CardDescription>
@@ -530,5 +530,3 @@ export default function PqsPage() {
     </AppLayout>
   );
 }
-
-    
