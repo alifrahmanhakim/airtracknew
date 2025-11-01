@@ -293,15 +293,23 @@ export default function RulemakingMonitoringPage() {
                 return acc;
             }, {} as Record<string, RulemakingRecord[]>);
             
-            let lastFinalY = 30; // Start position for the first table
+            let lastFinalY = 30; 
     
             for (const kategori of Object.keys(groupedByCategory).sort()) {
+                const pageNumberBeforeCategory = (doc as any).internal.getNumberOfPages();
+                
+                if (lastFinalY > 30 || pageNumberBeforeCategory > 1) { // Add space unless it's the very first item
+                    lastFinalY += 10;
+                }
+
                 autoTable(doc, {
                     body: [[kategori]],
                     startY: lastFinalY,
                     theme: 'plain',
                     styles: { fontStyle: 'bold', fontSize: 16 },
+                    pageBreak: 'avoid',
                 });
+                 lastFinalY = (doc as any).lastAutoTable.finalY;
                 
                 const recordsInKategori = groupedByCategory[kategori];
                 const groupedByPerihal = recordsInKategori.reduce((acc, record) => {
@@ -331,14 +339,21 @@ export default function RulemakingMonitoringPage() {
                             [{ content: `Perihal: ${perihal}`, colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: 20 } }],
                              ...tableRows
                         ],
-                        startY: (doc as any).lastAutoTable.finalY + 2,
+                        startY: lastFinalY + 2,
                         theme: 'grid',
                         headStyles: { fillColor: [22, 160, 133], textColor: 255, fontStyle: 'bold' },
                         didDrawPage: addPageContent,
                         margin: { top: 30, bottom: 30 },
+                        columnStyles: {
+                            0: { cellWidth: 25 },
+                            1: { cellWidth: 45 },
+                            2: { cellWidth: 'auto' },
+                            3: { cellWidth: 'auto' },
+                            4: { cellWidth: 'auto' },
+                        },
                     });
+                    lastFinalY = (doc as any).lastAutoTable.finalY;
                 }
-                 lastFinalY = (doc as any).lastAutoTable.finalY + 10;
             }
             
             doc.save("rulemaking_monitoring.pdf");
@@ -388,6 +403,7 @@ export default function RulemakingMonitoringPage() {
                                     src="https://ik.imagekit.io/avmxsiusm/cloud_storage_10.webp"
                                     alt="Monitoring Illustration"
                                     className="absolute inset-0 w-full h-full object-cover"
+                                    sizes="(max-width: 768px) 100vw, 33vw"
                                 />
                             </div>
                         </div>
